@@ -405,6 +405,12 @@ export default function WorkTemplateList({
                                                 onKeyDown={(e) =>
                                                     e.stopPropagation()
                                                 }
+                                                onMouseDown={(e) =>
+                                                    e.stopPropagation()
+                                                }
+                                                onClick={(e) =>
+                                                    e.stopPropagation()
+                                                }
                                                 size="small"
                                                 style={{ width: 130 }}
                                             />
@@ -412,6 +418,9 @@ export default function WorkTemplateList({
                                                 type="text"
                                                 icon={<PlusOutlined />}
                                                 onClick={handleAddTaskOption}
+                                                onMouseDown={(e) =>
+                                                    e.stopPropagation()
+                                                }
                                                 size="small"
                                             >
                                                 추가
@@ -452,6 +461,12 @@ export default function WorkTemplateList({
                                                 onKeyDown={(e) =>
                                                     e.stopPropagation()
                                                 }
+                                                onMouseDown={(e) =>
+                                                    e.stopPropagation()
+                                                }
+                                                onClick={(e) =>
+                                                    e.stopPropagation()
+                                                }
                                                 size="small"
                                                 style={{ width: 130 }}
                                             />
@@ -460,6 +475,9 @@ export default function WorkTemplateList({
                                                 icon={<PlusOutlined />}
                                                 onClick={
                                                     handleAddCategoryOption
+                                                }
+                                                onMouseDown={(e) =>
+                                                    e.stopPropagation()
                                                 }
                                                 size="small"
                                             >

@@ -1184,6 +1184,12 @@ export default function DailyGanttChart() {
                                                 onKeyDown={(e) =>
                                                     e.stopPropagation()
                                                 }
+                                                onMouseDown={(e) =>
+                                                    e.stopPropagation()
+                                                }
+                                                onClick={(e) =>
+                                                    e.stopPropagation()
+                                                }
                                                 size="small"
                                                 style={{ flex: 1 }}
                                             />
@@ -1191,6 +1197,9 @@ export default function DailyGanttChart() {
                                                 type="text"
                                                 icon={<PlusOutlined />}
                                                 onClick={handleAddTaskOption}
+                                                onMouseDown={(e) =>
+                                                    e.stopPropagation()
+                                                }
                                                 size="small"
                                             >
                                                 추가
@@ -1231,6 +1240,12 @@ export default function DailyGanttChart() {
                                                 onKeyDown={(e) =>
                                                     e.stopPropagation()
                                                 }
+                                                onMouseDown={(e) =>
+                                                    e.stopPropagation()
+                                                }
+                                                onClick={(e) =>
+                                                    e.stopPropagation()
+                                                }
                                                 size="small"
                                                 style={{ flex: 1 }}
                                             />
@@ -1239,6 +1254,9 @@ export default function DailyGanttChart() {
                                                 icon={<PlusOutlined />}
                                                 onClick={
                                                     handleAddCategoryOption
+                                                }
+                                                onMouseDown={(e) =>
+                                                    e.stopPropagation()
                                                 }
                                                 size="small"
                                             >

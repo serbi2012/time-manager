@@ -1096,7 +1096,9 @@ export default function WorkRecordTable() {
                         rowExpandable: () => true,
                         expandIcon: ({ expanded, onExpand, record }) => (
                             <div
-                                className={`expand-icon ${expanded ? "expanded" : ""}`}
+                                className={`expand-icon ${
+                                    expanded ? "expanded" : ""
+                                }`}
                                 onClick={(e) => onExpand(record, e)}
                             >
                                 <DownOutlined />
@@ -1187,6 +1189,12 @@ export default function WorkRecordTable() {
                                                 onKeyDown={(e) =>
                                                     e.stopPropagation()
                                                 }
+                                                onMouseDown={(e) =>
+                                                    e.stopPropagation()
+                                                }
+                                                onClick={(e) =>
+                                                    e.stopPropagation()
+                                                }
                                                 size="small"
                                                 style={{ width: 130 }}
                                             />
@@ -1194,6 +1202,9 @@ export default function WorkRecordTable() {
                                                 type="text"
                                                 icon={<PlusOutlined />}
                                                 onClick={handleAddTaskOption}
+                                                onMouseDown={(e) =>
+                                                    e.stopPropagation()
+                                                }
                                                 size="small"
                                             >
                                                 추가
@@ -1234,6 +1245,12 @@ export default function WorkRecordTable() {
                                                 onKeyDown={(e) =>
                                                     e.stopPropagation()
                                                 }
+                                                onMouseDown={(e) =>
+                                                    e.stopPropagation()
+                                                }
+                                                onClick={(e) =>
+                                                    e.stopPropagation()
+                                                }
                                                 size="small"
                                                 style={{ width: 130 }}
                                             />
@@ -1242,6 +1259,9 @@ export default function WorkRecordTable() {
                                                 icon={<PlusOutlined />}
                                                 onClick={
                                                     handleAddCategoryOption
+                                                }
+                                                onMouseDown={(e) =>
+                                                    e.stopPropagation()
                                                 }
                                                 size="small"
                                             >
@@ -1336,6 +1356,12 @@ export default function WorkRecordTable() {
                                                 onKeyDown={(e) =>
                                                     e.stopPropagation()
                                                 }
+                                                onMouseDown={(e) =>
+                                                    e.stopPropagation()
+                                                }
+                                                onClick={(e) =>
+                                                    e.stopPropagation()
+                                                }
                                                 size="small"
                                                 style={{ width: 130 }}
                                             />
@@ -1352,6 +1378,9 @@ export default function WorkRecordTable() {
                                                         setEditTaskInput("");
                                                     }
                                                 }}
+                                                onMouseDown={(e) =>
+                                                    e.stopPropagation()
+                                                }
                                                 size="small"
                                             >
                                                 추가
@@ -1392,6 +1421,12 @@ export default function WorkRecordTable() {
                                                 onKeyDown={(e) =>
                                                     e.stopPropagation()
                                                 }
+                                                onMouseDown={(e) =>
+                                                    e.stopPropagation()
+                                                }
+                                                onClick={(e) =>
+                                                    e.stopPropagation()
+                                                }
                                                 size="small"
                                                 style={{ width: 130 }}
                                             />
@@ -1410,6 +1445,9 @@ export default function WorkRecordTable() {
                                                         );
                                                     }
                                                 }}
+                                                onMouseDown={(e) =>
+                                                    e.stopPropagation()
+                                                }
                                                 size="small"
                                             >
                                                 추가
