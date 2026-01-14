@@ -75,12 +75,16 @@ interface WorkStore {
 }
 
 const DEFAULT_FORM_DATA: WorkFormData = {
+  project_code: '',
   work_name: '',
   task_name: '',
   deal_name: '',
   category_name: '',
   note: '',
 };
+
+// 프로젝트 코드 기본값
+const DEFAULT_PROJECT_CODE = 'A00_00000';
 
 const DEFAULT_TIMER: TimerState = {
   is_running: false,
@@ -215,6 +219,7 @@ export const useWorkStore = create<WorkStore>()(
           const new_record: WorkRecord = {
             id: crypto.randomUUID(),
             ...active_form,
+            project_code: active_form.project_code || DEFAULT_PROJECT_CODE,
             duration_minutes: calculateTotalMinutes([new_session]),
             start_time: new_session.start_time,
             end_time: new_session.end_time,
@@ -278,6 +283,7 @@ export const useWorkStore = create<WorkStore>()(
             const new_record: WorkRecord = {
               id: crypto.randomUUID(),
               ...active_form,
+              project_code: active_form.project_code || DEFAULT_PROJECT_CODE,
               duration_minutes: calculateTotalMinutes([new_session]),
               start_time: new_session.start_time,
               end_time: new_session.end_time,
@@ -293,7 +299,8 @@ export const useWorkStore = create<WorkStore>()(
         }
 
         // 새 템플릿으로 타이머 시작
-        const new_form_data = {
+        const new_form_data: WorkFormData = {
+          project_code: template.project_code || DEFAULT_PROJECT_CODE,
           work_name: template.work_name,
           task_name: template.task_name,
           deal_name: template.deal_name,

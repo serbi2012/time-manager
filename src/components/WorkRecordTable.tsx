@@ -587,6 +587,7 @@ export default function WorkRecordTable() {
             if (!existing) {
                 const virtual_record: WorkRecord = {
                     id: "__active__",
+                    project_code: active_form.project_code || "A00_00000",
                     work_name: active_form.work_name,
                     task_name: active_form.task_name,
                     deal_name: active_form.deal_name,
@@ -708,6 +709,7 @@ export default function WorkRecordTable() {
         try {
             const values = await form.validateFields();
             setFormData({
+                project_code: values.project_code || "",
                 work_name: values.work_name,
                 task_name: values.task_name || "",
                 deal_name: values.deal_name || "",
@@ -732,6 +734,7 @@ export default function WorkRecordTable() {
     const handleOpenEditModal = (record: WorkRecord) => {
         setEditingRecord(record);
         edit_form.setFieldsValue({
+            project_code: record.project_code || "",
             work_name: record.work_name,
             task_name: record.task_name,
             deal_name: record.deal_name,
@@ -747,6 +750,7 @@ export default function WorkRecordTable() {
         try {
             const values = await edit_form.validateFields();
             updateRecord(editing_record.id, {
+                project_code: values.project_code || "",
                 work_name: values.work_name,
                 task_name: values.task_name || "",
                 deal_name: values.deal_name || "",
@@ -1135,6 +1139,13 @@ export default function WorkRecordTable() {
             >
                 <Form form={form} layout="vertical">
                     <Form.Item
+                        name="project_code"
+                        label="프로젝트 코드"
+                    >
+                        <Input placeholder="예: A25_01846 (미입력 시 A00_00000)" />
+                    </Form.Item>
+
+                    <Form.Item
                         name="work_name"
                         label="작업명"
                         rules={[
@@ -1343,6 +1354,13 @@ export default function WorkRecordTable() {
                 cancelText="취소"
             >
                 <Form form={edit_form} layout="vertical">
+                    <Form.Item
+                        name="project_code"
+                        label="프로젝트 코드"
+                    >
+                        <Input placeholder="예: A25_01846 (미입력 시 A00_00000)" />
+                    </Form.Item>
+
                     <Form.Item
                         name="work_name"
                         label="작업명"

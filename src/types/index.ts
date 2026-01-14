@@ -1,3 +1,4 @@
+// 작업 기록 타입 정의 파일
 // 작업 세션 (시작/정지 한 번의 기록)
 export interface WorkSession {
   id: string;
@@ -9,6 +10,7 @@ export interface WorkSession {
 
 export interface WorkRecord {
   id: string;
+  project_code: string;   // 프로젝트 코드 (예: A25_01846)
   work_name: string;      // 작업명
   task_name: string;      // 업무명
   deal_name: string;      // 거래명
@@ -31,6 +33,7 @@ export interface TimerState {
 }
 
 export interface WorkFormData {
+  project_code: string;
   work_name: string;
   task_name: string;
   deal_name: string;
@@ -41,6 +44,7 @@ export interface WorkFormData {
 // 작업 템플릿 (미리 만들어둔 작업)
 export interface WorkTemplate {
   id: string;
+  project_code: string;   // 프로젝트 코드 (예: A25_01846)
   work_name: string;
   task_name: string;
   deal_name: string;

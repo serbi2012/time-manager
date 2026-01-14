@@ -32,6 +32,28 @@
     font-weight: 600 !important;
 }
 
+/* 헤더 메뉴 스타일 */
+.app-header .ant-menu {
+    line-height: 56px;
+}
+
+.app-header .ant-menu-item {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.app-header .ant-menu-item:hover {
+    color: white !important;
+}
+
+.app-header .ant-menu-item-selected {
+    color: white !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+}
+
+.app-header .ant-menu-item::after {
+    border-bottom-color: white !important;
+}
+
 .app-body {
     display: flex;
     height: calc(100vh - 56px);

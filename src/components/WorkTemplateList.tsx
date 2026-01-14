@@ -101,6 +101,7 @@ export default function WorkTemplateList({
         setIsEditMode(true);
         setEditingTemplate(template);
         form.setFieldsValue({
+            project_code: template.project_code || "",
             work_name: template.work_name,
             deal_name: template.deal_name,
             task_name: template.task_name,
@@ -131,6 +132,7 @@ export default function WorkTemplateList({
             if (is_edit_mode && editing_template) {
                 // 수정
                 updateTemplate(editing_template.id, {
+                    project_code: values.project_code || "",
                     work_name: values.work_name,
                     task_name: values.task_name || "",
                     deal_name: values.deal_name || "",
@@ -142,6 +144,7 @@ export default function WorkTemplateList({
             } else {
                 // 추가
                 addTemplate({
+                    project_code: values.project_code || "",
                     work_name: values.work_name,
                     task_name: values.task_name || "",
                     deal_name: values.deal_name || "",
@@ -348,6 +351,13 @@ export default function WorkTemplateList({
                 cancelText="취소"
             >
                 <Form form={form} layout="vertical">
+                    <Form.Item
+                        name="project_code"
+                        label="프로젝트 코드"
+                    >
+                        <Input placeholder="예: A25_01846 (미입력 시 A00_00000)" />
+                    </Form.Item>
+
                     <Form.Item
                         name="work_name"
                         label="작업명"
