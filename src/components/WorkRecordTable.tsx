@@ -44,43 +44,42 @@ import type { WorkRecord, WorkSession } from "../types";
 
 const { Text } = Typography;
 
-// 초를 읽기 쉬운 형식으로 변환
-const formatDuration = (seconds: number): string => {
-    if (seconds < 60) {
-        return `${seconds}초`;
+// 분을 읽기 쉬운 형식으로 변환
+const formatDuration = (minutes: number): string => {
+    if (minutes < 60) {
+        return `${minutes}분`;
     }
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    if (secs === 0) {
-        return `${mins}분`;
+    const hrs = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (mins === 0) {
+        return `${hrs}시간`;
     }
-    return `${mins}분 ${secs}초`;
+    return `${hrs}시간 ${mins}분`;
 };
 
-// 타이머 표시 형식 (HH:MM:SS)
+// 타이머 표시 형식 (HH:MM)
 const formatTimer = (seconds: number): string => {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${hrs.toString().padStart(2, "0")}:${mins
-        .toString()
-        .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    const total_mins = Math.floor(seconds / 60);
+    const hrs = Math.floor(total_mins / 60);
+    const mins = total_mins % 60;
+    return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
 };
 
-// 세션의 duration을 초 단위로 가져오기 (기존 데이터 호환)
-const getSessionDurationSeconds = (session: WorkSession): number => {
+// 세션의 duration을 분 단위로 가져오기 (기존 데이터 호환)
+const getSessionDurationMinutes = (session: WorkSession): number => {
     if (
-        session.duration_seconds !== undefined &&
-        !isNaN(session.duration_seconds)
+        session.duration_minutes !== undefined &&
+        !isNaN(session.duration_minutes)
     ) {
-        return session.duration_seconds;
+        return session.duration_minutes;
     }
-    const legacy = session as unknown as { duration_minutes?: number };
+    // 기존 데이터는 duration_seconds 필드가 있을 수 있음
+    const legacy = session as unknown as { duration_seconds?: number };
     if (
-        legacy.duration_minutes !== undefined &&
-        !isNaN(legacy.duration_minutes)
+        legacy.duration_seconds !== undefined &&
+        !isNaN(legacy.duration_seconds)
     ) {
-        return legacy.duration_minutes * 60;
+        return Math.ceil(legacy.duration_seconds / 60);
     }
     return 0;
 };
@@ -95,20 +94,20 @@ const getRecordDurationMinutes = (record: WorkRecord): number => {
         return record.duration_minutes;
     }
     if (record.sessions && record.sessions.length > 0) {
-        const total_seconds = record.sessions.reduce(
-            (sum, s) => sum + getSessionDurationSeconds(s),
+        const total_minutes = record.sessions.reduce(
+            (sum, s) => sum + getSessionDurationMinutes(s),
             0
         );
-        if (total_seconds > 0) {
-            return Math.max(1, Math.ceil(total_seconds / 60));
+        if (total_minutes > 0) {
+            return Math.max(1, total_minutes);
         }
     }
     if (record.start_time && record.end_time) {
         const start = dayjs(`2000-01-01 ${record.start_time}`);
         const end = dayjs(`2000-01-01 ${record.end_time}`);
-        const diff_seconds = end.diff(start, "second");
-        if (diff_seconds > 0) {
-            return Math.max(1, Math.ceil(diff_seconds / 60));
+        const diff_minutes = end.diff(start, "minute");
+        if (diff_minutes > 0) {
+            return Math.max(1, diff_minutes);
         }
     }
     return 0;
@@ -131,8 +130,8 @@ function TimeInput({ value, onSave }: TimeInputProps) {
     const handleBlur = () => {
         if (edit_value === null) return;
 
-        // 시간 형식 검증 (HH:mm:ss)
-        const time_regex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
+        // 시간 형식 검증 (HH:mm)
+        const time_regex = /^([01]\d|2[0-3]):([0-5]\d)$/;
         if (time_regex.test(edit_value) && edit_value !== value) {
             onSave(edit_value);
         }
@@ -155,8 +154,8 @@ function TimeInput({ value, onSave }: TimeInputProps) {
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             size="small"
-            style={{ width: 90, fontFamily: "monospace" }}
-            placeholder="HH:mm:ss"
+            style={{ width: 70, fontFamily: "monospace" }}
+            placeholder="HH:mm"
         />
     );
 }
@@ -180,7 +179,11 @@ function DateInput({ value, onSave }: DateInputProps) {
 
         // 날짜 형식 검증 (YYYY-MM-DD)
         const date_regex = /^\d{4}-\d{2}-\d{2}$/;
-        if (date_regex.test(edit_value) && dayjs(edit_value).isValid() && edit_value !== value) {
+        if (
+            date_regex.test(edit_value) &&
+            dayjs(edit_value).isValid() &&
+            edit_value !== value
+        ) {
             onSave(edit_value);
         }
         setEditValue(null);
@@ -290,7 +293,7 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                       date: record.date,
                       start_time: record.start_time,
                       end_time: record.end_time,
-                      duration_seconds: record.duration_minutes * 60,
+                      duration_minutes: record.duration_minutes,
                   },
               ];
 
@@ -383,7 +386,7 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                         render: (_: unknown, session: WorkSession) => (
                             <Tag color="blue">
                                 {formatDuration(
-                                    getSessionDurationSeconds(session)
+                                    getSessionDurationMinutes(session)
                                 )}
                             </Tag>
                         ),
@@ -423,7 +426,7 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                         총{" "}
                         {formatDuration(
                             sessions.reduce(
-                                (sum, s) => sum + getSessionDurationSeconds(s),
+                                (sum, s) => sum + getSessionDurationMinutes(s),
                                 0
                             )
                         )}
@@ -581,7 +584,7 @@ export default function WorkRecordTable() {
                     note: active_form.note,
                     duration_minutes: 0,
                     start_time: timer.start_time
-                        ? dayjs(timer.start_time).format("HH:mm:ss")
+                        ? dayjs(timer.start_time).format("HH:mm")
                         : "",
                     end_time: "",
                     date: selected_date,

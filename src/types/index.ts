@@ -2,9 +2,9 @@
 export interface WorkSession {
   id: string;
   date: string;           // 날짜 (YYYY-MM-DD)
-  start_time: string;     // 시작 시간 (HH:mm:ss)
-  end_time: string;       // 종료 시간 (HH:mm:ss)
-  duration_seconds: number; // 소요 시간(초)
+  start_time: string;     // 시작 시간 (HH:mm)
+  end_time: string;       // 종료 시간 (HH:mm)
+  duration_minutes: number; // 소요 시간(분)
 }
 
 export interface WorkRecord {

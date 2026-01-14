@@ -6,26 +6,29 @@ import type { WorkRecord, WorkSession } from "../types";
 
 const { Text } = Typography;
 
-// 시간을 분으로 변환 (예: "09:30:00" -> 570)
+// 시간을 분으로 변환 (예: "09:30" -> 570)
 const timeToMinutes = (time_str: string): number => {
-    const [hours, minutes, seconds] = time_str.split(":").map(Number);
-    return hours * 60 + minutes + (seconds || 0) / 60;
+    const parts = time_str.split(":").map(Number);
+    const hours = parts[0] || 0;
+    const minutes = parts[1] || 0;
+    return hours * 60 + minutes;
 };
 
-// 세션의 duration_seconds 가져오기 (호환성)
-const getSessionSeconds = (session: WorkSession): number => {
+// 세션의 duration_minutes 가져오기 (호환성)
+const getSessionMinutes = (session: WorkSession): number => {
     if (
-        session.duration_seconds !== undefined &&
-        !isNaN(session.duration_seconds)
+        session.duration_minutes !== undefined &&
+        !isNaN(session.duration_minutes)
     ) {
-        return session.duration_seconds;
+        return session.duration_minutes;
     }
-    const legacy = session as unknown as { duration_minutes?: number };
+    // 기존 데이터는 duration_seconds 필드가 있을 수 있음
+    const legacy = session as unknown as { duration_seconds?: number };
     if (
-        legacy.duration_minutes !== undefined &&
-        !isNaN(legacy.duration_minutes)
+        legacy.duration_seconds !== undefined &&
+        !isNaN(legacy.duration_seconds)
     ) {
-        return legacy.duration_minutes * 60;
+        return Math.ceil(legacy.duration_seconds / 60);
     }
     return 0;
 };
@@ -56,9 +59,10 @@ export default function DailyGanttChart() {
                         : [
                               {
                                   id: record.id,
+                                  date: record.date,
                                   start_time: record.start_time,
                                   end_time: record.end_time,
-                                  duration_seconds: record.duration_minutes * 60,
+                                  duration_minutes: record.duration_minutes,
                               },
                           ];
 
@@ -166,18 +170,18 @@ export default function DailyGanttChart() {
         };
     };
 
-    // 시간을 읽기 쉬운 형식으로
-    const formatSeconds = (seconds: number): string => {
-        if (seconds < 60) return `${seconds}초`;
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        if (secs === 0) return `${mins}분`;
-        return `${mins}분 ${secs}초`;
+    // 분을 읽기 쉬운 형식으로
+    const formatMinutes = (minutes: number): string => {
+        if (minutes < 60) return `${minutes}분`;
+        const hrs = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        if (mins === 0) return `${hrs}시간`;
+        return `${hrs}시간 ${mins}분`;
     };
 
     // 총 소요 시간 계산
     const getTotalDuration = (sessions: WorkSession[]): number => {
-        return sessions.reduce((sum, s) => sum + getSessionSeconds(s), 0);
+        return sessions.reduce((sum, s) => sum + getSessionMinutes(s), 0);
     };
 
     return (
@@ -265,13 +269,13 @@ export default function DailyGanttChart() {
                                                             {session.end_time}
                                                         </div>
                                                         <div>
-                                                            {formatSeconds(
-                                                                getSessionSeconds(session)
+                                                            {formatMinutes(
+                                                                getSessionMinutes(session)
                                                             )}
                                                         </div>
                                                         <div style={{ marginTop: 4 }}>
                                                             총 {group.sessions.length}회,{" "}
-                                                            {formatSeconds(
+                                                            {formatMinutes(
                                                                 getTotalDuration(
                                                                     group.sessions
                                                                 )

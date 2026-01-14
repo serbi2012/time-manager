@@ -101,39 +101,46 @@ const findExistingRecord = (
   );
 };
 
-// 새 세션 생성
+// 새 세션 생성 (분 단위로 반올림)
 const createSession = (
   start_time: number,
   end_time: number
 ): WorkSession => {
-  const duration_seconds = Math.floor((end_time - start_time) / 1000);
+  // 시작/종료 시간을 분 단위로 반올림
+  const start_dayjs = dayjs(start_time);
+  const end_dayjs = dayjs(end_time);
+  
+  // 분 단위로 계산 (초는 버림)
+  const start_minutes = start_dayjs.hour() * 60 + start_dayjs.minute();
+  const end_minutes = end_dayjs.hour() * 60 + end_dayjs.minute();
+  const duration_minutes = Math.max(1, end_minutes - start_minutes); // 최소 1분
   
   return {
     id: crypto.randomUUID(),
-    date: dayjs(start_time).format('YYYY-MM-DD'),
-    start_time: dayjs(start_time).format('HH:mm:ss'),
-    end_time: dayjs(end_time).format('HH:mm:ss'),
-    duration_seconds,
+    date: start_dayjs.format('YYYY-MM-DD'),
+    start_time: start_dayjs.format('HH:mm'),
+    end_time: end_dayjs.format('HH:mm'),
+    duration_minutes,
   };
 };
 
-// 세션의 duration을 초 단위로 가져오기 (기존 데이터 호환)
-const getSessionSeconds = (session: WorkSession): number => {
-  if (session.duration_seconds !== undefined) {
-    return session.duration_seconds;
+// 세션의 duration을 분 단위로 가져오기 (기존 데이터 호환)
+const getSessionMinutes = (session: WorkSession): number => {
+  if (session.duration_minutes !== undefined) {
+    return session.duration_minutes;
   }
-  // 기존 데이터는 duration_minutes 필드가 있을 수 있음
-  const legacy = session as unknown as { duration_minutes?: number };
-  if (legacy.duration_minutes !== undefined) {
-    return legacy.duration_minutes * 60;
+  // 기존 데이터는 duration_seconds 필드가 있을 수 있음
+  const legacy = session as unknown as { duration_seconds?: number };
+  if (legacy.duration_seconds !== undefined) {
+    return Math.ceil(legacy.duration_seconds / 60);
   }
   return 0;
 };
 
-// 세션들의 총 시간을 분으로 계산 (초 합산 후 올림)
+// 세션들의 총 시간을 분으로 계산
 const calculateTotalMinutes = (sessions: WorkSession[]): number => {
-  const total_seconds = sessions.reduce((sum, s) => sum + getSessionSeconds(s), 0);
-  return Math.max(1, Math.ceil(total_seconds / 60));
+  const total_minutes = sessions.reduce((sum, s) => sum + getSessionMinutes(s), 0);
+  return Math.max(1, total_minutes);
 };
 
 // 기본 업무명/카테고리명 옵션
@@ -380,18 +387,19 @@ export const useWorkStore = create<WorkStore>()(
         const target_date = new_date || current_session.date || record.date;
         const is_date_changed = new_date && new_date !== (current_session.date || record.date);
 
-        // 시간 문자열을 분으로 변환 (HH:mm:ss -> 분)
+        // 시간 문자열을 분으로 변환 (HH:mm -> 분)
         const timeToMinutes = (time: string): number => {
-          const [h, m, s] = time.split(':').map(Number);
-          return h * 60 + m + (s || 0) / 60;
+          const parts = time.split(':').map(Number);
+          const h = parts[0] || 0;
+          const m = parts[1] || 0;
+          return h * 60 + m;
         };
 
-        // 분을 시간 문자열로 변환 (분 -> HH:mm:ss)
+        // 분을 시간 문자열로 변환 (분 -> HH:mm)
         const minutesToTime = (mins: number): string => {
           const h = Math.floor(mins / 60);
           const m = Math.floor(mins % 60);
-          const s = Math.round((mins % 1) * 60);
-          return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+          return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
         };
 
         let adjusted_start = new_start;
@@ -498,10 +506,10 @@ export const useWorkStore = create<WorkStore>()(
         }
 
         // 세션 업데이트
-        const duration_seconds = Math.round((final_end_mins - final_start_mins) * 60);
+        const duration_minutes = Math.max(1, final_end_mins - final_start_mins);
         const updated_sessions = record.sessions.map((s, idx) =>
           idx === session_index
-            ? { ...s, date: target_date, start_time: adjusted_start, end_time: adjusted_end, duration_seconds }
+            ? { ...s, date: target_date, start_time: adjusted_start, end_time: adjusted_end, duration_minutes }
             : s
         );
 
@@ -514,7 +522,7 @@ export const useWorkStore = create<WorkStore>()(
         });
 
         // 레코드 업데이트 (총 시간, 시작/종료 시간 재계산)
-        const total_seconds = updated_sessions.reduce((sum, s) => sum + (s.duration_seconds || 0), 0);
+        const total_minutes = updated_sessions.reduce((sum, s) => sum + getSessionMinutes(s), 0);
 
         set((state) => ({
           records: state.records.map((r) =>
@@ -522,7 +530,7 @@ export const useWorkStore = create<WorkStore>()(
               ? {
                   ...r,
                   sessions: sorted_sessions,
-                  duration_minutes: Math.max(1, Math.ceil(total_seconds / 60)),
+                  duration_minutes: Math.max(1, total_minutes),
                   start_time: sorted_sessions[0]?.start_time || r.start_time,
                   end_time: sorted_sessions[sorted_sessions.length - 1]?.end_time || r.end_time,
                 }
