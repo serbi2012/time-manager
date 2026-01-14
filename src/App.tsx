@@ -1,6 +1,16 @@
 import { ConfigProvider, Layout, Typography, theme, message, Menu } from "antd";
-import { ClockCircleOutlined, CalendarOutlined, HomeOutlined } from "@ant-design/icons";
-import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import {
+    ClockCircleOutlined,
+    CalendarOutlined,
+    HomeOutlined,
+} from "@ant-design/icons";
+import {
+    BrowserRouter,
+    Routes,
+    Route,
+    useNavigate,
+    useLocation,
+} from "react-router-dom";
 import WorkRecordTable from "./components/WorkRecordTable";
 import WorkTemplateList from "./components/WorkTemplateList";
 import DailyGanttChart from "./components/DailyGanttChart";

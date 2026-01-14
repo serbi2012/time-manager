@@ -202,7 +202,8 @@ export default function DailyGanttChart() {
                     // 새 그룹 생성 (가상 레코드)
                     const virtual_record: WorkRecord = {
                         id: "virtual-running-record",
-                        project_code: timer.active_form_data.project_code || "A00_00000",
+                        project_code:
+                            timer.active_form_data.project_code || "A00_00000",
                         work_name: timer.active_form_data.work_name,
                         task_name: timer.active_form_data.task_name || "",
                         deal_name: timer.active_form_data.deal_name || "",
@@ -1129,10 +1130,7 @@ export default function DailyGanttChart() {
                 cancelText="취소"
             >
                 <Form form={form} layout="vertical">
-                    <Form.Item
-                        name="project_code"
-                        label="프로젝트 코드"
-                    >
+                    <Form.Item name="project_code" label="프로젝트 코드">
                         <Input placeholder="예: A25_01846 (미입력 시 A00_00000)" />
                     </Form.Item>
 

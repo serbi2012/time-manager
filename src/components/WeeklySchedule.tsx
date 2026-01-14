@@ -70,9 +70,9 @@ const WeeklySchedule = () => {
         dayjs().startOf("isoWeek")
     );
 
-    // 수정 가능한 프로젝트 코드/진행상태 상태
+    // 수정 가능한 진행상태 상태
     const [editable_data, setEditableData] = useState<
-        Record<string, { project_code: string; status: string }>
+        Record<string, { status: string }>
     >({});
 
     // 주간 범위의 날짜들 (월~일)
@@ -95,7 +95,10 @@ const WeeklySchedule = () => {
                 const session_date = session.date || record.date;
                 return session_date >= week_start && session_date <= week_end;
             });
-            return has_session_in_week || (record.date >= week_start && record.date <= week_end);
+            return (
+                has_session_in_week ||
+                (record.date >= week_start && record.date <= week_end)
+            );
         });
     }, [records, selected_week_start]);
 
@@ -107,9 +110,14 @@ const WeeklySchedule = () => {
     };
 
     // 전체 기간 누적시간 계산 (work_name + deal_name 기준)
-    const getTotalMinutesForDeal = (work_name: string, deal_name: string): number => {
+    const getTotalMinutesForDeal = (
+        work_name: string,
+        deal_name: string
+    ): number => {
         return records
-            .filter((r) => r.work_name === work_name && r.deal_name === deal_name)
+            .filter(
+                (r) => r.work_name === work_name && r.deal_name === deal_name
+            )
             .reduce((sum, r) => sum + (r.duration_minutes || 0), 0);
     };
 
@@ -164,9 +172,11 @@ const WeeklySchedule = () => {
                     const edited = editable_data[work_key];
 
                     work_map.set(work_key, {
-                        project_code: edited?.project_code || record.project_code || "A00_00000",
+                        project_code: record.project_code || "A00_00000",
                         work_name: record.work_name,
-                        status: edited?.status || (record.is_completed ? "완료" : "진행중"),
+                        status:
+                            edited?.status ||
+                            (record.is_completed ? "완료" : "진행중"),
                         start_date: getFirstStartDate(record.work_name),
                         total_minutes: getTotalMinutesForWork(record.work_name),
                         deals: [],
@@ -176,10 +186,17 @@ const WeeklySchedule = () => {
                 const work_group = work_map.get(work_key)!;
 
                 // deal 추가 (중복 방지)
-                if (!work_group.deals.some((d) => d.deal_name === record.deal_name)) {
+                if (
+                    !work_group.deals.some(
+                        (d) => d.deal_name === record.deal_name
+                    )
+                ) {
                     work_group.deals.push({
                         deal_name: record.deal_name || record.work_name,
-                        total_minutes: getTotalMinutesForDeal(record.work_name, record.deal_name),
+                        total_minutes: getTotalMinutesForDeal(
+                            record.work_name,
+                            record.deal_name
+                        ),
                     });
                 }
             });
@@ -196,26 +213,13 @@ const WeeklySchedule = () => {
         return groups;
     }, [week_dates, weekly_records, records, editable_data]);
 
-    // 프로젝트 코드 수정
-    const handleProjectCodeChange = (work_name: string, value: string) => {
-        setEditableData((prev) => ({
-            ...prev,
-            [work_name]: {
-                ...prev[work_name],
-                project_code: value,
-                status: prev[work_name]?.status || "진행중",
-            },
-        }));
-    };
 
     // 진행상태 수정
     const handleStatusChange = (work_name: string, value: string) => {
         setEditableData((prev) => ({
             ...prev,
             [work_name]: {
-                ...prev[work_name],
                 status: value,
-                project_code: prev[work_name]?.project_code || "A00_00000",
             },
         }));
     };
@@ -229,10 +233,16 @@ const WeeklySchedule = () => {
             text += `${date.format("M/D")} (${day_group.day_name})\n`;
 
             day_group.works.forEach((work) => {
-                text += `[${work.project_code}] ${work.work_name} (진행상태: ${work.status}, 시작일자: ${work.start_date}, 누적시간: ${formatMinutes(work.total_minutes)})\n`;
+                text += `[${work.project_code}] ${work.work_name} (진행상태: ${
+                    work.status
+                }, 시작일자: ${work.start_date}, 누적시간: ${formatMinutes(
+                    work.total_minutes
+                )})\n`;
 
                 work.deals.forEach((deal) => {
-                    text += `> ${deal.deal_name} (누적시간: ${formatMinutes(deal.total_minutes)})\n`;
+                    text += `> ${deal.deal_name} (누적시간: ${formatMinutes(
+                        deal.total_minutes
+                    )})\n`;
                 });
             });
         });
@@ -272,16 +282,27 @@ const WeeklySchedule = () => {
                     </Title>
 
                     <Space>
-                        <Button icon={<LeftOutlined />} onClick={handlePrevWeek} />
+                        <Button
+                            icon={<LeftOutlined />}
+                            onClick={handlePrevWeek}
+                        />
                         <DatePicker
                             picker="week"
                             value={selected_week_start}
-                            onChange={(date) => date && setSelectedWeekStart(date.startOf("isoWeek"))}
+                            onChange={(date) =>
+                                date &&
+                                setSelectedWeekStart(date.startOf("isoWeek"))
+                            }
                             format={(value) =>
-                                `${value.format("YYYY년 M월")} ${Math.ceil(value.date() / 7)}주차`
+                                `${value.format("YYYY년 M월")} ${Math.ceil(
+                                    value.date() / 7
+                                )}주차`
                             }
                         />
-                        <Button icon={<RightOutlined />} onClick={handleNextWeek} />
+                        <Button
+                            icon={<RightOutlined />}
+                            onClick={handleNextWeek}
+                        />
                         <Button onClick={handleThisWeek}>이번 주</Button>
                     </Space>
 
@@ -318,7 +339,8 @@ const WeeklySchedule = () => {
                                 className="day-card"
                                 title={
                                     <Text strong style={{ fontSize: 16 }}>
-                                        {dayjs(day_group.date).format("M/D")} ({day_group.day_name})
+                                        {dayjs(day_group.date).format("M/D")} (
+                                        {day_group.day_name})
                                     </Text>
                                 }
                             >
@@ -327,21 +349,13 @@ const WeeklySchedule = () => {
                                         {/* 작업 헤더 */}
                                         <div className="work-header">
                                             <Space wrap>
-                                                <Text>[</Text>
-                                                <Input
-                                                    size="small"
-                                                    value={work.project_code}
-                                                    onChange={(e) =>
-                                                        handleProjectCodeChange(
-                                                            work.work_name,
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    style={{ width: 100 }}
-                                                />
-                                                <Text>]</Text>
-                                                <Text strong>{work.work_name}</Text>
-                                                <Text type="secondary">(진행상태:</Text>
+                                                <Text>[{work.project_code}]</Text>
+                                                <Text strong>
+                                                    {work.work_name}
+                                                </Text>
+                                                <Text type="secondary">
+                                                    (진행상태:
+                                                </Text>
                                                 <Input
                                                     size="small"
                                                     value={work.status}
@@ -354,28 +368,48 @@ const WeeklySchedule = () => {
                                                     style={{ width: 80 }}
                                                 />
                                                 <Text type="secondary">
-                                                    , 시작일자: {work.start_date}, 누적시간:{" "}
-                                                    {formatMinutes(work.total_minutes)})
+                                                    , 시작일자:{" "}
+                                                    {work.start_date}, 누적시간:{" "}
+                                                    {formatMinutes(
+                                                        work.total_minutes
+                                                    )}
+                                                    )
                                                 </Text>
                                             </Space>
                                         </div>
 
                                         {/* 거래 목록 */}
                                         <div className="deal-list">
-                                            {work.deals.map((deal, deal_idx) => (
-                                                <div key={deal_idx} className="deal-item">
-                                                    <Text type="secondary">&gt; </Text>
-                                                    <Text>{deal.deal_name}</Text>
-                                                    <Text type="secondary">
-                                                        {" "}
-                                                        (누적시간: {formatMinutes(deal.total_minutes)})
-                                                    </Text>
-                                                </div>
-                                            ))}
+                                            {work.deals.map(
+                                                (deal, deal_idx) => (
+                                                    <div
+                                                        key={deal_idx}
+                                                        className="deal-item"
+                                                    >
+                                                        <Text type="secondary">
+                                                            &gt;{" "}
+                                                        </Text>
+                                                        <Text>
+                                                            {deal.deal_name}
+                                                        </Text>
+                                                        <Text type="secondary">
+                                                            {" "}
+                                                            (누적시간:{" "}
+                                                            {formatMinutes(
+                                                                deal.total_minutes
+                                                            )}
+                                                            )
+                                                        </Text>
+                                                    </div>
+                                                )
+                                            )}
                                         </div>
 
-                                        {work_idx < day_group.works.length - 1 && (
-                                            <Divider style={{ margin: "8px 0" }} />
+                                        {work_idx <
+                                            day_group.works.length - 1 && (
+                                            <Divider
+                                                style={{ margin: "8px 0" }}
+                                            />
                                         )}
                                     </div>
                                 ))}
@@ -390,7 +424,9 @@ const WeeklySchedule = () => {
                         <Divider />
                         <div className="preview-section">
                             <Title level={5}>복사 미리보기</Title>
-                            <pre className="copy-preview">{generateCopyText()}</pre>
+                            <pre className="copy-preview">
+                                {generateCopyText()}
+                            </pre>
                         </div>
                     </>
                 )}

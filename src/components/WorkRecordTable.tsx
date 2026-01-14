@@ -1138,10 +1138,7 @@ export default function WorkRecordTable() {
                 cancelText="취소"
             >
                 <Form form={form} layout="vertical">
-                    <Form.Item
-                        name="project_code"
-                        label="프로젝트 코드"
-                    >
+                    <Form.Item name="project_code" label="프로젝트 코드">
                         <Input placeholder="예: A25_01846 (미입력 시 A00_00000)" />
                     </Form.Item>
 
@@ -1354,10 +1351,7 @@ export default function WorkRecordTable() {
                 cancelText="취소"
             >
                 <Form form={edit_form} layout="vertical">
-                    <Form.Item
-                        name="project_code"
-                        label="프로젝트 코드"
-                    >
+                    <Form.Item name="project_code" label="프로젝트 코드">
                         <Input placeholder="예: A25_01846 (미입력 시 A00_00000)" />
                     </Form.Item>
 
