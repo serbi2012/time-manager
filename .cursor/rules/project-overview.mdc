@@ -1,0 +1,519 @@
+---
+description: 업무 시간 관리 프로젝트의 전체 개요, 아키텍처, 데이터 구조, 컴포넌트 설명
+globs: 
+alwaysApply: false
+---
+
+# 업무 시간 관리 (Time Manager) 프로젝트
+
+## 프로젝트 개요
+
+하루 동안 회사에서 수행한 작업을 실시간으로 기록하고 관리하는 웹 애플리케이션입니다.
+타이머 기반으로 작업 시간을 측정하고, 일간/주간 단위로 작업 기록을 조회할 수 있습니다.
+
+### 주요 기능
+- **실시간 타이머**: 작업 시작/정지/전환
+- **작업 기록 관리**: 작업 추가, 수정, 삭제, 완료 처리
+- **작업 프리셋**: 자주 사용하는 작업을 템플릿으로 저장
+- **일간 간트차트**: 하루의 작업 시각화, 드래그로 작업 추가
+- **주간 일정**: 주간 작업 조회 및 복사 형식 제공
+- **데이터 영속성**: LocalStorage에 자동 저장
+- **다중 탭 동기화**: 여러 브라우저 탭 간 타이머 상태 동기화
+
+---
+
+## 기술 스택
+
+### Core
+- **React 19** - UI 라이브러리
+- **TypeScript 5.9** - 정적 타입
+- **Vite 7** - 빌드 도구
+
+### State Management
+- **Zustand 5** - 전역 상태 관리
+- **zustand/middleware/persist** - LocalStorage 영속화
+
+### UI Components
+- **Ant Design 6** - UI 컴포넌트 라이브러리
+- **@ant-design/icons** - 아이콘
+
+### Routing
+- **React Router DOM 7** - 클라이언트 사이드 라우팅
+
+### Date/Time
+- **dayjs** - 날짜/시간 처리
+
+### Deployment
+- **Vercel** - 자동 배포 (GitHub 연동)
+- **GitHub** - 소스 코드 저장소
+
+---
+
+## 프로젝트 구조
+
+```
+src/
+├── App.tsx                 # 메인 앱 컴포넌트, 라우팅 설정
+├── App.css                 # 전역 스타일
+├── main.tsx               # 앱 진입점
+├── index.css              # 기본 CSS
+├── components/
+│   ├── WorkRecordTable.tsx    # 작업 기록 테이블 (메인)
+│   ├── WorkTemplateList.tsx   # 작업 프리셋 목록
+│   ├── DailyGanttChart.tsx    # 일간 간트차트
+│   └── WeeklySchedule.tsx     # 주간 일정 페이지
+├── store/
+│   └── useWorkStore.ts        # Zustand 전역 상태 관리
+└── types/
+    └── index.ts               # TypeScript 타입 정의
+```
+
+---
+
+## 데이터 구조 (Types)
+
+### WorkSession
+개별 작업 세션 (시작/정지 한 번의 기록)
+
+```typescript
+interface WorkSession {
+  id: string;                  // 고유 ID (UUID)
+  date: string;                // 날짜 (YYYY-MM-DD)
+  start_time: string;          // 시작 시간 (HH:mm)
+  end_time: string;            // 종료 시간 (HH:mm)
+  duration_minutes: number;    // 소요 시간(분)
+}
+```
+
+### WorkRecord
+작업 기록 (여러 세션을 포함)
+
+```typescript
+interface WorkRecord {
+  id: string;                  // 고유 ID (UUID)
+  project_code: string;        // 프로젝트 코드 (예: A25_01846, 기본값: A00_00000)
+  work_name: string;           // 작업명 (예: 5.6 프레임워크 FE)
+  task_name: string;           // 업무명 (예: 개발, 작업, 분석)
+  deal_name: string;           // 거래명/상세작업 (예: 5.6 테스트 케이스 확인)
+  category_name: string;       // 카테고리명 (예: 개발, 문서작업, 회의)
+  duration_minutes: number;    // 총 시간(분)
+  note: string;                // 비고
+  start_time: string;          // 첫 시작 시간 (HH:mm)
+  end_time: string;            // 마지막 종료 시간 (HH:mm)
+  date: string;                // 날짜 (YYYY-MM-DD)
+  sessions: WorkSession[];     // 세션 이력
+  is_completed: boolean;       // 완료 여부
+  completed_at?: string;       // 완료 시각 (ISO string)
+}
+```
+
+### WorkTemplate
+작업 프리셋/템플릿
+
+```typescript
+interface WorkTemplate {
+  id: string;                  // 고유 ID (UUID)
+  project_code: string;        // 프로젝트 코드
+  work_name: string;           // 작업명
+  task_name: string;           // 업무명
+  deal_name: string;           // 거래명
+  category_name: string;       // 카테고리명
+  note: string;                // 비고
+  color: string;               // 구분용 색상 (HEX)
+  created_at: string;          // 생성 시각 (ISO string)
+}
+```
+
+### TimerState
+타이머 상태 (LocalStorage에 저장되어 브라우저 재시작/탭 간 동기화)
+
+```typescript
+interface TimerState {
+  is_running: boolean;                     // 실행 중 여부
+  start_time: number | null;               // 시작 시각 (timestamp)
+  active_template_id: string | null;       // 현재 진행 중인 템플릿 ID
+  active_form_data: WorkFormData | null;   // 진행 중인 작업 정보
+}
+```
+
+### WorkFormData
+작업 입력 폼 데이터
+
+```typescript
+interface WorkFormData {
+  project_code: string;
+  work_name: string;
+  task_name: string;
+  deal_name: string;
+  category_name: string;
+  note: string;
+}
+```
+
+---
+
+## Zustand Store (useWorkStore)
+
+### 상태 (State)
+```typescript
+{
+  records: WorkRecord[];           // 모든 작업 기록
+  templates: WorkTemplate[];       // 모든 작업 프리셋
+  timer: TimerState;              // 타이머 상태
+  form_data: WorkFormData;        // 현재 폼 데이터
+  selected_date: string;          // 선택된 날짜 (YYYY-MM-DD)
+  custom_task_options: string[];  // 사용자 정의 업무명 옵션
+  custom_category_options: string[]; // 사용자 정의 카테고리명 옵션
+}
+```
+
+### 주요 액션 (Actions)
+
+#### 타이머
+- `startTimer(template_id?)`: 타이머 시작
+- `stopTimer()`: 타이머 정지 및 세션 저장
+- `switchTemplate(template_id)`: 현재 작업 저장 후 새 작업으로 전환
+- `getElapsedSeconds()`: 현재 경과 시간(초) 계산
+- `syncFromStorage()`: 다른 탭과 상태 동기화
+
+#### 레코드
+- `addRecord(record)`: 작업 기록 추가
+- `updateRecord(id, data)`: 작업 기록 수정
+- `deleteRecord(id)`: 작업 기록 삭제
+- `markAsCompleted(id)`: 작업 완료 처리
+- `markAsIncomplete(id)`: 완료 취소
+
+#### 세션
+- `updateSession(record_id, session_id, start, end, date?)`: 세션 시간/날짜 수정 (충돌 자동 조정)
+- `deleteSession(record_id, session_id)`: 세션 삭제
+
+#### 템플릿
+- `addTemplate(template)`: 프리셋 추가
+- `updateTemplate(id, data)`: 프리셋 수정
+- `deleteTemplate(id)`: 프리셋 삭제
+- `applyTemplate(template_id)`: 폼에 템플릿 적용
+
+#### 필터링
+- `getFilteredRecords()`: 선택 날짜의 레코드 조회
+- `getIncompleteRecords()`: 미완료 작업 조회 (과거 미완료 포함)
+- `getCompletedRecords()`: 완료된 작업 조회
+
+#### 자동완성
+- `getAutoCompleteOptions(field)`: 필드별 자동완성 옵션
+- `addCustomTaskOption(option)`: 사용자 정의 업무명 추가
+- `addCustomCategoryOption(option)`: 사용자 정의 카테고리명 추가
+
+### 기본 옵션 값
+
+```typescript
+// 업무명 기본 옵션
+DEFAULT_TASK_OPTIONS = ['개발', '작업', '분석', '설계', '테스트', '기타'];
+
+// 카테고리명 기본 옵션
+DEFAULT_CATEGORY_OPTIONS = ['개발', '문서작업', '회의', '환경세팅', '코드리뷰', '테스트', '기타'];
+
+// 템플릿 색상 팔레트
+TEMPLATE_COLORS = [
+  '#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1',
+  '#13c2c2', '#eb2f96', '#fa8c16', '#a0d911', '#2f54eb',
+];
+
+// 프로젝트 코드 기본값
+DEFAULT_PROJECT_CODE = 'A00_00000';
+```
+
+### 데이터 영속화
+
+- **Storage Key**: `work-time-storage`
+- **Persist Fields**: `records`, `templates`, `timer`, `custom_task_options`, `custom_category_options`
+- **탭 동기화**: `window.addEventListener('storage', ...)` 이벤트로 다중 탭 동기화
+
+---
+
+## 컴포넌트 상세
+
+### App.tsx
+- React Router 설정 (BrowserRouter)
+- 라우트: `/` (일간 기록), `/weekly` (주간 일정)
+- 상단 헤더 메뉴 (일간 기록 / 주간 일정)
+- ConfigProvider로 Ant Design 테마 설정
+
+### WorkRecordTable.tsx (~1750줄)
+메인 작업 기록 테이블 컴포넌트
+
+**주요 기능:**
+- 작업 기록 테이블 표시
+- 실시간 타이머 표시 (1초마다 업데이트)
+- 작업 시작/정지/전환 버튼
+- 새 작업 추가 모달
+- 작업 수정 모달
+- 완료된 작업 모달
+- 세션 이력 확장 (expandedRowRender)
+- 세션 시간/날짜 수정 (충돌 시 자동 조정)
+- 클립보드 복사 기능
+- 날짜 필터
+
+**확장 가능 Row (SessionEditTable):**
+- 개별 세션 시간/날짜 수정
+- 세션 삭제
+- 시간 충돌 감지 및 자동 조정
+
+**표시 컬럼:**
+1. 타이머 액션 (시작/정지 버튼)
+2. 거래명 (볼드, 타이머 표시)
+3. 작업명 (파란색 태그)
+4. 업무명 (청록색 태그)
+5. 카테고리 (색상 태그)
+6. 소요 시간
+7. 시작/종료 시간
+8. 액션 (수정/삭제/완료)
+
+### WorkTemplateList.tsx (~635줄)
+작업 프리셋 목록 컴포넌트
+
+**주요 기능:**
+- 프리셋 카드 목록 표시
+- 프리셋 추가/수정/삭제
+- 프리셋 클릭 시 작업 시작
+- 색상 선택기
+- 사용자 정의 업무명/카테고리명 추가
+
+**카드 레이아웃:**
+- 상단: 작업명 태그 (색상)
+- 중앙: 거래명 (제목)
+- 하단: 업무명 · 카테고리
+- 호버 시: 수정/삭제 버튼 표시
+- 항상 표시: 작업 시작 버튼
+
+### DailyGanttChart.tsx (~1334줄)
+일간 간트차트 컴포넌트
+
+**주요 기능:**
+- 선택 날짜의 작업을 간트차트로 시각화
+- 거래명(deal_name) 기준으로 그룹화
+- 실시간 진행 중인 작업 표시 (1분마다 업데이트)
+- 드래그로 시간 범위 선택 → 작업 추가
+- 충돌 방지 (기존 세션과 겹치지 않도록 자동 조정)
+- 마우스 오버 시 상세 정보 툴팁
+
+**드래그 앤 드롭:**
+- 빈 영역에서 드래그 시작
+- 기존 세션과 겹치지 않도록 자동 클램핑
+- 최소 5분 이상 선택 시 작업 추가 모달 오픈
+- 같은 work_name + deal_name 있으면 기존 레코드에 세션 추가
+
+**간트 바 스타일:**
+- 진행 중: 파란색 그림자 + 펄스 애니메이션
+- 완료: 일반 색상
+- 최소 너비 보장 (짧은 세션도 표시)
+
+### WeeklySchedule.tsx (~519줄)
+주간 일정 페이지 컴포넌트
+
+**주요 기능:**
+- 주간 선택기 (DatePicker, 이전/다음 주 버튼)
+- 날짜별 작업 그룹화
+- 진행상태 수정 (Input)
+- 복사 형식 미리보기
+- 클립보드 복사
+
+**복사 형식:**
+```
+1/14 (수)
+[A00_00000] 작업명 (진행상태: 진행중, 시작일자: 1/14(수), 누적시간: 02:30)
+> 거래명 (누적시간: 01:30)
+> 거래명2 (누적시간: 01:00)
+```
+
+**데이터 그룹화:**
+- 날짜별 → 작업별 → 거래별 그룹화
+- 전체 기간 누적시간 계산
+- 작업의 첫 시작일 자동 계산
+
+---
+
+## 라우팅
+
+| 경로 | 컴포넌트 | 설명 |
+|------|----------|------|
+| `/` | MainPage | 일간 기록 (사이드바 + 간트차트 + 테이블) |
+| `/weekly` | WeeklySchedule | 주간 일정 조회 및 복사 |
+
+---
+
+## 레이아웃 구조
+
+### 일간 기록 페이지 (/)
+```
+┌─────────────────────────────────────────────────────┐
+│ Header (업무 시간 관리 | 일간 기록 | 주간 일정)     │
+├───────────────┬─────────────────────────────────────┤
+│  Sider        │  Content                            │
+│  (300px)      │                                     │
+│               │  ┌───────────────────────────────┐  │
+│  작업 프리셋   │  │ DailyGanttChart               │  │
+│  목록         │  └───────────────────────────────┘  │
+│               │                                     │
+│  - 프리셋1    │  ┌───────────────────────────────┐  │
+│  - 프리셋2    │  │ WorkRecordTable               │  │
+│  - ...        │  │                               │  │
+│               │  │ (작업 기록 테이블)            │  │
+│  [+ 추가]     │  └───────────────────────────────┘  │
+└───────────────┴─────────────────────────────────────┘
+```
+
+### 주간 일정 페이지 (/weekly)
+```
+┌─────────────────────────────────────────────────────┐
+│ Header (업무 시간 관리 | 일간 기록 | 주간 일정)     │
+├─────────────────────────────────────────────────────┤
+│ Content                                             │
+│ ┌─────────────────────────────────────────────────┐ │
+│ │ 주간 일정  [<] 2026년 1월 2주차 [>] [이번주] [복사]│ │
+│ ├─────────────────────────────────────────────────┤ │
+│ │ 1/14 (수)                                       │ │
+│ │ [A00_00000] 작업명 (진행상태: 진행중, ...)      │ │
+│ │ > 거래명 (누적시간: 01:30)                     │ │
+│ ├─────────────────────────────────────────────────┤ │
+│ │ 복사 미리보기                                   │ │
+│ │ ┌─────────────────────────────────────────────┐ │ │
+│ │ │ 1/14 (수)                                   │ │ │
+│ │ │ [A00_00000] 작업명 ...                      │ │ │
+│ │ └─────────────────────────────────────────────┘ │ │
+│ └─────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## 핵심 로직
+
+### 타이머 동기화 (다중 탭)
+```typescript
+// 타이머 상태는 start_time과 is_running만 저장
+// 경과 시간은 실시간 계산
+getElapsedSeconds(): number {
+  if (!timer.is_running || !timer.start_time) return 0;
+  return Math.floor((Date.now() - timer.start_time) / 1000);
+}
+
+// storage 이벤트로 다른 탭과 동기화
+window.addEventListener('storage', (e) => {
+  if (e.key === 'work-time-storage') {
+    syncFromStorage();
+  }
+});
+```
+
+### 작업 기록 병합
+같은 날짜 + 같은 work_name + 같은 deal_name이면 새 세션을 기존 레코드에 추가:
+```typescript
+const existing_record = findExistingRecord(records, date, work_name, deal_name);
+if (existing_record) {
+  // 기존 레코드에 세션 추가
+  existing_record.sessions.push(new_session);
+  existing_record.duration_minutes = calculateTotalMinutes(sessions);
+} else {
+  // 새 레코드 생성
+}
+```
+
+### 세션 시간 충돌 감지 및 자동 조정
+```typescript
+updateSession(record_id, session_id, new_start, new_end, new_date?) {
+  // 같은 날짜의 다른 세션들과 시간 충돌 체크
+  // 충돌 시 자동으로 시작/종료 시간 조정
+  // 날짜 변경 시에는 알림만 (자동 조정 X)
+}
+```
+
+### 간트차트 드래그 추가
+```typescript
+// 마우스 위치 → 분 단위 시간 변환
+const xToMinutes = (x: number): number => {
+  return Math.round(((x / width) * range + start) / 5) * 5; // 5분 단위 스냅
+};
+
+// 충돌 방지: 가능한 범위 계산
+const getAvailableRange = (anchor_mins: number) => {
+  // 기존 세션들 사이에서 드래그 가능한 최대 범위 반환
+};
+```
+
+---
+
+## 스타일 가이드
+
+### 색상
+- Primary: `#1890ff` (Ant Design 기본 파란색)
+- Success: `#52c41a` (녹색)
+- Warning: `#faad14` (노란색)
+- Danger: `#f5222d` (빨간색)
+- Background: `#f5f7fa` (연한 회색)
+
+### 컴포넌트 스타일
+- Border Radius: 8px (기본), 12px (카드)
+- Box Shadow: `0 2px 8px rgba(0, 0, 0, 0.06)`
+- Header Gradient: `linear-gradient(135deg, #1890ff 0%, #096dd9 100%)`
+
+### 반응형
+- 1024px 이하: 사이드바가 상단으로 이동
+
+---
+
+## 네이밍 컨벤션
+
+### 파일
+- 컴포넌트: `PascalCase.tsx` (예: `WorkRecordTable.tsx`)
+- 훅: `camelCase.ts` (예: `useWorkStore.ts`)
+- 유틸리티: `snake_case.ts`
+- 타입: `index.ts` (폴더별 집합)
+
+### 코드
+- 변수명: `snake_case` (예: `selected_date`, `work_name`)
+- 함수명: `camelCase` (예: `handleAddNewWork`, `formatDuration`)
+- 컴포넌트명: `PascalCase` (예: `WorkRecordTable`)
+- 상수: `UPPER_SNAKE_CASE` (예: `DEFAULT_TASK_OPTIONS`)
+
+---
+
+## 배포
+
+### GitHub Repository
+- URL: https://github.com/serbi2012/time-manager
+- Branch: `master`
+
+### Vercel
+- 자동 배포: `git push` 시 자동 빌드/배포
+- Build Command: `tsc -b && vite build`
+- Output Directory: `dist`
+
+---
+
+## 개발 명령어
+
+```bash
+# 개발 서버 실행
+npm run dev
+
+# 프로덕션 빌드
+npm run build
+
+# 빌드 미리보기
+npm run preview
+
+# 린트
+npm run lint
+
+# 타입 체크
+npx tsc --noEmit
+```
+
+---
+
+## 알려진 제한사항
+
+1. **Node.js 버전**: Vite 7은 Node.js 20.19+ 또는 22.12+ 필요 (현재 20.15.1에서 경고 발생, 동작은 함)
+2. **시간 단위**: 분 단위로만 처리 (초는 무시)
+3. **데이터 저장**: LocalStorage만 사용 (서버 없음)
+4. **브라우저 호환**: 최신 브라우저 필요 (crypto.randomUUID 사용)
