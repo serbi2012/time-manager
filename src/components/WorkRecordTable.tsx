@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import type { InputRef } from "antd";
 import {
     Table,
     Card,
@@ -486,6 +487,12 @@ export default function WorkRecordTable() {
     const [new_category_input, setNewCategoryInput] = useState("");
     const [edit_task_input, setEditTaskInput] = useState("");
     const [edit_category_input, setEditCategoryInput] = useState("");
+
+    // Input refs for focus management
+    const new_task_input_ref = useRef<InputRef>(null);
+    const new_category_input_ref = useRef<InputRef>(null);
+    const edit_task_input_ref = useRef<InputRef>(null);
+    const edit_category_input_ref = useRef<InputRef>(null);
 
     // 작업명/거래명 자동완성 옵션 (records, templates 변경 시 갱신)
     const work_name_options = useMemo(() => {
@@ -1180,8 +1187,13 @@ export default function WorkRecordTable() {
                                             onMouseDown={(e) =>
                                                 e.stopPropagation()
                                             }
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setTimeout(() => new_task_input_ref.current?.focus(), 0);
+                                            }}
                                         >
                                             <Input
+                                                ref={new_task_input_ref}
                                                 placeholder="새 업무명"
                                                 value={new_task_input}
                                                 onChange={(e) =>
@@ -1239,8 +1251,13 @@ export default function WorkRecordTable() {
                                             onMouseDown={(e) =>
                                                 e.stopPropagation()
                                             }
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setTimeout(() => new_category_input_ref.current?.focus(), 0);
+                                            }}
                                         >
                                             <Input
+                                                ref={new_category_input_ref}
                                                 placeholder="새 카테고리"
                                                 value={new_category_input}
                                                 onChange={(e) =>
@@ -1353,8 +1370,13 @@ export default function WorkRecordTable() {
                                             onMouseDown={(e) =>
                                                 e.stopPropagation()
                                             }
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setTimeout(() => edit_task_input_ref.current?.focus(), 0);
+                                            }}
                                         >
                                             <Input
+                                                ref={edit_task_input_ref}
                                                 placeholder="새 업무명"
                                                 value={edit_task_input}
                                                 onChange={(e) =>
@@ -1421,8 +1443,13 @@ export default function WorkRecordTable() {
                                             onMouseDown={(e) =>
                                                 e.stopPropagation()
                                             }
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setTimeout(() => edit_category_input_ref.current?.focus(), 0);
+                                            }}
                                         >
                                             <Input
+                                                ref={edit_category_input_ref}
                                                 placeholder="새 카테고리"
                                                 value={edit_category_input}
                                                 onChange={(e) =>

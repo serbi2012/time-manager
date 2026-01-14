@@ -1,4 +1,5 @@
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
+import type { InputRef } from "antd";
 import {
     Card,
     Typography,
@@ -130,6 +131,10 @@ export default function DailyGanttChart() {
     // 사용자 정의 옵션 입력
     const [new_task_input, setNewTaskInput] = useState("");
     const [new_category_input, setNewCategoryInput] = useState("");
+    
+    // Input refs for focus management
+    const new_task_input_ref = useRef<InputRef>(null);
+    const new_category_input_ref = useRef<InputRef>(null);
 
     // 거래명 기준으로 세션을 그룹화 (진행 중인 작업 포함)
     const grouped_works = useMemo(() => {
@@ -1175,8 +1180,13 @@ export default function DailyGanttChart() {
                                             onMouseDown={(e) =>
                                                 e.stopPropagation()
                                             }
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setTimeout(() => new_task_input_ref.current?.focus(), 0);
+                                            }}
                                         >
                                             <Input
+                                                ref={new_task_input_ref}
                                                 placeholder="새 업무명"
                                                 value={new_task_input}
                                                 onChange={(e) =>
@@ -1234,8 +1244,13 @@ export default function DailyGanttChart() {
                                             onMouseDown={(e) =>
                                                 e.stopPropagation()
                                             }
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setTimeout(() => new_category_input_ref.current?.focus(), 0);
+                                            }}
                                         >
                                             <Input
+                                                ref={new_category_input_ref}
                                                 placeholder="새 카테고리"
                                                 value={new_category_input}
                                                 onChange={(e) =>

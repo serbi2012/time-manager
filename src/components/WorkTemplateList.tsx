@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
+import type { InputRef } from "antd";
 import {
     Card,
     Button,
@@ -61,6 +62,10 @@ export default function WorkTemplateList({
     const [form] = Form.useForm();
     const [new_task_input, setNewTaskInput] = useState("");
     const [new_category_input, setNewCategoryInput] = useState("");
+    
+    // Input refs for focus management
+    const new_task_input_ref = useRef<InputRef>(null);
+    const new_category_input_ref = useRef<InputRef>(null);
 
     // 작업명/거래명 자동완성 옵션 (records, templates 변경 시 갱신)
     const work_name_options = useMemo(() => {
@@ -396,8 +401,13 @@ export default function WorkTemplateList({
                                             onMouseDown={(e) =>
                                                 e.stopPropagation()
                                             }
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setTimeout(() => new_task_input_ref.current?.focus(), 0);
+                                            }}
                                         >
                                             <Input
+                                                ref={new_task_input_ref}
                                                 placeholder="새 업무명"
                                                 value={new_task_input}
                                                 onChange={(e) =>
@@ -455,8 +465,13 @@ export default function WorkTemplateList({
                                             onMouseDown={(e) =>
                                                 e.stopPropagation()
                                             }
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setTimeout(() => new_category_input_ref.current?.focus(), 0);
+                                            }}
                                         >
                                             <Input
+                                                ref={new_category_input_ref}
                                                 placeholder="새 카테고리"
                                                 value={new_category_input}
                                                 onChange={(e) =>
