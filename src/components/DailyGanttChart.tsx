@@ -131,7 +131,7 @@ export default function DailyGanttChart() {
     // 사용자 정의 옵션 입력
     const [new_task_input, setNewTaskInput] = useState("");
     const [new_category_input, setNewCategoryInput] = useState("");
-    
+
     // Input refs for focus management
     const new_task_input_ref = useRef<InputRef>(null);
     const new_category_input_ref = useRef<InputRef>(null);
@@ -1182,7 +1182,11 @@ export default function DailyGanttChart() {
                                             }
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                setTimeout(() => new_task_input_ref.current?.focus(), 0);
+                                                setTimeout(
+                                                    () =>
+                                                        new_task_input_ref.current?.focus(),
+                                                    0
+                                                );
                                             }}
                                         >
                                             <Input
@@ -1199,7 +1203,11 @@ export default function DailyGanttChart() {
                                                 }
                                                 onMouseDown={(e) => {
                                                     e.stopPropagation();
-                                                    setTimeout(() => new_task_input_ref.current?.focus(), 0);
+                                                    setTimeout(
+                                                        () =>
+                                                            new_task_input_ref.current?.focus(),
+                                                        0
+                                                    );
                                                 }}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -1251,7 +1259,11 @@ export default function DailyGanttChart() {
                                             }
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                setTimeout(() => new_category_input_ref.current?.focus(), 0);
+                                                setTimeout(
+                                                    () =>
+                                                        new_category_input_ref.current?.focus(),
+                                                    0
+                                                );
                                             }}
                                         >
                                             <Input
@@ -1268,7 +1280,11 @@ export default function DailyGanttChart() {
                                                 }
                                                 onMouseDown={(e) => {
                                                     e.stopPropagation();
-                                                    setTimeout(() => new_category_input_ref.current?.focus(), 0);
+                                                    setTimeout(
+                                                        () =>
+                                                            new_category_input_ref.current?.focus(),
+                                                        0
+                                                    );
                                                 }}
                                                 onClick={(e) => {
                                                     e.stopPropagation();

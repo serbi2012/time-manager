@@ -1189,7 +1189,11 @@ export default function WorkRecordTable() {
                                             }
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                setTimeout(() => new_task_input_ref.current?.focus(), 0);
+                                                setTimeout(
+                                                    () =>
+                                                        new_task_input_ref.current?.focus(),
+                                                    0
+                                                );
                                             }}
                                         >
                                             <Input
@@ -1206,7 +1210,11 @@ export default function WorkRecordTable() {
                                                 }
                                                 onMouseDown={(e) => {
                                                     e.stopPropagation();
-                                                    setTimeout(() => new_task_input_ref.current?.focus(), 0);
+                                                    setTimeout(
+                                                        () =>
+                                                            new_task_input_ref.current?.focus(),
+                                                        0
+                                                    );
                                                 }}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -1258,7 +1266,11 @@ export default function WorkRecordTable() {
                                             }
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                setTimeout(() => new_category_input_ref.current?.focus(), 0);
+                                                setTimeout(
+                                                    () =>
+                                                        new_category_input_ref.current?.focus(),
+                                                    0
+                                                );
                                             }}
                                         >
                                             <Input
@@ -1275,7 +1287,11 @@ export default function WorkRecordTable() {
                                                 }
                                                 onMouseDown={(e) => {
                                                     e.stopPropagation();
-                                                    setTimeout(() => new_category_input_ref.current?.focus(), 0);
+                                                    setTimeout(
+                                                        () =>
+                                                            new_category_input_ref.current?.focus(),
+                                                        0
+                                                    );
                                                 }}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -1382,7 +1398,11 @@ export default function WorkRecordTable() {
                                             }
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                setTimeout(() => edit_task_input_ref.current?.focus(), 0);
+                                                setTimeout(
+                                                    () =>
+                                                        edit_task_input_ref.current?.focus(),
+                                                    0
+                                                );
                                             }}
                                         >
                                             <Input
@@ -1399,7 +1419,11 @@ export default function WorkRecordTable() {
                                                 }
                                                 onMouseDown={(e) => {
                                                     e.stopPropagation();
-                                                    setTimeout(() => edit_task_input_ref.current?.focus(), 0);
+                                                    setTimeout(
+                                                        () =>
+                                                            edit_task_input_ref.current?.focus(),
+                                                        0
+                                                    );
                                                 }}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -1460,7 +1484,11 @@ export default function WorkRecordTable() {
                                             }
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                setTimeout(() => edit_category_input_ref.current?.focus(), 0);
+                                                setTimeout(
+                                                    () =>
+                                                        edit_category_input_ref.current?.focus(),
+                                                    0
+                                                );
                                             }}
                                         >
                                             <Input
@@ -1477,7 +1505,11 @@ export default function WorkRecordTable() {
                                                 }
                                                 onMouseDown={(e) => {
                                                     e.stopPropagation();
-                                                    setTimeout(() => edit_category_input_ref.current?.focus(), 0);
+                                                    setTimeout(
+                                                        () =>
+                                                            edit_category_input_ref.current?.focus(),
+                                                        0
+                                                    );
                                                 }}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
