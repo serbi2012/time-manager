@@ -19,7 +19,8 @@ import {
 import {
     PlusOutlined,
     DeleteOutlined,
-    AppstoreAddOutlined,
+    EditOutlined,
+    PlayCircleOutlined,
     FolderOutlined,
 } from "@ant-design/icons";
 import { Tag } from "antd";
@@ -29,6 +30,7 @@ import {
     DEFAULT_TASK_OPTIONS,
     DEFAULT_CATEGORY_OPTIONS,
 } from "../store/useWorkStore";
+import type { WorkTemplate } from "../types";
 
 const { Text } = Typography;
 
@@ -43,6 +45,7 @@ export default function WorkTemplateList({
         templates,
         records,
         addTemplate,
+        updateTemplate,
         deleteTemplate,
         getAutoCompleteOptions,
         custom_task_options,
@@ -52,6 +55,8 @@ export default function WorkTemplateList({
     } = useWorkStore();
 
     const [is_modal_open, setIsModalOpen] = useState(false);
+    const [is_edit_mode, setIsEditMode] = useState(false);
+    const [editing_template, setEditingTemplate] = useState<WorkTemplate | null>(null);
     const [form] = Form.useForm();
     const [new_task_input, setNewTaskInput] = useState("");
     const [new_category_input, setNewCategoryInput] = useState("");
@@ -76,7 +81,40 @@ export default function WorkTemplateList({
         return [...new Set(all)].map((v) => ({ value: v, label: v }));
     }, [custom_category_options]);
 
-    const handleAddTemplate = async () => {
+    // 모달 열기 (추가)
+    const handleOpenAddModal = () => {
+        setIsEditMode(false);
+        setEditingTemplate(null);
+        form.resetFields();
+        form.setFieldsValue({ color: TEMPLATE_COLORS[0] });
+        setIsModalOpen(true);
+    };
+
+    // 모달 열기 (수정)
+    const handleOpenEditModal = (template: WorkTemplate) => {
+        setIsEditMode(true);
+        setEditingTemplate(template);
+        form.setFieldsValue({
+            work_name: template.work_name,
+            deal_name: template.deal_name,
+            task_name: template.task_name,
+            category_name: template.category_name,
+            note: template.note,
+            color: template.color,
+        });
+        setIsModalOpen(true);
+    };
+
+    // 모달 닫기
+    const handleCloseModal = () => {
+        form.resetFields();
+        setIsModalOpen(false);
+        setIsEditMode(false);
+        setEditingTemplate(null);
+    };
+
+    // 프리셋 추가/수정 처리
+    const handleSubmit = async () => {
         try {
             const values = await form.validateFields();
             const color =
@@ -84,18 +122,31 @@ export default function WorkTemplateList({
                     ? values.color
                     : values.color?.toHexString() || TEMPLATE_COLORS[0];
 
-            addTemplate({
-                work_name: values.work_name,
-                task_name: values.task_name || "",
-                deal_name: values.deal_name || "",
-                category_name: values.category_name || "",
-                note: values.note || "",
-                color,
-            });
+            if (is_edit_mode && editing_template) {
+                // 수정
+                updateTemplate(editing_template.id, {
+                    work_name: values.work_name,
+                    task_name: values.task_name || "",
+                    deal_name: values.deal_name || "",
+                    category_name: values.category_name || "",
+                    note: values.note || "",
+                    color,
+                });
+                message.success("프리셋이 수정되었습니다");
+            } else {
+                // 추가
+                addTemplate({
+                    work_name: values.work_name,
+                    task_name: values.task_name || "",
+                    deal_name: values.deal_name || "",
+                    category_name: values.category_name || "",
+                    note: values.note || "",
+                    color,
+                });
+                message.success("프리셋이 추가되었습니다");
+            }
 
-            form.resetFields();
-            setIsModalOpen(false);
-            message.success("프리셋이 추가되었습니다");
+            handleCloseModal();
         } catch {
             // validation failed
         }
@@ -142,9 +193,9 @@ export default function WorkTemplateList({
                         type="primary"
                         icon={<PlusOutlined />}
                         size="small"
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={handleOpenAddModal}
                     >
-                        프리셋 추가
+                        추가
                     </Button>
                 }
             >
@@ -165,7 +216,7 @@ export default function WorkTemplateList({
                                 프리셋이 없습니다
                                 <br />
                                 <Text type="secondary" style={{ fontSize: 12 }}>
-                                    "프리셋 추가" 버튼으로 추가하세요
+                                    "추가" 버튼으로 추가하세요
                                 </Text>
                             </span>
                         }
@@ -175,90 +226,91 @@ export default function WorkTemplateList({
                         {templates.map((template) => (
                             <div
                                 key={template.id}
-                                className="template-item"
+                                className="template-card"
                                 style={{ borderLeftColor: template.color }}
                             >
+                                {/* 메인 콘텐츠 영역 - 클릭 시 작업 시작 */}
                                 <div
-                                    className="template-info"
+                                    className="template-content"
                                     onClick={() => handleUseTemplate(template.id)}
-                                    style={{ cursor: "pointer" }}
                                 >
-                                    {/* 작업명 뱃지 */}
-                                    <Tag 
-                                        color={template.color} 
-                                        style={{ 
-                                            marginBottom: 4, 
-                                            fontSize: 11,
-                                            whiteSpace: 'normal',
-                                            height: 'auto',
-                                            lineHeight: 1.4,
-                                        }}
-                                    >
-                                        {template.work_name}
-                                    </Tag>
-                                    
-                                    {/* 거래명 제목 */}
+                                    {/* 상단: 작업명 태그 */}
+                                    <div className="template-header">
+                                        <Tag
+                                            color={template.color}
+                                            style={{
+                                                fontSize: 10,
+                                                lineHeight: 1.3,
+                                                padding: "1px 6px",
+                                                margin: 0,
+                                            }}
+                                        >
+                                            {template.work_name}
+                                        </Tag>
+                                    </div>
+
+                                    {/* 중앙: 거래명 (제목) */}
                                     <Text
                                         strong
-                                        style={{ 
-                                            display: "block", 
-                                            fontSize: 13,
-                                            wordBreak: 'break-word',
-                                            whiteSpace: 'normal',
-                                        }}
+                                        className="template-title"
                                     >
                                         {template.deal_name || template.work_name}
                                     </Text>
-                                    
-                                    {/* 업무명 · 카테고리명 */}
-                                    <Text
-                                        type="secondary"
-                                        style={{
-                                            fontSize: 11,
-                                            display: "block",
-                                            color: "#999",
-                                            wordBreak: 'break-word',
-                                            whiteSpace: 'normal',
-                                        }}
-                                    >
-                                        {[template.task_name, template.category_name]
-                                            .filter(Boolean)
-                                            .join(" · ") || "카테고리 없음"}
-                                    </Text>
+
+                                    {/* 하단: 업무명 · 카테고리 */}
+                                    {(template.task_name || template.category_name) && (
+                                        <Text
+                                            type="secondary"
+                                            className="template-subtitle"
+                                        >
+                                            {[template.task_name, template.category_name]
+                                                .filter(Boolean)
+                                                .join(" · ")}
+                                        </Text>
+                                    )}
                                 </div>
 
-                                <div className="template-actions">
-                                    <Tooltip title="작업 기록에 추가">
-                                        <Button
-                                            type="primary"
-                                            ghost
-                                            size="small"
-                                            icon={<AppstoreAddOutlined />}
-                                            onClick={() =>
-                                                handleUseTemplate(template.id)
-                                            }
-                                            style={{
-                                                borderColor: template.color,
-                                                color: template.color,
-                                            }}
-                                        />
-                                    </Tooltip>
-                                    <Popconfirm
-                                        title="프리셋 삭제"
-                                        description="이 프리셋을 삭제하시겠습니까?"
-                                        onConfirm={() =>
-                                            deleteTemplate(template.id)
-                                        }
-                                        okText="삭제"
-                                        cancelText="취소"
-                                    >
-                                        <Button
-                                            type="text"
-                                            danger
-                                            size="small"
-                                            icon={<DeleteOutlined />}
-                                        />
-                                    </Popconfirm>
+                                {/* 호버 시 표시되는 액션 버튼들 */}
+                                <div className="template-overlay">
+                                    <div className="template-actions">
+                                        <Tooltip title="작업 시작">
+                                            <Button
+                                                type="primary"
+                                                size="small"
+                                                icon={<PlayCircleOutlined />}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleUseTemplate(template.id);
+                                                }}
+                                            />
+                                        </Tooltip>
+                                        <Tooltip title="수정">
+                                            <Button
+                                                size="small"
+                                                icon={<EditOutlined />}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleOpenEditModal(template);
+                                                }}
+                                            />
+                                        </Tooltip>
+                                        <Popconfirm
+                                            title="프리셋 삭제"
+                                            description="이 프리셋을 삭제하시겠습니까?"
+                                            onConfirm={() => deleteTemplate(template.id)}
+                                            okText="삭제"
+                                            cancelText="취소"
+                                        >
+                                            <Tooltip title="삭제">
+                                                <Button
+                                                    danger
+                                                    size="small"
+                                                    icon={<DeleteOutlined />}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                />
+                                            </Tooltip>
+                                        </Popconfirm>
+                                    </div>
                                 </div>
                             </div>
                         ))}
@@ -267,14 +319,11 @@ export default function WorkTemplateList({
             </Card>
 
             <Modal
-                title="새 프리셋 추가"
+                title={is_edit_mode ? "프리셋 수정" : "새 프리셋 추가"}
                 open={is_modal_open}
-                onOk={handleAddTemplate}
-                onCancel={() => {
-                    form.resetFields();
-                    setIsModalOpen(false);
-                }}
-                okText="추가"
+                onOk={handleSubmit}
+                onCancel={handleCloseModal}
+                okText={is_edit_mode ? "수정" : "추가"}
                 cancelText="취소"
             >
                 <Form form={form} layout="vertical">
@@ -433,33 +482,67 @@ export default function WorkTemplateList({
                     gap: 8px;
                 }
                 
-                .template-item {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    padding: 10px 12px;
+                .template-card {
+                    position: relative;
                     border-radius: 8px;
                     border-left: 4px solid #1890ff;
                     background: #fafafa;
+                    overflow: hidden;
                     transition: all 0.2s;
                 }
                 
-                .template-item:hover {
-                    background: #f0f0f0;
+                .template-card:hover {
+                    background: #f0f5ff;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
                 }
                 
-                .template-info {
-                    flex: 1;
-                    min-width: 0;
+                .template-content {
+                    padding: 10px 12px;
+                    cursor: pointer;
+                    min-height: 60px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
                 }
                 
-                .template-info:hover {
-                    opacity: 0.8;
+                .template-header {
+                    display: flex;
+                    align-items: flex-start;
+                }
+                
+                .template-title {
+                    font-size: 13px;
+                    line-height: 1.4;
+                    word-break: break-word;
+                    display: block;
+                }
+                
+                .template-subtitle {
+                    font-size: 11px;
+                    color: #999;
+                    display: block;
+                    word-break: break-word;
+                }
+                
+                .template-overlay {
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    bottom: 0;
+                    display: flex;
+                    align-items: center;
+                    padding-right: 8px;
+                    background: linear-gradient(to right, transparent, #f0f5ff 30%);
+                    opacity: 0;
+                    transition: opacity 0.2s;
+                }
+                
+                .template-card:hover .template-overlay {
+                    opacity: 1;
                 }
                 
                 .template-actions {
                     display: flex;
-                    align-items: center;
                     gap: 4px;
                 }
             `}</style>
