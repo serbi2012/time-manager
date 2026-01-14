@@ -33,7 +33,6 @@ import {
     RollbackOutlined,
     CheckCircleOutlined,
     DownOutlined,
-    UpOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
@@ -1095,18 +1094,14 @@ export default function WorkRecordTable() {
                     expandable={{
                         expandedRowRender,
                         rowExpandable: () => true,
-                        expandIcon: ({ expanded, onExpand, record }) =>
-                            expanded ? (
-                                <UpOutlined
-                                    style={{ cursor: "pointer", color: "#1890ff" }}
-                                    onClick={(e) => onExpand(record, e)}
-                                />
-                            ) : (
-                                <DownOutlined
-                                    style={{ cursor: "pointer", color: "#999" }}
-                                    onClick={(e) => onExpand(record, e)}
-                                />
-                            ),
+                        expandIcon: ({ expanded, onExpand, record }) => (
+                            <div
+                                className={`expand-icon ${expanded ? "expanded" : ""}`}
+                                onClick={(e) => onExpand(record, e)}
+                            >
+                                <DownOutlined />
+                            </div>
+                        ),
                     }}
                     rowClassName={(record) =>
                         getActiveRecordId() === record.id ? "active-row" : ""
@@ -1555,6 +1550,55 @@ export default function WorkRecordTable() {
                 }
                 .active-row:hover > td {
                     background-color: #bae7ff !important;
+                }
+                
+                /* 확장 아이콘 애니메이션 */
+                .expand-icon {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 50%;
+                    cursor: pointer;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    color: #999;
+                    background: transparent;
+                }
+                
+                .expand-icon:hover {
+                    background: #f0f5ff;
+                    color: #1890ff;
+                    transform: scale(1.1);
+                }
+                
+                .expand-icon .anticon {
+                    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+                
+                .expand-icon.expanded {
+                    color: #1890ff;
+                    background: #e6f7ff;
+                }
+                
+                .expand-icon.expanded .anticon {
+                    transform: rotate(-180deg);
+                }
+                
+                /* 확장된 row 애니메이션 */
+                .ant-table-expanded-row > td {
+                    animation: slideDown 0.3s ease-out;
+                }
+                
+                @keyframes slideDown {
+                    from {
+                        opacity: 0;
+                        transform: translateY(-10px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
                 }
             `}</style>
         </>
