@@ -730,7 +730,7 @@ export default function WorkRecordTable() {
                                 placeholder="업무 선택"
                                 options={task_options}
                                 allowClear
-                                popupMatchSelectWidth={200}
+                                popupMatchSelectWidth={240}
                                 dropdownRender={(menu) => (
                                     <>
                                         {menu}
@@ -777,7 +777,7 @@ export default function WorkRecordTable() {
                                 placeholder="카테고리"
                                 options={category_options}
                                 allowClear
-                                popupMatchSelectWidth={200}
+                                popupMatchSelectWidth={240}
                                 dropdownRender={(menu) => (
                                     <>
                                         {menu}

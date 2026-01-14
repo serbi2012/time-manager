@@ -306,7 +306,7 @@ export default function WorkTemplateList({
                                 placeholder="업무 선택"
                                 options={task_options}
                                 allowClear
-                                popupMatchSelectWidth={200}
+                                popupMatchSelectWidth={240}
                                 dropdownRender={(menu) => (
                                     <>
                                         {menu}
@@ -350,7 +350,7 @@ export default function WorkTemplateList({
                                 placeholder="카테고리 선택"
                                 options={category_options}
                                 allowClear
-                                popupMatchSelectWidth={200}
+                                popupMatchSelectWidth={240}
                                 dropdownRender={(menu) => (
                                     <>
                                         {menu}
