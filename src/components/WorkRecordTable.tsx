@@ -450,7 +450,9 @@ export default function WorkRecordTable() {
         const result = updateSession(record_id, session_id, new_start, new_end);
         if (result.success) {
             if (result.adjusted) {
-                message.warning(result.message || "시간이 자동 조정되었습니다.");
+                message.warning(
+                    result.message || "시간이 자동 조정되었습니다."
+                );
             } else {
                 message.success("시간이 수정되었습니다.");
             }
@@ -511,9 +513,11 @@ export default function WorkRecordTable() {
                             title: "#",
                             key: "index",
                             width: 40,
-                            render: (_: unknown, __: WorkSession, index: number) => (
-                                <Text type="secondary">{index + 1}</Text>
-                            ),
+                            render: (
+                                _: unknown,
+                                __: WorkSession,
+                                index: number
+                            ) => <Text type="secondary">{index + 1}</Text>,
                         },
                         {
                             title: "시작 시간",
@@ -521,10 +525,14 @@ export default function WorkRecordTable() {
                             width: 140,
                             render: (_: unknown, session: WorkSession) => (
                                 <TimePicker
-                                    value={dayjs(session.start_time, "HH:mm:ss")}
+                                    value={dayjs(
+                                        session.start_time,
+                                        "HH:mm:ss"
+                                    )}
                                     format="HH:mm:ss"
                                     size="small"
                                     allowClear={false}
+                                    needConfirm={true}
                                     onChange={(time) => {
                                         if (time) {
                                             handleUpdateSessionTime(
@@ -548,6 +556,7 @@ export default function WorkRecordTable() {
                                     format="HH:mm:ss"
                                     size="small"
                                     allowClear={false}
+                                    needConfirm={true}
                                     onChange={(time) => {
                                         if (time) {
                                             handleUpdateSessionTime(
@@ -567,7 +576,9 @@ export default function WorkRecordTable() {
                             width: 100,
                             render: (_: unknown, session: WorkSession) => (
                                 <Tag color="blue">
-                                    {formatDuration(getSessionDurationSeconds(session))}
+                                    {formatDuration(
+                                        getSessionDurationSeconds(session)
+                                    )}
                                 </Tag>
                             ),
                         },
@@ -579,7 +590,12 @@ export default function WorkRecordTable() {
                                 <Popconfirm
                                     title="세션 삭제"
                                     description="이 세션을 삭제하시겠습니까?"
-                                    onConfirm={() => handleDeleteSession(record.id, session.id)}
+                                    onConfirm={() =>
+                                        handleDeleteSession(
+                                            record.id,
+                                            session.id
+                                        )
+                                    }
                                     okText="삭제"
                                     cancelText="취소"
                                     okButtonProps={{ danger: true }}
