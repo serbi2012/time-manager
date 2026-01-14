@@ -18,6 +18,8 @@ export interface WorkRecord {
   end_time: string;       // 마지막 종료 시간
   date: string;           // 날짜 (YYYY-MM-DD)
   sessions: WorkSession[]; // 세션 이력
+  is_completed: boolean;  // 완료 여부
+  completed_at?: string;  // 완료 시각 (ISO string)
 }
 
 export interface TimerState {

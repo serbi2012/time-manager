@@ -28,6 +28,10 @@ import {
     PlayCircleOutlined,
     PauseCircleOutlined,
     PlusOutlined,
+    EditOutlined,
+    CheckOutlined,
+    RollbackOutlined,
+    CheckCircleOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
@@ -116,6 +120,7 @@ export default function WorkRecordTable() {
         selected_date,
         setSelectedDate,
         deleteRecord,
+        updateRecord,
         timer,
         form_data,
         startTimer,
@@ -125,6 +130,9 @@ export default function WorkRecordTable() {
         updateElapsedTime,
         templates,
         getAutoCompleteOptions,
+        getCompletedRecords,
+        markAsCompleted,
+        markAsIncomplete,
         custom_task_options,
         custom_category_options,
         addCustomTaskOption,
@@ -132,9 +140,15 @@ export default function WorkRecordTable() {
     } = useWorkStore();
 
     const [is_modal_open, setIsModalOpen] = useState(false);
+    const [is_edit_modal_open, setIsEditModalOpen] = useState(false);
+    const [is_completed_modal_open, setIsCompletedModalOpen] = useState(false);
+    const [editing_record, setEditingRecord] = useState<WorkRecord | null>(null);
     const [form] = Form.useForm();
+    const [edit_form] = Form.useForm();
     const [new_task_input, setNewTaskInput] = useState("");
     const [new_category_input, setNewCategoryInput] = useState("");
+    const [edit_task_input, setEditTaskInput] = useState("");
+    const [edit_category_input, setEditCategoryInput] = useState("");
 
     // 작업명/거래명 자동완성 옵션 (records, templates 변경 시 갱신)
     const work_name_options = useMemo(() => {
@@ -187,14 +201,25 @@ export default function WorkRecordTable() {
     // 오늘 날짜인지 확인
     const is_today = selected_date === dayjs().format("YYYY-MM-DD");
 
-    // 선택된 날짜의 레코드 필터링 + 진행 중인 작업 포함
+    // 선택된 날짜의 레코드 필터링 + 과거 미완료 작업 포함 + 진행 중인 작업 포함
     const filtered_records = useMemo(() => {
-        const saved_records = records.filter((r) => r.date === selected_date);
+        // 미완료 작업: 선택된 날짜까지의 미완료 레코드
+        const incomplete_records = records.filter((r) => {
+            if (r.is_completed) return false;
+            return r.date <= selected_date;
+        });
+        
+        // 선택된 날짜의 완료된 레코드도 포함
+        const completed_today = records.filter(
+            (r) => r.date === selected_date && r.is_completed
+        );
+        
+        const all_records = [...incomplete_records, ...completed_today];
 
         // 진행 중인 작업이 있고, 오늘 날짜인 경우
         if (timer.is_running && is_today && form_data.work_name) {
             // 이미 저장된 레코드에 같은 작업이 있는지 확인
-            const existing = saved_records.find(
+            const existing = all_records.find(
                 (r) =>
                     r.work_name === form_data.work_name &&
                     r.deal_name === form_data.deal_name
@@ -216,12 +241,21 @@ export default function WorkRecordTable() {
                     end_time: "",
                     date: selected_date,
                     sessions: [],
+                    is_completed: false,
                 };
-                return [virtual_record, ...saved_records];
+                return [virtual_record, ...all_records];
             }
         }
 
-        return saved_records;
+        // 날짜 내림차순 정렬 (최신 날짜 먼저)
+        return all_records.sort((a, b) => {
+            // 완료된 것은 뒤로
+            if (a.is_completed !== b.is_completed) {
+                return a.is_completed ? 1 : -1;
+            }
+            // 같은 완료 상태면 날짜 비교
+            return b.date.localeCompare(a.date);
+        });
     }, [
         records,
         selected_date,
@@ -333,6 +367,54 @@ export default function WorkRecordTable() {
             // validation failed
         }
     };
+
+    // 수정 모달 열기
+    const handleOpenEditModal = (record: WorkRecord) => {
+        setEditingRecord(record);
+        edit_form.setFieldsValue({
+            work_name: record.work_name,
+            task_name: record.task_name,
+            deal_name: record.deal_name,
+            category_name: record.category_name,
+            note: record.note,
+        });
+        setIsEditModalOpen(true);
+    };
+
+    // 수정 저장
+    const handleSaveEdit = async () => {
+        if (!editing_record) return;
+        try {
+            const values = await edit_form.validateFields();
+            updateRecord(editing_record.id, {
+                work_name: values.work_name,
+                task_name: values.task_name || "",
+                deal_name: values.deal_name || "",
+                category_name: values.category_name || "",
+                note: values.note || "",
+            });
+            edit_form.resetFields();
+            setEditingRecord(null);
+            setIsEditModalOpen(false);
+        } catch {
+            // validation failed
+        }
+    };
+
+    // 완료 처리
+    const handleMarkComplete = (record: WorkRecord) => {
+        markAsCompleted(record.id);
+    };
+
+    // 완료 취소
+    const handleMarkIncomplete = (record: WorkRecord) => {
+        markAsIncomplete(record.id);
+    };
+
+    // 완료된 작업 목록
+    const completed_records = useMemo(() => {
+        return getCompletedRecords();
+    }, [records, getCompletedRecords]);
 
     // 확장 행 렌더링 (세션 이력)
     const expandedRowRender = (record: WorkRecord) => {
@@ -479,11 +561,18 @@ export default function WorkRecordTable() {
             width: 150,
             render: (text: string, record: WorkRecord) => {
                 const is_active = getActiveRecordId() === record.id;
+                const is_completed = record.is_completed;
                 return (
                     <Space>
+                        {is_completed && (
+                            <CheckCircleOutlined style={{ color: "#52c41a" }} />
+                        )}
                         <Text
                             strong
-                            style={{ color: is_active ? "#1890ff" : undefined }}
+                            style={{ 
+                                color: is_active ? "#1890ff" : is_completed ? "#8c8c8c" : undefined,
+                                textDecoration: is_completed ? "line-through" : undefined,
+                            }}
                         >
                             {text}
                         </Text>
@@ -558,30 +647,80 @@ export default function WorkRecordTable() {
             ),
         },
         {
+            title: "날짜",
+            dataIndex: "date",
+            key: "date",
+            width: 90,
+            render: (text: string) => {
+                const is_past = text < dayjs().format("YYYY-MM-DD");
+                return (
+                    <Text 
+                        type={is_past ? "warning" : "secondary"} 
+                        style={{ fontSize: 11 }}
+                    >
+                        {text === dayjs().format("YYYY-MM-DD") ? "오늘" : text.slice(5)}
+                    </Text>
+                );
+            },
+        },
+        {
             title: "",
             key: "action",
-            width: 40,
+            width: 120,
             render: (_, record: WorkRecord) => {
-                // 가상 레코드(진행 중)는 삭제 불가
+                // 가상 레코드(진행 중)는 액션 불가
                 if (record.id === "__active__") {
                     return null;
                 }
                 return (
-                    <Popconfirm
-                        title="삭제 확인"
-                        description="이 기록을 삭제하시겠습니까?"
-                        onConfirm={() => deleteRecord(record.id)}
-                        okText="삭제"
-                        cancelText="취소"
-                        okButtonProps={{ danger: true }}
-                    >
-                        <Button
-                            type="text"
-                            danger
-                            icon={<DeleteOutlined />}
-                            size="small"
-                        />
-                    </Popconfirm>
+                    <Space size={4}>
+                        {/* 완료/완료 취소 버튼 */}
+                        {record.is_completed ? (
+                            <Tooltip title="완료 취소">
+                                <Button
+                                    type="text"
+                                    icon={<RollbackOutlined />}
+                                    size="small"
+                                    onClick={() => handleMarkIncomplete(record)}
+                                />
+                            </Tooltip>
+                        ) : (
+                            <Tooltip title="완료">
+                                <Button
+                                    type="text"
+                                    style={{ color: "#52c41a" }}
+                                    icon={<CheckOutlined />}
+                                    size="small"
+                                    onClick={() => handleMarkComplete(record)}
+                                />
+                            </Tooltip>
+                        )}
+                        {/* 수정 버튼 */}
+                        <Tooltip title="수정">
+                            <Button
+                                type="text"
+                                icon={<EditOutlined />}
+                                size="small"
+                                onClick={() => handleOpenEditModal(record)}
+                            />
+                        </Tooltip>
+                        {/* 삭제 버튼 */}
+                        <Popconfirm
+                            title="삭제 확인"
+                            description="이 기록을 삭제하시겠습니까?"
+                            onConfirm={() => deleteRecord(record.id)}
+                            okText="삭제"
+                            cancelText="취소"
+                            okButtonProps={{ danger: true }}
+                        >
+                            <Button
+                                type="text"
+                                danger
+                                icon={<DeleteOutlined />}
+                                size="small"
+                            />
+                        </Popconfirm>
+                    </Space>
                 );
             },
         },
@@ -593,13 +732,18 @@ export default function WorkRecordTable() {
                 title={
                     <Space>
                         <ClockCircleOutlined />
-                        <span>오늘의 작업 기록</span>
+                        <span>작업 기록</span>
                         {timer.is_running && (
                             <Tag
                                 color="processing"
                                 icon={<ClockCircleOutlined spin />}
                             >
                                 {form_data.work_name} 진행 중
+                            </Tag>
+                        )}
+                        {filtered_records.some((r) => r.date < dayjs().format("YYYY-MM-DD") && !r.is_completed) && (
+                            <Tag color="warning">
+                                미완료 작업 있음
                             </Tag>
                         )}
                     </Space>
@@ -612,6 +756,12 @@ export default function WorkRecordTable() {
                             onClick={() => setIsModalOpen(true)}
                         >
                             새 작업
+                        </Button>
+                        <Button
+                            icon={<CheckCircleOutlined />}
+                            onClick={() => setIsCompletedModalOpen(true)}
+                        >
+                            완료된 작업 ({completed_records.length})
                         </Button>
                         <DatePicker
                             value={dayjs(selected_date)}
@@ -823,6 +973,258 @@ export default function WorkRecordTable() {
                         <Input.TextArea placeholder="추가 메모" rows={2} />
                     </Form.Item>
                 </Form>
+            </Modal>
+
+            {/* 수정 모달 */}
+            <Modal
+                title="작업 수정"
+                open={is_edit_modal_open}
+                onOk={handleSaveEdit}
+                onCancel={() => {
+                    edit_form.resetFields();
+                    setEditingRecord(null);
+                    setIsEditModalOpen(false);
+                }}
+                okText="저장"
+                cancelText="취소"
+            >
+                <Form form={edit_form} layout="vertical">
+                    <Form.Item
+                        name="work_name"
+                        label="작업명"
+                        rules={[
+                            { required: true, message: "작업명을 입력하세요" },
+                        ]}
+                    >
+                        <AutoComplete
+                            options={work_name_options}
+                            placeholder="예: 5.6 프레임워크 FE"
+                            filterOption={(input, option) =>
+                                (option?.value ?? "")
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase())
+                            }
+                        />
+                    </Form.Item>
+
+                    <Form.Item name="deal_name" label="거래명 (상세 작업)">
+                        <AutoComplete
+                            options={deal_name_options}
+                            placeholder="예: 5.6 테스트 케이스 확인 및 이슈 처리"
+                            filterOption={(input, option) =>
+                                (option?.value ?? "")
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase())
+                            }
+                        />
+                    </Form.Item>
+
+                    <Space style={{ width: "100%" }} size="middle">
+                        <Form.Item
+                            name="task_name"
+                            label="업무명"
+                            style={{ flex: 1 }}
+                        >
+                            <Select
+                                placeholder="업무 선택"
+                                options={task_options}
+                                allowClear
+                                popupMatchSelectWidth={240}
+                                dropdownRender={(menu) => (
+                                    <>
+                                        {menu}
+                                        <Divider style={{ margin: "8px 0" }} />
+                                        <Space
+                                            style={{
+                                                padding: "0 8px 4px",
+                                                width: "100%",
+                                            }}
+                                        >
+                                            <Input
+                                                placeholder="새 업무명"
+                                                value={edit_task_input}
+                                                onChange={(e) =>
+                                                    setEditTaskInput(e.target.value)
+                                                }
+                                                onKeyDown={(e) => e.stopPropagation()}
+                                                size="small"
+                                                style={{ width: 130 }}
+                                            />
+                                            <Button
+                                                type="text"
+                                                icon={<PlusOutlined />}
+                                                onClick={() => {
+                                                    if (edit_task_input.trim()) {
+                                                        addCustomTaskOption(edit_task_input.trim());
+                                                        setEditTaskInput("");
+                                                    }
+                                                }}
+                                                size="small"
+                                            >
+                                                추가
+                                            </Button>
+                                        </Space>
+                                    </>
+                                )}
+                            />
+                        </Form.Item>
+                        <Form.Item
+                            name="category_name"
+                            label="카테고리"
+                            style={{ flex: 1 }}
+                        >
+                            <Select
+                                placeholder="카테고리"
+                                options={category_options}
+                                allowClear
+                                popupMatchSelectWidth={240}
+                                dropdownRender={(menu) => (
+                                    <>
+                                        {menu}
+                                        <Divider style={{ margin: "8px 0" }} />
+                                        <Space
+                                            style={{
+                                                padding: "0 8px 4px",
+                                                width: "100%",
+                                            }}
+                                        >
+                                            <Input
+                                                placeholder="새 카테고리"
+                                                value={edit_category_input}
+                                                onChange={(e) =>
+                                                    setEditCategoryInput(e.target.value)
+                                                }
+                                                onKeyDown={(e) => e.stopPropagation()}
+                                                size="small"
+                                                style={{ width: 130 }}
+                                            />
+                                            <Button
+                                                type="text"
+                                                icon={<PlusOutlined />}
+                                                onClick={() => {
+                                                    if (edit_category_input.trim()) {
+                                                        addCustomCategoryOption(edit_category_input.trim());
+                                                        setEditCategoryInput("");
+                                                    }
+                                                }}
+                                                size="small"
+                                            >
+                                                추가
+                                            </Button>
+                                        </Space>
+                                    </>
+                                )}
+                            />
+                        </Form.Item>
+                    </Space>
+
+                    <Form.Item name="note" label="비고">
+                        <Input.TextArea placeholder="추가 메모" rows={2} />
+                    </Form.Item>
+                </Form>
+            </Modal>
+
+            {/* 완료된 작업 조회 모달 */}
+            <Modal
+                title={
+                    <Space>
+                        <CheckCircleOutlined style={{ color: "#52c41a" }} />
+                        <span>완료된 작업 목록</span>
+                        <Tag color="success">{completed_records.length}건</Tag>
+                    </Space>
+                }
+                open={is_completed_modal_open}
+                onCancel={() => setIsCompletedModalOpen(false)}
+                footer={[
+                    <Button key="close" onClick={() => setIsCompletedModalOpen(false)}>
+                        닫기
+                    </Button>
+                ]}
+                width={800}
+            >
+                <Table
+                    dataSource={completed_records}
+                    rowKey="id"
+                    pagination={{ pageSize: 10 }}
+                    size="small"
+                    columns={[
+                        {
+                            title: "작업명",
+                            dataIndex: "work_name",
+                            key: "work_name",
+                            width: 150,
+                            render: (text: string) => <Text strong>{text}</Text>,
+                        },
+                        {
+                            title: "거래명",
+                            dataIndex: "deal_name",
+                            key: "deal_name",
+                            width: 200,
+                            ellipsis: true,
+                            render: (text: string) => text || "-",
+                        },
+                        {
+                            title: "시간",
+                            key: "duration",
+                            width: 60,
+                            render: (_: unknown, record: WorkRecord) => (
+                                <Text style={{ color: "#1890ff" }}>
+                                    {getRecordDurationMinutes(record)}분
+                                </Text>
+                            ),
+                        },
+                        {
+                            title: "작업일",
+                            dataIndex: "date",
+                            key: "date",
+                            width: 100,
+                        },
+                        {
+                            title: "완료일",
+                            key: "completed_at",
+                            width: 120,
+                            render: (_: unknown, record: WorkRecord) =>
+                                record.completed_at
+                                    ? dayjs(record.completed_at).format("YYYY-MM-DD HH:mm")
+                                    : "-",
+                        },
+                        {
+                            title: "",
+                            key: "action",
+                            width: 80,
+                            render: (_: unknown, record: WorkRecord) => (
+                                <Space>
+                                    <Tooltip title="되돌리기">
+                                        <Button
+                                            type="text"
+                                            icon={<RollbackOutlined />}
+                                            size="small"
+                                            onClick={() => handleMarkIncomplete(record)}
+                                        />
+                                    </Tooltip>
+                                    <Popconfirm
+                                        title="삭제 확인"
+                                        description="이 기록을 삭제하시겠습니까?"
+                                        onConfirm={() => deleteRecord(record.id)}
+                                        okText="삭제"
+                                        cancelText="취소"
+                                        okButtonProps={{ danger: true }}
+                                    >
+                                        <Button
+                                            type="text"
+                                            danger
+                                            icon={<DeleteOutlined />}
+                                            size="small"
+                                        />
+                                    </Popconfirm>
+                                </Space>
+                            ),
+                        },
+                    ]}
+                    locale={{
+                        emptyText: "완료된 작업이 없습니다.",
+                    }}
+                />
             </Modal>
 
             <style>{`

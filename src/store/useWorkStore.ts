@@ -45,6 +45,12 @@ interface WorkStore {
   // 날짜 필터
   setSelectedDate: (date: string) => void;
   getFilteredRecords: () => WorkRecord[];
+  getIncompleteRecords: () => WorkRecord[];  // 미완료 작업 (선택 날짜 + 과거 미완료)
+  getCompletedRecords: () => WorkRecord[];   // 완료된 작업 목록
+  
+  // 완료 상태 관리
+  markAsCompleted: (id: string) => void;
+  markAsIncomplete: (id: string) => void;
   
   // 자동완성 헬퍼
   getAutoCompleteOptions: (field: keyof WorkFormData) => string[];
@@ -192,6 +198,7 @@ export const useWorkStore = create<WorkStore>()(
             end_time: new_session.end_time,
             date: record_date,
             sessions: [new_session],
+            is_completed: false,
           };
 
           set((state) => ({
@@ -253,6 +260,7 @@ export const useWorkStore = create<WorkStore>()(
               end_time: new_session.end_time,
               date: record_date,
               sessions: [new_session],
+              is_completed: false,
             };
 
             set((state) => ({
@@ -376,6 +384,51 @@ export const useWorkStore = create<WorkStore>()(
       getFilteredRecords: () => {
         const { records, selected_date } = get();
         return records.filter((r) => r.date === selected_date);
+      },
+
+      // 미완료 작업: 선택된 날짜의 레코드 + 과거 미완료 레코드
+      getIncompleteRecords: () => {
+        const { records, selected_date } = get();
+        return records.filter((r) => {
+          // 완료된 레코드는 제외
+          if (r.is_completed) return false;
+          // 선택된 날짜의 레코드 또는 과거의 미완료 레코드
+          return r.date <= selected_date;
+        });
+      },
+
+      // 완료된 작업 목록
+      getCompletedRecords: () => {
+        const { records } = get();
+        return records
+          .filter((r) => r.is_completed)
+          .sort((a, b) => {
+            // 완료 시간 기준 내림차순 정렬
+            const a_time = a.completed_at || a.date;
+            const b_time = b.completed_at || b.date;
+            return b_time.localeCompare(a_time);
+          });
+      },
+
+      // 완료 상태 관리
+      markAsCompleted: (id: string) => {
+        set((state) => ({
+          records: state.records.map((r) =>
+            r.id === id
+              ? { ...r, is_completed: true, completed_at: new Date().toISOString() }
+              : r
+          ),
+        }));
+      },
+
+      markAsIncomplete: (id: string) => {
+        set((state) => ({
+          records: state.records.map((r) =>
+            r.id === id
+              ? { ...r, is_completed: false, completed_at: undefined }
+              : r
+          ),
+        }));
       },
 
       // 자동완성 옵션 생성
