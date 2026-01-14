@@ -32,6 +32,8 @@ import {
     CheckOutlined,
     RollbackOutlined,
     CheckCircleOutlined,
+    DownOutlined,
+    UpOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
@@ -1012,7 +1014,9 @@ export default function WorkRecordTable() {
                                 color="processing"
                                 icon={<ClockCircleOutlined spin />}
                             >
-                                {timer.active_form_data.deal_name || timer.active_form_data.work_name} 진행 중
+                                {timer.active_form_data.deal_name ||
+                                    timer.active_form_data.work_name}{" "}
+                                진행 중
                             </Tag>
                         )}
                         {filtered_records.some(
@@ -1091,6 +1095,18 @@ export default function WorkRecordTable() {
                     expandable={{
                         expandedRowRender,
                         rowExpandable: () => true,
+                        expandIcon: ({ expanded, onExpand, record }) =>
+                            expanded ? (
+                                <UpOutlined
+                                    style={{ cursor: "pointer", color: "#1890ff" }}
+                                    onClick={(e) => onExpand(record, e)}
+                                />
+                            ) : (
+                                <DownOutlined
+                                    style={{ cursor: "pointer", color: "#999" }}
+                                    onClick={(e) => onExpand(record, e)}
+                                />
+                            ),
                     }}
                     rowClassName={(record) =>
                         getActiveRecordId() === record.id ? "active-row" : ""
