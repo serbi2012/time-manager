@@ -563,11 +563,11 @@ export const useWorkStore = create<WorkStore>()(
 
         // 시간 재계산
         const timeToMinutes = (time: string): number => {
-          const [h, m, s] = time.split(':').map(Number);
-          return h * 60 + m + (s || 0) / 60;
+          const parts = time.split(':').map(Number);
+          return (parts[0] || 0) * 60 + (parts[1] || 0);
         };
 
-        const total_seconds = updated_sessions.reduce((sum, s) => sum + (s.duration_seconds || 0), 0);
+        const total_minutes = updated_sessions.reduce((sum, s) => sum + getSessionMinutes(s), 0);
         const sorted_sessions = [...updated_sessions].sort(
           (a, b) => timeToMinutes(a.start_time) - timeToMinutes(b.start_time)
         );
@@ -578,7 +578,7 @@ export const useWorkStore = create<WorkStore>()(
               ? {
                   ...r,
                   sessions: updated_sessions,
-                  duration_minutes: Math.max(1, Math.ceil(total_seconds / 60)),
+                  duration_minutes: Math.max(1, total_minutes),
                   start_time: sorted_sessions[0]?.start_time || r.start_time,
                   end_time: sorted_sessions[sorted_sessions.length - 1]?.end_time || r.end_time,
                 }
