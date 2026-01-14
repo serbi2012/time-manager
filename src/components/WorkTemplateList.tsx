@@ -56,7 +56,8 @@ export default function WorkTemplateList({
 
     const [is_modal_open, setIsModalOpen] = useState(false);
     const [is_edit_mode, setIsEditMode] = useState(false);
-    const [editing_template, setEditingTemplate] = useState<WorkTemplate | null>(null);
+    const [editing_template, setEditingTemplate] =
+        useState<WorkTemplate | null>(null);
     const [form] = Form.useForm();
     const [new_task_input, setNewTaskInput] = useState("");
     const [new_category_input, setNewCategoryInput] = useState("");
@@ -162,7 +163,9 @@ export default function WorkTemplateList({
         if (new_task_input.trim()) {
             addCustomTaskOption(new_task_input.trim());
             setNewTaskInput("");
-            message.success(`"${new_task_input.trim()}" 업무명이 추가되었습니다`);
+            message.success(
+                `"${new_task_input.trim()}" 업무명이 추가되었습니다`
+            );
         }
     };
 
@@ -232,7 +235,9 @@ export default function WorkTemplateList({
                                 {/* 메인 콘텐츠 영역 - 클릭 시 작업 시작 */}
                                 <div
                                     className="template-content"
-                                    onClick={() => handleUseTemplate(template.id)}
+                                    onClick={() =>
+                                        handleUseTemplate(template.id)
+                                    }
                                 >
                                     {/* 상단: 작업명 태그 */}
                                     <div className="template-header">
@@ -250,20 +255,22 @@ export default function WorkTemplateList({
                                     </div>
 
                                     {/* 중앙: 거래명 (제목) */}
-                                    <Text
-                                        strong
-                                        className="template-title"
-                                    >
-                                        {template.deal_name || template.work_name}
+                                    <Text strong className="template-title">
+                                        {template.deal_name ||
+                                            template.work_name}
                                     </Text>
 
                                     {/* 하단: 업무명 · 카테고리 */}
-                                    {(template.task_name || template.category_name) && (
+                                    {(template.task_name ||
+                                        template.category_name) && (
                                         <Text
                                             type="secondary"
                                             className="template-subtitle"
                                         >
-                                            {[template.task_name, template.category_name]
+                                            {[
+                                                template.task_name,
+                                                template.category_name,
+                                            ]
                                                 .filter(Boolean)
                                                 .join(" · ")}
                                         </Text>
@@ -280,14 +287,18 @@ export default function WorkTemplateList({
                                                 icon={<EditOutlined />}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    handleOpenEditModal(template);
+                                                    handleOpenEditModal(
+                                                        template
+                                                    );
                                                 }}
                                             />
                                         </Tooltip>
                                         <Popconfirm
                                             title="프리셋 삭제"
                                             description="이 프리셋을 삭제하시겠습니까?"
-                                            onConfirm={() => deleteTemplate(template.id)}
+                                            onConfirm={() =>
+                                                deleteTemplate(template.id)
+                                            }
                                             okText="삭제"
                                             cancelText="취소"
                                         >
@@ -296,7 +307,9 @@ export default function WorkTemplateList({
                                                     danger
                                                     size="small"
                                                     icon={<DeleteOutlined />}
-                                                    onClick={(e) => e.stopPropagation()}
+                                                    onClick={(e) =>
+                                                        e.stopPropagation()
+                                                    }
                                                 />
                                             </Tooltip>
                                         </Popconfirm>
@@ -376,7 +389,10 @@ export default function WorkTemplateList({
                                         {menu}
                                         <Divider style={{ margin: "8px 0" }} />
                                         <Space
-                                            style={{ padding: "0 8px 4px", width: "100%" }}
+                                            style={{
+                                                padding: "0 8px 4px",
+                                                width: "100%",
+                                            }}
                                         >
                                             <Input
                                                 placeholder="새 업무명"
@@ -420,7 +436,10 @@ export default function WorkTemplateList({
                                         {menu}
                                         <Divider style={{ margin: "8px 0" }} />
                                         <Space
-                                            style={{ padding: "0 8px 4px", width: "100%" }}
+                                            style={{
+                                                padding: "0 8px 4px",
+                                                width: "100%",
+                                            }}
                                         >
                                             <Input
                                                 placeholder="새 카테고리"

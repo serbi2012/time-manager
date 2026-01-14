@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useCallback } from "react";
+import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import {
     Card,
     Typography,
@@ -83,6 +83,8 @@ export default function DailyGanttChart() {
         records,
         selected_date,
         templates,
+        timer,
+        getElapsedSeconds,
         addRecord,
         updateRecord,
         getAutoCompleteOptions,
@@ -91,6 +93,19 @@ export default function DailyGanttChart() {
         addCustomTaskOption,
         addCustomCategoryOption,
     } = useWorkStore();
+
+    // 성능을 위해 1분마다만 업데이트 (진행 중인 작업 표시용)
+    const [gantt_tick, setGanttTick] = useState(0);
+    useEffect(() => {
+        if (!timer.is_running) return;
+        
+        // 1분(60초)마다 업데이트
+        const interval = setInterval(() => {
+            setGanttTick((t) => t + 1);
+        }, 60000);
+        
+        return () => clearInterval(interval);
+    }, [timer.is_running, timer.start_time]);
 
     // 드래그 상태
     const [is_dragging, setIsDragging] = useState(false);
@@ -116,7 +131,7 @@ export default function DailyGanttChart() {
     const [new_task_input, setNewTaskInput] = useState("");
     const [new_category_input, setNewCategoryInput] = useState("");
 
-    // 거래명 기준으로 세션을 그룹화
+    // 거래명 기준으로 세션을 그룹화 (진행 중인 작업 포함)
     const grouped_works = useMemo(() => {
         const groups: Map<string, GroupedWork> = new Map();
 
@@ -150,10 +165,63 @@ export default function DailyGanttChart() {
                 }
             });
 
+        // 현재 진행 중인 작업이 있고, 오늘 날짜인 경우 가상 세션 추가
+        if (timer.is_running && timer.active_form_data && timer.start_time) {
+            const start_date = dayjs(timer.start_time).format("YYYY-MM-DD");
+            
+            // 오늘 날짜의 작업인 경우에만 표시
+            if (start_date === selected_date) {
+                const elapsed_seconds = getElapsedSeconds();
+                const elapsed_minutes = Math.floor(elapsed_seconds / 60);
+                const start_time_str = dayjs(timer.start_time).format("HH:mm");
+                const now = dayjs();
+                const end_time_str = now.format("HH:mm");
+                
+                const virtual_session: WorkSession = {
+                    id: "virtual-running-session",
+                    date: selected_date,
+                    start_time: start_time_str,
+                    end_time: end_time_str,
+                    duration_minutes: elapsed_minutes,
+                };
+                
+                const key = timer.active_form_data.deal_name || timer.active_form_data.work_name;
+                
+                if (groups.has(key)) {
+                    // 기존 그룹에 가상 세션 추가
+                    const group = groups.get(key)!;
+                    group.sessions.push(virtual_session);
+                } else {
+                    // 새 그룹 생성 (가상 레코드)
+                    const virtual_record: WorkRecord = {
+                        id: "virtual-running-record",
+                        work_name: timer.active_form_data.work_name,
+                        task_name: timer.active_form_data.task_name || "",
+                        deal_name: timer.active_form_data.deal_name || "",
+                        category_name: timer.active_form_data.category_name || "",
+                        note: timer.active_form_data.note || "",
+                        duration_minutes: elapsed_minutes,
+                        start_time: start_time_str,
+                        end_time: end_time_str,
+                        date: selected_date,
+                        sessions: [virtual_session],
+                        is_completed: false,
+                    };
+                    
+                    groups.set(key, {
+                        key,
+                        record: virtual_record,
+                        sessions: [virtual_session],
+                        first_start: timeToMinutes(start_time_str),
+                    });
+                }
+            }
+        }
+
         return Array.from(groups.values()).sort(
             (a, b) => a.first_start - b.first_start
         );
-    }, [records, selected_date]);
+    }, [records, selected_date, timer.is_running, timer.active_form_data, timer.start_time, gantt_tick, getElapsedSeconds]);
 
     // 모든 세션의 시간 슬롯 (충돌 감지용) - 시작 시간순 정렬
     const occupied_slots = useMemo((): TimeSlot[] => {
