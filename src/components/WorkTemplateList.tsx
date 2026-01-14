@@ -270,20 +270,24 @@ export default function WorkTemplateList({
                                     )}
                                 </div>
 
-                                {/* 호버 시 표시되는 액션 버튼들 */}
+                                {/* 항상 표시되는 시작 버튼 */}
+                                <div className="template-start">
+                                    <Tooltip title="작업 시작">
+                                        <Button
+                                            type="primary"
+                                            size="small"
+                                            icon={<PlayCircleOutlined />}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleUseTemplate(template.id);
+                                            }}
+                                        />
+                                    </Tooltip>
+                                </div>
+
+                                {/* 호버 시 표시되는 수정/삭제 버튼 */}
                                 <div className="template-overlay">
                                     <div className="template-actions">
-                                        <Tooltip title="작업 시작">
-                                            <Button
-                                                type="primary"
-                                                size="small"
-                                                icon={<PlayCircleOutlined />}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleUseTemplate(template.id);
-                                                }}
-                                            />
-                                        </Tooltip>
                                         <Tooltip title="수정">
                                             <Button
                                                 size="small"
@@ -484,6 +488,8 @@ export default function WorkTemplateList({
                 
                 .template-card {
                     position: relative;
+                    display: flex;
+                    align-items: center;
                     border-radius: 8px;
                     border-left: 4px solid #1890ff;
                     background: #fafafa;
@@ -497,7 +503,9 @@ export default function WorkTemplateList({
                 }
                 
                 .template-content {
+                    flex: 1;
                     padding: 10px 12px;
+                    padding-right: 50px;
                     cursor: pointer;
                     min-height: 60px;
                     display: flex;
@@ -524,6 +532,18 @@ export default function WorkTemplateList({
                     word-break: break-word;
                 }
                 
+                .template-start {
+                    position: absolute;
+                    right: 8px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    z-index: 1;
+                }
+                
+                .template-card:hover .template-start {
+                    opacity: 0;
+                }
+                
                 .template-overlay {
                     position: absolute;
                     top: 0;
@@ -535,10 +555,12 @@ export default function WorkTemplateList({
                     background: linear-gradient(to right, transparent, #f0f5ff 30%);
                     opacity: 0;
                     transition: opacity 0.2s;
+                    pointer-events: none;
                 }
                 
                 .template-card:hover .template-overlay {
                     opacity: 1;
+                    pointer-events: auto;
                 }
                 
                 .template-actions {
