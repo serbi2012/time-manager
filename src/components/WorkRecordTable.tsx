@@ -161,6 +161,53 @@ function TimeInput({ value, onSave }: TimeInputProps) {
     );
 }
 
+// 세션 날짜 편집용 Input 컴포넌트
+interface DateInputProps {
+    value: string;
+    onSave: (new_date: string) => void;
+}
+
+function DateInput({ value, onSave }: DateInputProps) {
+    const [edit_value, setEditValue] = useState<string | null>(null);
+    const is_editing = edit_value !== null;
+
+    const handleFocus = () => {
+        setEditValue(value);
+    };
+
+    const handleBlur = () => {
+        if (edit_value === null) return;
+
+        // 날짜 형식 검증 (YYYY-MM-DD)
+        const date_regex = /^\d{4}-\d{2}-\d{2}$/;
+        if (date_regex.test(edit_value) && dayjs(edit_value).isValid() && edit_value !== value) {
+            onSave(edit_value);
+        }
+        setEditValue(null);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter") {
+            (e.target as HTMLInputElement).blur();
+        } else if (e.key === "Escape") {
+            setEditValue(null);
+        }
+    };
+
+    return (
+        <Input
+            value={is_editing ? edit_value : value}
+            onChange={(e) => setEditValue(e.target.value)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            size="small"
+            style={{ width: 100, fontFamily: "monospace" }}
+            placeholder="YYYY-MM-DD"
+        />
+    );
+}
+
 // 세션 편집 테이블 (타이머 리렌더링과 독립적으로 동작)
 // record_id만 받고 직접 스토어에서 레코드를 구독하여 불필요한 리렌더링 방지
 interface SessionEditTableProps {
@@ -175,7 +222,8 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
     const updateSession = useWorkStore((state) => state.updateSession);
     const deleteSession = useWorkStore((state) => state.deleteSession);
 
-    const handleUpdateSession = useCallback(
+    // 시간 변경 핸들러
+    const handleUpdateTime = useCallback(
         (session_id: string, new_start: string, new_end: string) => {
             const result = updateSession(
                 record_id,
@@ -193,6 +241,25 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                 }
             } else {
                 message.error(result.message || "시간 수정에 실패했습니다.");
+            }
+        },
+        [record_id, updateSession]
+    );
+
+    // 날짜 변경 핸들러 (충돌 시 자동 조정 없이 알럿만)
+    const handleUpdateDate = useCallback(
+        (session: WorkSession, new_date: string) => {
+            const result = updateSession(
+                record_id,
+                session.id,
+                session.start_time,
+                session.end_time,
+                new_date
+            );
+            if (result.success) {
+                message.success("날짜가 변경되었습니다.");
+            } else {
+                message.error(result.message || "날짜 변경에 실패했습니다.");
             }
         },
         [record_id, updateSession]
@@ -220,6 +287,7 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
             : [
                   {
                       id: record.id,
+                      date: record.date,
                       start_time: record.start_time,
                       end_time: record.end_time,
                       duration_seconds: record.duration_minutes * 60,
@@ -262,6 +330,19 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                         ) => <Text type="secondary">{index + 1}</Text>,
                     },
                     {
+                        title: "날짜",
+                        key: "date",
+                        width: 120,
+                        render: (_: unknown, session: WorkSession) => (
+                            <DateInput
+                                value={session.date || record.date}
+                                onSave={(new_date) =>
+                                    handleUpdateDate(session, new_date)
+                                }
+                            />
+                        ),
+                    },
+                    {
                         title: "시작 시간",
                         key: "start_time",
                         width: 110,
@@ -269,7 +350,7 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                             <TimeInput
                                 value={session.start_time}
                                 onSave={(new_time) =>
-                                    handleUpdateSession(
+                                    handleUpdateTime(
                                         session.id,
                                         new_time,
                                         session.end_time
@@ -286,7 +367,7 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                             <TimeInput
                                 value={session.end_time}
                                 onSave={(new_time) =>
-                                    handleUpdateSession(
+                                    handleUpdateTime(
                                         session.id,
                                         session.start_time,
                                         new_time

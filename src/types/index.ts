@@ -1,6 +1,7 @@
 // 작업 세션 (시작/정지 한 번의 기록)
 export interface WorkSession {
   id: string;
+  date: string;           // 날짜 (YYYY-MM-DD)
   start_time: string;     // 시작 시간 (HH:mm:ss)
   end_time: string;       // 종료 시간 (HH:mm:ss)
   duration_seconds: number; // 소요 시간(초)

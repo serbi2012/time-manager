@@ -42,7 +42,8 @@ interface WorkStore {
     record_id: string,
     session_id: string,
     new_start: string,
-    new_end: string
+    new_end: string,
+    new_date?: string  // 날짜 변경 (선택)
   ) => { success: boolean; adjusted: boolean; message?: string };
   
   deleteSession: (record_id: string, session_id: string) => void;
@@ -109,6 +110,7 @@ const createSession = (
   
   return {
     id: crypto.randomUUID(),
+    date: dayjs(start_time).format('YYYY-MM-DD'),
     start_time: dayjs(start_time).format('HH:mm:ss'),
     end_time: dayjs(end_time).format('HH:mm:ss'),
     duration_seconds,
@@ -366,13 +368,17 @@ export const useWorkStore = create<WorkStore>()(
       },
 
       // 세션 수정 (시간 충돌 방지 포함)
-      updateSession: (record_id, session_id, new_start, new_end) => {
+      updateSession: (record_id, session_id, new_start, new_end, new_date) => {
         const { records } = get();
         const record = records.find((r) => r.id === record_id);
         if (!record) return { success: false, adjusted: false, message: '레코드를 찾을 수 없습니다.' };
 
         const session_index = record.sessions.findIndex((s) => s.id === session_id);
         if (session_index === -1) return { success: false, adjusted: false, message: '세션을 찾을 수 없습니다.' };
+
+        const current_session = record.sessions[session_index];
+        const target_date = new_date || current_session.date || record.date;
+        const is_date_changed = new_date && new_date !== (current_session.date || record.date);
 
         // 시간 문자열을 분으로 변환 (HH:mm:ss -> 분)
         const timeToMinutes = (time: string): number => {
@@ -400,14 +406,14 @@ export const useWorkStore = create<WorkStore>()(
           return { success: false, adjusted: false, message: '종료 시간은 시작 시간보다 나중이어야 합니다.' };
         }
 
-        // 같은 날짜의 모든 세션 수집 (현재 수정 중인 세션 제외)
+        // 대상 날짜의 모든 세션 수집 (현재 수정 중인 세션 제외)
         const same_day_sessions: { record_id: string; session: WorkSession; start_mins: number; end_mins: number }[] = [];
         
         records
-          .filter((r) => r.date === record.date)
           .forEach((r) => {
             r.sessions?.forEach((s) => {
-              if (!(r.id === record_id && s.id === session_id)) {
+              const session_date = s.date || r.date;
+              if (session_date === target_date && !(r.id === record_id && s.id === session_id)) {
                 same_day_sessions.push({
                   record_id: r.id,
                   session: s,
@@ -418,57 +424,71 @@ export const useWorkStore = create<WorkStore>()(
             });
           });
 
-        // 충돌 검사 및 자동 조정
-        let current_start_mins = new_start_mins;
-        let current_end_mins = new_end_mins;
-
-        // 충돌이 있는 동안 반복적으로 조정 (최대 10회)
-        for (let iteration = 0; iteration < 10; iteration++) {
-          let has_conflict = false;
-
+        // 날짜가 변경된 경우: 충돌 검사만 하고 자동 조정 안함
+        if (is_date_changed) {
           for (const other of same_day_sessions) {
-            // 현재 세션이 기존 세션과 겹치는지 확인
-            const overlaps = !(current_end_mins <= other.start_mins || current_start_mins >= other.end_mins);
-            
+            const overlaps = !(new_end_mins <= other.start_mins || new_start_mins >= other.end_mins);
             if (overlaps) {
-              has_conflict = true;
-
-              // 새 세션이 기존 세션을 완전히 포함하는 경우 → 실패
-              if (current_start_mins <= other.start_mins && current_end_mins >= other.end_mins) {
-                return { 
-                  success: false, 
-                  adjusted: false, 
-                  message: `다른 작업(${other.session.start_time}~${other.session.end_time})과 시간이 완전히 겹칩니다.` 
-                };
-              }
-
-              // 기존 세션이 새 세션을 완전히 포함하는 경우 → 실패
-              if (other.start_mins <= current_start_mins && other.end_mins >= current_end_mins) {
-                return { 
-                  success: false, 
-                  adjusted: false, 
-                  message: `다른 작업(${other.session.start_time}~${other.session.end_time}) 안에 완전히 포함됩니다.` 
-                };
-              }
-
-              // 시작 시간이 기존 세션 안에 있는 경우 → 시작 시간을 기존 세션 종료 시간으로 조정
-              if (current_start_mins >= other.start_mins && current_start_mins < other.end_mins) {
-                current_start_mins = other.end_mins;
-                was_adjusted = true;
-              }
-              // 종료 시간이 기존 세션 안에 있는 경우 → 종료 시간을 기존 세션 시작 시간으로 조정
-              else if (current_end_mins > other.start_mins && current_end_mins <= other.end_mins) {
-                current_end_mins = other.start_mins;
-                was_adjusted = true;
-              }
+              return { 
+                success: false, 
+                adjusted: false, 
+                message: `${target_date}에 다른 작업(${other.session.start_time}~${other.session.end_time})과 시간이 겹칩니다. 시간을 조정하세요.` 
+              };
             }
           }
+        } else {
+          // 날짜가 동일한 경우: 충돌 시 자동 조정
+          let current_start_mins = new_start_mins;
+          let current_end_mins = new_end_mins;
 
-          if (!has_conflict) break;
+          // 충돌이 있는 동안 반복적으로 조정 (최대 10회)
+          for (let iteration = 0; iteration < 10; iteration++) {
+            let has_conflict = false;
+
+            for (const other of same_day_sessions) {
+              // 현재 세션이 기존 세션과 겹치는지 확인
+              const overlaps = !(current_end_mins <= other.start_mins || current_start_mins >= other.end_mins);
+              
+              if (overlaps) {
+                has_conflict = true;
+
+                // 새 세션이 기존 세션을 완전히 포함하는 경우 → 실패
+                if (current_start_mins <= other.start_mins && current_end_mins >= other.end_mins) {
+                  return { 
+                    success: false, 
+                    adjusted: false, 
+                    message: `다른 작업(${other.session.start_time}~${other.session.end_time})과 시간이 완전히 겹칩니다.` 
+                  };
+                }
+
+                // 기존 세션이 새 세션을 완전히 포함하는 경우 → 실패
+                if (other.start_mins <= current_start_mins && other.end_mins >= current_end_mins) {
+                  return { 
+                    success: false, 
+                    adjusted: false, 
+                    message: `다른 작업(${other.session.start_time}~${other.session.end_time}) 안에 완전히 포함됩니다.` 
+                  };
+                }
+
+                // 시작 시간이 기존 세션 안에 있는 경우 → 시작 시간을 기존 세션 종료 시간으로 조정
+                if (current_start_mins >= other.start_mins && current_start_mins < other.end_mins) {
+                  current_start_mins = other.end_mins;
+                  was_adjusted = true;
+                }
+                // 종료 시간이 기존 세션 안에 있는 경우 → 종료 시간을 기존 세션 시작 시간으로 조정
+                else if (current_end_mins > other.start_mins && current_end_mins <= other.end_mins) {
+                  current_end_mins = other.start_mins;
+                  was_adjusted = true;
+                }
+              }
+            }
+
+            if (!has_conflict) break;
+          }
+
+          adjusted_start = minutesToTime(current_start_mins);
+          adjusted_end = minutesToTime(current_end_mins);
         }
-
-        adjusted_start = minutesToTime(current_start_mins);
-        adjusted_end = minutesToTime(current_end_mins);
 
         // 조정 후에도 유효한지 확인
         const final_start_mins = timeToMinutes(adjusted_start);
@@ -481,22 +501,27 @@ export const useWorkStore = create<WorkStore>()(
         const duration_seconds = Math.round((final_end_mins - final_start_mins) * 60);
         const updated_sessions = record.sessions.map((s, idx) =>
           idx === session_index
-            ? { ...s, start_time: adjusted_start, end_time: adjusted_end, duration_seconds }
+            ? { ...s, date: target_date, start_time: adjusted_start, end_time: adjusted_end, duration_seconds }
             : s
         );
 
+        // 날짜별로 세션 정렬 (날짜 오름차순, 시간 오름차순)
+        const sorted_sessions = [...updated_sessions].sort((a, b) => {
+          const date_a = a.date || record.date;
+          const date_b = b.date || record.date;
+          if (date_a !== date_b) return date_a.localeCompare(date_b);
+          return timeToMinutes(a.start_time) - timeToMinutes(b.start_time);
+        });
+
         // 레코드 업데이트 (총 시간, 시작/종료 시간 재계산)
         const total_seconds = updated_sessions.reduce((sum, s) => sum + (s.duration_seconds || 0), 0);
-        const sorted_sessions = [...updated_sessions].sort(
-          (a, b) => timeToMinutes(a.start_time) - timeToMinutes(b.start_time)
-        );
 
         set((state) => ({
           records: state.records.map((r) =>
             r.id === record_id
               ? {
                   ...r,
-                  sessions: updated_sessions,
+                  sessions: sorted_sessions,
                   duration_minutes: Math.max(1, Math.ceil(total_seconds / 60)),
                   start_time: sorted_sessions[0]?.start_time || r.start_time,
                   end_time: sorted_sessions[sorted_sessions.length - 1]?.end_time || r.end_time,
