@@ -24,9 +24,9 @@ export interface WorkRecord {
 
 export interface TimerState {
   is_running: boolean;
-  start_time: number | null;
-  elapsed_seconds: number;
+  start_time: number | null;       // 시작 시각 (timestamp, persist됨)
   active_template_id: string | null; // 현재 진행 중인 템플릿 ID
+  active_form_data: WorkFormData | null; // 진행 중인 작업 정보 (persist됨)
 }
 
 export interface WorkFormData {

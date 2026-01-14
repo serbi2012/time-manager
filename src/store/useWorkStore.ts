@@ -23,9 +23,10 @@ interface WorkStore {
   // 타이머 액션
   startTimer: (template_id?: string) => void;
   stopTimer: () => WorkRecord | null;
-  updateElapsedTime: () => void;
+  getElapsedSeconds: () => number;  // 실시간 경과 시간 계산
   resetTimer: () => void;
   switchTemplate: (template_id: string) => void;
+  syncFromStorage: () => void;      // 다른 탭과 동기화
   
   // 폼 액션
   setFormData: (data: Partial<WorkFormData>) => void;
@@ -73,8 +74,8 @@ const DEFAULT_FORM_DATA: WorkFormData = {
 const DEFAULT_TIMER: TimerState = {
   is_running: false,
   start_time: null,
-  elapsed_seconds: 0,
   active_template_id: null,
+  active_form_data: null,
 };
 
 // 같은 작업 기록 찾기 (같은 날짜 + 같은 작업명 + 같은 거래명)
@@ -139,20 +140,22 @@ export const useWorkStore = create<WorkStore>()(
       custom_category_options: [],
 
       startTimer: (template_id?: string) => {
+        const { form_data } = get();
         set({
           timer: {
             is_running: true,
             start_time: Date.now(),
-            elapsed_seconds: 0,
             active_template_id: template_id || null,
+            active_form_data: { ...form_data },  // 진행 중인 작업 정보 저장
           },
         });
       },
 
       stopTimer: () => {
-        const { timer, form_data, records } = get();
-        if (!timer.is_running || !timer.start_time) return null;
+        const { timer, records } = get();
+        if (!timer.is_running || !timer.start_time || !timer.active_form_data) return null;
 
+        const active_form = timer.active_form_data;
         const end_time = Date.now();
         const record_date = dayjs(timer.start_time).format('YYYY-MM-DD');
         
@@ -163,8 +166,8 @@ export const useWorkStore = create<WorkStore>()(
         const existing_record = findExistingRecord(
           records,
           record_date,
-          form_data.work_name,
-          form_data.deal_name
+          active_form.work_name,
+          active_form.deal_name
         );
 
         if (existing_record) {
@@ -192,7 +195,7 @@ export const useWorkStore = create<WorkStore>()(
           // 새 기록 생성
           const new_record: WorkRecord = {
             id: crypto.randomUUID(),
-            ...form_data,
+            ...active_form,
             duration_minutes: calculateTotalMinutes([new_session]),
             start_time: new_session.start_time,
             end_time: new_session.end_time,
@@ -213,12 +216,13 @@ export const useWorkStore = create<WorkStore>()(
 
       // 작업 전환: 현재 작업 저장 후 새 작업 시작
       switchTemplate: (template_id: string) => {
-        const { timer, templates, form_data, records } = get();
+        const { timer, templates, records } = get();
         const template = templates.find(t => t.id === template_id);
         if (!template) return;
 
         // 현재 진행 중인 작업이 있으면 저장
-        if (timer.is_running && timer.start_time) {
+        if (timer.is_running && timer.start_time && timer.active_form_data) {
+          const active_form = timer.active_form_data;
           const end_time = Date.now();
           const record_date = dayjs(timer.start_time).format('YYYY-MM-DD');
           
@@ -229,8 +233,8 @@ export const useWorkStore = create<WorkStore>()(
           const existing_record = findExistingRecord(
             records,
             record_date,
-            form_data.work_name,
-            form_data.deal_name
+            active_form.work_name,
+            active_form.deal_name
           );
 
           if (existing_record) {
@@ -254,7 +258,7 @@ export const useWorkStore = create<WorkStore>()(
             // 새 기록 생성
             const new_record: WorkRecord = {
               id: crypto.randomUUID(),
-              ...form_data,
+              ...active_form,
               duration_minutes: calculateTotalMinutes([new_session]),
               start_time: new_session.start_time,
               end_time: new_session.end_time,
@@ -270,38 +274,55 @@ export const useWorkStore = create<WorkStore>()(
         }
 
         // 새 템플릿으로 타이머 시작
+        const new_form_data = {
+          work_name: template.work_name,
+          task_name: template.task_name,
+          deal_name: template.deal_name,
+          category_name: template.category_name,
+          note: template.note,
+        };
         set({
-          form_data: {
-            work_name: template.work_name,
-            task_name: template.task_name,
-            deal_name: template.deal_name,
-            category_name: template.category_name,
-            note: template.note,
-          },
+          form_data: new_form_data,
           timer: {
             is_running: true,
             start_time: Date.now(),
-            elapsed_seconds: 0,
             active_template_id: template_id,
+            active_form_data: new_form_data,
           },
         });
       },
 
-      updateElapsedTime: () => {
+      // 경과 시간을 실시간으로 계산 (저장하지 않음)
+      getElapsedSeconds: () => {
         const { timer } = get();
-        if (!timer.is_running || !timer.start_time) return;
-
-        const elapsed = Math.floor((Date.now() - timer.start_time) / 1000);
-        set({
-          timer: {
-            ...timer,
-            elapsed_seconds: elapsed,
-          },
-        });
+        if (!timer.is_running || !timer.start_time) return 0;
+        return Math.floor((Date.now() - timer.start_time) / 1000);
       },
 
       resetTimer: () => {
-        set({ timer: DEFAULT_TIMER });
+        set({ timer: DEFAULT_TIMER, form_data: DEFAULT_FORM_DATA });
+      },
+
+      // 다른 탭에서 변경된 상태 동기화
+      syncFromStorage: () => {
+        const stored = localStorage.getItem('work-time-storage');
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (parsed.state) {
+              set({
+                records: parsed.state.records || [],
+                templates: parsed.state.templates || [],
+                timer: parsed.state.timer || DEFAULT_TIMER,
+                form_data: parsed.state.timer?.active_form_data || DEFAULT_FORM_DATA,
+                custom_task_options: parsed.state.custom_task_options || [],
+                custom_category_options: parsed.state.custom_category_options || [],
+              });
+            }
+          } catch {
+            // parse error - ignore
+          }
+        }
       },
 
       setFormData: (data) => {
@@ -493,9 +514,16 @@ export const useWorkStore = create<WorkStore>()(
       partialize: (state) => ({
         records: state.records,
         templates: state.templates,
+        timer: state.timer,  // 타이머 상태도 저장 (탭 간 동기화)
         custom_task_options: state.custom_task_options,
         custom_category_options: state.custom_category_options,
       }),
+      onRehydrateStorage: () => (state) => {
+        // 저장소에서 복원 시 form_data도 동기화
+        if (state?.timer?.active_form_data) {
+          state.form_data = state.timer.active_form_data;
+        }
+      },
     }
   )
 );

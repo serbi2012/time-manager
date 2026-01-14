@@ -122,12 +122,12 @@ export default function WorkRecordTable() {
         deleteRecord,
         updateRecord,
         timer,
-        form_data,
         startTimer,
         stopTimer,
         switchTemplate,
         setFormData,
-        updateElapsedTime,
+        getElapsedSeconds,
+        syncFromStorage,
         templates,
         getAutoCompleteOptions,
         getCompletedRecords,
@@ -139,10 +139,15 @@ export default function WorkRecordTable() {
         addCustomCategoryOption,
     } = useWorkStore();
 
+    // 타이머 표시를 위한 리렌더링 트리거
+    const [, setTick] = useState(0);
+
     const [is_modal_open, setIsModalOpen] = useState(false);
     const [is_edit_modal_open, setIsEditModalOpen] = useState(false);
     const [is_completed_modal_open, setIsCompletedModalOpen] = useState(false);
-    const [editing_record, setEditingRecord] = useState<WorkRecord | null>(null);
+    const [editing_record, setEditingRecord] = useState<WorkRecord | null>(
+        null
+    );
     const [form] = Form.useForm();
     const [edit_form] = Form.useForm();
     const [new_task_input, setNewTaskInput] = useState("");
@@ -185,18 +190,31 @@ export default function WorkRecordTable() {
         }
     };
 
-    // 타이머 업데이트
+    // 타이머 UI 업데이트 (1초마다 리렌더링)
     useEffect(() => {
         let interval: ReturnType<typeof setInterval>;
         if (timer.is_running) {
             interval = setInterval(() => {
-                updateElapsedTime();
+                setTick((t) => t + 1);  // 리렌더링 트리거
             }, 1000);
         }
         return () => {
             if (interval) clearInterval(interval);
         };
-    }, [timer.is_running, updateElapsedTime]);
+    }, [timer.is_running]);
+
+    // 다른 탭에서의 변경 감지 (LocalStorage 동기화)
+    useEffect(() => {
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'work-time-storage') {
+                syncFromStorage();
+            }
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, [syncFromStorage]);
 
     // 오늘 날짜인지 확인
     const is_today = selected_date === dayjs().format("YYYY-MM-DD");
@@ -208,32 +226,33 @@ export default function WorkRecordTable() {
             if (r.is_completed) return false;
             return r.date <= selected_date;
         });
-        
+
         // 선택된 날짜의 완료된 레코드도 포함
         const completed_today = records.filter(
             (r) => r.date === selected_date && r.is_completed
         );
-        
+
         const all_records = [...incomplete_records, ...completed_today];
 
         // 진행 중인 작업이 있고, 오늘 날짜인 경우
-        if (timer.is_running && is_today && form_data.work_name) {
+        const active_form = timer.active_form_data;
+        if (timer.is_running && is_today && active_form?.work_name) {
             // 이미 저장된 레코드에 같은 작업이 있는지 확인
             const existing = all_records.find(
                 (r) =>
-                    r.work_name === form_data.work_name &&
-                    r.deal_name === form_data.deal_name
+                    r.work_name === active_form.work_name &&
+                    r.deal_name === active_form.deal_name
             );
 
             // 없으면 진행 중인 작업을 가상 레코드로 추가
             if (!existing) {
                 const virtual_record: WorkRecord = {
                     id: "__active__",
-                    work_name: form_data.work_name,
-                    task_name: form_data.task_name,
-                    deal_name: form_data.deal_name,
-                    category_name: form_data.category_name,
-                    note: form_data.note,
+                    work_name: active_form.work_name,
+                    task_name: active_form.task_name,
+                    deal_name: active_form.deal_name,
+                    category_name: active_form.category_name,
+                    note: active_form.note,
                     duration_minutes: 0,
                     start_time: timer.start_time
                         ? dayjs(timer.start_time).format("HH:mm:ss")
@@ -261,8 +280,8 @@ export default function WorkRecordTable() {
         selected_date,
         timer.is_running,
         timer.start_time,
+        timer.active_form_data,
         is_today,
-        form_data,
     ]);
 
     // 총 시간 계산 (가상 레코드 제외)
@@ -279,11 +298,13 @@ export default function WorkRecordTable() {
         if (filtered_records.some((r) => r.id === "__active__")) {
             return "__active__";
         }
-        // form_data와 매칭되는 레코드 찾기
+        // timer.active_form_data와 매칭되는 레코드 찾기
+        const active_form = timer.active_form_data;
+        if (!active_form) return null;
         const matching = filtered_records.find(
             (r) =>
-                r.work_name === form_data.work_name &&
-                r.deal_name === form_data.deal_name
+                r.work_name === active_form.work_name &&
+                r.deal_name === active_form.deal_name
         );
         return matching?.id || null;
     };
@@ -569,16 +590,22 @@ export default function WorkRecordTable() {
                         )}
                         <Text
                             strong
-                            style={{ 
-                                color: is_active ? "#1890ff" : is_completed ? "#8c8c8c" : undefined,
-                                textDecoration: is_completed ? "line-through" : undefined,
+                            style={{
+                                color: is_active
+                                    ? "#1890ff"
+                                    : is_completed
+                                    ? "#8c8c8c"
+                                    : undefined,
+                                textDecoration: is_completed
+                                    ? "line-through"
+                                    : undefined,
                             }}
                         >
                             {text}
                         </Text>
                         {is_active && (
                             <Tag color="processing" style={{ marginLeft: 4 }}>
-                                {formatTimer(timer.elapsed_seconds)}
+                                {formatTimer(getElapsedSeconds())}
                             </Tag>
                         )}
                     </Space>
@@ -654,11 +681,13 @@ export default function WorkRecordTable() {
             render: (text: string) => {
                 const is_past = text < dayjs().format("YYYY-MM-DD");
                 return (
-                    <Text 
-                        type={is_past ? "warning" : "secondary"} 
+                    <Text
+                        type={is_past ? "warning" : "secondary"}
                         style={{ fontSize: 11 }}
                     >
-                        {text === dayjs().format("YYYY-MM-DD") ? "오늘" : text.slice(5)}
+                        {text === dayjs().format("YYYY-MM-DD")
+                            ? "오늘"
+                            : text.slice(5)}
                     </Text>
                 );
             },
@@ -733,19 +762,19 @@ export default function WorkRecordTable() {
                     <Space>
                         <ClockCircleOutlined />
                         <span>작업 기록</span>
-                        {timer.is_running && (
+                        {timer.is_running && timer.active_form_data && (
                             <Tag
                                 color="processing"
                                 icon={<ClockCircleOutlined spin />}
                             >
-                                {form_data.work_name} 진행 중
+                                {timer.active_form_data.work_name} 진행 중
                             </Tag>
                         )}
-                        {filtered_records.some((r) => r.date < dayjs().format("YYYY-MM-DD") && !r.is_completed) && (
-                            <Tag color="warning">
-                                미완료 작업 있음
-                            </Tag>
-                        )}
+                        {filtered_records.some(
+                            (r) =>
+                                r.date < dayjs().format("YYYY-MM-DD") &&
+                                !r.is_completed
+                        ) && <Tag color="warning">미완료 작업 있음</Tag>}
                     </Space>
                 }
                 extra={
@@ -1044,9 +1073,13 @@ export default function WorkRecordTable() {
                                                 placeholder="새 업무명"
                                                 value={edit_task_input}
                                                 onChange={(e) =>
-                                                    setEditTaskInput(e.target.value)
+                                                    setEditTaskInput(
+                                                        e.target.value
+                                                    )
                                                 }
-                                                onKeyDown={(e) => e.stopPropagation()}
+                                                onKeyDown={(e) =>
+                                                    e.stopPropagation()
+                                                }
                                                 size="small"
                                                 style={{ width: 130 }}
                                             />
@@ -1054,8 +1087,12 @@ export default function WorkRecordTable() {
                                                 type="text"
                                                 icon={<PlusOutlined />}
                                                 onClick={() => {
-                                                    if (edit_task_input.trim()) {
-                                                        addCustomTaskOption(edit_task_input.trim());
+                                                    if (
+                                                        edit_task_input.trim()
+                                                    ) {
+                                                        addCustomTaskOption(
+                                                            edit_task_input.trim()
+                                                        );
                                                         setEditTaskInput("");
                                                     }
                                                 }}
@@ -1092,9 +1129,13 @@ export default function WorkRecordTable() {
                                                 placeholder="새 카테고리"
                                                 value={edit_category_input}
                                                 onChange={(e) =>
-                                                    setEditCategoryInput(e.target.value)
+                                                    setEditCategoryInput(
+                                                        e.target.value
+                                                    )
                                                 }
-                                                onKeyDown={(e) => e.stopPropagation()}
+                                                onKeyDown={(e) =>
+                                                    e.stopPropagation()
+                                                }
                                                 size="small"
                                                 style={{ width: 130 }}
                                             />
@@ -1102,9 +1143,15 @@ export default function WorkRecordTable() {
                                                 type="text"
                                                 icon={<PlusOutlined />}
                                                 onClick={() => {
-                                                    if (edit_category_input.trim()) {
-                                                        addCustomCategoryOption(edit_category_input.trim());
-                                                        setEditCategoryInput("");
+                                                    if (
+                                                        edit_category_input.trim()
+                                                    ) {
+                                                        addCustomCategoryOption(
+                                                            edit_category_input.trim()
+                                                        );
+                                                        setEditCategoryInput(
+                                                            ""
+                                                        );
                                                     }
                                                 }}
                                                 size="small"
@@ -1136,9 +1183,12 @@ export default function WorkRecordTable() {
                 open={is_completed_modal_open}
                 onCancel={() => setIsCompletedModalOpen(false)}
                 footer={[
-                    <Button key="close" onClick={() => setIsCompletedModalOpen(false)}>
+                    <Button
+                        key="close"
+                        onClick={() => setIsCompletedModalOpen(false)}
+                    >
                         닫기
-                    </Button>
+                    </Button>,
                 ]}
                 width={800}
             >
@@ -1153,7 +1203,9 @@ export default function WorkRecordTable() {
                             dataIndex: "work_name",
                             key: "work_name",
                             width: 150,
-                            render: (text: string) => <Text strong>{text}</Text>,
+                            render: (text: string) => (
+                                <Text strong>{text}</Text>
+                            ),
                         },
                         {
                             title: "거래명",
@@ -1185,7 +1237,9 @@ export default function WorkRecordTable() {
                             width: 120,
                             render: (_: unknown, record: WorkRecord) =>
                                 record.completed_at
-                                    ? dayjs(record.completed_at).format("YYYY-MM-DD HH:mm")
+                                    ? dayjs(record.completed_at).format(
+                                          "YYYY-MM-DD HH:mm"
+                                      )
                                     : "-",
                         },
                         {
@@ -1199,13 +1253,17 @@ export default function WorkRecordTable() {
                                             type="text"
                                             icon={<RollbackOutlined />}
                                             size="small"
-                                            onClick={() => handleMarkIncomplete(record)}
+                                            onClick={() =>
+                                                handleMarkIncomplete(record)
+                                            }
                                         />
                                     </Tooltip>
                                     <Popconfirm
                                         title="삭제 확인"
                                         description="이 기록을 삭제하시겠습니까?"
-                                        onConfirm={() => deleteRecord(record.id)}
+                                        onConfirm={() =>
+                                            deleteRecord(record.id)
+                                        }
                                         okText="삭제"
                                         cancelText="취소"
                                         okButtonProps={{ danger: true }}
