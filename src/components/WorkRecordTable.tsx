@@ -3,7 +3,6 @@ import {
     Table,
     Card,
     DatePicker,
-    TimePicker,
     Button,
     Popconfirm,
     Space,
@@ -115,6 +114,53 @@ const getRecordDurationMinutes = (record: WorkRecord): number => {
     return 0;
 };
 
+// 세션 시간 편집용 Input 컴포넌트 (로컬 상태로 리렌더링 문제 해결)
+interface TimeInputProps {
+    value: string;
+    onSave: (new_time: string) => void;
+}
+
+function TimeInput({ value, onSave }: TimeInputProps) {
+    const [edit_value, setEditValue] = useState<string | null>(null);
+    const is_editing = edit_value !== null;
+
+    const handleFocus = () => {
+        setEditValue(value);
+    };
+
+    const handleBlur = () => {
+        if (edit_value === null) return;
+        
+        // 시간 형식 검증 (HH:mm:ss)
+        const time_regex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
+        if (time_regex.test(edit_value) && edit_value !== value) {
+            onSave(edit_value);
+        }
+        setEditValue(null);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter") {
+            (e.target as HTMLInputElement).blur();
+        } else if (e.key === "Escape") {
+            setEditValue(null);
+        }
+    };
+
+    return (
+        <Input
+            value={is_editing ? edit_value : value}
+            onChange={(e) => setEditValue(e.target.value)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            size="small"
+            style={{ width: 90, fontFamily: "monospace" }}
+            placeholder="HH:mm:ss"
+        />
+    );
+}
+
 // 세션 편집 테이블 (타이머 리렌더링과 독립적으로 동작)
 // record_id만 받고 직접 스토어에서 레코드를 구독하여 불필요한 리렌더링 방지
 interface SessionEditTableProps {
@@ -218,46 +264,34 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                     {
                         title: "시작 시간",
                         key: "start_time",
-                        width: 140,
+                        width: 110,
                         render: (_: unknown, session: WorkSession) => (
-                            <TimePicker
-                                value={dayjs(session.start_time, "HH:mm:ss")}
-                                format="HH:mm:ss"
-                                size="small"
-                                allowClear={false}
-                                needConfirm
-                                onOk={(time) => {
-                                    if (time) {
-                                        handleUpdateSession(
-                                            session.id,
-                                            time.format("HH:mm:ss"),
-                                            session.end_time
-                                        );
-                                    }
-                                }}
+                            <TimeInput
+                                value={session.start_time}
+                                onSave={(new_time) =>
+                                    handleUpdateSession(
+                                        session.id,
+                                        new_time,
+                                        session.end_time
+                                    )
+                                }
                             />
                         ),
                     },
                     {
                         title: "종료 시간",
                         key: "end_time",
-                        width: 140,
+                        width: 110,
                         render: (_: unknown, session: WorkSession) => (
-                            <TimePicker
-                                value={dayjs(session.end_time, "HH:mm:ss")}
-                                format="HH:mm:ss"
-                                size="small"
-                                allowClear={false}
-                                needConfirm
-                                onOk={(time) => {
-                                    if (time) {
-                                        handleUpdateSession(
-                                            session.id,
-                                            session.start_time,
-                                            time.format("HH:mm:ss")
-                                        );
-                                    }
-                                }}
+                            <TimeInput
+                                value={session.end_time}
+                                onSave={(new_time) =>
+                                    handleUpdateSession(
+                                        session.id,
+                                        session.start_time,
+                                        new_time
+                                    )
+                                }
                             />
                         ),
                     },
