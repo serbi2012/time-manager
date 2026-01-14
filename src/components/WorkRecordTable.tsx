@@ -131,10 +131,17 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
 
     const handleUpdateSession = useCallback(
         (session_id: string, new_start: string, new_end: string) => {
-            const result = updateSession(record_id, session_id, new_start, new_end);
+            const result = updateSession(
+                record_id,
+                session_id,
+                new_start,
+                new_end
+            );
             if (result.success) {
                 if (result.adjusted) {
-                    message.warning(result.message || "시간이 자동 조정되었습니다.");
+                    message.warning(
+                        result.message || "시간이 자동 조정되었습니다."
+                    );
                 } else {
                     message.success("시간이 수정되었습니다.");
                 }
@@ -218,8 +225,8 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                                 format="HH:mm:ss"
                                 size="small"
                                 allowClear={false}
-                                needConfirm={true}
-                                onChange={(time) => {
+                                needConfirm
+                                onOk={(time) => {
                                     if (time) {
                                         handleUpdateSession(
                                             session.id,
@@ -241,8 +248,8 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                                 format="HH:mm:ss"
                                 size="small"
                                 allowClear={false}
-                                needConfirm={true}
-                                onChange={(time) => {
+                                needConfirm
+                                onOk={(time) => {
                                     if (time) {
                                         handleUpdateSession(
                                             session.id,
@@ -274,7 +281,9 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                             <Popconfirm
                                 title="세션 삭제"
                                 description="이 세션을 삭제하시겠습니까?"
-                                onConfirm={() => handleDeleteSession(session.id)}
+                                onConfirm={() =>
+                                    handleDeleteSession(session.id)
+                                }
                                 okText="삭제"
                                 cancelText="취소"
                                 okButtonProps={{ danger: true }}
