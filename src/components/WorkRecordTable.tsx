@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, memo, useCallback } from "react";
 import {
     Table,
     Card,
@@ -115,6 +115,183 @@ const getRecordDurationMinutes = (record: WorkRecord): number => {
     return 0;
 };
 
+// 세션 편집 테이블 (타이머 리렌더링과 독립적으로 동작)
+interface SessionEditTableProps {
+    record: WorkRecord;
+    onUpdateSession: (
+        record_id: string,
+        session_id: string,
+        new_start: string,
+        new_end: string
+    ) => void;
+    onDeleteSession: (record_id: string, session_id: string) => void;
+}
+
+const SessionEditTable = memo(function SessionEditTable({
+    record,
+    onUpdateSession,
+    onDeleteSession,
+}: SessionEditTableProps) {
+    const sessions: WorkSession[] =
+        record.sessions && record.sessions.length > 0
+            ? record.sessions
+            : [
+                  {
+                      id: record.id,
+                      start_time: record.start_time,
+                      end_time: record.end_time,
+                      duration_seconds: record.duration_minutes * 60,
+                  },
+              ];
+
+    if (sessions.length === 0) {
+        return (
+            <div style={{ padding: "16px", color: "#999" }}>
+                세션 이력이 없습니다.
+            </div>
+        );
+    }
+
+    return (
+        <div className="session-history">
+            <div className="session-header">
+                <HistoryOutlined style={{ marginRight: 8 }} />
+                <Text strong>작업 이력</Text>
+                <Text
+                    type="secondary"
+                    style={{ marginLeft: 8, fontSize: 12 }}
+                >
+                    (총 {sessions.length}회 작업)
+                </Text>
+            </div>
+
+            <Table
+                dataSource={sessions}
+                rowKey="id"
+                size="small"
+                pagination={false}
+                style={{ marginTop: 16 }}
+                columns={[
+                    {
+                        title: "#",
+                        key: "index",
+                        width: 40,
+                        render: (
+                            _: unknown,
+                            __: WorkSession,
+                            index: number
+                        ) => <Text type="secondary">{index + 1}</Text>,
+                    },
+                    {
+                        title: "시작 시간",
+                        key: "start_time",
+                        width: 140,
+                        render: (_: unknown, session: WorkSession) => (
+                            <TimePicker
+                                value={dayjs(session.start_time, "HH:mm:ss")}
+                                format="HH:mm:ss"
+                                size="small"
+                                allowClear={false}
+                                needConfirm={true}
+                                onChange={(time) => {
+                                    if (time) {
+                                        onUpdateSession(
+                                            record.id,
+                                            session.id,
+                                            time.format("HH:mm:ss"),
+                                            session.end_time
+                                        );
+                                    }
+                                }}
+                            />
+                        ),
+                    },
+                    {
+                        title: "종료 시간",
+                        key: "end_time",
+                        width: 140,
+                        render: (_: unknown, session: WorkSession) => (
+                            <TimePicker
+                                value={dayjs(session.end_time, "HH:mm:ss")}
+                                format="HH:mm:ss"
+                                size="small"
+                                allowClear={false}
+                                needConfirm={true}
+                                onChange={(time) => {
+                                    if (time) {
+                                        onUpdateSession(
+                                            record.id,
+                                            session.id,
+                                            session.start_time,
+                                            time.format("HH:mm:ss")
+                                        );
+                                    }
+                                }}
+                            />
+                        ),
+                    },
+                    {
+                        title: "소요 시간",
+                        key: "duration",
+                        width: 100,
+                        render: (_: unknown, session: WorkSession) => (
+                            <Tag color="blue">
+                                {formatDuration(getSessionDurationSeconds(session))}
+                            </Tag>
+                        ),
+                    },
+                    {
+                        title: "",
+                        key: "action",
+                        width: 40,
+                        render: (_: unknown, session: WorkSession) => (
+                            <Popconfirm
+                                title="세션 삭제"
+                                description="이 세션을 삭제하시겠습니까?"
+                                onConfirm={() =>
+                                    onDeleteSession(record.id, session.id)
+                                }
+                                okText="삭제"
+                                cancelText="취소"
+                                okButtonProps={{ danger: true }}
+                            >
+                                <Button
+                                    type="text"
+                                    danger
+                                    icon={<DeleteOutlined />}
+                                    size="small"
+                                />
+                            </Popconfirm>
+                        ),
+                    },
+                ]}
+            />
+
+            <div className="session-summary">
+                <Space split={<span style={{ color: "#d9d9d9" }}>|</span>}>
+                    <Text type="secondary">첫 시작: {record.start_time}</Text>
+                    <Text type="secondary">마지막 종료: {record.end_time}</Text>
+                    <Text strong style={{ color: "#1890ff" }}>
+                        총{" "}
+                        {formatDuration(
+                            sessions.reduce(
+                                (sum, s) => sum + getSessionDurationSeconds(s),
+                                0
+                            )
+                        )}
+                    </Text>
+                </Space>
+            </div>
+
+            <style>{`
+                .session-history { padding: 16px 24px; background: #fafafa; border-radius: 8px; }
+                .session-header { display: flex; align-items: center; margin-bottom: 8px; }
+                .session-summary { margin-top: 16px; padding-top: 12px; border-top: 1px dashed #e8e8e8; }
+            `}</style>
+        </div>
+    );
+});
+
 export default function WorkRecordTable() {
     const {
         records,
@@ -148,16 +325,9 @@ export default function WorkRecordTable() {
     const [is_modal_open, setIsModalOpen] = useState(false);
     const [is_edit_modal_open, setIsEditModalOpen] = useState(false);
     const [is_completed_modal_open, setIsCompletedModalOpen] = useState(false);
-    const [is_session_edit_modal_open, setIsSessionEditModalOpen] = useState(false);
     const [editing_record, setEditingRecord] = useState<WorkRecord | null>(
         null
     );
-    const [editing_session, setEditingSession] = useState<{
-        record_id: string;
-        session: WorkSession;
-    } | null>(null);
-    const [session_start_time, setSessionStartTime] = useState<string>("");
-    const [session_end_time, setSessionEndTime] = useState<string>("");
     const [form] = Form.useForm();
     const [edit_form] = Form.useForm();
     const [new_task_input, setNewTaskInput] = useState("");
@@ -447,201 +617,50 @@ export default function WorkRecordTable() {
         return getCompletedRecords();
     }, [records, getCompletedRecords]);
 
-    // 세션 편집 모달 열기
-    const openSessionEditModal = (record_id: string, session: WorkSession) => {
-        setEditingSession({ record_id, session });
-        setSessionStartTime(session.start_time);
-        setSessionEndTime(session.end_time);
-        setIsSessionEditModalOpen(true);
-    };
-
-    // 세션 편집 모달 닫기
-    const closeSessionEditModal = () => {
-        setIsSessionEditModalOpen(false);
-        setEditingSession(null);
-        setSessionStartTime("");
-        setSessionEndTime("");
-    };
-
-    // 세션 시간 저장
-    const handleSaveSessionTime = () => {
-        if (!editing_session) return;
-        
-        const result = updateSession(
-            editing_session.record_id,
-            editing_session.session.id,
-            session_start_time,
-            session_end_time
-        );
-        
-        if (result.success) {
-            if (result.adjusted) {
-                message.warning(
-                    result.message || "시간이 자동 조정되었습니다."
-                );
+    // 세션 시간 수정 핸들러 (useCallback으로 메모이제이션)
+    const handleUpdateSessionTime = useCallback(
+        (
+            record_id: string,
+            session_id: string,
+            new_start: string,
+            new_end: string
+        ) => {
+            const result = updateSession(record_id, session_id, new_start, new_end);
+            if (result.success) {
+                if (result.adjusted) {
+                    message.warning(
+                        result.message || "시간이 자동 조정되었습니다."
+                    );
+                } else {
+                    message.success("시간이 수정되었습니다.");
+                }
             } else {
-                message.success("시간이 수정되었습니다.");
+                message.error(result.message || "시간 수정에 실패했습니다.");
             }
-            closeSessionEditModal();
-        } else {
-            message.error(result.message || "시간 수정에 실패했습니다.");
-        }
-    };
+        },
+        [updateSession]
+    );
 
-    // 세션 삭제 핸들러
-    const handleDeleteSession = (record_id: string, session_id: string) => {
-        deleteSession(record_id, session_id);
-        message.success("세션이 삭제되었습니다.");
-    };
+    // 세션 삭제 핸들러 (useCallback으로 메모이제이션)
+    const handleDeleteSession = useCallback(
+        (record_id: string, session_id: string) => {
+            deleteSession(record_id, session_id);
+            message.success("세션이 삭제되었습니다.");
+        },
+        [deleteSession]
+    );
 
-    // 확장 행 렌더링 (세션 이력 + 시간 수정)
-    const expandedRowRender = (record: WorkRecord) => {
-        const sessions: WorkSession[] =
-            record.sessions && record.sessions.length > 0
-                ? record.sessions
-                : [
-                      {
-                          id: record.id,
-                          start_time: record.start_time,
-                          end_time: record.end_time,
-                          duration_seconds: record.duration_minutes * 60,
-                      },
-                  ];
-
-        if (sessions.length === 0) {
-            return (
-                <div style={{ padding: "16px", color: "#999" }}>
-                    세션 이력이 없습니다.
-                </div>
-            );
-        }
-
-        return (
-            <div className="session-history">
-                <div className="session-header">
-                    <HistoryOutlined style={{ marginRight: 8 }} />
-                    <Text strong>작업 이력</Text>
-                    <Text
-                        type="secondary"
-                        style={{ marginLeft: 8, fontSize: 12 }}
-                    >
-                        (총 {sessions.length}회 작업)
-                    </Text>
-                </div>
-
-                <Table
-                    dataSource={sessions}
-                    rowKey="id"
-                    size="small"
-                    pagination={false}
-                    style={{ marginTop: 16 }}
-                    columns={[
-                        {
-                            title: "#",
-                            key: "index",
-                            width: 40,
-                            render: (
-                                _: unknown,
-                                __: WorkSession,
-                                index: number
-                            ) => <Text type="secondary">{index + 1}</Text>,
-                        },
-                        {
-                            title: "시간",
-                            key: "time_range",
-                            width: 180,
-                            render: (_: unknown, session: WorkSession) => (
-                                <Text>
-                                    {session.start_time} ~ {session.end_time}
-                                </Text>
-                            ),
-                        },
-                        {
-                            title: "소요 시간",
-                            key: "duration",
-                            width: 100,
-                            render: (_: unknown, session: WorkSession) => (
-                                <Tag color="blue">
-                                    {formatDuration(
-                                        getSessionDurationSeconds(session)
-                                    )}
-                                </Tag>
-                            ),
-                        },
-                        {
-                            title: "",
-                            key: "action",
-                            width: 80,
-                            render: (_: unknown, session: WorkSession) => (
-                                <Space size="small">
-                                    <Tooltip title="시간 수정">
-                                        <Button
-                                            type="text"
-                                            icon={<EditOutlined />}
-                                            size="small"
-                                            onClick={() =>
-                                                openSessionEditModal(
-                                                    record.id,
-                                                    session
-                                                )
-                                            }
-                                        />
-                                    </Tooltip>
-                                    <Popconfirm
-                                        title="세션 삭제"
-                                        description="이 세션을 삭제하시겠습니까?"
-                                    onConfirm={() =>
-                                        handleDeleteSession(
-                                            record.id,
-                                            session.id
-                                        )
-                                    }
-                                    okText="삭제"
-                                    cancelText="취소"
-                                    okButtonProps={{ danger: true }}
-                                >
-                                    <Button
-                                        type="text"
-                                        danger
-                                        icon={<DeleteOutlined />}
-                                        size="small"
-                                    />
-                                    </Popconfirm>
-                                </Space>
-                            ),
-                        },
-                    ]}
-                />
-
-                <div className="session-summary">
-                    <Space split={<span style={{ color: "#d9d9d9" }}>|</span>}>
-                        <Text type="secondary">
-                            첫 시작: {record.start_time}
-                        </Text>
-                        <Text type="secondary">
-                            마지막 종료: {record.end_time}
-                        </Text>
-                        <Text strong style={{ color: "#1890ff" }}>
-                            총{" "}
-                            {formatDuration(
-                                sessions.reduce(
-                                    (sum, s) =>
-                                        sum + getSessionDurationSeconds(s),
-                                    0
-                                )
-                            )}
-                        </Text>
-                    </Space>
-                </div>
-
-                <style>{`
-                    .session-history { padding: 16px 24px; background: #fafafa; border-radius: 8px; }
-                    .session-header { display: flex; align-items: center; margin-bottom: 8px; }
-                    .session-summary { margin-top: 16px; padding-top: 12px; border-top: 1px dashed #e8e8e8; }
-                `}</style>
-            </div>
-        );
-    };
+    // 확장 행 렌더링 (별도 컴포넌트 사용으로 타이머 리렌더링 영향 차단)
+    const expandedRowRender = useCallback(
+        (record: WorkRecord) => (
+            <SessionEditTable
+                record={record}
+                onUpdateSession={handleUpdateSessionTime}
+                onDeleteSession={handleDeleteSession}
+            />
+        ),
+        [handleUpdateSessionTime, handleDeleteSession]
+    );
 
     const columns: ColumnsType<WorkRecord> = [
         {
@@ -1387,95 +1406,6 @@ export default function WorkRecordTable() {
                         emptyText: "완료된 작업이 없습니다.",
                     }}
                 />
-            </Modal>
-
-            {/* 세션 시간 수정 모달 */}
-            <Modal
-                title="세션 시간 수정"
-                open={is_session_edit_modal_open}
-                onOk={handleSaveSessionTime}
-                onCancel={closeSessionEditModal}
-                okText="저장"
-                cancelText="취소"
-                width={400}
-            >
-                {editing_session && (
-                    <Space
-                        direction="vertical"
-                        size="middle"
-                        style={{ width: "100%" }}
-                    >
-                        <div>
-                            <Text
-                                type="secondary"
-                                style={{ display: "block", marginBottom: 8 }}
-                            >
-                                시작 시간
-                            </Text>
-                            <TimePicker
-                                value={dayjs(session_start_time, "HH:mm:ss")}
-                                format="HH:mm:ss"
-                                style={{ width: "100%" }}
-                                allowClear={false}
-                                onChange={(time) => {
-                                    if (time) {
-                                        setSessionStartTime(
-                                            time.format("HH:mm:ss")
-                                        );
-                                    }
-                                }}
-                            />
-                        </div>
-                        <div>
-                            <Text
-                                type="secondary"
-                                style={{ display: "block", marginBottom: 8 }}
-                            >
-                                종료 시간
-                            </Text>
-                            <TimePicker
-                                value={dayjs(session_end_time, "HH:mm:ss")}
-                                format="HH:mm:ss"
-                                style={{ width: "100%" }}
-                                allowClear={false}
-                                onChange={(time) => {
-                                    if (time) {
-                                        setSessionEndTime(
-                                            time.format("HH:mm:ss")
-                                        );
-                                    }
-                                }}
-                            />
-                        </div>
-                        <div
-                            style={{
-                                padding: "8px 12px",
-                                background: "#f5f5f5",
-                                borderRadius: 4,
-                            }}
-                        >
-                            <Text type="secondary">예상 소요 시간: </Text>
-                            <Text strong style={{ color: "#1890ff" }}>
-                                {(() => {
-                                    const start = dayjs(
-                                        session_start_time,
-                                        "HH:mm:ss"
-                                    );
-                                    const end = dayjs(
-                                        session_end_time,
-                                        "HH:mm:ss"
-                                    );
-                                    const diff_seconds = end.diff(
-                                        start,
-                                        "second"
-                                    );
-                                    if (diff_seconds <= 0) return "유효하지 않음";
-                                    return formatDuration(diff_seconds);
-                                })()}
-                            </Text>
-                        </div>
-                    </Space>
-                )}
             </Modal>
 
             <style>{`
