@@ -270,24 +270,10 @@ export default function WorkTemplateList({
                                     )}
                                 </div>
 
-                                {/* 항상 표시되는 시작 버튼 */}
-                                <div className="template-start">
-                                    <Tooltip title="작업 시작">
-                                        <Button
-                                            type="primary"
-                                            size="small"
-                                            icon={<PlayCircleOutlined />}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleUseTemplate(template.id);
-                                            }}
-                                        />
-                                    </Tooltip>
-                                </div>
-
-                                {/* 호버 시 표시되는 수정/삭제 버튼 */}
-                                <div className="template-overlay">
-                                    <div className="template-actions">
+                                {/* 액션 버튼 영역 */}
+                                <div className="template-actions">
+                                    {/* 호버 시 표시되는 수정/삭제 버튼 */}
+                                    <div className="template-hover-buttons">
                                         <Tooltip title="수정">
                                             <Button
                                                 size="small"
@@ -315,6 +301,19 @@ export default function WorkTemplateList({
                                             </Tooltip>
                                         </Popconfirm>
                                     </div>
+
+                                    {/* 항상 표시되는 시작 버튼 */}
+                                    <Tooltip title="작업 시작">
+                                        <Button
+                                            type="primary"
+                                            size="small"
+                                            icon={<PlayCircleOutlined />}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleUseTemplate(template.id);
+                                            }}
+                                        />
+                                    </Tooltip>
                                 </div>
                             </div>
                         ))}
@@ -505,9 +504,10 @@ export default function WorkTemplateList({
                 .template-content {
                     flex: 1;
                     padding: 10px 12px;
-                    padding-right: 50px;
+                    padding-right: 8px;
                     cursor: pointer;
                     min-height: 60px;
+                    min-width: 0;
                     display: flex;
                     flex-direction: column;
                     gap: 4px;
@@ -532,40 +532,23 @@ export default function WorkTemplateList({
                     word-break: break-word;
                 }
                 
-                .template-start {
-                    position: absolute;
-                    right: 8px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    z-index: 1;
-                }
-                
-                .template-card:hover .template-start {
-                    opacity: 0;
-                }
-                
-                .template-overlay {
-                    position: absolute;
-                    top: 0;
-                    right: 0;
-                    bottom: 0;
-                    display: flex;
-                    align-items: center;
-                    padding-right: 8px;
-                    background: linear-gradient(to right, transparent, #f0f5ff 30%);
-                    opacity: 0;
-                    transition: opacity 0.2s;
-                    pointer-events: none;
-                }
-                
-                .template-card:hover .template-overlay {
-                    opacity: 1;
-                    pointer-events: auto;
-                }
-                
                 .template-actions {
                     display: flex;
+                    align-items: center;
                     gap: 4px;
+                    padding-right: 8px;
+                    flex-shrink: 0;
+                }
+                
+                .template-hover-buttons {
+                    display: flex;
+                    gap: 4px;
+                    opacity: 0;
+                    transition: opacity 0.2s;
+                }
+                
+                .template-card:hover .template-hover-buttons {
+                    opacity: 1;
                 }
             `}</style>
         </>
