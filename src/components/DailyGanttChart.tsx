@@ -48,7 +48,6 @@ const getSessionMinutes = (session: WorkSession): number => {
     ) {
         return session.duration_minutes;
     }
-    // 기존 데이터는 duration_seconds 필드가 있을 수 있음
     const legacy = session as unknown as { duration_seconds?: number };
     if (
         legacy.duration_seconds !== undefined &&
@@ -61,18 +60,22 @@ const getSessionMinutes = (session: WorkSession): number => {
 
 // 작업별 그룹화된 세션 타입
 interface GroupedWork {
-    key: string; // work_name + deal_name
+    key: string;
     record: WorkRecord;
     sessions: WorkSession[];
-    first_start: number; // 정렬용 (첫 세션 시작 시간)
+    first_start: number;
 }
 
 // 드래그 선택 영역 타입
 interface DragSelection {
     start_mins: number;
     end_mins: number;
-    start_x: number;
-    end_x: number;
+}
+
+// 세션 시간 범위 타입 (충돌 감지용)
+interface TimeSlot {
+    start: number;
+    end: number;
 }
 
 export default function DailyGanttChart() {
@@ -91,7 +94,7 @@ export default function DailyGanttChart() {
     // 드래그 상태
     const [is_dragging, setIsDragging] = useState(false);
     const [drag_selection, setDragSelection] = useState<DragSelection | null>(null);
-    const drag_start_ref = useRef<{ x: number; mins: number } | null>(null);
+    const drag_start_ref = useRef<{ mins: number } | null>(null);
     const grid_ref = useRef<HTMLDivElement>(null);
 
     // 모달 상태
@@ -103,14 +106,13 @@ export default function DailyGanttChart() {
     const [new_task_input, setNewTaskInput] = useState("");
     const [new_category_input, setNewCategoryInput] = useState("");
 
-    // 거래명 기준으로 세션을 그룹화 (같은 거래명은 같은 행)
+    // 거래명 기준으로 세션을 그룹화
     const grouped_works = useMemo(() => {
         const groups: Map<string, GroupedWork> = new Map();
 
         records
             .filter((r) => r.date === selected_date)
             .forEach((record) => {
-                // 거래명 기준으로 그룹화 (거래명이 없으면 작업명 사용)
                 const key = record.deal_name || record.work_name;
                 const sessions =
                     record.sessions && record.sessions.length > 0
@@ -126,11 +128,9 @@ export default function DailyGanttChart() {
                           ];
 
                 if (groups.has(key)) {
-                    // 기존 그룹에 세션 추가
                     const group = groups.get(key)!;
                     group.sessions.push(...sessions);
                 } else {
-                    // 새 그룹 생성
                     groups.set(key, {
                         key,
                         record,
@@ -140,13 +140,39 @@ export default function DailyGanttChart() {
                 }
             });
 
-        // 첫 세션 시작 시간순 정렬
         return Array.from(groups.values()).sort(
             (a, b) => a.first_start - b.first_start
         );
     }, [records, selected_date]);
 
-    // 모든 세션에서 시간 범위 계산 (기본 9시-18시)
+    // 모든 세션의 시간 슬롯 (충돌 감지용)
+    const occupied_slots = useMemo((): TimeSlot[] => {
+        const slots: TimeSlot[] = [];
+        grouped_works.forEach((group) => {
+            group.sessions.forEach((session) => {
+                slots.push({
+                    start: timeToMinutes(session.start_time),
+                    end: timeToMinutes(session.end_time),
+                });
+            });
+        });
+        return slots;
+    }, [grouped_works]);
+
+    // 시간 범위 충돌 감지
+    const checkConflict = useCallback((start: number, end: number): boolean => {
+        return occupied_slots.some((slot) => {
+            // 두 범위가 겹치는지 확인
+            return !(end <= slot.start || start >= slot.end);
+        });
+    }, [occupied_slots]);
+
+    // 특정 시간이 기존 세션 위에 있는지 확인
+    const isOnExistingBar = useCallback((mins: number): boolean => {
+        return occupied_slots.some((slot) => mins >= slot.start && mins < slot.end);
+    }, [occupied_slots]);
+
+    // 시간 범위 계산 (기본 9시-18시)
     const time_range = useMemo(() => {
         let min_start = 9 * 60;
         let max_end = 18 * 60;
@@ -275,16 +301,27 @@ export default function DailyGanttChart() {
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
         if (!grid_ref.current) return;
         
+        // 기존 바 위에서는 드래그 시작하지 않음
+        const target = e.target as HTMLElement;
+        if (target.classList.contains('gantt-bar')) {
+            return;
+        }
+        
         const mins = xToMinutes(e.clientX);
-        drag_start_ref.current = { x: e.clientX, mins };
+        
+        // 기존 세션 위에서 시작하면 드래그 시작하지 않음
+        if (isOnExistingBar(mins)) {
+            return;
+        }
+        
+        e.preventDefault();
+        drag_start_ref.current = { mins };
         setIsDragging(true);
         setDragSelection({
             start_mins: mins,
             end_mins: mins,
-            start_x: e.clientX,
-            end_x: e.clientX,
         });
-    }, [xToMinutes]);
+    }, [xToMinutes, isOnExistingBar]);
 
     // 드래그 중
     const handleMouseMove = useCallback((e: React.MouseEvent) => {
@@ -296,8 +333,6 @@ export default function DailyGanttChart() {
         setDragSelection({
             start_mins: Math.min(start_mins, current_mins),
             end_mins: Math.max(start_mins, current_mins),
-            start_x: Math.min(drag_start_ref.current.x, e.clientX),
-            end_x: Math.max(drag_start_ref.current.x, e.clientX),
         });
     }, [is_dragging, xToMinutes]);
 
@@ -310,27 +345,32 @@ export default function DailyGanttChart() {
         }
 
         const duration = drag_selection.end_mins - drag_selection.start_mins;
+        const has_conflict = checkConflict(drag_selection.start_mins, drag_selection.end_mins);
         
-        // 최소 5분 이상 선택해야 함
-        if (duration >= 5) {
+        // 최소 5분 이상 선택하고, 충돌이 없어야 함
+        if (duration >= 5 && !has_conflict) {
             setSelectedTimeRange({
                 start: minutesToTime(drag_selection.start_mins),
                 end: minutesToTime(drag_selection.end_mins),
             });
             setIsModalOpen(true);
+        } else if (has_conflict && duration >= 5) {
+            message.warning("선택한 영역에 이미 다른 작업이 있습니다.");
         }
 
         setIsDragging(false);
         setDragSelection(null);
         drag_start_ref.current = null;
-    }, [is_dragging, drag_selection]);
+    }, [is_dragging, drag_selection, checkConflict]);
 
     // 마우스가 영역을 벗어났을 때
     const handleMouseLeave = useCallback(() => {
         if (is_dragging) {
-            handleMouseUp();
+            setIsDragging(false);
+            setDragSelection(null);
+            drag_start_ref.current = null;
         }
-    }, [is_dragging, handleMouseUp]);
+    }, [is_dragging]);
 
     // 작업 추가 핸들러
     const handleAddWork = async () => {
@@ -398,9 +438,15 @@ export default function DailyGanttChart() {
         }
     };
 
+    // 현재 선택 영역의 충돌 여부
+    const has_selection_conflict = useMemo(() => {
+        if (!drag_selection) return false;
+        return checkConflict(drag_selection.start_mins, drag_selection.end_mins);
+    }, [drag_selection, checkConflict]);
+
     // 선택 영역 스타일 계산
     const getSelectionStyle = () => {
-        if (!drag_selection || !grid_ref.current) return {};
+        if (!drag_selection) return {};
         
         const left = ((drag_selection.start_mins - time_range.start) / total_minutes) * 100;
         const width = ((drag_selection.end_mins - drag_selection.start_mins) / total_minutes) * 100;
@@ -409,6 +455,11 @@ export default function DailyGanttChart() {
             left: `${left}%`,
             width: `${width}%`,
         };
+    };
+
+    // 선택 영역 클래스 (충돌 시 다른 스타일)
+    const getSelectionClassName = () => {
+        return has_selection_conflict ? "gantt-selection gantt-selection-conflict" : "gantt-selection";
     };
 
     return (
@@ -422,195 +473,200 @@ export default function DailyGanttChart() {
                     </Text>
                 }
             >
-                {grouped_works.length === 0 ? (
-                    <div 
-                        className="gantt-empty-container"
-                        ref={grid_ref}
-                        onMouseDown={handleMouseDown}
-                        onMouseMove={handleMouseMove}
-                        onMouseUp={handleMouseUp}
-                        onMouseLeave={handleMouseLeave}
-                    >
-                        {/* 시간 눈금 */}
-                        <div className="gantt-time-header-empty">
-                            {time_labels.map((label, idx) => (
-                                <div
-                                    key={label}
-                                    className="gantt-time-label"
-                                    style={{
-                                        left: `${(idx / (time_labels.length - 1)) * 100}%`,
-                                    }}
-                                >
-                                    {label}
-                                </div>
-                            ))}
-                        </div>
-                        
-                        {/* 그리드 */}
-                        <div className="gantt-grid-empty">
-                            {time_labels.map((label, idx) => (
-                                <div
-                                    key={label}
-                                    className="gantt-grid-line"
-                                    style={{
-                                        left: `${(idx / (time_labels.length - 1)) * 100}%`,
-                                    }}
-                                />
-                            ))}
-                        </div>
-
-                        {/* 선택 영역 */}
-                        {is_dragging && drag_selection && (
-                            <div 
-                                className="gantt-selection"
-                                style={getSelectionStyle()}
-                            >
-                                <Text className="gantt-selection-text">
-                                    {minutesToTime(drag_selection.start_mins)} ~ {minutesToTime(drag_selection.end_mins)}
-                                </Text>
-                            </div>
-                        )}
-
-                        <div className="gantt-empty-hint">
-                            <Empty
-                                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                description={
-                                    <span>
-                                        작업 기록이 없습니다<br />
-                                        <Text type="secondary" style={{ fontSize: 12 }}>
-                                            드래그하여 작업 추가
-                                        </Text>
-                                    </span>
-                                }
-                            />
-                        </div>
-                    </div>
-                ) : (
-                    <div 
-                        className="gantt-container"
-                        onMouseMove={handleMouseMove}
-                        onMouseUp={handleMouseUp}
-                        onMouseLeave={handleMouseLeave}
-                    >
-                        {/* 시간 눈금 */}
-                        <div className="gantt-time-header">
-                            {time_labels.map((label, idx) => (
-                                <div
-                                    key={label}
-                                    className="gantt-time-label"
-                                    style={{
-                                        left: `${(idx / (time_labels.length - 1)) * 100}%`,
-                                    }}
-                                >
-                                    {label}
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* 그리드 및 드래그 영역 */}
+                <div 
+                    className="gantt-wrapper"
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseLeave}
+                >
+                    {grouped_works.length === 0 ? (
                         <div 
-                            className="gantt-grid"
+                            className="gantt-empty-container"
                             ref={grid_ref}
                             onMouseDown={handleMouseDown}
                         >
-                            {time_labels.map((label, idx) => (
-                                <div
-                                    key={label}
-                                    className="gantt-grid-line"
-                                    style={{
-                                        left: `${(idx / (time_labels.length - 1)) * 100}%`,
-                                    }}
-                                />
-                            ))}
+                            {/* 시간 눈금 */}
+                            <div className="gantt-time-header-empty">
+                                {time_labels.map((label, idx) => (
+                                    <div
+                                        key={label}
+                                        className="gantt-time-label"
+                                        style={{
+                                            left: `${(idx / (time_labels.length - 1)) * 100}%`,
+                                        }}
+                                    >
+                                        {label}
+                                    </div>
+                                ))}
+                            </div>
+                            
+                            {/* 그리드 */}
+                            <div className="gantt-grid-empty">
+                                {time_labels.map((label, idx) => (
+                                    <div
+                                        key={label}
+                                        className="gantt-grid-line"
+                                        style={{
+                                            left: `${(idx / (time_labels.length - 1)) * 100}%`,
+                                        }}
+                                    />
+                                ))}
+                            </div>
 
                             {/* 선택 영역 */}
                             {is_dragging && drag_selection && (
                                 <div 
-                                    className="gantt-selection"
+                                    className={getSelectionClassName()}
                                     style={getSelectionStyle()}
                                 >
                                     <Text className="gantt-selection-text">
                                         {minutesToTime(drag_selection.start_mins)} ~ {minutesToTime(drag_selection.end_mins)}
+                                        {has_selection_conflict && " ⚠️ 충돌"}
                                     </Text>
                                 </div>
                             )}
-                        </div>
 
-                        {/* 작업별 행 (같은 작업은 같은 행) */}
-                        <div className="gantt-bars">
-                            {grouped_works.map((group, row_idx) => {
-                                const color = getWorkColor(group.record);
-                                return (
-                                    <div
-                                        key={group.key}
-                                        className="gantt-row"
-                                        style={{ top: row_idx * 40 }}
-                                    >
-                                        {/* 작업명 라벨 */}
-                                        <div
-                                            className="gantt-row-label"
-                                            style={{ borderLeftColor: color }}
-                                        >
-                                            <Text
-                                                ellipsis
-                                                style={{ fontSize: 11, maxWidth: 80 }}
-                                            >
-                                                {group.record.deal_name || group.record.work_name}
+                            <div className="gantt-empty-hint">
+                                <Empty
+                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                    description={
+                                        <span>
+                                            작업 기록이 없습니다<br />
+                                            <Text type="secondary" style={{ fontSize: 12 }}>
+                                                드래그하여 작업 추가
                                             </Text>
-                                        </div>
-
-                                        {/* 해당 작업의 모든 세션 바 */}
-                                        <div className="gantt-row-bars">
-                                            {group.sessions.map((session, idx) => (
-                                                <Tooltip
-                                                    key={session.id + idx}
-                                                    title={
-                                                        <div>
-                                                            <div>
-                                                                <strong>
-                                                                    {group.record.work_name}
-                                                                </strong>
-                                                            </div>
-                                                            {group.record.deal_name && (
-                                                                <div>
-                                                                    {group.record.deal_name}
-                                                                </div>
-                                                            )}
-                                                            <div>
-                                                                {session.start_time} ~{" "}
-                                                                {session.end_time}
-                                                            </div>
-                                                            <div>
-                                                                {formatMinutes(
-                                                                    getSessionMinutes(session)
-                                                                )}
-                                                            </div>
-                                                            <div style={{ marginTop: 4 }}>
-                                                                총 {group.sessions.length}회,{" "}
-                                                                {formatMinutes(
-                                                                    getTotalDuration(
-                                                                        group.sessions
-                                                                    )
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    }
-                                                >
-                                                    <div
-                                                        className="gantt-bar"
-                                                        style={getBarStyle(session, color)}
-                                                    />
-                                                </Tooltip>
-                                            ))}
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                                        </span>
+                                    }
+                                />
+                            </div>
                         </div>
-                    </div>
-                )}
+                    ) : (
+                        <div className="gantt-container">
+                            {/* 시간 눈금 */}
+                            <div className="gantt-time-header">
+                                {time_labels.map((label, idx) => (
+                                    <div
+                                        key={label}
+                                        className="gantt-time-label"
+                                        style={{
+                                            left: `${(idx / (time_labels.length - 1)) * 100}%`,
+                                        }}
+                                    >
+                                        {label}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* 그리드 및 드래그 영역 */}
+                            <div 
+                                className="gantt-grid"
+                                ref={grid_ref}
+                                onMouseDown={handleMouseDown}
+                            >
+                                {time_labels.map((label, idx) => (
+                                    <div
+                                        key={label}
+                                        className="gantt-grid-line"
+                                        style={{
+                                            left: `${(idx / (time_labels.length - 1)) * 100}%`,
+                                        }}
+                                    />
+                                ))}
+
+                                {/* 선택 영역 */}
+                                {is_dragging && drag_selection && (
+                                    <div 
+                                        className={getSelectionClassName()}
+                                        style={getSelectionStyle()}
+                                    >
+                                        <Text className="gantt-selection-text">
+                                            {minutesToTime(drag_selection.start_mins)} ~ {minutesToTime(drag_selection.end_mins)}
+                                            {has_selection_conflict && " ⚠️ 충돌"}
+                                        </Text>
+                                    </div>
+                                )}
+
+                                {/* 작업별 행 */}
+                                <div className="gantt-bars">
+                                    {grouped_works.map((group, row_idx) => {
+                                        const color = getWorkColor(group.record);
+                                        return (
+                                            <div
+                                                key={group.key}
+                                                className="gantt-row"
+                                                style={{ top: row_idx * 40 }}
+                                            >
+                                                {/* 작업명 라벨 */}
+                                                <div
+                                                    className="gantt-row-label"
+                                                    style={{ borderLeftColor: color }}
+                                                >
+                                                    <Text
+                                                        ellipsis
+                                                        style={{ fontSize: 11, maxWidth: 80 }}
+                                                    >
+                                                        {group.record.deal_name || group.record.work_name}
+                                                    </Text>
+                                                </div>
+
+                                                {/* 해당 작업의 모든 세션 바 */}
+                                                <div className="gantt-row-bars">
+                                                    {group.sessions.map((session, idx) => (
+                                                        <Tooltip
+                                                            key={session.id + idx}
+                                                            title={
+                                                                <div>
+                                                                    <div>
+                                                                        <strong>
+                                                                            {group.record.work_name}
+                                                                        </strong>
+                                                                    </div>
+                                                                    {group.record.deal_name && (
+                                                                        <div>
+                                                                            {group.record.deal_name}
+                                                                        </div>
+                                                                    )}
+                                                                    <div>
+                                                                        {session.start_time} ~{" "}
+                                                                        {session.end_time}
+                                                                    </div>
+                                                                    <div>
+                                                                        {formatMinutes(
+                                                                            getSessionMinutes(session)
+                                                                        )}
+                                                                    </div>
+                                                                    <div style={{ marginTop: 4 }}>
+                                                                        총 {group.sessions.length}회,{" "}
+                                                                        {formatMinutes(
+                                                                            getTotalDuration(
+                                                                                group.sessions
+                                                                            )
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                        >
+                                                            <div
+                                                                className="gantt-bar"
+                                                                style={getBarStyle(session, color)}
+                                                            />
+                                                        </Tooltip>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
 
                 <style>{`
+                    .gantt-wrapper {
+                        user-select: none;
+                    }
+                    
                     .gantt-container {
                         position: relative;
                         min-height: ${Math.max(grouped_works.length * 40 + 40, 100)}px;
@@ -622,7 +678,6 @@ export default function DailyGanttChart() {
                         position: relative;
                         min-height: 150px;
                         cursor: crosshair;
-                        user-select: none;
                     }
                     
                     .gantt-time-header {
@@ -655,7 +710,6 @@ export default function DailyGanttChart() {
                         right: 0;
                         bottom: 0;
                         cursor: crosshair;
-                        user-select: none;
                     }
                     
                     .gantt-grid-empty {
@@ -686,6 +740,12 @@ export default function DailyGanttChart() {
                         justify-content: center;
                         z-index: 100;
                         pointer-events: none;
+                        transition: background 0.15s, border-color 0.15s;
+                    }
+                    
+                    .gantt-selection-conflict {
+                        background: rgba(255, 77, 79, 0.2);
+                        border-color: #ff4d4f;
                     }
                     
                     .gantt-selection-text {
@@ -695,6 +755,10 @@ export default function DailyGanttChart() {
                         border-radius: 4px;
                         font-size: 12px;
                         white-space: nowrap;
+                    }
+                    
+                    .gantt-selection-conflict .gantt-selection-text {
+                        background: #ff4d4f;
                     }
                     
                     .gantt-empty-hint {
@@ -728,12 +792,14 @@ export default function DailyGanttChart() {
                         border-radius: 0 4px 4px 0;
                         margin-right: 5px;
                         overflow: hidden;
+                        pointer-events: none;
                     }
                     
                     .gantt-row-bars {
                         flex: 1;
                         position: relative;
                         height: 100%;
+                        pointer-events: none;
                     }
                     
                     .gantt-bar {
@@ -744,6 +810,7 @@ export default function DailyGanttChart() {
                         cursor: pointer;
                         transition: opacity 0.2s, transform 0.1s;
                         box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+                        pointer-events: auto;
                     }
                     
                     .gantt-bar:hover {
