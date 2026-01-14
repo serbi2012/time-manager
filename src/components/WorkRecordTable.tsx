@@ -195,7 +195,7 @@ export default function WorkRecordTable() {
         let interval: ReturnType<typeof setInterval>;
         if (timer.is_running) {
             interval = setInterval(() => {
-                setTick((t) => t + 1);  // 리렌더링 트리거
+                setTick((t) => t + 1); // 리렌더링 트리거
             }, 1000);
         }
         return () => {
@@ -206,13 +206,13 @@ export default function WorkRecordTable() {
     // 다른 탭에서의 변경 감지 (LocalStorage 동기화)
     useEffect(() => {
         const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === 'work-time-storage') {
+            if (e.key === "work-time-storage") {
                 syncFromStorage();
             }
         };
-        window.addEventListener('storage', handleStorageChange);
+        window.addEventListener("storage", handleStorageChange);
         return () => {
-            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener("storage", handleStorageChange);
         };
     }, [syncFromStorage]);
 
