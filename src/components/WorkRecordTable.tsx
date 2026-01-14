@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, memo, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import {
     Table,
     Card,
@@ -116,22 +116,51 @@ const getRecordDurationMinutes = (record: WorkRecord): number => {
 };
 
 // 세션 편집 테이블 (타이머 리렌더링과 독립적으로 동작)
+// record_id만 받고 직접 스토어에서 레코드를 구독하여 불필요한 리렌더링 방지
 interface SessionEditTableProps {
-    record: WorkRecord;
-    onUpdateSession: (
-        record_id: string,
-        session_id: string,
-        new_start: string,
-        new_end: string
-    ) => void;
-    onDeleteSession: (record_id: string, session_id: string) => void;
+    record_id: string;
 }
 
-const SessionEditTable = memo(function SessionEditTable({
-    record,
-    onUpdateSession,
-    onDeleteSession,
-}: SessionEditTableProps) {
+function SessionEditTable({ record_id }: SessionEditTableProps) {
+    // 직접 스토어에서 레코드와 액션 구독
+    const record = useWorkStore((state) =>
+        state.records.find((r) => r.id === record_id)
+    );
+    const updateSession = useWorkStore((state) => state.updateSession);
+    const deleteSession = useWorkStore((state) => state.deleteSession);
+
+    const handleUpdateSession = useCallback(
+        (session_id: string, new_start: string, new_end: string) => {
+            const result = updateSession(record_id, session_id, new_start, new_end);
+            if (result.success) {
+                if (result.adjusted) {
+                    message.warning(result.message || "시간이 자동 조정되었습니다.");
+                } else {
+                    message.success("시간이 수정되었습니다.");
+                }
+            } else {
+                message.error(result.message || "시간 수정에 실패했습니다.");
+            }
+        },
+        [record_id, updateSession]
+    );
+
+    const handleDeleteSession = useCallback(
+        (session_id: string) => {
+            deleteSession(record_id, session_id);
+            message.success("세션이 삭제되었습니다.");
+        },
+        [record_id, deleteSession]
+    );
+
+    if (!record) {
+        return (
+            <div style={{ padding: "16px", color: "#999" }}>
+                레코드를 찾을 수 없습니다.
+            </div>
+        );
+    }
+
     const sessions: WorkSession[] =
         record.sessions && record.sessions.length > 0
             ? record.sessions
@@ -157,10 +186,7 @@ const SessionEditTable = memo(function SessionEditTable({
             <div className="session-header">
                 <HistoryOutlined style={{ marginRight: 8 }} />
                 <Text strong>작업 이력</Text>
-                <Text
-                    type="secondary"
-                    style={{ marginLeft: 8, fontSize: 12 }}
-                >
+                <Text type="secondary" style={{ marginLeft: 8, fontSize: 12 }}>
                     (총 {sessions.length}회 작업)
                 </Text>
             </div>
@@ -195,8 +221,7 @@ const SessionEditTable = memo(function SessionEditTable({
                                 needConfirm={true}
                                 onChange={(time) => {
                                     if (time) {
-                                        onUpdateSession(
-                                            record.id,
+                                        handleUpdateSession(
                                             session.id,
                                             time.format("HH:mm:ss"),
                                             session.end_time
@@ -219,8 +244,7 @@ const SessionEditTable = memo(function SessionEditTable({
                                 needConfirm={true}
                                 onChange={(time) => {
                                     if (time) {
-                                        onUpdateSession(
-                                            record.id,
+                                        handleUpdateSession(
                                             session.id,
                                             session.start_time,
                                             time.format("HH:mm:ss")
@@ -236,7 +260,9 @@ const SessionEditTable = memo(function SessionEditTable({
                         width: 100,
                         render: (_: unknown, session: WorkSession) => (
                             <Tag color="blue">
-                                {formatDuration(getSessionDurationSeconds(session))}
+                                {formatDuration(
+                                    getSessionDurationSeconds(session)
+                                )}
                             </Tag>
                         ),
                     },
@@ -248,9 +274,7 @@ const SessionEditTable = memo(function SessionEditTable({
                             <Popconfirm
                                 title="세션 삭제"
                                 description="이 세션을 삭제하시겠습니까?"
-                                onConfirm={() =>
-                                    onDeleteSession(record.id, session.id)
-                                }
+                                onConfirm={() => handleDeleteSession(session.id)}
                                 okText="삭제"
                                 cancelText="취소"
                                 okButtonProps={{ danger: true }}
@@ -290,7 +314,7 @@ const SessionEditTable = memo(function SessionEditTable({
             `}</style>
         </div>
     );
-});
+}
 
 export default function WorkRecordTable() {
     const {
@@ -299,8 +323,6 @@ export default function WorkRecordTable() {
         setSelectedDate,
         deleteRecord,
         updateRecord,
-        updateSession,
-        deleteSession,
         timer,
         startTimer,
         stopTimer,
@@ -617,49 +639,10 @@ export default function WorkRecordTable() {
         return getCompletedRecords();
     }, [records, getCompletedRecords]);
 
-    // 세션 시간 수정 핸들러 (useCallback으로 메모이제이션)
-    const handleUpdateSessionTime = useCallback(
-        (
-            record_id: string,
-            session_id: string,
-            new_start: string,
-            new_end: string
-        ) => {
-            const result = updateSession(record_id, session_id, new_start, new_end);
-            if (result.success) {
-                if (result.adjusted) {
-                    message.warning(
-                        result.message || "시간이 자동 조정되었습니다."
-                    );
-                } else {
-                    message.success("시간이 수정되었습니다.");
-                }
-            } else {
-                message.error(result.message || "시간 수정에 실패했습니다.");
-            }
-        },
-        [updateSession]
-    );
-
-    // 세션 삭제 핸들러 (useCallback으로 메모이제이션)
-    const handleDeleteSession = useCallback(
-        (record_id: string, session_id: string) => {
-            deleteSession(record_id, session_id);
-            message.success("세션이 삭제되었습니다.");
-        },
-        [deleteSession]
-    );
-
-    // 확장 행 렌더링 (별도 컴포넌트 사용으로 타이머 리렌더링 영향 차단)
+    // 확장 행 렌더링 (record_id만 전달하여 타이머 리렌더링 영향 완전 차단)
     const expandedRowRender = useCallback(
-        (record: WorkRecord) => (
-            <SessionEditTable
-                record={record}
-                onUpdateSession={handleUpdateSessionTime}
-                onDeleteSession={handleDeleteSession}
-            />
-        ),
-        [handleUpdateSessionTime, handleDeleteSession]
+        (record: WorkRecord) => <SessionEditTable record_id={record.id} />,
+        []
     );
 
     const columns: ColumnsType<WorkRecord> = [
