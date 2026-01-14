@@ -730,11 +730,17 @@ export default function WorkRecordTable() {
                                 placeholder="업무 선택"
                                 options={task_options}
                                 allowClear
+                                popupMatchSelectWidth={200}
                                 dropdownRender={(menu) => (
                                     <>
                                         {menu}
                                         <Divider style={{ margin: "8px 0" }} />
-                                        <Space style={{ padding: "0 8px 4px", width: "100%" }}>
+                                        <Space
+                                            style={{
+                                                padding: "0 8px 4px",
+                                                width: "100%",
+                                            }}
+                                        >
                                             <Input
                                                 placeholder="새 업무명"
                                                 value={new_task_input}
@@ -771,11 +777,17 @@ export default function WorkRecordTable() {
                                 placeholder="카테고리"
                                 options={category_options}
                                 allowClear
+                                popupMatchSelectWidth={200}
                                 dropdownRender={(menu) => (
                                     <>
                                         {menu}
                                         <Divider style={{ margin: "8px 0" }} />
-                                        <Space style={{ padding: "0 8px 4px", width: "100%" }}>
+                                        <Space
+                                            style={{
+                                                padding: "0 8px 4px",
+                                                width: "100%",
+                                            }}
+                                        >
                                             <Input
                                                 placeholder="새 카테고리"
                                                 value={new_category_input}
