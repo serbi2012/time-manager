@@ -62,7 +62,9 @@ const formatTimer = (seconds: number): string => {
     const total_mins = Math.floor(seconds / 60);
     const hrs = Math.floor(total_mins / 60);
     const mins = total_mins % 60;
-    return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
+    return `${hrs.toString().padStart(2, "0")}:${mins
+        .toString()
+        .padStart(2, "0")}`;
 };
 
 // 세션의 duration을 분 단위로 가져오기 (기존 데이터 호환)
