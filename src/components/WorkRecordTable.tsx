@@ -136,14 +136,14 @@ export default function WorkRecordTable() {
     const [new_task_input, setNewTaskInput] = useState("");
     const [new_category_input, setNewCategoryInput] = useState("");
 
-    // 작업명/거래명 자동완성 옵션
+    // 작업명/거래명 자동완성 옵션 (records, templates 변경 시 갱신)
     const work_name_options = useMemo(() => {
         return getAutoCompleteOptions("work_name").map((v) => ({ value: v }));
-    }, [getAutoCompleteOptions]);
+    }, [records, templates, getAutoCompleteOptions]);
 
     const deal_name_options = useMemo(() => {
         return getAutoCompleteOptions("deal_name").map((v) => ({ value: v }));
-    }, [getAutoCompleteOptions]);
+    }, [records, templates, getAutoCompleteOptions]);
 
     // 업무명/카테고리명 옵션 (기본 + 사용자 정의)
     const task_options = useMemo(() => {
