@@ -84,6 +84,7 @@ export default function DailyGanttChart() {
         selected_date,
         templates,
         addRecord,
+        updateRecord,
         getAutoCompleteOptions,
         custom_task_options,
         custom_category_options,
@@ -402,31 +403,63 @@ export default function DailyGanttChart() {
             const end_mins = timeToMinutes(selected_time_range.end);
             const duration_minutes = end_mins - start_mins;
 
-            const new_record: WorkRecord = {
+            const new_session = {
                 id: crypto.randomUUID(),
-                work_name: values.work_name,
-                task_name: values.task_name || "",
-                deal_name: values.deal_name || "",
-                category_name: values.category_name || "",
-                note: values.note || "",
-                duration_minutes,
+                date: selected_date,
                 start_time: selected_time_range.start,
                 end_time: selected_time_range.end,
-                date: selected_date,
-                sessions: [
-                    {
-                        id: crypto.randomUUID(),
-                        date: selected_date,
-                        start_time: selected_time_range.start,
-                        end_time: selected_time_range.end,
-                        duration_minutes,
-                    },
-                ],
-                is_completed: false,
+                duration_minutes,
             };
 
-            addRecord(new_record);
-            message.success(`${selected_time_range.start} ~ ${selected_time_range.end} 작업이 추가되었습니다.`);
+            // 같은 날짜에 같은 work_name, deal_name을 가진 기존 레코드 찾기
+            const existing_record = records.find(
+                (r) =>
+                    r.date === selected_date &&
+                    r.work_name === values.work_name &&
+                    r.deal_name === (values.deal_name || "")
+            );
+
+            if (existing_record) {
+                // 기존 레코드에 세션 추가
+                const updated_sessions = [...(existing_record.sessions || []), new_session];
+                const total_minutes = updated_sessions.reduce(
+                    (sum, s) => sum + (s.duration_minutes || 0),
+                    0
+                );
+
+                // 세션들을 시간순 정렬
+                const sorted_sessions = [...updated_sessions].sort((a, b) => {
+                    return timeToMinutes(a.start_time) - timeToMinutes(b.start_time);
+                });
+
+                updateRecord(existing_record.id, {
+                    sessions: sorted_sessions,
+                    duration_minutes: total_minutes,
+                    start_time: sorted_sessions[0]?.start_time || existing_record.start_time,
+                    end_time: sorted_sessions[sorted_sessions.length - 1]?.end_time || existing_record.end_time,
+                });
+
+                message.success(`기존 작업에 ${selected_time_range.start} ~ ${selected_time_range.end} 세션이 추가되었습니다.`);
+            } else {
+                // 새 레코드 생성
+                const new_record: WorkRecord = {
+                    id: crypto.randomUUID(),
+                    work_name: values.work_name,
+                    task_name: values.task_name || "",
+                    deal_name: values.deal_name || "",
+                    category_name: values.category_name || "",
+                    note: values.note || "",
+                    duration_minutes,
+                    start_time: selected_time_range.start,
+                    end_time: selected_time_range.end,
+                    date: selected_date,
+                    sessions: [new_session],
+                    is_completed: false,
+                };
+
+                addRecord(new_record);
+                message.success(`${selected_time_range.start} ~ ${selected_time_range.end} 작업이 추가되었습니다.`);
+            }
             
             form.resetFields();
             setIsModalOpen(false);

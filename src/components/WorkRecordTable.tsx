@@ -822,7 +822,9 @@ export default function WorkRecordTable() {
                     <Space direction="vertical" size={0}>
                         <Space>
                             {is_completed && (
-                                <CheckCircleOutlined style={{ color: "#52c41a" }} />
+                                <CheckCircleOutlined
+                                    style={{ color: "#52c41a" }}
+                                />
                             )}
                             <Text
                                 strong
@@ -840,7 +842,10 @@ export default function WorkRecordTable() {
                                 {text || record.work_name}
                             </Text>
                             {is_active && (
-                                <Tag color="processing" style={{ marginLeft: 4 }}>
+                                <Tag
+                                    color="processing"
+                                    style={{ marginLeft: 4 }}
+                                >
                                     {formatTimer(getElapsedSeconds())}
                                 </Tag>
                             )}
@@ -855,7 +860,9 @@ export default function WorkRecordTable() {
             key: "work_name",
             width: 120,
             render: (text: string) => (
-                <Tag color="blue" style={{ fontSize: 11 }}>{text}</Tag>
+                <Tag color="blue" style={{ fontSize: 11 }}>
+                    {text}
+                </Tag>
             ),
         },
         {
@@ -1451,7 +1458,9 @@ export default function WorkRecordTable() {
                             key: "work_name",
                             width: 120,
                             render: (text: string) => (
-                                <Tag color="blue" style={{ fontSize: 11 }}>{text}</Tag>
+                                <Tag color="blue" style={{ fontSize: 11 }}>
+                                    {text}
+                                </Tag>
                             ),
                         },
                         {
