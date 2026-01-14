@@ -22,6 +22,7 @@ import {
     AppstoreAddOutlined,
     FolderOutlined,
 } from "@ant-design/icons";
+import { Tag } from "antd";
 import {
     useWorkStore,
     TEMPLATE_COLORS,
@@ -182,25 +183,30 @@ export default function WorkTemplateList({
                                     onClick={() => handleUseTemplate(template.id)}
                                     style={{ cursor: "pointer" }}
                                 >
+                                    {/* 작업명 뱃지 */}
+                                    <Tag 
+                                        color={template.color} 
+                                        style={{ 
+                                            marginBottom: 4, 
+                                            fontSize: 11,
+                                            maxWidth: '100%',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                        }}
+                                    >
+                                        {template.work_name}
+                                    </Tag>
+                                    
+                                    {/* 거래명 제목 */}
                                     <Text
                                         strong
                                         ellipsis
-                                        style={{ display: "block" }}
+                                        style={{ display: "block", fontSize: 13 }}
                                     >
-                                        {template.work_name}
+                                        {template.deal_name || template.work_name}
                                     </Text>
-                                    {template.deal_name && (
-                                        <Text
-                                            type="secondary"
-                                            ellipsis
-                                            style={{
-                                                fontSize: 12,
-                                                display: "block",
-                                            }}
-                                        >
-                                            {template.deal_name}
-                                        </Text>
-                                    )}
+                                    
+                                    {/* 업무명 · 카테고리명 */}
                                     <Text
                                         type="secondary"
                                         ellipsis
