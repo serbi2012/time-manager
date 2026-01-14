@@ -734,16 +734,20 @@ export default function WorkRecordTable() {
                                     <>
                                         {menu}
                                         <Divider style={{ margin: "8px 0" }} />
-                                        <Space style={{ padding: "0 8px 4px" }}>
+                                        <Space style={{ padding: "0 8px 4px", width: "100%" }}>
                                             <Input
                                                 placeholder="새 업무명"
                                                 value={new_task_input}
                                                 onChange={(e) =>
-                                                    setNewTaskInput(e.target.value)
+                                                    setNewTaskInput(
+                                                        e.target.value
+                                                    )
                                                 }
-                                                onKeyDown={(e) => e.stopPropagation()}
+                                                onKeyDown={(e) =>
+                                                    e.stopPropagation()
+                                                }
                                                 size="small"
-                                                style={{ width: 100 }}
+                                                style={{ width: 130 }}
                                             />
                                             <Button
                                                 type="text"
@@ -771,21 +775,27 @@ export default function WorkRecordTable() {
                                     <>
                                         {menu}
                                         <Divider style={{ margin: "8px 0" }} />
-                                        <Space style={{ padding: "0 8px 4px" }}>
+                                        <Space style={{ padding: "0 8px 4px", width: "100%" }}>
                                             <Input
                                                 placeholder="새 카테고리"
                                                 value={new_category_input}
                                                 onChange={(e) =>
-                                                    setNewCategoryInput(e.target.value)
+                                                    setNewCategoryInput(
+                                                        e.target.value
+                                                    )
                                                 }
-                                                onKeyDown={(e) => e.stopPropagation()}
+                                                onKeyDown={(e) =>
+                                                    e.stopPropagation()
+                                                }
                                                 size="small"
-                                                style={{ width: 100 }}
+                                                style={{ width: 130 }}
                                             />
                                             <Button
                                                 type="text"
                                                 icon={<PlusOutlined />}
-                                                onClick={handleAddCategoryOption}
+                                                onClick={
+                                                    handleAddCategoryOption
+                                                }
                                                 size="small"
                                             >
                                                 추가

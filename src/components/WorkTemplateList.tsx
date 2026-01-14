@@ -311,7 +311,7 @@ export default function WorkTemplateList({
                                         {menu}
                                         <Divider style={{ margin: "8px 0" }} />
                                         <Space
-                                            style={{ padding: "0 8px 4px" }}
+                                            style={{ padding: "0 8px 4px", width: "100%" }}
                                         >
                                             <Input
                                                 placeholder="새 업무명"
@@ -325,7 +325,7 @@ export default function WorkTemplateList({
                                                     e.stopPropagation()
                                                 }
                                                 size="small"
-                                                style={{ width: 100 }}
+                                                style={{ width: 130 }}
                                             />
                                             <Button
                                                 type="text"
@@ -354,7 +354,7 @@ export default function WorkTemplateList({
                                         {menu}
                                         <Divider style={{ margin: "8px 0" }} />
                                         <Space
-                                            style={{ padding: "0 8px 4px" }}
+                                            style={{ padding: "0 8px 4px", width: "100%" }}
                                         >
                                             <Input
                                                 placeholder="새 카테고리"
@@ -368,7 +368,7 @@ export default function WorkTemplateList({
                                                     e.stopPropagation()
                                                 }
                                                 size="small"
-                                                style={{ width: 100 }}
+                                                style={{ width: 130 }}
                                             />
                                             <Button
                                                 type="text"
