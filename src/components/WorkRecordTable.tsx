@@ -17,6 +17,8 @@ import {
     Input,
     Select,
     Tooltip,
+    AutoComplete,
+    Divider,
 } from "antd";
 import {
     DeleteOutlined,
@@ -29,29 +31,14 @@ import {
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
-import { useWorkStore } from "../store/useWorkStore";
+import {
+    useWorkStore,
+    DEFAULT_TASK_OPTIONS,
+    DEFAULT_CATEGORY_OPTIONS,
+} from "../store/useWorkStore";
 import type { WorkRecord, WorkSession } from "../types";
 
 const { Text } = Typography;
-
-const CATEGORY_OPTIONS = [
-    { value: "개발", label: "개발" },
-    { value: "문서작업", label: "문서작업" },
-    { value: "회의", label: "회의" },
-    { value: "환경세팅", label: "환경세팅" },
-    { value: "코드리뷰", label: "코드리뷰" },
-    { value: "테스트", label: "테스트" },
-    { value: "기타", label: "기타" },
-];
-
-const TASK_OPTIONS = [
-    { value: "개발", label: "개발" },
-    { value: "작업", label: "작업" },
-    { value: "분석", label: "분석" },
-    { value: "설계", label: "설계" },
-    { value: "테스트", label: "테스트" },
-    { value: "기타", label: "기타" },
-];
 
 // 초를 읽기 쉬운 형식으로 변환
 const formatDuration = (seconds: number): string => {
@@ -137,10 +124,52 @@ export default function WorkRecordTable() {
         setFormData,
         updateElapsedTime,
         templates,
+        getAutoCompleteOptions,
+        custom_task_options,
+        custom_category_options,
+        addCustomTaskOption,
+        addCustomCategoryOption,
     } = useWorkStore();
 
     const [is_modal_open, setIsModalOpen] = useState(false);
     const [form] = Form.useForm();
+    const [new_task_input, setNewTaskInput] = useState("");
+    const [new_category_input, setNewCategoryInput] = useState("");
+
+    // 작업명/거래명 자동완성 옵션
+    const work_name_options = useMemo(() => {
+        return getAutoCompleteOptions("work_name").map((v) => ({ value: v }));
+    }, [getAutoCompleteOptions]);
+
+    const deal_name_options = useMemo(() => {
+        return getAutoCompleteOptions("deal_name").map((v) => ({ value: v }));
+    }, [getAutoCompleteOptions]);
+
+    // 업무명/카테고리명 옵션 (기본 + 사용자 정의)
+    const task_options = useMemo(() => {
+        const all = [...DEFAULT_TASK_OPTIONS, ...custom_task_options];
+        return [...new Set(all)].map((v) => ({ value: v, label: v }));
+    }, [custom_task_options]);
+
+    const category_options = useMemo(() => {
+        const all = [...DEFAULT_CATEGORY_OPTIONS, ...custom_category_options];
+        return [...new Set(all)].map((v) => ({ value: v, label: v }));
+    }, [custom_category_options]);
+
+    // 업무명/카테고리명 추가 핸들러
+    const handleAddTaskOption = () => {
+        if (new_task_input.trim()) {
+            addCustomTaskOption(new_task_input.trim());
+            setNewTaskInput("");
+        }
+    };
+
+    const handleAddCategoryOption = () => {
+        if (new_category_input.trim()) {
+            addCustomCategoryOption(new_category_input.trim());
+            setNewCategoryInput("");
+        }
+    };
 
     // 타이머 업데이트
     useEffect(() => {
@@ -668,11 +697,27 @@ export default function WorkRecordTable() {
                             { required: true, message: "작업명을 입력하세요" },
                         ]}
                     >
-                        <Input placeholder="예: 5.6 프레임워크 FE" />
+                        <AutoComplete
+                            options={work_name_options}
+                            placeholder="예: 5.6 프레임워크 FE"
+                            filterOption={(input, option) =>
+                                (option?.value ?? "")
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase())
+                            }
+                        />
                     </Form.Item>
 
                     <Form.Item name="deal_name" label="거래명 (상세 작업)">
-                        <Input placeholder="예: 5.6 테스트 케이스 확인 및 이슈 처리" />
+                        <AutoComplete
+                            options={deal_name_options}
+                            placeholder="예: 5.6 테스트 케이스 확인 및 이슈 처리"
+                            filterOption={(input, option) =>
+                                (option?.value ?? "")
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase())
+                            }
+                        />
                     </Form.Item>
 
                     <Space style={{ width: "100%" }} size="middle">
@@ -683,8 +728,34 @@ export default function WorkRecordTable() {
                         >
                             <Select
                                 placeholder="업무 선택"
-                                options={TASK_OPTIONS}
+                                options={task_options}
                                 allowClear
+                                dropdownRender={(menu) => (
+                                    <>
+                                        {menu}
+                                        <Divider style={{ margin: "8px 0" }} />
+                                        <Space style={{ padding: "0 8px 4px" }}>
+                                            <Input
+                                                placeholder="새 업무명"
+                                                value={new_task_input}
+                                                onChange={(e) =>
+                                                    setNewTaskInput(e.target.value)
+                                                }
+                                                onKeyDown={(e) => e.stopPropagation()}
+                                                size="small"
+                                                style={{ width: 100 }}
+                                            />
+                                            <Button
+                                                type="text"
+                                                icon={<PlusOutlined />}
+                                                onClick={handleAddTaskOption}
+                                                size="small"
+                                            >
+                                                추가
+                                            </Button>
+                                        </Space>
+                                    </>
+                                )}
                             />
                         </Form.Item>
                         <Form.Item
@@ -694,8 +765,34 @@ export default function WorkRecordTable() {
                         >
                             <Select
                                 placeholder="카테고리"
-                                options={CATEGORY_OPTIONS}
+                                options={category_options}
                                 allowClear
+                                dropdownRender={(menu) => (
+                                    <>
+                                        {menu}
+                                        <Divider style={{ margin: "8px 0" }} />
+                                        <Space style={{ padding: "0 8px 4px" }}>
+                                            <Input
+                                                placeholder="새 카테고리"
+                                                value={new_category_input}
+                                                onChange={(e) =>
+                                                    setNewCategoryInput(e.target.value)
+                                                }
+                                                onKeyDown={(e) => e.stopPropagation()}
+                                                size="small"
+                                                style={{ width: 100 }}
+                                            />
+                                            <Button
+                                                type="text"
+                                                icon={<PlusOutlined />}
+                                                onClick={handleAddCategoryOption}
+                                                size="small"
+                                            >
+                                                추가
+                                            </Button>
+                                        </Space>
+                                    </>
+                                )}
                             />
                         </Form.Item>
                     </Space>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
     Card,
     Button,
@@ -13,6 +13,8 @@ import {
     Empty,
     Tooltip,
     message,
+    AutoComplete,
+    Divider,
 } from "antd";
 import {
     PlusOutlined,
@@ -20,38 +22,57 @@ import {
     AppstoreAddOutlined,
     FolderOutlined,
 } from "@ant-design/icons";
-import { useWorkStore, TEMPLATE_COLORS } from "../store/useWorkStore";
+import {
+    useWorkStore,
+    TEMPLATE_COLORS,
+    DEFAULT_TASK_OPTIONS,
+    DEFAULT_CATEGORY_OPTIONS,
+} from "../store/useWorkStore";
 
 const { Text } = Typography;
-
-const CATEGORY_OPTIONS = [
-    { value: "개발", label: "개발" },
-    { value: "문서작업", label: "문서작업" },
-    { value: "회의", label: "회의" },
-    { value: "환경세팅", label: "환경세팅" },
-    { value: "코드리뷰", label: "코드리뷰" },
-    { value: "테스트", label: "테스트" },
-    { value: "기타", label: "기타" },
-];
-
-const TASK_OPTIONS = [
-    { value: "개발", label: "개발" },
-    { value: "작업", label: "작업" },
-    { value: "분석", label: "분석" },
-    { value: "설계", label: "설계" },
-    { value: "테스트", label: "테스트" },
-    { value: "기타", label: "기타" },
-];
 
 interface WorkTemplateListProps {
     onAddToRecord: (template_id: string) => void;
 }
 
-export default function WorkTemplateList({ onAddToRecord }: WorkTemplateListProps) {
-    const { templates, addTemplate, deleteTemplate } = useWorkStore();
+export default function WorkTemplateList({
+    onAddToRecord,
+}: WorkTemplateListProps) {
+    const {
+        templates,
+        addTemplate,
+        deleteTemplate,
+        getAutoCompleteOptions,
+        custom_task_options,
+        custom_category_options,
+        addCustomTaskOption,
+        addCustomCategoryOption,
+    } = useWorkStore();
 
     const [is_modal_open, setIsModalOpen] = useState(false);
     const [form] = Form.useForm();
+    const [new_task_input, setNewTaskInput] = useState("");
+    const [new_category_input, setNewCategoryInput] = useState("");
+
+    // 작업명/거래명 자동완성 옵션
+    const work_name_options = useMemo(() => {
+        return getAutoCompleteOptions("work_name").map((v) => ({ value: v }));
+    }, [getAutoCompleteOptions]);
+
+    const deal_name_options = useMemo(() => {
+        return getAutoCompleteOptions("deal_name").map((v) => ({ value: v }));
+    }, [getAutoCompleteOptions]);
+
+    // 업무명/카테고리명 옵션 (기본 + 사용자 정의)
+    const task_options = useMemo(() => {
+        const all = [...DEFAULT_TASK_OPTIONS, ...custom_task_options];
+        return [...new Set(all)].map((v) => ({ value: v, label: v }));
+    }, [custom_task_options]);
+
+    const category_options = useMemo(() => {
+        const all = [...DEFAULT_CATEGORY_OPTIONS, ...custom_category_options];
+        return [...new Set(all)].map((v) => ({ value: v, label: v }));
+    }, [custom_category_options]);
 
     const handleAddTemplate = async () => {
         try {
@@ -83,6 +104,26 @@ export default function WorkTemplateList({ onAddToRecord }: WorkTemplateListProp
         message.success("작업 기록에 추가되었습니다");
     };
 
+    // 업무명 추가
+    const handleAddTaskOption = () => {
+        if (new_task_input.trim()) {
+            addCustomTaskOption(new_task_input.trim());
+            setNewTaskInput("");
+            message.success(`"${new_task_input.trim()}" 업무명이 추가되었습니다`);
+        }
+    };
+
+    // 카테고리명 추가
+    const handleAddCategoryOption = () => {
+        if (new_category_input.trim()) {
+            addCustomCategoryOption(new_category_input.trim());
+            setNewCategoryInput("");
+            message.success(
+                `"${new_category_input.trim()}" 카테고리가 추가되었습니다`
+            );
+        }
+    };
+
     return (
         <>
             <Card
@@ -105,12 +146,15 @@ export default function WorkTemplateList({ onAddToRecord }: WorkTemplateListProp
                     </Button>
                 }
             >
-                <Text type="secondary" style={{ fontSize: 12, display: "block", marginBottom: 12 }}>
+                <Text
+                    type="secondary"
+                    style={{ fontSize: 12, display: "block", marginBottom: 12 }}
+                >
                     자주 사용하는 작업을 프리셋으로 저장하세요.
                     <br />
                     클릭하면 오늘의 작업 기록에 추가됩니다.
                 </Text>
-                
+
                 {templates.length === 0 ? (
                     <Empty
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -132,7 +176,7 @@ export default function WorkTemplateList({ onAddToRecord }: WorkTemplateListProp
                                 className="template-item"
                                 style={{ borderLeftColor: template.color }}
                             >
-                                <div 
+                                <div
                                     className="template-info"
                                     onClick={() => handleUseTemplate(template.id)}
                                     style={{ cursor: "pointer" }}
@@ -178,7 +222,9 @@ export default function WorkTemplateList({ onAddToRecord }: WorkTemplateListProp
                                             ghost
                                             size="small"
                                             icon={<AppstoreAddOutlined />}
-                                            onClick={() => handleUseTemplate(template.id)}
+                                            onClick={() =>
+                                                handleUseTemplate(template.id)
+                                            }
                                             style={{
                                                 borderColor: template.color,
                                                 color: template.color,
@@ -188,7 +234,9 @@ export default function WorkTemplateList({ onAddToRecord }: WorkTemplateListProp
                                     <Popconfirm
                                         title="프리셋 삭제"
                                         description="이 프리셋을 삭제하시겠습니까?"
-                                        onConfirm={() => deleteTemplate(template.id)}
+                                        onConfirm={() =>
+                                            deleteTemplate(template.id)
+                                        }
                                         okText="삭제"
                                         cancelText="취소"
                                     >
@@ -225,11 +273,27 @@ export default function WorkTemplateList({ onAddToRecord }: WorkTemplateListProp
                             { required: true, message: "작업명을 입력하세요" },
                         ]}
                     >
-                        <Input placeholder="예: 5.6 프레임워크 FE" />
+                        <AutoComplete
+                            options={work_name_options}
+                            placeholder="예: 5.6 프레임워크 FE"
+                            filterOption={(input, option) =>
+                                (option?.value ?? "")
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase())
+                            }
+                        />
                     </Form.Item>
 
                     <Form.Item name="deal_name" label="거래명 (상세 작업)">
-                        <Input placeholder="예: 5.6 테스트 케이스 확인 및 이슈 처리" />
+                        <AutoComplete
+                            options={deal_name_options}
+                            placeholder="예: 5.6 테스트 케이스 확인 및 이슈 처리"
+                            filterOption={(input, option) =>
+                                (option?.value ?? "")
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase())
+                            }
+                        />
                     </Form.Item>
 
                     <Space style={{ width: "100%" }} size="middle">
@@ -240,8 +304,40 @@ export default function WorkTemplateList({ onAddToRecord }: WorkTemplateListProp
                         >
                             <Select
                                 placeholder="업무 선택"
-                                options={TASK_OPTIONS}
+                                options={task_options}
                                 allowClear
+                                dropdownRender={(menu) => (
+                                    <>
+                                        {menu}
+                                        <Divider style={{ margin: "8px 0" }} />
+                                        <Space
+                                            style={{ padding: "0 8px 4px" }}
+                                        >
+                                            <Input
+                                                placeholder="새 업무명"
+                                                value={new_task_input}
+                                                onChange={(e) =>
+                                                    setNewTaskInput(
+                                                        e.target.value
+                                                    )
+                                                }
+                                                onKeyDown={(e) =>
+                                                    e.stopPropagation()
+                                                }
+                                                size="small"
+                                                style={{ width: 100 }}
+                                            />
+                                            <Button
+                                                type="text"
+                                                icon={<PlusOutlined />}
+                                                onClick={handleAddTaskOption}
+                                                size="small"
+                                            >
+                                                추가
+                                            </Button>
+                                        </Space>
+                                    </>
+                                )}
                             />
                         </Form.Item>
                         <Form.Item
@@ -251,8 +347,42 @@ export default function WorkTemplateList({ onAddToRecord }: WorkTemplateListProp
                         >
                             <Select
                                 placeholder="카테고리 선택"
-                                options={CATEGORY_OPTIONS}
+                                options={category_options}
                                 allowClear
+                                dropdownRender={(menu) => (
+                                    <>
+                                        {menu}
+                                        <Divider style={{ margin: "8px 0" }} />
+                                        <Space
+                                            style={{ padding: "0 8px 4px" }}
+                                        >
+                                            <Input
+                                                placeholder="새 카테고리"
+                                                value={new_category_input}
+                                                onChange={(e) =>
+                                                    setNewCategoryInput(
+                                                        e.target.value
+                                                    )
+                                                }
+                                                onKeyDown={(e) =>
+                                                    e.stopPropagation()
+                                                }
+                                                size="small"
+                                                style={{ width: 100 }}
+                                            />
+                                            <Button
+                                                type="text"
+                                                icon={<PlusOutlined />}
+                                                onClick={
+                                                    handleAddCategoryOption
+                                                }
+                                                size="small"
+                                            >
+                                                추가
+                                            </Button>
+                                        </Space>
+                                    </>
+                                )}
                             />
                         </Form.Item>
                     </Space>

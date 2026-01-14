@@ -16,6 +16,10 @@ interface WorkStore {
   form_data: WorkFormData;
   selected_date: string;
   
+  // 사용자 정의 옵션 (업무명, 카테고리명)
+  custom_task_options: string[];
+  custom_category_options: string[];
+  
   // 타이머 액션
   startTimer: (template_id?: string) => void;
   stopTimer: () => WorkRecord | null;
@@ -44,6 +48,12 @@ interface WorkStore {
   
   // 자동완성 헬퍼
   getAutoCompleteOptions: (field: keyof WorkFormData) => string[];
+  
+  // 사용자 정의 옵션 관리
+  addCustomTaskOption: (option: string) => void;
+  addCustomCategoryOption: (option: string) => void;
+  removeCustomTaskOption: (option: string) => void;
+  removeCustomCategoryOption: (option: string) => void;
 }
 
 const DEFAULT_FORM_DATA: WorkFormData = {
@@ -107,6 +117,10 @@ const calculateTotalMinutes = (sessions: WorkSession[]): number => {
   return Math.max(1, Math.ceil(total_seconds / 60));
 };
 
+// 기본 업무명/카테고리명 옵션
+export const DEFAULT_TASK_OPTIONS = ['개발', '작업', '분석', '설계', '테스트', '기타'];
+export const DEFAULT_CATEGORY_OPTIONS = ['개발', '문서작업', '회의', '환경세팅', '코드리뷰', '테스트', '기타'];
+
 export const useWorkStore = create<WorkStore>()(
   persist(
     (set, get) => ({
@@ -115,6 +129,8 @@ export const useWorkStore = create<WorkStore>()(
       timer: DEFAULT_TIMER,
       form_data: DEFAULT_FORM_DATA,
       selected_date: dayjs().format('YYYY-MM-DD'),
+      custom_task_options: [],
+      custom_category_options: [],
 
       startTimer: (template_id?: string) => {
         set({
@@ -385,12 +401,47 @@ export const useWorkStore = create<WorkStore>()(
         
         return Array.from(values).sort();
       },
+
+      // 사용자 정의 옵션 관리
+      addCustomTaskOption: (option) => {
+        const trimmed = option.trim();
+        if (!trimmed) return;
+        set((state) => ({
+          custom_task_options: state.custom_task_options.includes(trimmed)
+            ? state.custom_task_options
+            : [...state.custom_task_options, trimmed],
+        }));
+      },
+
+      addCustomCategoryOption: (option) => {
+        const trimmed = option.trim();
+        if (!trimmed) return;
+        set((state) => ({
+          custom_category_options: state.custom_category_options.includes(trimmed)
+            ? state.custom_category_options
+            : [...state.custom_category_options, trimmed],
+        }));
+      },
+
+      removeCustomTaskOption: (option) => {
+        set((state) => ({
+          custom_task_options: state.custom_task_options.filter((o) => o !== option),
+        }));
+      },
+
+      removeCustomCategoryOption: (option) => {
+        set((state) => ({
+          custom_category_options: state.custom_category_options.filter((o) => o !== option),
+        }));
+      },
     }),
     {
       name: 'work-time-storage',
       partialize: (state) => ({
         records: state.records,
         templates: state.templates,
+        custom_task_options: state.custom_task_options,
+        custom_category_options: state.custom_category_options,
       }),
     }
   )
