@@ -94,7 +94,7 @@ export default function DailyGanttChart() {
     // 드래그 상태
     const [is_dragging, setIsDragging] = useState(false);
     const [drag_selection, setDragSelection] = useState<DragSelection | null>(null);
-    const drag_start_ref = useRef<{ mins: number } | null>(null);
+    const drag_start_ref = useRef<{ mins: number; available_min: number; available_max: number } | null>(null);
     const grid_ref = useRef<HTMLDivElement>(null);
 
     // 모달 상태
@@ -145,7 +145,7 @@ export default function DailyGanttChart() {
         );
     }, [records, selected_date]);
 
-    // 모든 세션의 시간 슬롯 (충돌 감지용)
+    // 모든 세션의 시간 슬롯 (충돌 감지용) - 시작 시간순 정렬
     const occupied_slots = useMemo((): TimeSlot[] => {
         const slots: TimeSlot[] = [];
         grouped_works.forEach((group) => {
@@ -156,21 +156,34 @@ export default function DailyGanttChart() {
                 });
             });
         });
-        return slots;
+        return slots.sort((a, b) => a.start - b.start);
     }, [grouped_works]);
-
-    // 시간 범위 충돌 감지
-    const checkConflict = useCallback((start: number, end: number): boolean => {
-        return occupied_slots.some((slot) => {
-            // 두 범위가 겹치는지 확인
-            return !(end <= slot.start || start >= slot.end);
-        });
-    }, [occupied_slots]);
 
     // 특정 시간이 기존 세션 위에 있는지 확인
     const isOnExistingBar = useCallback((mins: number): boolean => {
         return occupied_slots.some((slot) => mins >= slot.start && mins < slot.end);
     }, [occupied_slots]);
+
+    // 드래그 시작점에서 확장 가능한 범위 계산
+    // anchor_mins를 기준으로 왼쪽/오른쪽으로 확장할 수 있는 최대 범위 반환
+    const getAvailableRange = useCallback((anchor_mins: number): { min: number; max: number } => {
+        let min_bound = time_range.start;
+        let max_bound = time_range.end;
+
+        for (const slot of occupied_slots) {
+            // 앵커 왼쪽에 있는 슬롯 중 가장 가까운 것의 end가 min_bound
+            if (slot.end <= anchor_mins) {
+                min_bound = Math.max(min_bound, slot.end);
+            }
+            // 앵커 오른쪽에 있는 슬롯 중 가장 가까운 것의 start가 max_bound
+            if (slot.start >= anchor_mins) {
+                max_bound = Math.min(max_bound, slot.start);
+                break; // 정렬되어 있으므로 첫 번째 발견한 것이 가장 가까움
+            }
+        }
+
+        return { min: min_bound, max: max_bound };
+    }, [occupied_slots, time_range]);
 
     // 시간 범위 계산 (기본 9시-18시)
     const time_range = useMemo(() => {
@@ -314,25 +327,35 @@ export default function DailyGanttChart() {
             return;
         }
         
+        // 확장 가능한 범위 계산
+        const available = getAvailableRange(mins);
+        
         e.preventDefault();
-        drag_start_ref.current = { mins };
+        drag_start_ref.current = { 
+            mins, 
+            available_min: available.min, 
+            available_max: available.max 
+        };
         setIsDragging(true);
         setDragSelection({
             start_mins: mins,
             end_mins: mins,
         });
-    }, [xToMinutes, isOnExistingBar]);
+    }, [xToMinutes, isOnExistingBar, getAvailableRange]);
 
     // 드래그 중
     const handleMouseMove = useCallback((e: React.MouseEvent) => {
         if (!is_dragging || !drag_start_ref.current) return;
 
         const current_mins = xToMinutes(e.clientX);
-        const start_mins = drag_start_ref.current.mins;
+        const { mins: anchor_mins, available_min, available_max } = drag_start_ref.current;
+
+        // 확장 가능한 범위 내로 clamp
+        const clamped_mins = Math.max(available_min, Math.min(available_max, current_mins));
 
         setDragSelection({
-            start_mins: Math.min(start_mins, current_mins),
-            end_mins: Math.max(start_mins, current_mins),
+            start_mins: Math.min(anchor_mins, clamped_mins),
+            end_mins: Math.max(anchor_mins, clamped_mins),
         });
     }, [is_dragging, xToMinutes]);
 
@@ -345,23 +368,20 @@ export default function DailyGanttChart() {
         }
 
         const duration = drag_selection.end_mins - drag_selection.start_mins;
-        const has_conflict = checkConflict(drag_selection.start_mins, drag_selection.end_mins);
         
-        // 최소 5분 이상 선택하고, 충돌이 없어야 함
-        if (duration >= 5 && !has_conflict) {
+        // 최소 5분 이상 선택해야 함 (충돌은 자동으로 방지됨)
+        if (duration >= 5) {
             setSelectedTimeRange({
                 start: minutesToTime(drag_selection.start_mins),
                 end: minutesToTime(drag_selection.end_mins),
             });
             setIsModalOpen(true);
-        } else if (has_conflict && duration >= 5) {
-            message.warning("선택한 영역에 이미 다른 작업이 있습니다.");
         }
 
         setIsDragging(false);
         setDragSelection(null);
         drag_start_ref.current = null;
-    }, [is_dragging, drag_selection, checkConflict]);
+    }, [is_dragging, drag_selection]);
 
     // 마우스가 영역을 벗어났을 때
     const handleMouseLeave = useCallback(() => {
@@ -438,12 +458,6 @@ export default function DailyGanttChart() {
         }
     };
 
-    // 현재 선택 영역의 충돌 여부
-    const has_selection_conflict = useMemo(() => {
-        if (!drag_selection) return false;
-        return checkConflict(drag_selection.start_mins, drag_selection.end_mins);
-    }, [drag_selection, checkConflict]);
-
     // 선택 영역 스타일 계산
     const getSelectionStyle = () => {
         if (!drag_selection) return {};
@@ -455,11 +469,6 @@ export default function DailyGanttChart() {
             left: `${left}%`,
             width: `${width}%`,
         };
-    };
-
-    // 선택 영역 클래스 (충돌 시 다른 스타일)
-    const getSelectionClassName = () => {
-        return has_selection_conflict ? "gantt-selection gantt-selection-conflict" : "gantt-selection";
     };
 
     return (
@@ -516,12 +525,11 @@ export default function DailyGanttChart() {
                             {/* 선택 영역 */}
                             {is_dragging && drag_selection && (
                                 <div 
-                                    className={getSelectionClassName()}
+                                    className="gantt-selection"
                                     style={getSelectionStyle()}
                                 >
                                     <Text className="gantt-selection-text">
                                         {minutesToTime(drag_selection.start_mins)} ~ {minutesToTime(drag_selection.end_mins)}
-                                        {has_selection_conflict && " ⚠️ 충돌"}
                                     </Text>
                                 </div>
                             )}
@@ -576,12 +584,11 @@ export default function DailyGanttChart() {
                                 {/* 선택 영역 */}
                                 {is_dragging && drag_selection && (
                                     <div 
-                                        className={getSelectionClassName()}
+                                        className="gantt-selection"
                                         style={getSelectionStyle()}
                                     >
                                         <Text className="gantt-selection-text">
                                             {minutesToTime(drag_selection.start_mins)} ~ {minutesToTime(drag_selection.end_mins)}
-                                            {has_selection_conflict && " ⚠️ 충돌"}
                                         </Text>
                                     </div>
                                 )}
@@ -743,11 +750,6 @@ export default function DailyGanttChart() {
                         transition: background 0.15s, border-color 0.15s;
                     }
                     
-                    .gantt-selection-conflict {
-                        background: rgba(255, 77, 79, 0.2);
-                        border-color: #ff4d4f;
-                    }
-                    
                     .gantt-selection-text {
                         background: #1890ff;
                         color: white;
@@ -755,10 +757,6 @@ export default function DailyGanttChart() {
                         border-radius: 4px;
                         font-size: 12px;
                         white-space: nowrap;
-                    }
-                    
-                    .gantt-selection-conflict .gantt-selection-text {
-                        background: #ff4d4f;
                     }
                     
                     .gantt-empty-hint {
