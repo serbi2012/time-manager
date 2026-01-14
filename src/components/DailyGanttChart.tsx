@@ -164,27 +164,6 @@ export default function DailyGanttChart() {
         return occupied_slots.some((slot) => mins >= slot.start && mins < slot.end);
     }, [occupied_slots]);
 
-    // 드래그 시작점에서 확장 가능한 범위 계산
-    // anchor_mins를 기준으로 왼쪽/오른쪽으로 확장할 수 있는 최대 범위 반환
-    const getAvailableRange = useCallback((anchor_mins: number): { min: number; max: number } => {
-        let min_bound = time_range.start;
-        let max_bound = time_range.end;
-
-        for (const slot of occupied_slots) {
-            // 앵커 왼쪽에 있는 슬롯 중 가장 가까운 것의 end가 min_bound
-            if (slot.end <= anchor_mins) {
-                min_bound = Math.max(min_bound, slot.end);
-            }
-            // 앵커 오른쪽에 있는 슬롯 중 가장 가까운 것의 start가 max_bound
-            if (slot.start >= anchor_mins) {
-                max_bound = Math.min(max_bound, slot.start);
-                break; // 정렬되어 있으므로 첫 번째 발견한 것이 가장 가까움
-            }
-        }
-
-        return { min: min_bound, max: max_bound };
-    }, [occupied_slots, time_range]);
-
     // 시간 범위 계산 (기본 9시-18시)
     const time_range = useMemo(() => {
         let min_start = 9 * 60;
@@ -206,6 +185,27 @@ export default function DailyGanttChart() {
             end: Math.ceil(max_end / 60) * 60,
         };
     }, [grouped_works]);
+
+    // 드래그 시작점에서 확장 가능한 범위 계산
+    // anchor_mins를 기준으로 왼쪽/오른쪽으로 확장할 수 있는 최대 범위 반환
+    const getAvailableRange = useCallback((anchor_mins: number): { min: number; max: number } => {
+        let min_bound = time_range.start;
+        let max_bound = time_range.end;
+
+        for (const slot of occupied_slots) {
+            // 앵커 왼쪽에 있는 슬롯 중 가장 가까운 것의 end가 min_bound
+            if (slot.end <= anchor_mins) {
+                min_bound = Math.max(min_bound, slot.end);
+            }
+            // 앵커 오른쪽에 있는 슬롯 중 가장 가까운 것의 start가 max_bound
+            if (slot.start >= anchor_mins) {
+                max_bound = Math.min(max_bound, slot.start);
+                break; // 정렬되어 있으므로 첫 번째 발견한 것이 가장 가까움
+            }
+        }
+
+        return { min: min_bound, max: max_bound };
+    }, [occupied_slots, time_range]);
 
     // 시간 라벨 생성
     const time_labels = useMemo(() => {
