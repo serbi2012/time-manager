@@ -811,41 +811,52 @@ export default function WorkRecordTable() {
             },
         },
         {
-            title: "작업명",
-            dataIndex: "work_name",
-            key: "work_name",
-            width: 150,
+            title: "거래명",
+            dataIndex: "deal_name",
+            key: "deal_name",
+            width: 200,
             render: (text: string, record: WorkRecord) => {
                 const is_active = getActiveRecordId() === record.id;
                 const is_completed = record.is_completed;
                 return (
-                    <Space>
-                        {is_completed && (
-                            <CheckCircleOutlined style={{ color: "#52c41a" }} />
-                        )}
-                        <Text
-                            strong
-                            style={{
-                                color: is_active
-                                    ? "#1890ff"
-                                    : is_completed
-                                    ? "#8c8c8c"
-                                    : undefined,
-                                textDecoration: is_completed
-                                    ? "line-through"
-                                    : undefined,
-                            }}
-                        >
-                            {text}
-                        </Text>
-                        {is_active && (
-                            <Tag color="processing" style={{ marginLeft: 4 }}>
-                                {formatTimer(getElapsedSeconds())}
-                            </Tag>
-                        )}
+                    <Space direction="vertical" size={0}>
+                        <Space>
+                            {is_completed && (
+                                <CheckCircleOutlined style={{ color: "#52c41a" }} />
+                            )}
+                            <Text
+                                strong
+                                style={{
+                                    color: is_active
+                                        ? "#1890ff"
+                                        : is_completed
+                                        ? "#8c8c8c"
+                                        : undefined,
+                                    textDecoration: is_completed
+                                        ? "line-through"
+                                        : undefined,
+                                }}
+                            >
+                                {text || record.work_name}
+                            </Text>
+                            {is_active && (
+                                <Tag color="processing" style={{ marginLeft: 4 }}>
+                                    {formatTimer(getElapsedSeconds())}
+                                </Tag>
+                            )}
+                        </Space>
                     </Space>
                 );
             },
+        },
+        {
+            title: "작업명",
+            dataIndex: "work_name",
+            key: "work_name",
+            width: 120,
+            render: (text: string) => (
+                <Tag color="blue" style={{ fontSize: 11 }}>{text}</Tag>
+            ),
         },
         {
             title: "업무명",
@@ -853,15 +864,7 @@ export default function WorkRecordTable() {
             key: "task_name",
             width: 80,
             render: (text: string) =>
-                text ? <Tag color="blue">{text}</Tag> : "-",
-        },
-        {
-            title: "거래명",
-            dataIndex: "deal_name",
-            key: "deal_name",
-            width: 180,
-            ellipsis: true,
-            render: (text: string) => text || "-",
+                text ? <Tag color="cyan">{text}</Tag> : "-",
         },
         {
             title: "카테고리",
@@ -1434,21 +1437,22 @@ export default function WorkRecordTable() {
                     size="small"
                     columns={[
                         {
-                            title: "작업명",
-                            dataIndex: "work_name",
-                            key: "work_name",
-                            width: 150,
-                            render: (text: string) => (
-                                <Text strong>{text}</Text>
-                            ),
-                        },
-                        {
                             title: "거래명",
                             dataIndex: "deal_name",
                             key: "deal_name",
                             width: 200,
-                            ellipsis: true,
-                            render: (text: string) => text || "-",
+                            render: (text: string, record: WorkRecord) => (
+                                <Text strong>{text || record.work_name}</Text>
+                            ),
+                        },
+                        {
+                            title: "작업명",
+                            dataIndex: "work_name",
+                            key: "work_name",
+                            width: 120,
+                            render: (text: string) => (
+                                <Tag color="blue" style={{ fontSize: 11 }}>{text}</Tag>
+                            ),
                         },
                         {
                             title: "시간",

@@ -189,9 +189,9 @@ export default function WorkTemplateList({
                                         style={{ 
                                             marginBottom: 4, 
                                             fontSize: 11,
-                                            maxWidth: '100%',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'normal',
+                                            height: 'auto',
+                                            lineHeight: 1.4,
                                         }}
                                     >
                                         {template.work_name}
@@ -200,8 +200,12 @@ export default function WorkTemplateList({
                                     {/* 거래명 제목 */}
                                     <Text
                                         strong
-                                        ellipsis
-                                        style={{ display: "block", fontSize: 13 }}
+                                        style={{ 
+                                            display: "block", 
+                                            fontSize: 13,
+                                            wordBreak: 'break-word',
+                                            whiteSpace: 'normal',
+                                        }}
                                     >
                                         {template.deal_name || template.work_name}
                                     </Text>
@@ -209,11 +213,12 @@ export default function WorkTemplateList({
                                     {/* 업무명 · 카테고리명 */}
                                     <Text
                                         type="secondary"
-                                        ellipsis
                                         style={{
                                             fontSize: 11,
                                             display: "block",
                                             color: "#999",
+                                            wordBreak: 'break-word',
+                                            whiteSpace: 'normal',
                                         }}
                                     >
                                         {[template.task_name, template.category_name]
