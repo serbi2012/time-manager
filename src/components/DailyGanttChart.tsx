@@ -1197,10 +1197,15 @@ export default function DailyGanttChart() {
                                                 onKeyDown={(e) =>
                                                     e.stopPropagation()
                                                 }
-                                                onMouseDown={(e) =>
-                                                    e.stopPropagation()
-                                                }
-                                                onClick={(e) =>
+                                                onMouseDown={(e) => {
+                                                    e.stopPropagation();
+                                                    setTimeout(() => new_task_input_ref.current?.focus(), 0);
+                                                }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    new_task_input_ref.current?.focus();
+                                                }}
+                                                onFocus={(e) =>
                                                     e.stopPropagation()
                                                 }
                                                 size="small"
@@ -1261,10 +1266,15 @@ export default function DailyGanttChart() {
                                                 onKeyDown={(e) =>
                                                     e.stopPropagation()
                                                 }
-                                                onMouseDown={(e) =>
-                                                    e.stopPropagation()
-                                                }
-                                                onClick={(e) =>
+                                                onMouseDown={(e) => {
+                                                    e.stopPropagation();
+                                                    setTimeout(() => new_category_input_ref.current?.focus(), 0);
+                                                }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    new_category_input_ref.current?.focus();
+                                                }}
+                                                onFocus={(e) =>
                                                     e.stopPropagation()
                                                 }
                                                 size="small"
