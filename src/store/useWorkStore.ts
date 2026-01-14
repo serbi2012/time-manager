@@ -419,31 +419,56 @@ export const useWorkStore = create<WorkStore>()(
           });
 
         // 충돌 검사 및 자동 조정
-        for (const other of same_day_sessions) {
-          // 새 세션이 기존 세션과 겹치는지 확인
-          const overlaps = !(new_end_mins <= other.start_mins || new_start_mins >= other.end_mins);
-          
-          if (overlaps) {
-            // 자동 조정: 겹치는 세션의 끝에 맞춰 시작
-            if (new_start_mins < other.end_mins && new_start_mins >= other.start_mins) {
-              adjusted_start = minutesToTime(other.end_mins);
-              was_adjusted = true;
-            }
-            // 자동 조정: 겹치는 세션의 시작에 맞춰 끝
-            if (new_end_mins > other.start_mins && new_end_mins <= other.end_mins) {
-              adjusted_end = minutesToTime(other.start_mins);
-              was_adjusted = true;
-            }
-            // 완전히 포함되는 경우는 수정 불가
-            if (new_start_mins < other.start_mins && new_end_mins > other.end_mins) {
-              return { 
-                success: false, 
-                adjusted: false, 
-                message: `다른 작업(${other.session.start_time}~${other.session.end_time})과 시간이 완전히 겹칩니다.` 
-              };
+        let current_start_mins = new_start_mins;
+        let current_end_mins = new_end_mins;
+
+        // 충돌이 있는 동안 반복적으로 조정 (최대 10회)
+        for (let iteration = 0; iteration < 10; iteration++) {
+          let has_conflict = false;
+
+          for (const other of same_day_sessions) {
+            // 현재 세션이 기존 세션과 겹치는지 확인
+            const overlaps = !(current_end_mins <= other.start_mins || current_start_mins >= other.end_mins);
+            
+            if (overlaps) {
+              has_conflict = true;
+
+              // 새 세션이 기존 세션을 완전히 포함하는 경우 → 실패
+              if (current_start_mins <= other.start_mins && current_end_mins >= other.end_mins) {
+                return { 
+                  success: false, 
+                  adjusted: false, 
+                  message: `다른 작업(${other.session.start_time}~${other.session.end_time})과 시간이 완전히 겹칩니다.` 
+                };
+              }
+
+              // 기존 세션이 새 세션을 완전히 포함하는 경우 → 실패
+              if (other.start_mins <= current_start_mins && other.end_mins >= current_end_mins) {
+                return { 
+                  success: false, 
+                  adjusted: false, 
+                  message: `다른 작업(${other.session.start_time}~${other.session.end_time}) 안에 완전히 포함됩니다.` 
+                };
+              }
+
+              // 시작 시간이 기존 세션 안에 있는 경우 → 시작 시간을 기존 세션 종료 시간으로 조정
+              if (current_start_mins >= other.start_mins && current_start_mins < other.end_mins) {
+                current_start_mins = other.end_mins;
+                was_adjusted = true;
+              }
+              // 종료 시간이 기존 세션 안에 있는 경우 → 종료 시간을 기존 세션 시작 시간으로 조정
+              else if (current_end_mins > other.start_mins && current_end_mins <= other.end_mins) {
+                current_end_mins = other.start_mins;
+                was_adjusted = true;
+              }
             }
           }
+
+          if (!has_conflict) break;
         }
+
+        adjusted_start = minutesToTime(current_start_mins);
+        adjusted_end = minutesToTime(current_end_mins);
 
         // 조정 후에도 유효한지 확인
         const final_start_mins = timeToMinutes(adjusted_start);

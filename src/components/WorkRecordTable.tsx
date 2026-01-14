@@ -130,7 +130,7 @@ function TimeInput({ value, onSave }: TimeInputProps) {
 
     const handleBlur = () => {
         if (edit_value === null) return;
-        
+
         // 시간 형식 검증 (HH:mm:ss)
         const time_regex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
         if (time_regex.test(edit_value) && edit_value !== value) {
