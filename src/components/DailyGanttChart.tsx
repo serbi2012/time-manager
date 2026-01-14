@@ -98,12 +98,12 @@ export default function DailyGanttChart() {
     const [gantt_tick, setGanttTick] = useState(0);
     useEffect(() => {
         if (!timer.is_running) return;
-        
+
         // 1분(60초)마다 업데이트
         const interval = setInterval(() => {
             setGanttTick((t) => t + 1);
         }, 60000);
-        
+
         return () => clearInterval(interval);
     }, [timer.is_running, timer.start_time]);
 
@@ -168,7 +168,7 @@ export default function DailyGanttChart() {
         // 현재 진행 중인 작업이 있고, 오늘 날짜인 경우 가상 세션 추가
         if (timer.is_running && timer.active_form_data && timer.start_time) {
             const start_date = dayjs(timer.start_time).format("YYYY-MM-DD");
-            
+
             // 오늘 날짜의 작업인 경우에만 표시
             if (start_date === selected_date) {
                 const elapsed_seconds = getElapsedSeconds();
@@ -176,7 +176,7 @@ export default function DailyGanttChart() {
                 const start_time_str = dayjs(timer.start_time).format("HH:mm");
                 const now = dayjs();
                 const end_time_str = now.format("HH:mm");
-                
+
                 const virtual_session: WorkSession = {
                     id: "virtual-running-session",
                     date: selected_date,
@@ -184,9 +184,11 @@ export default function DailyGanttChart() {
                     end_time: end_time_str,
                     duration_minutes: elapsed_minutes,
                 };
-                
-                const key = timer.active_form_data.deal_name || timer.active_form_data.work_name;
-                
+
+                const key =
+                    timer.active_form_data.deal_name ||
+                    timer.active_form_data.work_name;
+
                 if (groups.has(key)) {
                     // 기존 그룹에 가상 세션 추가
                     const group = groups.get(key)!;
@@ -198,7 +200,8 @@ export default function DailyGanttChart() {
                         work_name: timer.active_form_data.work_name,
                         task_name: timer.active_form_data.task_name || "",
                         deal_name: timer.active_form_data.deal_name || "",
-                        category_name: timer.active_form_data.category_name || "",
+                        category_name:
+                            timer.active_form_data.category_name || "",
                         note: timer.active_form_data.note || "",
                         duration_minutes: elapsed_minutes,
                         start_time: start_time_str,
@@ -207,7 +210,7 @@ export default function DailyGanttChart() {
                         sessions: [virtual_session],
                         is_completed: false,
                     };
-                    
+
                     groups.set(key, {
                         key,
                         record: virtual_record,
@@ -221,7 +224,15 @@ export default function DailyGanttChart() {
         return Array.from(groups.values()).sort(
             (a, b) => a.first_start - b.first_start
         );
-    }, [records, selected_date, timer.is_running, timer.active_form_data, timer.start_time, gantt_tick, getElapsedSeconds]);
+    }, [
+        records,
+        selected_date,
+        timer.is_running,
+        timer.active_form_data,
+        timer.start_time,
+        gantt_tick,
+        getElapsedSeconds,
+    ]);
 
     // 모든 세션의 시간 슬롯 (충돌 감지용) - 시작 시간순 정렬
     const occupied_slots = useMemo((): TimeSlot[] => {
@@ -357,17 +368,26 @@ export default function DailyGanttChart() {
     };
 
     // 바 위치 및 너비 계산
-    const getBarStyle = (session: WorkSession, color: string) => {
+    const getBarStyle = (session: WorkSession, color: string, is_running = false) => {
         const start = timeToMinutes(session.start_time);
         const end = timeToMinutes(session.end_time);
 
         const left = ((start - time_range.start) / total_minutes) * 100;
-        const width = ((end - start) / total_minutes) * 100;
+        let width = ((end - start) / total_minutes) * 100;
+        
+        // 진행 중인 세션은 최소 너비 보장 (1분 이상)
+        const min_width = is_running ? Math.max((1 / total_minutes) * 100, 1) : 0.5;
+        width = Math.max(width, min_width);
 
         return {
             left: `${left}%`,
-            width: `${Math.max(width, 0.5)}%`,
+            width: `${width}%`,
             backgroundColor: color,
+            // 진행 중인 세션에 애니메이션 효과
+            ...(is_running && {
+                opacity: 0.8,
+                animation: "pulse 2s ease-in-out infinite",
+            }),
         };
     };
 
@@ -880,10 +900,11 @@ export default function DailyGanttChart() {
                                                                 }
                                                             >
                                                                 <div
-                                                                    className="gantt-bar"
+                                                                    className={`gantt-bar ${session.id === "virtual-running-session" ? "gantt-bar-running" : ""}`}
                                                                     style={getBarStyle(
                                                                         session,
-                                                                        color
+                                                                        color,
+                                                                        session.id === "virtual-running-session"
                                                                     )}
                                                                 />
                                                             </Tooltip>
@@ -1045,6 +1066,16 @@ export default function DailyGanttChart() {
                         transition: opacity 0.2s, transform 0.1s;
                         box-shadow: 0 1px 3px rgba(0,0,0,0.2);
                         pointer-events: auto;
+                    }
+                    
+                    .gantt-bar-running {
+                        animation: pulse 2s ease-in-out infinite;
+                        box-shadow: 0 0 8px rgba(24, 144, 255, 0.6);
+                    }
+                    
+                    @keyframes pulse {
+                        0%, 100% { opacity: 0.7; }
+                        50% { opacity: 1; }
                     }
                     
                     .gantt-bar:hover {
