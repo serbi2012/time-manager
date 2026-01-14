@@ -1177,6 +1177,9 @@ export default function WorkRecordTable() {
                                                 padding: "0 8px 4px",
                                                 width: "100%",
                                             }}
+                                            onMouseDown={(e) =>
+                                                e.stopPropagation()
+                                            }
                                         >
                                             <Input
                                                 placeholder="새 업무명"
@@ -1233,6 +1236,9 @@ export default function WorkRecordTable() {
                                                 padding: "0 8px 4px",
                                                 width: "100%",
                                             }}
+                                            onMouseDown={(e) =>
+                                                e.stopPropagation()
+                                            }
                                         >
                                             <Input
                                                 placeholder="새 카테고리"
@@ -1344,6 +1350,9 @@ export default function WorkRecordTable() {
                                                 padding: "0 8px 4px",
                                                 width: "100%",
                                             }}
+                                            onMouseDown={(e) =>
+                                                e.stopPropagation()
+                                            }
                                         >
                                             <Input
                                                 placeholder="새 업무명"
@@ -1409,6 +1418,9 @@ export default function WorkRecordTable() {
                                                 padding: "0 8px 4px",
                                                 width: "100%",
                                             }}
+                                            onMouseDown={(e) =>
+                                                e.stopPropagation()
+                                            }
                                         >
                                             <Input
                                                 placeholder="새 카테고리"
