@@ -37,6 +37,16 @@ interface WorkStore {
   deleteRecord: (id: string) => void;
   updateRecord: (id: string, record: Partial<WorkRecord>) => void;
   
+  // 세션 수정 (시간 충돌 방지 포함)
+  updateSession: (
+    record_id: string,
+    session_id: string,
+    new_start: string,
+    new_end: string
+  ) => { success: boolean; adjusted: boolean; message?: string };
+  
+  deleteSession: (record_id: string, session_id: string) => void;
+  
   // 템플릿 액션
   addTemplate: (template: Omit<WorkTemplate, 'id' | 'created_at'>) => WorkTemplate;
   deleteTemplate: (id: string) => void;
@@ -351,6 +361,170 @@ export const useWorkStore = create<WorkStore>()(
         set((state) => ({
           records: state.records.map((r) =>
             r.id === id ? { ...r, ...record } : r
+          ),
+        }));
+      },
+
+      // 세션 수정 (시간 충돌 방지 포함)
+      updateSession: (record_id, session_id, new_start, new_end) => {
+        const { records } = get();
+        const record = records.find((r) => r.id === record_id);
+        if (!record) return { success: false, adjusted: false, message: '레코드를 찾을 수 없습니다.' };
+
+        const session_index = record.sessions.findIndex((s) => s.id === session_id);
+        if (session_index === -1) return { success: false, adjusted: false, message: '세션을 찾을 수 없습니다.' };
+
+        // 시간 문자열을 분으로 변환 (HH:mm:ss -> 분)
+        const timeToMinutes = (time: string): number => {
+          const [h, m, s] = time.split(':').map(Number);
+          return h * 60 + m + (s || 0) / 60;
+        };
+
+        // 분을 시간 문자열로 변환 (분 -> HH:mm:ss)
+        const minutesToTime = (mins: number): string => {
+          const h = Math.floor(mins / 60);
+          const m = Math.floor(mins % 60);
+          const s = Math.round((mins % 1) * 60);
+          return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        };
+
+        let adjusted_start = new_start;
+        let adjusted_end = new_end;
+        let was_adjusted = false;
+
+        const new_start_mins = timeToMinutes(new_start);
+        const new_end_mins = timeToMinutes(new_end);
+
+        // 종료 시간이 시작 시간보다 빨라지면 안됨
+        if (new_end_mins <= new_start_mins) {
+          return { success: false, adjusted: false, message: '종료 시간은 시작 시간보다 나중이어야 합니다.' };
+        }
+
+        // 같은 날짜의 모든 세션 수집 (현재 수정 중인 세션 제외)
+        const same_day_sessions: { record_id: string; session: WorkSession; start_mins: number; end_mins: number }[] = [];
+        
+        records
+          .filter((r) => r.date === record.date)
+          .forEach((r) => {
+            r.sessions?.forEach((s) => {
+              if (!(r.id === record_id && s.id === session_id)) {
+                same_day_sessions.push({
+                  record_id: r.id,
+                  session: s,
+                  start_mins: timeToMinutes(s.start_time),
+                  end_mins: timeToMinutes(s.end_time),
+                });
+              }
+            });
+          });
+
+        // 충돌 검사 및 자동 조정
+        for (const other of same_day_sessions) {
+          // 새 세션이 기존 세션과 겹치는지 확인
+          const overlaps = !(new_end_mins <= other.start_mins || new_start_mins >= other.end_mins);
+          
+          if (overlaps) {
+            // 자동 조정: 겹치는 세션의 끝에 맞춰 시작
+            if (new_start_mins < other.end_mins && new_start_mins >= other.start_mins) {
+              adjusted_start = minutesToTime(other.end_mins);
+              was_adjusted = true;
+            }
+            // 자동 조정: 겹치는 세션의 시작에 맞춰 끝
+            if (new_end_mins > other.start_mins && new_end_mins <= other.end_mins) {
+              adjusted_end = minutesToTime(other.start_mins);
+              was_adjusted = true;
+            }
+            // 완전히 포함되는 경우는 수정 불가
+            if (new_start_mins < other.start_mins && new_end_mins > other.end_mins) {
+              return { 
+                success: false, 
+                adjusted: false, 
+                message: `다른 작업(${other.session.start_time}~${other.session.end_time})과 시간이 완전히 겹칩니다.` 
+              };
+            }
+          }
+        }
+
+        // 조정 후에도 유효한지 확인
+        const final_start_mins = timeToMinutes(adjusted_start);
+        const final_end_mins = timeToMinutes(adjusted_end);
+        if (final_end_mins <= final_start_mins) {
+          return { success: false, adjusted: false, message: '충돌을 피할 수 없습니다. 다른 시간을 선택하세요.' };
+        }
+
+        // 세션 업데이트
+        const duration_seconds = Math.round((final_end_mins - final_start_mins) * 60);
+        const updated_sessions = record.sessions.map((s, idx) =>
+          idx === session_index
+            ? { ...s, start_time: adjusted_start, end_time: adjusted_end, duration_seconds }
+            : s
+        );
+
+        // 레코드 업데이트 (총 시간, 시작/종료 시간 재계산)
+        const total_seconds = updated_sessions.reduce((sum, s) => sum + (s.duration_seconds || 0), 0);
+        const sorted_sessions = [...updated_sessions].sort(
+          (a, b) => timeToMinutes(a.start_time) - timeToMinutes(b.start_time)
+        );
+
+        set((state) => ({
+          records: state.records.map((r) =>
+            r.id === record_id
+              ? {
+                  ...r,
+                  sessions: updated_sessions,
+                  duration_minutes: Math.max(1, Math.ceil(total_seconds / 60)),
+                  start_time: sorted_sessions[0]?.start_time || r.start_time,
+                  end_time: sorted_sessions[sorted_sessions.length - 1]?.end_time || r.end_time,
+                }
+              : r
+          ),
+        }));
+
+        return {
+          success: true,
+          adjusted: was_adjusted,
+          message: was_adjusted ? '시간 충돌로 인해 자동 조정되었습니다.' : undefined,
+        };
+      },
+
+      // 세션 삭제
+      deleteSession: (record_id, session_id) => {
+        const { records } = get();
+        const record = records.find((r) => r.id === record_id);
+        if (!record) return;
+
+        const updated_sessions = record.sessions.filter((s) => s.id !== session_id);
+        
+        // 세션이 모두 삭제되면 레코드도 삭제
+        if (updated_sessions.length === 0) {
+          set((state) => ({
+            records: state.records.filter((r) => r.id !== record_id),
+          }));
+          return;
+        }
+
+        // 시간 재계산
+        const timeToMinutes = (time: string): number => {
+          const [h, m, s] = time.split(':').map(Number);
+          return h * 60 + m + (s || 0) / 60;
+        };
+
+        const total_seconds = updated_sessions.reduce((sum, s) => sum + (s.duration_seconds || 0), 0);
+        const sorted_sessions = [...updated_sessions].sort(
+          (a, b) => timeToMinutes(a.start_time) - timeToMinutes(b.start_time)
+        );
+
+        set((state) => ({
+          records: state.records.map((r) =>
+            r.id === record_id
+              ? {
+                  ...r,
+                  sessions: updated_sessions,
+                  duration_minutes: Math.max(1, Math.ceil(total_seconds / 60)),
+                  start_time: sorted_sessions[0]?.start_time || r.start_time,
+                  end_time: sorted_sessions[sorted_sessions.length - 1]?.end_time || r.end_time,
+                }
+              : r
           ),
         }));
       },

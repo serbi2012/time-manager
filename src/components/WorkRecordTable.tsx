@@ -3,6 +3,7 @@ import {
     Table,
     Card,
     DatePicker,
+    TimePicker,
     Button,
     Popconfirm,
     Space,
@@ -11,7 +12,6 @@ import {
     Statistic,
     Row,
     Col,
-    Timeline,
     Modal,
     Form,
     Input,
@@ -19,6 +19,7 @@ import {
     Tooltip,
     AutoComplete,
     Divider,
+    message,
 } from "antd";
 import {
     DeleteOutlined,
@@ -121,6 +122,8 @@ export default function WorkRecordTable() {
         setSelectedDate,
         deleteRecord,
         updateRecord,
+        updateSession,
+        deleteSession,
         timer,
         startTimer,
         stopTimer,
@@ -437,7 +440,32 @@ export default function WorkRecordTable() {
         return getCompletedRecords();
     }, [records, getCompletedRecords]);
 
-    // 확장 행 렌더링 (세션 이력)
+    // 세션 시간 수정 핸들러
+    const handleUpdateSessionTime = (
+        record_id: string,
+        session_id: string,
+        new_start: string,
+        new_end: string
+    ) => {
+        const result = updateSession(record_id, session_id, new_start, new_end);
+        if (result.success) {
+            if (result.adjusted) {
+                message.warning(result.message || "시간이 자동 조정되었습니다.");
+            } else {
+                message.success("시간이 수정되었습니다.");
+            }
+        } else {
+            message.error(result.message || "시간 수정에 실패했습니다.");
+        }
+    };
+
+    // 세션 삭제 핸들러
+    const handleDeleteSession = (record_id: string, session_id: string) => {
+        deleteSession(record_id, session_id);
+        message.success("세션이 삭제되었습니다.");
+    };
+
+    // 확장 행 렌더링 (세션 이력 + 시간 수정)
     const expandedRowRender = (record: WorkRecord) => {
         const sessions: WorkSession[] =
             record.sessions && record.sessions.length > 0
@@ -472,40 +500,100 @@ export default function WorkRecordTable() {
                     </Text>
                 </div>
 
-                <Timeline
-                    mode="left"
-                    style={{ marginTop: 16, marginLeft: 8 }}
-                    items={sessions.map(
-                        (session: WorkSession, index: number) => ({
-                            color:
-                                index === sessions.length - 1 ? "blue" : "gray",
-                            label: (
-                                <Text type="secondary" style={{ fontSize: 12 }}>
-                                    #{index + 1}
-                                </Text>
+                <Table
+                    dataSource={sessions}
+                    rowKey="id"
+                    size="small"
+                    pagination={false}
+                    style={{ marginTop: 16 }}
+                    columns={[
+                        {
+                            title: "#",
+                            key: "index",
+                            width: 40,
+                            render: (_: unknown, __: WorkSession, index: number) => (
+                                <Text type="secondary">{index + 1}</Text>
                             ),
-                            children: (
-                                <div className="session-item">
-                                    <Space>
-                                        <ClockCircleOutlined
-                                            style={{ color: "#1890ff" }}
-                                        />
-                                        <Text>
-                                            {session.start_time} ~{" "}
-                                            {session.end_time}
-                                        </Text>
-                                        <Tag color="blue">
-                                            {formatDuration(
-                                                getSessionDurationSeconds(
-                                                    session
-                                                )
-                                            )}
-                                        </Tag>
-                                    </Space>
-                                </div>
+                        },
+                        {
+                            title: "시작 시간",
+                            key: "start_time",
+                            width: 140,
+                            render: (_: unknown, session: WorkSession) => (
+                                <TimePicker
+                                    value={dayjs(session.start_time, "HH:mm:ss")}
+                                    format="HH:mm:ss"
+                                    size="small"
+                                    allowClear={false}
+                                    onChange={(time) => {
+                                        if (time) {
+                                            handleUpdateSessionTime(
+                                                record.id,
+                                                session.id,
+                                                time.format("HH:mm:ss"),
+                                                session.end_time
+                                            );
+                                        }
+                                    }}
+                                />
                             ),
-                        })
-                    )}
+                        },
+                        {
+                            title: "종료 시간",
+                            key: "end_time",
+                            width: 140,
+                            render: (_: unknown, session: WorkSession) => (
+                                <TimePicker
+                                    value={dayjs(session.end_time, "HH:mm:ss")}
+                                    format="HH:mm:ss"
+                                    size="small"
+                                    allowClear={false}
+                                    onChange={(time) => {
+                                        if (time) {
+                                            handleUpdateSessionTime(
+                                                record.id,
+                                                session.id,
+                                                session.start_time,
+                                                time.format("HH:mm:ss")
+                                            );
+                                        }
+                                    }}
+                                />
+                            ),
+                        },
+                        {
+                            title: "소요 시간",
+                            key: "duration",
+                            width: 100,
+                            render: (_: unknown, session: WorkSession) => (
+                                <Tag color="blue">
+                                    {formatDuration(getSessionDurationSeconds(session))}
+                                </Tag>
+                            ),
+                        },
+                        {
+                            title: "",
+                            key: "action",
+                            width: 40,
+                            render: (_: unknown, session: WorkSession) => (
+                                <Popconfirm
+                                    title="세션 삭제"
+                                    description="이 세션을 삭제하시겠습니까?"
+                                    onConfirm={() => handleDeleteSession(record.id, session.id)}
+                                    okText="삭제"
+                                    cancelText="취소"
+                                    okButtonProps={{ danger: true }}
+                                >
+                                    <Button
+                                        type="text"
+                                        danger
+                                        icon={<DeleteOutlined />}
+                                        size="small"
+                                    />
+                                </Popconfirm>
+                            ),
+                        },
+                    ]}
                 />
 
                 <div className="session-summary">
@@ -532,7 +620,6 @@ export default function WorkRecordTable() {
                 <style>{`
                     .session-history { padding: 16px 24px; background: #fafafa; border-radius: 8px; }
                     .session-header { display: flex; align-items: center; margin-bottom: 8px; }
-                    .session-item { padding: 4px 0; }
                     .session-summary { margin-top: 16px; padding-top: 12px; border-top: 1px dashed #e8e8e8; }
                 `}</style>
             </div>
