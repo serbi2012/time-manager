@@ -1012,7 +1012,7 @@ export default function WorkRecordTable() {
                                 color="processing"
                                 icon={<ClockCircleOutlined spin />}
                             >
-                                {timer.active_form_data.work_name} 진행 중
+                                {timer.active_form_data.deal_name || timer.active_form_data.work_name} 진행 중
                             </Tag>
                         )}
                         {filtered_records.some(

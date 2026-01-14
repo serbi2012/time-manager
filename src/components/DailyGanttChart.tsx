@@ -368,15 +368,21 @@ export default function DailyGanttChart() {
     };
 
     // 바 위치 및 너비 계산
-    const getBarStyle = (session: WorkSession, color: string, is_running = false) => {
+    const getBarStyle = (
+        session: WorkSession,
+        color: string,
+        is_running = false
+    ) => {
         const start = timeToMinutes(session.start_time);
         const end = timeToMinutes(session.end_time);
 
         const left = ((start - time_range.start) / total_minutes) * 100;
         let width = ((end - start) / total_minutes) * 100;
-        
+
         // 진행 중인 세션은 최소 너비 보장 (1분 이상)
-        const min_width = is_running ? Math.max((1 / total_minutes) * 100, 1) : 0.5;
+        const min_width = is_running
+            ? Math.max((1 / total_minutes) * 100, 1)
+            : 0.5;
         width = Math.max(width, min_width);
 
         return {
@@ -900,11 +906,17 @@ export default function DailyGanttChart() {
                                                                 }
                                                             >
                                                                 <div
-                                                                    className={`gantt-bar ${session.id === "virtual-running-session" ? "gantt-bar-running" : ""}`}
+                                                                    className={`gantt-bar ${
+                                                                        session.id ===
+                                                                        "virtual-running-session"
+                                                                            ? "gantt-bar-running"
+                                                                            : ""
+                                                                    }`}
                                                                     style={getBarStyle(
                                                                         session,
                                                                         color,
-                                                                        session.id === "virtual-running-session"
+                                                                        session.id ===
+                                                                            "virtual-running-session"
                                                                     )}
                                                                 />
                                                             </Tooltip>
