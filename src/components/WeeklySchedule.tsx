@@ -213,7 +213,6 @@ const WeeklySchedule = () => {
         return groups;
     }, [week_dates, weekly_records, records, editable_data]);
 
-
     // 진행상태 수정
     const handleStatusChange = (work_name: string, value: string) => {
         setEditableData((prev) => ({
@@ -349,7 +348,9 @@ const WeeklySchedule = () => {
                                         {/* 작업 헤더 */}
                                         <div className="work-header">
                                             <Space wrap>
-                                                <Text>[{work.project_code}]</Text>
+                                                <Text>
+                                                    [{work.project_code}]
+                                                </Text>
                                                 <Text strong>
                                                     {work.work_name}
                                                 </Text>

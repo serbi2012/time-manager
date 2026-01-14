@@ -628,6 +628,7 @@ export const useWorkStore = create<WorkStore>()(
 
         set({
           form_data: {
+            project_code: template.project_code || '',
             work_name: template.work_name,
             task_name: template.task_name,
             deal_name: template.deal_name,
