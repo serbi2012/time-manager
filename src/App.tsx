@@ -35,8 +35,19 @@ function MainPage() {
             stopTimer();
         }
 
-        // 템플릿 적용 후 타이머 시작
+        // 템플릿 적용 후 거래명에 유니크 ID 추가
         applyTemplate(template_id);
+        
+        // 유니크 ID 생성 (MMdd_HHmm 형식)
+        const now = new Date();
+        const unique_id = `${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+        const unique_deal_name = template.deal_name 
+            ? `${template.deal_name}_${unique_id}`
+            : `작업_${unique_id}`;
+        
+        // 거래명 업데이트
+        useWorkStore.getState().setFormData({ deal_name: unique_deal_name });
+        
         startTimer(template_id);
         message.success(`"${template.work_name}" 작업이 시작되었습니다`);
     };
