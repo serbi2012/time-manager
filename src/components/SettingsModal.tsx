@@ -1,5 +1,5 @@
 // 설정 모달 컴포넌트
-import { useRef, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
     Modal,
     Tabs,
