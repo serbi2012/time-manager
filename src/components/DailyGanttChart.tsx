@@ -117,6 +117,7 @@ export default function DailyGanttChart() {
         mins: number;
         available_min: number;
         available_max: number;
+        waiting_for_empty: boolean; // 빈 영역 대기 중 플래그
     } | null>(null);
     const grid_ref = useRef<HTMLDivElement>(null);
 
@@ -437,7 +438,7 @@ export default function DailyGanttChart() {
         (e: React.MouseEvent) => {
             if (!grid_ref.current) return;
 
-            // 기존 바 위에서는 드래그 시작하지 않음
+            // 기존 바 클릭은 무시 (툴팁 등 다른 동작 허용)
             const target = e.target as HTMLElement;
             if (target.classList.contains("gantt-bar")) {
                 return;
@@ -445,27 +446,35 @@ export default function DailyGanttChart() {
 
             const mins = xToMinutes(e.clientX);
 
-            // 기존 세션 위에서 시작하면 드래그 시작하지 않음
-            if (isOnExistingBar(mins)) {
-                return;
-            }
-
-            // 확장 가능한 범위 계산
-            const available = getAvailableRange(mins);
-
             e.preventDefault();
+            
+            // 기존 세션 위에서 시작해도 드래그는 허용
+            // 빈 영역에 마우스가 도달하면 그때부터 선택 영역 표시
+            const on_existing = isOnExistingBar(mins);
+            
             drag_start_ref.current = {
                 mins,
-                available_min: available.min,
-                available_max: available.max,
+                available_min: time_range.start,
+                available_max: time_range.end,
+                waiting_for_empty: on_existing, // 빈 영역 대기 중 플래그
             };
             setIsDragging(true);
-            setDragSelection({
-                start_mins: mins,
-                end_mins: mins,
-            });
+            
+            // 빈 영역에서 시작했으면 바로 선택 영역 표시
+            if (!on_existing) {
+                const available = getAvailableRange(mins);
+                drag_start_ref.current.available_min = available.min;
+                drag_start_ref.current.available_max = available.max;
+                setDragSelection({
+                    start_mins: mins,
+                    end_mins: mins,
+                });
+            } else {
+                // 기존 세션 위에서 시작했으면 선택 영역 null
+                setDragSelection(null);
+            }
         },
-        [xToMinutes, isOnExistingBar, getAvailableRange]
+        [xToMinutes, isOnExistingBar, getAvailableRange, time_range]
     );
 
     // 드래그 중
@@ -474,6 +483,31 @@ export default function DailyGanttChart() {
             if (!is_dragging || !drag_start_ref.current) return;
 
             const current_mins = xToMinutes(e.clientX);
+            const on_existing = isOnExistingBar(current_mins);
+
+            // 빈 영역 대기 중이면서 아직 기존 세션 위에 있으면 무시
+            if (drag_start_ref.current.waiting_for_empty) {
+                if (on_existing) {
+                    // 아직 기존 세션 위에 있음 - 선택 영역 표시 안함
+                    setDragSelection(null);
+                    return;
+                } else {
+                    // 빈 영역에 도달! 여기서부터 선택 시작
+                    const available = getAvailableRange(current_mins);
+                    drag_start_ref.current = {
+                        mins: current_mins,
+                        available_min: available.min,
+                        available_max: available.max,
+                        waiting_for_empty: false,
+                    };
+                    setDragSelection({
+                        start_mins: current_mins,
+                        end_mins: current_mins,
+                    });
+                    return;
+                }
+            }
+
             const {
                 mins: anchor_mins,
                 available_min,
@@ -491,7 +525,7 @@ export default function DailyGanttChart() {
                 end_mins: Math.max(anchor_mins, clamped_mins),
             });
         },
-        [is_dragging, xToMinutes]
+        [is_dragging, xToMinutes, isOnExistingBar, getAvailableRange]
     );
 
     // 드래그 종료
