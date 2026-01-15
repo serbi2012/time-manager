@@ -39,6 +39,7 @@ import DailyGanttChart from "./components/DailyGanttChart";
 import WeeklySchedule from "./components/WeeklySchedule";
 import SettingsModal from "./components/SettingsModal";
 import { useWorkStore } from "./store/useWorkStore";
+import { useShortcutStore } from "./store/useShortcutStore";
 import { useAuth } from "./firebase/useAuth";
 import { useShortcuts } from "./hooks/useShortcuts";
 import {
@@ -327,6 +328,7 @@ function AppLayout() {
     const custom_category_options = useWorkStore(
         (state) => state.custom_category_options
     );
+    const shortcuts = useShortcutStore((state) => state.shortcuts);
 
     useEffect(() => {
         if (user && isAuthenticated && sync_status === "synced") {
@@ -340,6 +342,7 @@ function AppLayout() {
         templates,
         custom_task_options,
         custom_category_options,
+        shortcuts,
         user,
         isAuthenticated,
         sync_status,

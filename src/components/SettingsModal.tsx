@@ -13,7 +13,6 @@ import {
     message,
     Popconfirm,
     Checkbox,
-    Input,
     Empty,
     Collapse,
 } from "antd";
@@ -24,7 +23,6 @@ import {
     DatabaseOutlined,
     ReloadOutlined,
     UnorderedListOutlined,
-    PlusOutlined,
     DeleteOutlined,
     UndoOutlined,
 } from "@ant-design/icons";
@@ -401,12 +399,10 @@ function DataTab({
     onExport,
     onImport,
     isAuthenticated,
-    file_input_ref,
 }: {
     onExport: () => void;
     onImport: () => void;
     isAuthenticated: boolean;
-    file_input_ref: React.RefObject<HTMLInputElement | null>;
 }) {
     return (
         <div>
@@ -423,12 +419,6 @@ function DataTab({
                 >
                     데이터 가져오기 (Import)
                 </Button>
-                <input
-                    ref={file_input_ref}
-                    type="file"
-                    accept=".json"
-                    style={{ display: "none" }}
-                />
                 {!isAuthenticated && (
                     <Text type="warning" style={{ fontSize: 12 }}>
                         * 데이터 가져오기는 로그인 후 사용할 수 있습니다
@@ -464,17 +454,6 @@ export default function SettingsModal({
     onImport,
     isAuthenticated,
 }: SettingsModalProps) {
-    const file_input_ref = useRef<HTMLInputElement>(null);
-
-    const handleImportClick = () => {
-        if (!isAuthenticated) {
-            message.warning("로그인 후 데이터를 가져올 수 있습니다");
-            return;
-        }
-        file_input_ref.current?.click();
-        onImport();
-    };
-
     const tab_items = [
         {
             key: "data",
@@ -486,9 +465,8 @@ export default function SettingsModal({
             children: (
                 <DataTab
                     onExport={onExport}
-                    onImport={handleImportClick}
+                    onImport={onImport}
                     isAuthenticated={isAuthenticated}
-                    file_input_ref={file_input_ref}
                 />
             ),
         },

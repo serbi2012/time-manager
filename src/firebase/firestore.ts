@@ -3,6 +3,7 @@ import { doc, setDoc, getDoc, onSnapshot } from "firebase/firestore";
 import type { Unsubscribe } from "firebase/firestore";
 import { db } from "./config";
 import type { WorkRecord, WorkTemplate, TimerState } from "../types";
+import type { ShortcutDefinition } from "../store/useShortcutStore";
 
 // 사용자 데이터 구조
 export interface UserData {
@@ -11,6 +12,7 @@ export interface UserData {
     custom_task_options: string[];
     custom_category_options: string[];
     timer?: TimerState; // 타이머 상태 (새로고침 시 복원용)
+    shortcuts?: ShortcutDefinition[]; // 단축키 설정
     updated_at: string;
 }
 

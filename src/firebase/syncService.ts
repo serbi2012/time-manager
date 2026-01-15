@@ -8,6 +8,7 @@ import {
 } from "./firestore";
 import type { UserData } from "./firestore";
 import { useWorkStore } from "../store/useWorkStore";
+import { useShortcutStore, DEFAULT_SHORTCUTS } from "../store/useShortcutStore";
 
 let unsubscribe_fn: (() => void) | null = null;
 
@@ -90,12 +91,16 @@ export async function syncToFirebase(
     last_known_record_count = state.records.length;
     last_known_template_count = state.templates.length;
 
+    // 단축키 상태 가져오기
+    const shortcut_state = useShortcutStore.getState();
+
     await saveUserData(user.uid, {
         records: state.records,
         templates: state.templates,
         custom_task_options: state.custom_task_options,
         custom_category_options: state.custom_category_options,
         timer: state.timer, // 타이머 상태도 저장
+        shortcuts: shortcut_state.shortcuts, // 단축키 설정 저장
     });
 }
 
@@ -108,9 +113,30 @@ export async function syncFromFirebase(user: User): Promise<boolean> {
     last_known_record_count = state.records.length;
     last_known_template_count = state.templates.length;
 
+    // 단축키 동기화 헬퍼 함수
+    const syncShortcuts = (firebase_shortcuts?: typeof DEFAULT_SHORTCUTS) => {
+        if (firebase_shortcuts && firebase_shortcuts.length > 0) {
+            // Firebase에 단축키가 있으면 로드 (기본값과 병합)
+            const merged_shortcuts = DEFAULT_SHORTCUTS.map(
+                (default_shortcut) => {
+                    const saved = firebase_shortcuts.find(
+                        (s) => s.id === default_shortcut.id
+                    );
+                    return saved
+                        ? { ...default_shortcut, enabled: saved.enabled }
+                        : default_shortcut;
+                }
+            );
+            useShortcutStore.getState().setShortcuts(merged_shortcuts);
+        }
+    };
+
     if (firebase_data) {
         const firebase_records = firebase_data.records || [];
         const firebase_templates = firebase_data.templates || [];
+
+        // 단축키 동기화
+        syncShortcuts(firebase_data.shortcuts);
 
         // 로컬에 데이터가 없거나 Firebase가 더 최신인 경우에만 덮어쓰기
         const local_has_data =
@@ -228,6 +254,21 @@ export function startRealtimeSync(user: User): void {
                 ...(should_restore_timer && { timer: data.timer }),
             });
 
+            // 단축키 동기화 (있으면)
+            if (data.shortcuts && data.shortcuts.length > 0) {
+                const merged_shortcuts = DEFAULT_SHORTCUTS.map(
+                    (default_shortcut) => {
+                        const saved = data.shortcuts!.find(
+                            (s) => s.id === default_shortcut.id
+                        );
+                        return saved
+                            ? { ...default_shortcut, enabled: saved.enabled }
+                            : default_shortcut;
+                    }
+                );
+                useShortcutStore.getState().setShortcuts(merged_shortcuts);
+            }
+
             // 카운트 업데이트
             last_known_record_count = firebase_records.length;
             last_known_template_count = firebase_templates.length;
@@ -256,12 +297,14 @@ export async function syncImmediately(user: User): Promise<void> {
 export function syncBeforeUnload(user: User): void {
     // localStorage에 백업 저장 (다음 로드 시 복구용)
     const state = useWorkStore.getState();
+    const shortcut_state = useShortcutStore.getState();
     const backup_data = {
         records: state.records,
         templates: state.templates,
         custom_task_options: state.custom_task_options,
         custom_category_options: state.custom_category_options,
         timer: state.timer,
+        shortcuts: shortcut_state.shortcuts,
         user_id: user.uid,
         timestamp: Date.now(),
     };
@@ -303,6 +346,7 @@ export async function checkPendingSync(user: User): Promise<void> {
                         custom_category_options:
                             backup_data.custom_category_options,
                         timer: backup_data.timer,
+                        shortcuts: backup_data.shortcuts,
                     });
 
                     console.log("[Sync] 미저장 백업 Firebase에 복구 완료");
