@@ -23,6 +23,7 @@ import {
     SyncOutlined,
     CloudOutlined,
     CloudSyncOutlined,
+    CheckCircleFilled,
 } from "@ant-design/icons";
 import {
     BrowserRouter,
@@ -45,7 +46,9 @@ import {
     syncFromFirebase,
     startRealtimeSync,
     stopRealtimeSync,
-    scheduleSync,
+    syncImmediately,
+    syncBeforeUnload,
+    checkPendingSync,
 } from "./firebase/syncService";
 import "./App.css";
 
@@ -195,6 +198,12 @@ function AppLayout() {
         "idle" | "syncing" | "synced" | "error"
     >("idle");
 
+    // 동기화 완료 체크 애니메이션 표시
+    const [show_sync_check, setShowSyncCheck] = useState(false);
+    const sync_check_timeout = useRef<ReturnType<typeof setTimeout> | null>(
+        null
+    );
+
     // 단축키 이벤트 발생 함수들
     const emitEvent = useCallback((event_name: string) => {
         window.dispatchEvent(new CustomEvent(event_name));
@@ -251,15 +260,34 @@ function AppLayout() {
     // 단축키 훅 사용
     useShortcuts(shortcut_handlers);
 
+    // 동기화 완료 체크 표시 함수
+    const showSyncCheckAnimation = useCallback(() => {
+        // 이전 타이머 취소
+        if (sync_check_timeout.current) {
+            clearTimeout(sync_check_timeout.current);
+        }
+
+        setShowSyncCheck(true);
+
+        // 1.5초 후 사라지게
+        sync_check_timeout.current = setTimeout(() => {
+            setShowSyncCheck(false);
+            sync_check_timeout.current = null;
+        }, 1500);
+    }, []);
+
     // 로그인 시 데이터 동기화
     useEffect(() => {
         if (user) {
             setSyncStatus("syncing");
-            syncFromFirebase(user)
+
+            // 먼저 미저장 백업이 있는지 확인 후 동기화
+            checkPendingSync(user)
+                .then(() => syncFromFirebase(user))
                 .then(() => {
                     setSyncStatus("synced");
                     startRealtimeSync(user);
-                    message.success("클라우드 데이터와 동기화되었습니다");
+                    showSyncCheckAnimation();
                 })
                 .catch(() => {
                     setSyncStatus("error");
@@ -273,7 +301,22 @@ function AppLayout() {
         return () => {
             stopRealtimeSync();
         };
-    }, [user]);
+    }, [user, showSyncCheckAnimation]);
+
+    // 브라우저 종료/새로고침 시 데이터 백업
+    useEffect(() => {
+        if (!user || !isAuthenticated) return;
+
+        const handleBeforeUnload = () => {
+            syncBeforeUnload(user);
+        };
+
+        window.addEventListener("beforeunload", handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+        };
+    }, [user, isAuthenticated]);
 
     // 데이터 변경 시 Firebase에 자동 저장
     const records = useWorkStore((state) => state.records);
@@ -287,8 +330,10 @@ function AppLayout() {
 
     useEffect(() => {
         if (user && isAuthenticated && sync_status === "synced") {
-            // scheduleSync는 내부에서 markLocalChange와 debounce 처리
-            scheduleSync(user);
+            // 데이터 변경 시 즉시 저장 후 체크 애니메이션 표시
+            syncImmediately(user).then(() => {
+                showSyncCheckAnimation();
+            });
         }
     }, [
         records,
@@ -298,6 +343,7 @@ function AppLayout() {
         user,
         isAuthenticated,
         sync_status,
+        showSyncCheckAnimation,
     ]);
 
     // 수동 동기화
@@ -506,9 +552,25 @@ function AppLayout() {
                                 </>
                             )}
                             {sync_status === "synced" && (
-                                <>
+                                <span
+                                    style={{
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: 4,
+                                    }}
+                                >
                                     <CloudSyncOutlined /> 클라우드 연결됨
-                                </>
+                                    {show_sync_check && (
+                                        <CheckCircleFilled
+                                            style={{
+                                                color: "#52c41a",
+                                                fontSize: 14,
+                                                animation:
+                                                    "syncCheckPop 0.3s ease-out, syncCheckFade 1.5s ease-in-out",
+                                            }}
+                                        />
+                                    )}
+                                </span>
                             )}
                             {sync_status === "error" && (
                                 <>

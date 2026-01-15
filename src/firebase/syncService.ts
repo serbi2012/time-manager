@@ -243,19 +243,77 @@ export function stopRealtimeSync(): void {
     }
 }
 
-// 데이터 변경 시 Firebase에 자동 저장 (debounce 적용)
-let save_timeout: ReturnType<typeof setTimeout> | null = null;
-
-export function scheduleSync(user: User): void {
+// 데이터 변경 시 Firebase에 즉시 저장
+export async function syncImmediately(user: User): Promise<void> {
     // 로컬 변경 표시
     markLocalChange();
 
-    if (save_timeout) {
-        clearTimeout(save_timeout);
-    }
+    // 즉시 저장
+    await syncToFirebase(user);
+}
 
-    save_timeout = setTimeout(() => {
-        syncToFirebase(user);
-        save_timeout = null;
-    }, 1000); // 1초 후 저장 (연속 변경 시 마지막만 저장)
+// 브라우저 종료/새로고침 시 로컬 백업 (안전망)
+export function syncBeforeUnload(user: User): void {
+    // localStorage에 백업 저장 (다음 로드 시 복구용)
+    const state = useWorkStore.getState();
+    const backup_data = {
+        records: state.records,
+        templates: state.templates,
+        custom_task_options: state.custom_task_options,
+        custom_category_options: state.custom_category_options,
+        timer: state.timer,
+        user_id: user.uid,
+        timestamp: Date.now(),
+    };
+
+    try {
+        localStorage.setItem(
+            "time_manager_pending_sync",
+            JSON.stringify(backup_data)
+        );
+        console.log("[Sync] beforeunload - 로컬 백업 저장됨");
+    } catch (e) {
+        console.error("[Sync] beforeunload - 로컬 백업 실패:", e);
+    }
+}
+
+// 앱 시작 시 미저장 데이터 확인 및 복구
+export async function checkPendingSync(user: User): Promise<void> {
+    try {
+        const pending = localStorage.getItem("time_manager_pending_sync");
+        if (pending) {
+            const backup_data = JSON.parse(pending);
+
+            // 같은 사용자의 백업인지 확인
+            if (backup_data.user_id === user.uid) {
+                // 백업이 5분 이내인 경우에만 복구
+                const age = Date.now() - backup_data.timestamp;
+                if (age < 5 * 60 * 1000) {
+                    console.log(
+                        `[Sync] 미저장 백업 발견 (${Math.round(
+                            age / 1000
+                        )}초 전)`
+                    );
+
+                    // Firebase에 저장
+                    await saveUserData(user.uid, {
+                        records: backup_data.records,
+                        templates: backup_data.templates,
+                        custom_task_options: backup_data.custom_task_options,
+                        custom_category_options:
+                            backup_data.custom_category_options,
+                        timer: backup_data.timer,
+                    });
+
+                    console.log("[Sync] 미저장 백업 Firebase에 복구 완료");
+                }
+            }
+
+            // 백업 삭제
+            localStorage.removeItem("time_manager_pending_sync");
+        }
+    } catch (e) {
+        console.error("[Sync] 백업 복구 실패:", e);
+        localStorage.removeItem("time_manager_pending_sync");
+    }
 }
