@@ -22,9 +22,6 @@ const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
 
 function MainPage() {
-    const { templates, timer, applyTemplate, startTimer, stopTimer } =
-        useWorkStore();
-
     // 프리셋에서 작업 기록에 추가 (타이머 시작)
     const handleAddToRecord = (template_id: string) => {
         const store = useWorkStore.getState();
