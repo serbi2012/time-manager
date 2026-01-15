@@ -93,13 +93,20 @@ const DEFAULT_TIMER: TimerState = {
   active_form_data: null,
 };
 
-// 같은 작업 기록 찾기 (같은 날짜 + 같은 작업명 + 같은 거래명)
+// 같은 작업 기록 찾기 (미완료 작업 우선, 그 다음 같은 날짜)
 const findExistingRecord = (
   records: WorkRecord[],
   date: string,
   work_name: string,
   deal_name: string
 ): WorkRecord | undefined => {
+  // 1. 먼저 미완료 작업 중에서 같은 작업 찾기 (날짜 무관)
+  const incomplete_match = records.find(
+    (r) => !r.is_completed && r.work_name === work_name && r.deal_name === deal_name
+  );
+  if (incomplete_match) return incomplete_match;
+
+  // 2. 없으면 같은 날짜의 작업 찾기
   return records.find(
     (r) => r.date === date && r.work_name === work_name && r.deal_name === deal_name
   );
