@@ -15,7 +15,7 @@ import {
     Button,
     message,
 } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, CloseOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import {
     useWorkStore,
@@ -122,6 +122,7 @@ export default function DailyGanttChart() {
         custom_category_options,
         addCustomTaskOption,
         addCustomCategoryOption,
+        hideAutoCompleteOption,
     } = useWorkStore();
 
     // 성능을 위해 1분마다만 업데이트 (진행 중인 작업 표시용)
@@ -373,18 +374,111 @@ export default function DailyGanttChart() {
 
     const total_minutes = time_range.end - time_range.start;
 
-    // 자동완성 옵션
-    const project_code_options = useMemo(() => {
+    // 자동완성 옵션 (원본 데이터)
+    const raw_project_code_options = useMemo(() => {
         return getProjectCodeOptions();
     }, [records, templates, getProjectCodeOptions]);
 
+    // 프로젝트 코드 선택 시 작업명 자동 채우기 핸들러
+    const handleProjectCodeSelect = useCallback(
+        (value: string) => {
+            const selected = raw_project_code_options.find(
+                (opt) => opt.value === value
+            );
+            if (selected?.work_name) {
+                form.setFieldsValue({ work_name: selected.work_name });
+            }
+        },
+        [raw_project_code_options, form]
+    );
+
+    // 프로젝트 코드 자동완성 옵션 (삭제 버튼 포함)
+    const project_code_options = useMemo(() => {
+        return raw_project_code_options.map((opt) => ({
+            ...opt,
+            label: (
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                    }}
+                >
+                    <span>{opt.label}</span>
+                    <CloseOutlined
+                        style={{
+                            fontSize: 10,
+                            color: "#999",
+                            cursor: "pointer",
+                        }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            hideAutoCompleteOption("project_code", opt.value);
+                            message.info(`"${opt.value}" 코드가 숨겨졌습니다`);
+                        }}
+                    />
+                </div>
+            ),
+        }));
+    }, [raw_project_code_options, hideAutoCompleteOption]);
+
     const work_name_options = useMemo(() => {
-        return getAutoCompleteOptions("work_name").map((v) => ({ value: v }));
-    }, [records, templates, getAutoCompleteOptions]);
+        return getAutoCompleteOptions("work_name").map((v) => ({
+            value: v,
+            label: (
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                    }}
+                >
+                    <span>{v}</span>
+                    <CloseOutlined
+                        style={{
+                            fontSize: 10,
+                            color: "#999",
+                            cursor: "pointer",
+                        }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            hideAutoCompleteOption("work_name", v);
+                            message.info(`"${v}" 옵션이 숨겨졌습니다`);
+                        }}
+                    />
+                </div>
+            ),
+        }));
+    }, [records, templates, getAutoCompleteOptions, hideAutoCompleteOption]);
 
     const deal_name_options = useMemo(() => {
-        return getAutoCompleteOptions("deal_name").map((v) => ({ value: v }));
-    }, [records, templates, getAutoCompleteOptions]);
+        return getAutoCompleteOptions("deal_name").map((v) => ({
+            value: v,
+            label: (
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                    }}
+                >
+                    <span>{v}</span>
+                    <CloseOutlined
+                        style={{
+                            fontSize: 10,
+                            color: "#999",
+                            cursor: "pointer",
+                        }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            hideAutoCompleteOption("deal_name", v);
+                            message.info(`"${v}" 옵션이 숨겨졌습니다`);
+                        }}
+                    />
+                </div>
+            ),
+        }));
+    }, [records, templates, getAutoCompleteOptions, hideAutoCompleteOption]);
 
     const task_options = useMemo(() => {
         const all = [...DEFAULT_TASK_OPTIONS, ...custom_task_options];
@@ -1303,9 +1397,12 @@ export default function DailyGanttChart() {
                             options={project_code_options}
                             placeholder="예: A25_01846 (미입력 시 A00_00000)"
                             filterOption={(input, option) =>
-                                (option?.label ?? "")
+                                (option?.value ?? "")
                                     .toLowerCase()
                                     .includes(input.toLowerCase())
+                            }
+                            onSelect={(value: string) =>
+                                handleProjectCodeSelect(value)
                             }
                         />
                     </Form.Item>

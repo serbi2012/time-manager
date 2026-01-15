@@ -35,6 +35,7 @@ import {
     CheckCircleOutlined,
     DownOutlined,
     UndoOutlined,
+    CloseOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
@@ -540,6 +541,8 @@ export default function WorkRecordTable() {
         addCustomTaskOption,
         addCustomCategoryOption,
         getProjectCodeOptions,
+        addRecord,
+        hideAutoCompleteOption,
     } = useWorkStore();
 
     // 타이머 표시를 위한 리렌더링 트리거
@@ -565,14 +568,44 @@ export default function WorkRecordTable() {
     const edit_task_input_ref = useRef<InputRef>(null);
     const edit_category_input_ref = useRef<InputRef>(null);
 
-    // 작업명/거래명 자동완성 옵션 (records, templates 변경 시 갱신)
+    // 작업명/거래명 자동완성 옵션 (records, templates 변경 시 갱신, 삭제 버튼 포함)
     const work_name_options = useMemo(() => {
-        return getAutoCompleteOptions("work_name").map((v) => ({ value: v }));
-    }, [records, templates, getAutoCompleteOptions]);
+        return getAutoCompleteOptions("work_name").map((v) => ({
+            value: v,
+            label: (
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span>{v}</span>
+                    <CloseOutlined
+                        style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            hideAutoCompleteOption("work_name", v);
+                            message.info(`"${v}" 옵션이 숨겨졌습니다`);
+                        }}
+                    />
+                </div>
+            ),
+        }));
+    }, [records, templates, getAutoCompleteOptions, hideAutoCompleteOption]);
 
     const deal_name_options = useMemo(() => {
-        return getAutoCompleteOptions("deal_name").map((v) => ({ value: v }));
-    }, [records, templates, getAutoCompleteOptions]);
+        return getAutoCompleteOptions("deal_name").map((v) => ({
+            value: v,
+            label: (
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span>{v}</span>
+                    <CloseOutlined
+                        style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            hideAutoCompleteOption("deal_name", v);
+                            message.info(`"${v}" 옵션이 숨겨졌습니다`);
+                        }}
+                    />
+                </div>
+            ),
+        }));
+    }, [records, templates, getAutoCompleteOptions, hideAutoCompleteOption]);
 
     // 업무명/카테고리명 옵션 (기본 + 사용자 정의)
     const task_options = useMemo(() => {
@@ -778,24 +811,34 @@ export default function WorkRecordTable() {
         }
     };
 
-    // 새 작업 추가
+    // 새 작업 추가 (타이머 시작 없이 레코드만 생성)
     const handleAddNewWork = async () => {
         try {
             const values = await form.validateFields();
-            setFormData({
-                project_code: values.project_code || "",
+            const now = dayjs();
+            const current_time = now.format("HH:mm");
+            const today_date = now.format("YYYY-MM-DD");
+
+            // 새 레코드 생성 (타이머 없이 즉시 추가)
+            const new_record: WorkRecord = {
+                id: crypto.randomUUID(),
+                project_code: values.project_code || "A00_00000",
                 work_name: values.work_name,
                 task_name: values.task_name || "",
                 deal_name: values.deal_name || "",
                 category_name: values.category_name || "",
                 note: values.note || "",
-            });
+                duration_minutes: 0,
+                start_time: current_time,
+                end_time: current_time,
+                date: today_date,
+                sessions: [],
+                is_completed: false,
+                is_deleted: false,
+            };
 
-            // 기존 타이머 중지 후 새 타이머 시작
-            if (timer.is_running) {
-                stopTimer();
-            }
-            startTimer();
+            addRecord(new_record);
+            message.success("작업이 추가되었습니다");
 
             form.resetFields();
             setIsModalOpen(false);
@@ -859,10 +902,36 @@ export default function WorkRecordTable() {
         return getDeletedRecords();
     }, [records, getDeletedRecords]);
 
-    // 프로젝트 코드 자동완성 옵션
+    // 프로젝트 코드 자동완성 옵션 (삭제 버튼 포함)
     const project_code_options = useMemo(() => {
-        return getProjectCodeOptions();
-    }, [records, templates, getProjectCodeOptions]);
+        return getProjectCodeOptions().map((opt) => ({
+            ...opt,
+            label: (
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span>{opt.label}</span>
+                    <CloseOutlined
+                        style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            hideAutoCompleteOption("project_code", opt.value);
+                            message.info(`"${opt.value}" 코드가 숨겨졌습니다`);
+                        }}
+                    />
+                </div>
+            ),
+        }));
+    }, [records, templates, getProjectCodeOptions, hideAutoCompleteOption]);
+
+    // 프로젝트 코드 선택 시 작업명 자동 채우기 핸들러
+    const handleProjectCodeSelect = useCallback(
+        (value: string, form_instance: ReturnType<typeof Form.useForm>[0]) => {
+            const selected = project_code_options.find((opt) => opt.value === value);
+            if (selected?.work_name) {
+                form_instance.setFieldsValue({ work_name: selected.work_name });
+            }
+        },
+        [project_code_options]
+    );
 
     // 확장 행 렌더링 (record_id만 전달하여 타이머 리렌더링 영향 완전 차단)
     const expandedRowRender = useCallback(
@@ -1234,7 +1303,7 @@ export default function WorkRecordTable() {
                 }}
                 footer={[
                     <Button key="ok" type="primary" onClick={handleAddNewWork}>
-                        시작 (Ctrl+Shift+Enter)
+                        추가 (Ctrl+Shift+Enter)
                     </Button>,
                     <Button
                         key="cancel"
@@ -1262,9 +1331,12 @@ export default function WorkRecordTable() {
                             options={project_code_options}
                             placeholder="예: A25_01846 (미입력 시 A00_00000)"
                             filterOption={(input, option) =>
-                                (option?.label ?? "")
+                                (option?.value ?? "")
                                     .toLowerCase()
                                     .includes(input.toLowerCase())
+                            }
+                            onSelect={(value: string) =>
+                                handleProjectCodeSelect(value, form)
                             }
                         />
                     </Form.Item>
@@ -1504,9 +1576,12 @@ export default function WorkRecordTable() {
                             options={project_code_options}
                             placeholder="예: A25_01846 (미입력 시 A00_00000)"
                             filterOption={(input, option) =>
-                                (option?.label ?? "")
+                                (option?.value ?? "")
                                     .toLowerCase()
                                     .includes(input.toLowerCase())
+                            }
+                            onSelect={(value: string) =>
+                                handleProjectCodeSelect(value, edit_form)
                             }
                         />
                     </Form.Item>

@@ -99,11 +99,63 @@ function MainPage() {
         }
     };
 
+    // 프리셋에서 작업 기록에만 추가 (타이머 없이)
+    const handleAddRecordOnly = (template_id: string) => {
+        const template = useWorkStore
+            .getState()
+            .templates.find((t) => t.id === template_id);
+        if (!template) return;
+
+        // 유니크 ID 생성
+        const now = new Date();
+        const random_suffix = Math.floor(Math.random() * 1000)
+            .toString()
+            .padStart(3, "0");
+        const unique_id = `${String(now.getMonth() + 1).padStart(
+            2,
+            "0"
+        )}${String(now.getDate()).padStart(2, "0")}_${String(
+            now.getHours()
+        ).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}${String(
+            now.getSeconds()
+        ).padStart(2, "0")}_${random_suffix}`;
+        const unique_deal_name = template.deal_name
+            ? `${template.deal_name}_${unique_id}`
+            : `작업_${unique_id}`;
+
+        const current_time = dayjs().format("HH:mm");
+        const today_date = dayjs().format("YYYY-MM-DD");
+
+        // 새 레코드 생성 (타이머 없이 즉시 추가)
+        const new_record = {
+            id: crypto.randomUUID(),
+            project_code: template.project_code || "A00_00000",
+            work_name: template.work_name,
+            task_name: template.task_name,
+            deal_name: unique_deal_name,
+            category_name: template.category_name,
+            note: template.note,
+            duration_minutes: 0,
+            start_time: current_time,
+            end_time: current_time,
+            date: today_date,
+            sessions: [],
+            is_completed: false,
+            is_deleted: false,
+        };
+
+        useWorkStore.getState().addRecord(new_record);
+        message.success(`"${template.work_name}" 작업이 추가되었습니다`);
+    };
+
     return (
         <Layout className="app-body">
             {/* 좌측 사이드바: 작업 프리셋 */}
             <Sider width={300} className="app-sider" theme="light">
-                <WorkTemplateList onAddToRecord={handleAddToRecord} />
+                <WorkTemplateList
+                    onAddToRecord={handleAddToRecord}
+                    onAddRecordOnly={handleAddRecordOnly}
+                />
             </Sider>
 
             {/* 메인 컨텐츠 */}
