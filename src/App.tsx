@@ -328,6 +328,9 @@ function AppLayout() {
     const custom_category_options = useWorkStore(
         (state) => state.custom_category_options
     );
+    const hidden_autocomplete_options = useWorkStore(
+        (state) => state.hidden_autocomplete_options
+    );
     const shortcuts = useShortcutStore((state) => state.shortcuts);
 
     useEffect(() => {
@@ -342,6 +345,7 @@ function AppLayout() {
         templates,
         custom_task_options,
         custom_category_options,
+        hidden_autocomplete_options,
         shortcuts,
         user,
         isAuthenticated,

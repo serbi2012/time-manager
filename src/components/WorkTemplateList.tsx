@@ -54,6 +54,7 @@ export default function WorkTemplateList({
         getProjectCodeOptions,
         custom_task_options,
         custom_category_options,
+        hidden_autocomplete_options,
         addCustomTaskOption,
         addCustomCategoryOption,
         hideAutoCompleteOption,
@@ -125,7 +126,7 @@ export default function WorkTemplateList({
                 </div>
             ),
         }));
-    }, [records, templates, getAutoCompleteOptions, hideAutoCompleteOption]);
+    }, [records, templates, hidden_autocomplete_options, getAutoCompleteOptions, hideAutoCompleteOption]);
 
     const deal_name_options = useMemo(() => {
         return getAutoCompleteOptions("deal_name").map((v) => ({
@@ -144,7 +145,7 @@ export default function WorkTemplateList({
                 </div>
             ),
         }));
-    }, [records, templates, getAutoCompleteOptions, hideAutoCompleteOption]);
+    }, [records, templates, hidden_autocomplete_options, getAutoCompleteOptions, hideAutoCompleteOption]);
 
     // 업무명/카테고리명 옵션 (기본 + 사용자 정의)
     const task_options = useMemo(() => {

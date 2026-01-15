@@ -101,6 +101,7 @@ export async function syncToFirebase(
         custom_category_options: state.custom_category_options,
         timer: state.timer, // 타이머 상태도 저장
         shortcuts: shortcut_state.shortcuts, // 단축키 설정 저장
+        hidden_autocomplete_options: state.hidden_autocomplete_options, // 숨김 자동완성 옵션
     });
 }
 
@@ -151,6 +152,10 @@ export async function syncFromFirebase(user: User): Promise<boolean> {
                 custom_category_options:
                     firebase_data.custom_category_options || [],
                 ...(firebase_data.timer && { timer: firebase_data.timer }), // 타이머 상태 복원
+                ...(firebase_data.hidden_autocomplete_options && {
+                    hidden_autocomplete_options:
+                        firebase_data.hidden_autocomplete_options,
+                }),
             });
             last_known_record_count = firebase_records.length;
             last_known_template_count = firebase_templates.length;
@@ -179,6 +184,10 @@ export async function syncFromFirebase(user: User): Promise<boolean> {
             custom_category_options:
                 firebase_data.custom_category_options || [],
             ...(firebase_data.timer && { timer: firebase_data.timer }), // 타이머 상태 복원
+            ...(firebase_data.hidden_autocomplete_options && {
+                hidden_autocomplete_options:
+                    firebase_data.hidden_autocomplete_options,
+            }),
         });
         last_known_record_count = firebase_records.length;
         last_known_template_count = firebase_templates.length;
@@ -252,6 +261,10 @@ export function startRealtimeSync(user: User): void {
                 custom_task_options: data.custom_task_options || [],
                 custom_category_options: data.custom_category_options || [],
                 ...(should_restore_timer && { timer: data.timer }),
+                ...(data.hidden_autocomplete_options && {
+                    hidden_autocomplete_options:
+                        data.hidden_autocomplete_options,
+                }),
             });
 
             // 단축키 동기화 (있으면)
@@ -303,6 +316,7 @@ export function syncBeforeUnload(user: User): void {
         templates: state.templates,
         custom_task_options: state.custom_task_options,
         custom_category_options: state.custom_category_options,
+        hidden_autocomplete_options: state.hidden_autocomplete_options,
         timer: state.timer,
         shortcuts: shortcut_state.shortcuts,
         user_id: user.uid,
@@ -345,6 +359,8 @@ export async function checkPendingSync(user: User): Promise<void> {
                         custom_task_options: backup_data.custom_task_options,
                         custom_category_options:
                             backup_data.custom_category_options,
+                        hidden_autocomplete_options:
+                            backup_data.hidden_autocomplete_options,
                         timer: backup_data.timer,
                         shortcuts: backup_data.shortcuts,
                     });

@@ -75,6 +75,7 @@ interface WorkStore {
     // 숨김 처리된 자동완성 옵션 (필드별로 관리)
     hidden_autocomplete_options: {
         work_name: string[];
+        task_name: string[];
         deal_name: string[];
         project_code: string[];
     };
@@ -273,6 +274,7 @@ export const useWorkStore = create<WorkStore>()((set, get) => ({
     custom_category_options: [],
     hidden_autocomplete_options: {
         work_name: [],
+        task_name: [],
         deal_name: [],
         project_code: [],
     },

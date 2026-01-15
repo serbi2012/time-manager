@@ -120,6 +120,7 @@ export default function DailyGanttChart() {
         getProjectCodeOptions,
         custom_task_options,
         custom_category_options,
+        hidden_autocomplete_options,
         addCustomTaskOption,
         addCustomCategoryOption,
         hideAutoCompleteOption,
@@ -449,7 +450,7 @@ export default function DailyGanttChart() {
                 </div>
             ),
         }));
-    }, [records, templates, getAutoCompleteOptions, hideAutoCompleteOption]);
+    }, [records, templates, hidden_autocomplete_options, getAutoCompleteOptions, hideAutoCompleteOption]);
 
     const deal_name_options = useMemo(() => {
         return getAutoCompleteOptions("deal_name").map((v) => ({
@@ -478,7 +479,7 @@ export default function DailyGanttChart() {
                 </div>
             ),
         }));
-    }, [records, templates, getAutoCompleteOptions, hideAutoCompleteOption]);
+    }, [records, templates, hidden_autocomplete_options, getAutoCompleteOptions, hideAutoCompleteOption]);
 
     const task_options = useMemo(() => {
         const all = [...DEFAULT_TASK_OPTIONS, ...custom_task_options];

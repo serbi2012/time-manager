@@ -155,29 +155,34 @@ function AutoCompleteTab() {
     } = useWorkStore();
 
     const [selected_work_names, setSelectedWorkNames] = useState<string[]>([]);
+    const [selected_task_names, setSelectedTaskNames] = useState<string[]>([]);
     const [selected_deal_names, setSelectedDealNames] = useState<string[]>([]);
     const [selected_project_codes, setSelectedProjectCodes] = useState<string[]>([]);
 
     // 모든 옵션 수집 (레코드 + 템플릿에서 추출)
     const all_options = useMemo(() => {
         const work_names = new Set<string>();
+        const task_names = new Set<string>();
         const deal_names = new Set<string>();
         const project_codes = new Set<string>();
 
         records.forEach((r) => {
             if (r.work_name?.trim()) work_names.add(r.work_name);
+            if (r.task_name?.trim()) task_names.add(r.task_name);
             if (r.deal_name?.trim()) deal_names.add(r.deal_name);
             if (r.project_code?.trim()) project_codes.add(r.project_code);
         });
 
         templates.forEach((t) => {
             if (t.work_name?.trim()) work_names.add(t.work_name);
+            if (t.task_name?.trim()) task_names.add(t.task_name);
             if (t.deal_name?.trim()) deal_names.add(t.deal_name);
             if (t.project_code?.trim()) project_codes.add(t.project_code);
         });
 
         return {
             work_names: Array.from(work_names).sort(),
+            task_names: Array.from(task_names).sort(),
             deal_names: Array.from(deal_names).sort(),
             project_codes: Array.from(project_codes).sort(),
         };
@@ -187,6 +192,9 @@ function AutoCompleteTab() {
     const visible_work_names = all_options.work_names.filter(
         (v) => !hidden_autocomplete_options.work_name.includes(v)
     );
+    const visible_task_names = all_options.task_names.filter(
+        (v) => !hidden_autocomplete_options.task_name.includes(v)
+    );
     const visible_deal_names = all_options.deal_names.filter(
         (v) => !hidden_autocomplete_options.deal_name.includes(v)
     );
@@ -194,9 +202,11 @@ function AutoCompleteTab() {
         (v) => !hidden_autocomplete_options.project_code.includes(v)
     );
 
+    type FieldType = "work_name" | "task_name" | "deal_name" | "project_code";
+
     // 선택된 항목 일괄 숨김
     const handleBulkHide = (
-        field: "work_name" | "deal_name" | "project_code",
+        field: FieldType,
         selected: string[],
         clearSelection: () => void
     ) => {
@@ -206,18 +216,13 @@ function AutoCompleteTab() {
     };
 
     // 숨겨진 항목 복원
-    const handleUnhide = (
-        field: "work_name" | "deal_name" | "project_code",
-        value: string
-    ) => {
+    const handleUnhide = (field: FieldType, value: string) => {
         unhideAutoCompleteOption(field, value);
         message.success(`"${value}" 복원됨`);
     };
 
     // 숨겨진 항목 일괄 복원
-    const handleBulkUnhide = (
-        field: "work_name" | "deal_name" | "project_code"
-    ) => {
+    const handleBulkUnhide = (field: FieldType) => {
         const hidden_list = hidden_autocomplete_options[field];
         hidden_list.forEach((v) => unhideAutoCompleteOption(field, v));
         message.success(`${hidden_list.length}개 항목이 복원되었습니다`);
@@ -226,7 +231,7 @@ function AutoCompleteTab() {
     // 옵션 목록 렌더링
     const renderOptionList = (
         title: string,
-        field: "work_name" | "deal_name" | "project_code",
+        field: FieldType,
         visible_options: string[],
         selected: string[],
         setSelected: (values: string[]) => void
@@ -373,6 +378,14 @@ function AutoCompleteTab() {
                 visible_work_names,
                 selected_work_names,
                 setSelectedWorkNames
+            )}
+
+            {renderOptionList(
+                "업무명",
+                "task_name",
+                visible_task_names,
+                selected_task_names,
+                setSelectedTaskNames
             )}
 
             {renderOptionList(

@@ -5,6 +5,14 @@ import { db } from "./config";
 import type { WorkRecord, WorkTemplate, TimerState } from "../types";
 import type { ShortcutDefinition } from "../store/useShortcutStore";
 
+// 숨김 자동완성 옵션 타입
+export interface HiddenAutoCompleteOptions {
+    work_name: string[];
+    task_name: string[];
+    deal_name: string[];
+    project_code: string[];
+}
+
 // 사용자 데이터 구조
 export interface UserData {
     records: WorkRecord[];
@@ -13,6 +21,7 @@ export interface UserData {
     custom_category_options: string[];
     timer?: TimerState; // 타이머 상태 (새로고침 시 복원용)
     shortcuts?: ShortcutDefinition[]; // 단축키 설정
+    hidden_autocomplete_options?: HiddenAutoCompleteOptions; // 숨김 자동완성 옵션
     updated_at: string;
 }
 

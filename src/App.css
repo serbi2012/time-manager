@@ -56,24 +56,30 @@
 
 .app-body {
     display: flex;
-    height: calc(100vh - 56px);
+    min-height: calc(100vh - 56px);
 }
 
 .app-sider {
     border-right: 1px solid #e8e8e8;
+    position: sticky;
+    top: 56px; /* 헤더 높이 */
+    height: calc(100vh - 56px);
     overflow: auto;
+    flex-shrink: 0;
 }
 
 .app-sider .ant-layout-sider-children {
     padding: 16px;
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 .app-sider .ant-card {
     flex: 1;
     display: flex;
     flex-direction: column;
+    min-height: 0;
 }
 
 .app-sider .ant-card-body {
@@ -83,10 +89,10 @@
 
 .app-content {
     padding: 16px 24px;
-    overflow: auto;
     display: flex;
     flex-direction: column;
     gap: 16px;
+    flex: 1;
 }
 
 /* 타이머 바 스타일 */
@@ -108,7 +114,8 @@
 }
 
 @keyframes pulse-border {
-    0%, 100% {
+    0%,
+    100% {
         box-shadow: 0 0 0 0 rgba(24, 144, 255, 0.3);
     }
     50% {
@@ -122,19 +129,16 @@
 }
 
 .table-section {
-    flex: 1;
-    min-height: 0;
+    flex-shrink: 0;
 }
 
 .table-section .ant-card {
-    height: 100%;
     display: flex;
     flex-direction: column;
-  }
+}
 
 .table-section .ant-card-body {
-    flex: 1;
-    overflow: auto;
+    /* 스크롤 없이 전체 표시 */
 }
 
 /* Ant Design 테이블 스타일 오버라이드 */
@@ -146,7 +150,7 @@
 .ant-table-wrapper .ant-table-thead > tr > th {
     background: #fafafa;
     font-weight: 600;
-  }
+}
 
 .ant-card {
     border-radius: 12px;
@@ -167,24 +171,26 @@
 @media (max-width: 1024px) {
     .app-body {
         flex-direction: column;
-        height: auto;
     }
-    
+
     .app-sider {
         width: 100% !important;
         max-width: 100% !important;
         min-width: 100% !important;
         border-right: none;
         border-bottom: 1px solid #e8e8e8;
-}
+        position: static;
+        height: auto;
+        max-height: 300px;
+    }
 
     .app-sider .ant-layout-sider-children {
         max-height: 300px;
     }
-    
+
     .app-content {
         padding: 16px;
-}
+    }
 }
 
 /* 스크롤바 스타일 */
@@ -233,7 +239,8 @@
 }
 
 @keyframes syncCheckFade {
-    0%, 60% {
+    0%,
+    60% {
         opacity: 1;
     }
     100% {
