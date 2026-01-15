@@ -95,6 +95,7 @@ export async function syncToFirebase(
         templates: state.templates,
         custom_task_options: state.custom_task_options,
         custom_category_options: state.custom_category_options,
+        timer: state.timer, // 타이머 상태도 저장
     });
 }
 
@@ -123,6 +124,7 @@ export async function syncFromFirebase(user: User): Promise<boolean> {
                 custom_task_options: firebase_data.custom_task_options || [],
                 custom_category_options:
                     firebase_data.custom_category_options || [],
+                ...(firebase_data.timer && { timer: firebase_data.timer }), // 타이머 상태 복원
             });
             last_known_record_count = firebase_records.length;
             last_known_template_count = firebase_templates.length;
@@ -150,6 +152,7 @@ export async function syncFromFirebase(user: User): Promise<boolean> {
             custom_task_options: firebase_data.custom_task_options || [],
             custom_category_options:
                 firebase_data.custom_category_options || [],
+            ...(firebase_data.timer && { timer: firebase_data.timer }), // 타이머 상태 복원
         });
         last_known_record_count = firebase_records.length;
         last_known_template_count = firebase_templates.length;
@@ -213,11 +216,16 @@ export function startRealtimeSync(user: User): void {
             }
 
             // 유효한 데이터면 적용
+            // 타이머는 로컬에서 실행 중이 아닐 때만 Firebase 상태로 복원
+            const should_restore_timer =
+                !state.timer.is_running && data.timer?.is_running;
+
             useWorkStore.setState({
                 records: firebase_records,
                 templates: firebase_templates,
                 custom_task_options: data.custom_task_options || [],
                 custom_category_options: data.custom_category_options || [],
+                ...(should_restore_timer && { timer: data.timer }),
             });
 
             // 카운트 업데이트
