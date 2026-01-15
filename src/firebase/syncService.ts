@@ -6,6 +6,15 @@ import { useWorkStore } from "../store/useWorkStore";
 
 let unsubscribe_fn: (() => void) | null = null;
 
+// 로컬 변경 시간 추적 (Firebase 덮어쓰기 방지용)
+let last_local_change_time = 0;
+const SYNC_IGNORE_DURATION = 3000; // 로컬 변경 후 3초간 Firebase 업데이트 무시
+
+// 로컬 변경 표시 (Firebase 동기화 전 호출)
+export function markLocalChange(): void {
+  last_local_change_time = Date.now();
+}
+
 // 로컬 데이터를 Firebase에 저장
 export async function syncToFirebase(user: User): Promise<void> {
   const state = useWorkStore.getState();
@@ -76,6 +85,13 @@ export function startRealtimeSync(user: User): void {
   
   unsubscribe_fn = subscribeToUserData(user.uid, (data: UserData | null) => {
     if (data) {
+      // 로컬 변경 직후에는 Firebase 업데이트 무시 (덮어쓰기 방지)
+      const time_since_local_change = Date.now() - last_local_change_time;
+      if (time_since_local_change < SYNC_IGNORE_DURATION) {
+        console.log(`[Sync] 로컬 변경 후 ${time_since_local_change}ms 경과, Firebase 업데이트 무시`);
+        return;
+      }
+      
       useWorkStore.setState({
         records: data.records || [],
         templates: data.templates || [],
@@ -98,6 +114,9 @@ export function stopRealtimeSync(): void {
 let save_timeout: ReturnType<typeof setTimeout> | null = null;
 
 export function scheduleSync(user: User): void {
+  // 로컬 변경 표시
+  markLocalChange();
+  
   if (save_timeout) {
     clearTimeout(save_timeout);
   }

@@ -45,6 +45,7 @@ import {
     syncFromFirebase,
     startRealtimeSync,
     stopRealtimeSync,
+    scheduleSync,
 } from "./firebase/syncService";
 import "./App.css";
 
@@ -172,12 +173,16 @@ function AppLayout() {
                 message.info("타이머가 초기화되었습니다");
             },
             goToday: () => {
-                useWorkStore.getState().setSelectedDate(dayjs().format("YYYY-MM-DD"));
+                useWorkStore
+                    .getState()
+                    .setSelectedDate(dayjs().format("YYYY-MM-DD"));
                 message.info("오늘 날짜로 이동했습니다");
             },
             prevDay: () => {
                 const current = useWorkStore.getState().selected_date;
-                const prev = dayjs(current).subtract(1, "day").format("YYYY-MM-DD");
+                const prev = dayjs(current)
+                    .subtract(1, "day")
+                    .format("YYYY-MM-DD");
                 useWorkStore.getState().setSelectedDate(prev);
             },
             nextDay: () => {
@@ -223,24 +228,27 @@ function AppLayout() {
     // 데이터 변경 시 Firebase에 자동 저장
     const records = useWorkStore((state) => state.records);
     const templates = useWorkStore((state) => state.templates);
-
-    const syncData = useCallback(async () => {
-        if (user && isAuthenticated) {
-            try {
-                await syncToFirebase(user);
-            } catch {
-                console.error("Firebase 동기화 실패");
-            }
-        }
-    }, [user, isAuthenticated]);
+    const custom_task_options = useWorkStore(
+        (state) => state.custom_task_options
+    );
+    const custom_category_options = useWorkStore(
+        (state) => state.custom_category_options
+    );
 
     useEffect(() => {
         if (user && isAuthenticated && sync_status === "synced") {
-            // 데이터 변경 시 1초 후 동기화 (debounce)
-            const timeout = setTimeout(syncData, 1000);
-            return () => clearTimeout(timeout);
+            // scheduleSync는 내부에서 markLocalChange와 debounce 처리
+            scheduleSync(user);
         }
-    }, [records, templates, user, isAuthenticated, sync_status, syncData]);
+    }, [
+        records,
+        templates,
+        custom_task_options,
+        custom_category_options,
+        user,
+        isAuthenticated,
+        sync_status,
+    ]);
 
     // 수동 동기화
     const handleManualSync = async () => {
