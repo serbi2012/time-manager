@@ -26,9 +26,17 @@ import {
     DeleteOutlined,
     UndoOutlined,
 } from "@ant-design/icons";
-import { useShortcutStore, CATEGORY_LABELS, type ShortcutDefinition } from "../store/useShortcutStore";
+import {
+    useShortcutStore,
+    CATEGORY_LABELS,
+    type ShortcutDefinition,
+} from "../store/useShortcutStore";
 import { formatShortcutKeyForPlatform } from "../hooks/useShortcuts";
-import { useWorkStore } from "../store/useWorkStore";
+import {
+    useWorkStore,
+    DEFAULT_TASK_OPTIONS,
+    DEFAULT_CATEGORY_OPTIONS,
+} from "../store/useWorkStore";
 
 const { Text } = Typography;
 
@@ -118,7 +126,8 @@ function ShortcutsTab() {
                 }}
             >
                 <Text type="secondary">
-                    단축키를 활성화/비활성화할 수 있습니다. 입력 필드에서는 단축키가 작동하지 않습니다.
+                    단축키를 활성화/비활성화할 수 있습니다. 입력 필드에서는
+                    단축키가 작동하지 않습니다.
                 </Text>
                 <Popconfirm
                     title="단축키 초기화"
@@ -149,6 +158,8 @@ function AutoCompleteTab() {
     const {
         records,
         templates,
+        custom_task_options,
+        custom_category_options,
         hidden_autocomplete_options,
         hideAutoCompleteOption,
         unhideAutoCompleteOption,
@@ -157,7 +168,15 @@ function AutoCompleteTab() {
     const [selected_work_names, setSelectedWorkNames] = useState<string[]>([]);
     const [selected_task_names, setSelectedTaskNames] = useState<string[]>([]);
     const [selected_deal_names, setSelectedDealNames] = useState<string[]>([]);
-    const [selected_project_codes, setSelectedProjectCodes] = useState<string[]>([]);
+    const [selected_project_codes, setSelectedProjectCodes] = useState<
+        string[]
+    >([]);
+    const [selected_task_options, setSelectedTaskOptions] = useState<string[]>(
+        []
+    );
+    const [selected_category_options, setSelectedCategoryOptions] = useState<
+        string[]
+    >([]);
 
     // 모든 옵션 수집 (레코드 + 템플릿에서 추출)
     const all_options = useMemo(() => {
@@ -180,13 +199,26 @@ function AutoCompleteTab() {
             if (t.project_code?.trim()) project_codes.add(t.project_code);
         });
 
+        // 업무명/카테고리 옵션 (기본 + 사용자 정의)
+        const task_options = [
+            ...new Set([...DEFAULT_TASK_OPTIONS, ...custom_task_options]),
+        ];
+        const category_options = [
+            ...new Set([
+                ...DEFAULT_CATEGORY_OPTIONS,
+                ...custom_category_options,
+            ]),
+        ];
+
         return {
             work_names: Array.from(work_names).sort(),
             task_names: Array.from(task_names).sort(),
             deal_names: Array.from(deal_names).sort(),
             project_codes: Array.from(project_codes).sort(),
+            task_options: task_options.sort(),
+            category_options: category_options.sort(),
         };
-    }, [records, templates]);
+    }, [records, templates, custom_task_options, custom_category_options]);
 
     // 숨겨진 옵션과 보이는 옵션 분리
     const visible_work_names = all_options.work_names.filter(
@@ -201,8 +233,20 @@ function AutoCompleteTab() {
     const visible_project_codes = all_options.project_codes.filter(
         (v) => !hidden_autocomplete_options.project_code.includes(v)
     );
+    const visible_task_options = all_options.task_options.filter(
+        (v) => !(hidden_autocomplete_options.task_option || []).includes(v)
+    );
+    const visible_category_options = all_options.category_options.filter(
+        (v) => !(hidden_autocomplete_options.category_option || []).includes(v)
+    );
 
-    type FieldType = "work_name" | "task_name" | "deal_name" | "project_code";
+    type FieldType =
+        | "work_name"
+        | "task_name"
+        | "deal_name"
+        | "project_code"
+        | "task_option"
+        | "category_option";
 
     // 선택된 항목 일괄 숨김
     const handleBulkHide = (
@@ -236,7 +280,9 @@ function AutoCompleteTab() {
         selected: string[],
         setSelected: (values: string[]) => void
     ) => {
-        const hidden_list = hidden_autocomplete_options[field];
+        const hidden_list =
+            (hidden_autocomplete_options as Record<string, string[]>)[field] ||
+            [];
 
         return (
             <div style={{ marginBottom: 16 }}>
@@ -255,7 +301,9 @@ function AutoCompleteTab() {
                         <Popconfirm
                             title={`${selected.length}개 항목을 숨기시겠습니까?`}
                             onConfirm={() =>
-                                handleBulkHide(field, selected, () => setSelected([]))
+                                handleBulkHide(field, selected, () =>
+                                    setSelected([])
+                                )
                             }
                             okText="숨김"
                             cancelText="취소"
@@ -349,7 +397,8 @@ function AutoCompleteTab() {
                                                 }}
                                                 style={{
                                                     opacity: 0.6,
-                                                    textDecoration: "line-through",
+                                                    textDecoration:
+                                                        "line-through",
                                                 }}
                                             >
                                                 {opt}
@@ -367,7 +416,10 @@ function AutoCompleteTab() {
 
     return (
         <div>
-            <Text type="secondary" style={{ display: "block", marginBottom: 16 }}>
+            <Text
+                type="secondary"
+                style={{ display: "block", marginBottom: 16 }}
+            >
                 자동완성 옵션을 관리합니다. 숨긴 항목은 자동완성 목록에 표시되지
                 않지만, 데이터는 유지됩니다.
             </Text>
@@ -402,6 +454,24 @@ function AutoCompleteTab() {
                 visible_project_codes,
                 selected_project_codes,
                 setSelectedProjectCodes
+            )}
+
+            <Divider />
+
+            {renderOptionList(
+                "업무명 (Select 옵션)",
+                "task_option",
+                visible_task_options,
+                selected_task_options,
+                setSelectedTaskOptions
+            )}
+
+            {renderOptionList(
+                "카테고리 (Select 옵션)",
+                "category_option",
+                visible_category_options,
+                selected_category_options,
+                setSelectedCategoryOptions
             )}
         </div>
     );
@@ -444,10 +514,14 @@ function DataTab({
 
             <Divider>저장소 정보</Divider>
             <Space direction="vertical" style={{ width: "100%" }}>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <div
+                    style={{ display: "flex", justifyContent: "space-between" }}
+                >
                     <Text>저장 위치</Text>
                     <Tag color={isAuthenticated ? "green" : "orange"}>
-                        {isAuthenticated ? "Firebase Cloud" : "메모리 (로그인 필요)"}
+                        {isAuthenticated
+                            ? "Firebase Cloud"
+                            : "메모리 (로그인 필요)"}
                     </Tag>
                 </div>
                 <Text type="secondary" style={{ fontSize: 12 }}>

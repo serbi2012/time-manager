@@ -78,6 +78,8 @@ interface WorkStore {
         task_name: string[];
         deal_name: string[];
         project_code: string[];
+        task_option: string[];
+        category_option: string[];
     };
 
     // 타이머 액션
@@ -145,11 +147,11 @@ interface WorkStore {
 
     // 자동완성 옵션 숨김 관리
     hideAutoCompleteOption: (
-        field: "work_name" | "deal_name" | "project_code",
+        field: "work_name" | "task_name" | "deal_name" | "project_code" | "task_option" | "category_option",
         value: string
     ) => void;
     unhideAutoCompleteOption: (
-        field: "work_name" | "deal_name" | "project_code",
+        field: "work_name" | "task_name" | "deal_name" | "project_code" | "task_option" | "category_option",
         value: string
     ) => void;
 }
@@ -277,6 +279,8 @@ export const useWorkStore = create<WorkStore>()((set, get) => ({
         task_name: [],
         deal_name: [],
         project_code: [],
+        task_option: [],
+        category_option: [],
     },
 
     startTimer: (template_id?: string) => {
@@ -1039,27 +1043,29 @@ export const useWorkStore = create<WorkStore>()((set, get) => ({
 
     // 자동완성 옵션 숨김 처리
     hideAutoCompleteOption: (field, value) => {
-        set((state) => ({
-            hidden_autocomplete_options: {
-                ...state.hidden_autocomplete_options,
-                [field]: state.hidden_autocomplete_options[field].includes(
-                    value
-                )
-                    ? state.hidden_autocomplete_options[field]
-                    : [...state.hidden_autocomplete_options[field], value],
-            },
-        }));
+        set((state) => {
+            const current_list = state.hidden_autocomplete_options[field] || [];
+            return {
+                hidden_autocomplete_options: {
+                    ...state.hidden_autocomplete_options,
+                    [field]: current_list.includes(value)
+                        ? current_list
+                        : [...current_list, value],
+                },
+            };
+        });
     },
 
     // 자동완성 옵션 숨김 해제
     unhideAutoCompleteOption: (field, value) => {
-        set((state) => ({
-            hidden_autocomplete_options: {
-                ...state.hidden_autocomplete_options,
-                [field]: state.hidden_autocomplete_options[field].filter(
-                    (v) => v !== value
-                ),
-            },
-        }));
+        set((state) => {
+            const current_list = state.hidden_autocomplete_options[field] || [];
+            return {
+                hidden_autocomplete_options: {
+                    ...state.hidden_autocomplete_options,
+                    [field]: current_list.filter((v) => v !== value),
+                },
+            };
+        });
     },
 }));

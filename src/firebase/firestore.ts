@@ -11,6 +11,8 @@ export interface HiddenAutoCompleteOptions {
     task_name: string[];
     deal_name: string[];
     project_code: string[];
+    task_option: string[];
+    category_option: string[];
 }
 
 // 사용자 데이터 구조

@@ -608,16 +608,22 @@ export default function WorkRecordTable() {
         }));
     }, [records, templates, hidden_autocomplete_options, getAutoCompleteOptions, hideAutoCompleteOption]);
 
-    // 업무명/카테고리명 옵션 (기본 + 사용자 정의)
+    // 업무명/카테고리명 옵션 (기본 + 사용자 정의, 숨김 필터링)
     const task_options = useMemo(() => {
         const all = [...DEFAULT_TASK_OPTIONS, ...custom_task_options];
-        return [...new Set(all)].map((v) => ({ value: v, label: v }));
-    }, [custom_task_options]);
+        const hidden = hidden_autocomplete_options.task_option || [];
+        return [...new Set(all)]
+            .filter((v) => !hidden.includes(v))
+            .map((v) => ({ value: v, label: v }));
+    }, [custom_task_options, hidden_autocomplete_options]);
 
     const category_options = useMemo(() => {
         const all = [...DEFAULT_CATEGORY_OPTIONS, ...custom_category_options];
-        return [...new Set(all)].map((v) => ({ value: v, label: v }));
-    }, [custom_category_options]);
+        const hidden = hidden_autocomplete_options.category_option || [];
+        return [...new Set(all)]
+            .filter((v) => !hidden.includes(v))
+            .map((v) => ({ value: v, label: v }));
+    }, [custom_category_options, hidden_autocomplete_options]);
 
     // 업무명/카테고리명 추가 핸들러
     const handleAddTaskOption = () => {
@@ -1383,6 +1389,18 @@ export default function WorkRecordTable() {
                                 options={task_options}
                                 allowClear
                                 popupMatchSelectWidth={240}
+                                optionRender={(option) => (
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                        <span>{option.label}</span>
+                                        <CloseOutlined
+                                            style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                hideAutoCompleteOption("task_option", option.value as string);
+                                            }}
+                                        />
+                                    </div>
+                                )}
                                 dropdownRender={(menu) => (
                                     <>
                                         {menu}
@@ -1460,6 +1478,18 @@ export default function WorkRecordTable() {
                                 options={category_options}
                                 allowClear
                                 popupMatchSelectWidth={240}
+                                optionRender={(option) => (
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                        <span>{option.label}</span>
+                                        <CloseOutlined
+                                            style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                hideAutoCompleteOption("category_option", option.value as string);
+                                            }}
+                                        />
+                                    </div>
+                                )}
                                 dropdownRender={(menu) => (
                                     <>
                                         {menu}
@@ -1628,6 +1658,18 @@ export default function WorkRecordTable() {
                                 options={task_options}
                                 allowClear
                                 popupMatchSelectWidth={240}
+                                optionRender={(option) => (
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                        <span>{option.label}</span>
+                                        <CloseOutlined
+                                            style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                hideAutoCompleteOption("task_option", option.value as string);
+                                            }}
+                                        />
+                                    </div>
+                                )}
                                 dropdownRender={(menu) => (
                                     <>
                                         {menu}
@@ -1714,6 +1756,18 @@ export default function WorkRecordTable() {
                                 options={category_options}
                                 allowClear
                                 popupMatchSelectWidth={240}
+                                optionRender={(option) => (
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                        <span>{option.label}</span>
+                                        <CloseOutlined
+                                            style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                hideAutoCompleteOption("category_option", option.value as string);
+                                            }}
+                                        />
+                                    </div>
+                                )}
                                 dropdownRender={(menu) => (
                                     <>
                                         {menu}

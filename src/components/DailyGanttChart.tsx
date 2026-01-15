@@ -483,13 +483,19 @@ export default function DailyGanttChart() {
 
     const task_options = useMemo(() => {
         const all = [...DEFAULT_TASK_OPTIONS, ...custom_task_options];
-        return [...new Set(all)].map((v) => ({ value: v, label: v }));
-    }, [custom_task_options]);
+        const hidden = hidden_autocomplete_options.task_option || [];
+        return [...new Set(all)]
+            .filter((v) => !hidden.includes(v))
+            .map((v) => ({ value: v, label: v }));
+    }, [custom_task_options, hidden_autocomplete_options]);
 
     const category_options = useMemo(() => {
         const all = [...DEFAULT_CATEGORY_OPTIONS, ...custom_category_options];
-        return [...new Set(all)].map((v) => ({ value: v, label: v }));
-    }, [custom_category_options]);
+        const hidden = hidden_autocomplete_options.category_option || [];
+        return [...new Set(all)]
+            .filter((v) => !hidden.includes(v))
+            .map((v) => ({ value: v, label: v }));
+    }, [custom_category_options, hidden_autocomplete_options]);
 
     // 작업별 색상 가져오기
     const getWorkColor = (record: WorkRecord): string => {
@@ -1449,6 +1455,18 @@ export default function DailyGanttChart() {
                                 options={task_options}
                                 allowClear
                                 popupMatchSelectWidth={240}
+                                optionRender={(option) => (
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                        <span>{option.label}</span>
+                                        <CloseOutlined
+                                            style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                hideAutoCompleteOption("task_option", option.value as string);
+                                            }}
+                                        />
+                                    </div>
+                                )}
                                 dropdownRender={(menu) => (
                                     <>
                                         {menu}
@@ -1526,6 +1544,18 @@ export default function DailyGanttChart() {
                                 options={category_options}
                                 allowClear
                                 popupMatchSelectWidth={240}
+                                optionRender={(option) => (
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                        <span>{option.label}</span>
+                                        <CloseOutlined
+                                            style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                hideAutoCompleteOption("category_option", option.value as string);
+                                            }}
+                                        />
+                                    </div>
+                                )}
                                 dropdownRender={(menu) => (
                                     <>
                                         {menu}
