@@ -1175,12 +1175,17 @@ export default function DailyGanttChart() {
                     </Space>
                 }
                 open={is_modal_open}
-                onOk={handleAddWork}
                 onCancel={handleModalCancel}
-                okText="추가"
-                cancelText="취소"
+                footer={[
+                    <Button key="ok" type="primary" onClick={handleAddWork}>
+                        추가 (Enter)
+                    </Button>,
+                    <Button key="cancel" onClick={handleModalCancel}>
+                        취소
+                    </Button>,
+                ]}
             >
-                <Form form={form} layout="vertical">
+                <Form form={form} layout="vertical" onFinish={handleAddWork}>
                     <Form.Item name="project_code" label="프로젝트 코드">
                         <AutoComplete
                             options={project_code_options}

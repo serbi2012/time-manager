@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import {
     ConfigProvider,
     Layout,
@@ -7,20 +7,16 @@ import {
     message,
     Menu,
     Button,
-    Modal,
-    Space,
-    Divider,
     Avatar,
     Dropdown,
     Spin,
+    Space,
 } from "antd";
 import {
     ClockCircleOutlined,
     CalendarOutlined,
     HomeOutlined,
     SettingOutlined,
-    DownloadOutlined,
-    UploadOutlined,
     GoogleOutlined,
     UserOutlined,
     LogoutOutlined,
@@ -35,12 +31,15 @@ import {
     useNavigate,
     useLocation,
 } from "react-router-dom";
+import dayjs from "dayjs";
 import WorkRecordTable from "./components/WorkRecordTable";
 import WorkTemplateList from "./components/WorkTemplateList";
 import DailyGanttChart from "./components/DailyGanttChart";
 import WeeklySchedule from "./components/WeeklySchedule";
+import SettingsModal from "./components/SettingsModal";
 import { useWorkStore } from "./store/useWorkStore";
 import { useAuth } from "./firebase/useAuth";
+import { useShortcuts } from "./hooks/useShortcuts";
 import {
     syncToFirebase,
     syncFromFirebase,
@@ -126,6 +125,7 @@ function AppLayout() {
     const navigate = useNavigate();
     const location = useLocation();
     const [is_settings_open, setIsSettingsOpen] = useState(false);
+    const [settings_tab, setSettingsTab] = useState<string>("data");
     const [is_syncing, setIsSyncing] = useState(false);
     const file_input_ref = useRef<HTMLInputElement>(null);
 
@@ -142,6 +142,59 @@ function AppLayout() {
     const [sync_status, setSyncStatus] = useState<
         "idle" | "syncing" | "synced" | "error"
     >("idle");
+
+    // 단축키 이벤트 발생 함수들
+    const emitEvent = useCallback((event_name: string) => {
+        window.dispatchEvent(new CustomEvent(event_name));
+    }, []);
+
+    // 단축키 핸들러
+    const shortcut_handlers = useMemo(
+        () => ({
+            openNewWorkModal: () => emitEvent("shortcut:openNewWorkModal"),
+            openNewPresetModal: () => emitEvent("shortcut:openNewPresetModal"),
+            openSettings: () => setIsSettingsOpen(true),
+            showShortcuts: () => {
+                setSettingsTab("shortcuts");
+                setIsSettingsOpen(true);
+            },
+            toggleTimer: () => {
+                const timer = useWorkStore.getState().timer;
+                if (timer.is_running) {
+                    useWorkStore.getState().stopTimer();
+                    message.info("타이머가 중지되었습니다");
+                } else {
+                    message.warning("먼저 작업을 선택하세요");
+                }
+            },
+            resetTimer: () => {
+                useWorkStore.getState().resetTimer();
+                message.info("타이머가 초기화되었습니다");
+            },
+            goToday: () => {
+                useWorkStore.getState().setSelectedDate(dayjs().format("YYYY-MM-DD"));
+                message.info("오늘 날짜로 이동했습니다");
+            },
+            prevDay: () => {
+                const current = useWorkStore.getState().selected_date;
+                const prev = dayjs(current).subtract(1, "day").format("YYYY-MM-DD");
+                useWorkStore.getState().setSelectedDate(prev);
+            },
+            nextDay: () => {
+                const current = useWorkStore.getState().selected_date;
+                const next = dayjs(current).add(1, "day").format("YYYY-MM-DD");
+                useWorkStore.getState().setSelectedDate(next);
+            },
+            goDaily: () => navigate("/"),
+            goWeekly: () => navigate("/weekly"),
+            exportData: () => handleExport(),
+            syncData: () => handleManualSync(),
+        }),
+        [emitEvent, navigate]
+    );
+
+    // 단축키 훅 사용
+    useShortcuts(shortcut_handlers);
 
     // 로그인 시 데이터 동기화
     useEffect(() => {
@@ -456,45 +509,22 @@ function AppLayout() {
             </Routes>
 
             {/* 설정 모달 */}
-            <Modal
-                title="설정"
+            <SettingsModal
                 open={is_settings_open}
-                onCancel={() => setIsSettingsOpen(false)}
-                footer={null}
-                width={400}
-            >
-                <Divider style={{ marginTop: 0 }}>데이터 관리</Divider>
-                <Space
-                    direction="vertical"
-                    style={{ width: "100%" }}
-                    size="middle"
-                >
-                    <Button
-                        icon={<DownloadOutlined />}
-                        onClick={handleExport}
-                        block
-                    >
-                        데이터 내보내기 (Export)
-                    </Button>
-                    <Button
-                        icon={<UploadOutlined />}
-                        onClick={handleImport}
-                        block
-                    >
-                        데이터 가져오기 (Import)
-                    </Button>
-                    <input
-                        ref={file_input_ref}
-                        type="file"
-                        accept=".json"
-                        onChange={handleFileChange}
-                        style={{ display: "none" }}
-                    />
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                        * 가져오기 시 기존 데이터가 덮어씌워집니다
-                    </Typography.Text>
-                </Space>
-            </Modal>
+                onClose={() => setIsSettingsOpen(false)}
+                onExport={handleExport}
+                onImport={handleImport}
+                isAuthenticated={isAuthenticated}
+            />
+
+            {/* 파일 입력 (Import용) */}
+            <input
+                ref={file_input_ref}
+                type="file"
+                accept=".json"
+                onChange={handleFileChange}
+                style={{ display: "none" }}
+            />
         </Layout>
     );
 }

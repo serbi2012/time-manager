@@ -627,6 +627,17 @@ export default function WorkRecordTable() {
         };
     }, [syncFromStorage]);
 
+    // 단축키 이벤트 리스너: 새 작업 모달 열기
+    useEffect(() => {
+        const handleOpenNewWorkModal = () => {
+            setIsModalOpen(true);
+        };
+        window.addEventListener("shortcut:openNewWorkModal", handleOpenNewWorkModal);
+        return () => {
+            window.removeEventListener("shortcut:openNewWorkModal", handleOpenNewWorkModal);
+        };
+    }, []);
+
     // 오늘 날짜인지 확인
     const is_today = selected_date === dayjs().format("YYYY-MM-DD");
 
@@ -1136,7 +1147,7 @@ export default function WorkRecordTable() {
                             icon={<PlusOutlined />}
                             onClick={() => setIsModalOpen(true)}
                         >
-                            새 작업
+                            새 작업 (Alt+N)
                         </Button>
                         <Button
                             icon={<CheckCircleOutlined />}
@@ -1231,15 +1242,26 @@ export default function WorkRecordTable() {
             <Modal
                 title="새 작업 시작"
                 open={is_modal_open}
-                onOk={handleAddNewWork}
                 onCancel={() => {
                     form.resetFields();
                     setIsModalOpen(false);
                 }}
-                okText="시작"
-                cancelText="취소"
+                footer={[
+                    <Button key="ok" type="primary" onClick={handleAddNewWork}>
+                        시작 (Enter)
+                    </Button>,
+                    <Button
+                        key="cancel"
+                        onClick={() => {
+                            form.resetFields();
+                            setIsModalOpen(false);
+                        }}
+                    >
+                        취소
+                    </Button>,
+                ]}
             >
-                <Form form={form} layout="vertical">
+                <Form form={form} layout="vertical" onFinish={handleAddNewWork}>
                     <Form.Item name="project_code" label="프로젝트 코드">
                         <AutoComplete
                             options={project_code_options}
@@ -1451,16 +1473,28 @@ export default function WorkRecordTable() {
             <Modal
                 title="작업 수정"
                 open={is_edit_modal_open}
-                onOk={handleSaveEdit}
                 onCancel={() => {
                     edit_form.resetFields();
                     setEditingRecord(null);
                     setIsEditModalOpen(false);
                 }}
-                okText="저장"
-                cancelText="취소"
+                footer={[
+                    <Button key="ok" type="primary" onClick={handleSaveEdit}>
+                        저장 (Enter)
+                    </Button>,
+                    <Button
+                        key="cancel"
+                        onClick={() => {
+                            edit_form.resetFields();
+                            setEditingRecord(null);
+                            setIsEditModalOpen(false);
+                        }}
+                    >
+                        취소
+                    </Button>,
+                ]}
             >
-                <Form form={edit_form} layout="vertical">
+                <Form form={edit_form} layout="vertical" onFinish={handleSaveEdit}>
                     <Form.Item name="project_code" label="프로젝트 코드">
                         <AutoComplete
                             options={project_code_options}

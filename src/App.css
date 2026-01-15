@@ -205,3 +205,14 @@
 ::-webkit-scrollbar-thumb:hover {
     background: #bfbfbf;
 }
+
+/* Popconfirm 버튼 순서 변경 (확인 버튼을 먼저, 취소 버튼을 나중에) */
+.ant-popconfirm-buttons {
+    display: flex !important;
+    flex-direction: row-reverse !important;
+    gap: 8px;
+}
+
+.ant-popconfirm-buttons .ant-btn:first-child {
+    margin-inline-start: 0 !important;
+}

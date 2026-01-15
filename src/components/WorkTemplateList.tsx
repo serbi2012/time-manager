@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import type { InputRef } from "antd";
 import {
     Card,
@@ -92,6 +92,21 @@ export default function WorkTemplateList({
         const all = [...DEFAULT_CATEGORY_OPTIONS, ...custom_category_options];
         return [...new Set(all)].map((v) => ({ value: v, label: v }));
     }, [custom_category_options]);
+
+    // 단축키 이벤트 리스너: 새 프리셋 모달 열기
+    useEffect(() => {
+        const handleOpenNewPresetModal = () => {
+            setIsEditMode(false);
+            setEditingTemplate(null);
+            form.resetFields();
+            form.setFieldsValue({ color: TEMPLATE_COLORS[0] });
+            setIsModalOpen(true);
+        };
+        window.addEventListener("shortcut:openNewPresetModal", handleOpenNewPresetModal);
+        return () => {
+            window.removeEventListener("shortcut:openNewPresetModal", handleOpenNewPresetModal);
+        };
+    }, [form]);
 
     // 모달 열기 (추가)
     const handleOpenAddModal = () => {
@@ -212,7 +227,7 @@ export default function WorkTemplateList({
                         size="small"
                         onClick={handleOpenAddModal}
                     >
-                        추가
+                        추가 (Alt+P)
                     </Button>
                 }
             >
@@ -351,12 +366,17 @@ export default function WorkTemplateList({
             <Modal
                 title={is_edit_mode ? "프리셋 수정" : "새 프리셋 추가"}
                 open={is_modal_open}
-                onOk={handleSubmit}
                 onCancel={handleCloseModal}
-                okText={is_edit_mode ? "수정" : "추가"}
-                cancelText="취소"
+                footer={[
+                    <Button key="ok" type="primary" onClick={handleSubmit}>
+                        {is_edit_mode ? "수정" : "추가"} (Enter)
+                    </Button>,
+                    <Button key="cancel" onClick={handleCloseModal}>
+                        취소
+                    </Button>,
+                ]}
             >
-                <Form form={form} layout="vertical">
+                <Form form={form} layout="vertical" onFinish={handleSubmit}>
                     <Form.Item
                         name="project_code"
                         label="프로젝트 코드"
