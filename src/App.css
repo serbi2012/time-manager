@@ -205,3 +205,148 @@
 ::-webkit-scrollbar-thumb:hover {
     background: #bfbfbf;
 }
+
+/* 설정 버튼 스타일 */
+.settings-button {
+    color: white !important;
+    font-size: 18px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.settings-button:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+    transform: rotate(90deg);
+}
+
+.settings-button:active {
+    transform: rotate(90deg) scale(0.95);
+}
+
+/* 설정 모달 스타일 */
+.settings-modal .ant-modal-content {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.settings-modal .ant-modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px 24px;
+    border-bottom: none;
+}
+
+.settings-modal .ant-modal-title {
+    color: white !important;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.settings-modal .ant-modal-close {
+    color: white;
+    top: 16px;
+}
+
+.settings-modal .ant-modal-close:hover {
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.settings-modal .ant-modal-body {
+    padding: 24px;
+}
+
+/* 설정 모달 버튼 */
+.settings-action-button {
+    height: 56px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 2px solid #e8e8e8;
+    background: #fafafa;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.settings-action-button:hover {
+    border-color: #1890ff;
+    background: linear-gradient(135deg, #e6f7ff 0%, #f0f5ff 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(24, 144, 255, 0.15);
+}
+
+.settings-action-button:active {
+    transform: translateY(0);
+}
+
+.settings-action-button .anticon {
+    font-size: 20px;
+    color: #1890ff;
+}
+
+.settings-action-button.export-button:hover {
+    border-color: #52c41a;
+    background: linear-gradient(135deg, #f6ffed 0%, #e6fffb 100%);
+}
+
+.settings-action-button.export-button:hover .anticon {
+    color: #52c41a;
+}
+
+.settings-action-button.import-button:hover {
+    border-color: #722ed1;
+    background: linear-gradient(135deg, #f9f0ff 0%, #efdbff 100%);
+}
+
+.settings-action-button.import-button:hover .anticon {
+    color: #722ed1;
+}
+
+/* 설정 모달 섹션 제목 */
+.settings-section-title {
+    font-size: 13px;
+    color: #8c8c8c;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.settings-section-title::before {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 2px;
+}
+
+/* 설정 안내 텍스트 */
+.settings-hint {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px;
+    background: #fffbe6;
+    border-radius: 8px;
+    border: 1px solid #ffe58f;
+    margin-top: 16px;
+}
+
+.settings-hint .anticon {
+    color: #faad14;
+    font-size: 16px;
+    margin-top: 2px;
+}

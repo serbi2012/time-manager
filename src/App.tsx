@@ -7,6 +7,8 @@ import {
     SettingOutlined,
     DownloadOutlined,
     UploadOutlined,
+    InfoCircleOutlined,
+    DatabaseOutlined,
 } from "@ant-design/icons";
 import {
     BrowserRouter,
@@ -188,7 +190,7 @@ function AppLayout() {
                     type="text"
                     icon={<SettingOutlined />}
                     onClick={() => setIsSettingsOpen(true)}
-                    style={{ color: "white", fontSize: 18 }}
+                    className="settings-button"
                 />
             </Header>
 
@@ -199,18 +201,28 @@ function AppLayout() {
 
             {/* 설정 모달 */}
             <Modal
-                title="설정"
+                title={
+                    <Space>
+                        <SettingOutlined />
+                        <span>설정</span>
+                    </Space>
+                }
                 open={is_settings_open}
                 onCancel={() => setIsSettingsOpen(false)}
                 footer={null}
-                width={400}
+                width={420}
+                className="settings-modal"
+                centered
             >
-                <Divider orientation="left" style={{ marginTop: 0 }}>데이터 관리</Divider>
-                <Space direction="vertical" style={{ width: "100%" }} size="middle">
+                <div className="settings-section-title">
+                    <DatabaseOutlined /> 데이터 관리
+                </div>
+                <Space direction="vertical" style={{ width: "100%" }} size={12}>
                     <Button
                         icon={<DownloadOutlined />}
                         onClick={handleExport}
                         block
+                        className="settings-action-button export-button"
                     >
                         데이터 내보내기 (Export)
                     </Button>
@@ -218,6 +230,7 @@ function AppLayout() {
                         icon={<UploadOutlined />}
                         onClick={handleImport}
                         block
+                        className="settings-action-button import-button"
                     >
                         데이터 가져오기 (Import)
                     </Button>
@@ -228,10 +241,13 @@ function AppLayout() {
                         onChange={handleFileChange}
                         style={{ display: "none" }}
                     />
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                        * 가져오기 시 기존 데이터가 덮어씌워집니다
-                    </Typography.Text>
                 </Space>
+                <div className="settings-hint">
+                    <InfoCircleOutlined />
+                    <Typography.Text style={{ fontSize: 13, color: "#8c6d1f" }}>
+                        가져오기 시 기존 데이터가 새 데이터로 대체됩니다. 중요한 데이터는 먼저 내보내기를 권장합니다.
+                    </Typography.Text>
+                </div>
             </Modal>
         </Layout>
     );
