@@ -29,6 +29,30 @@ const { Text } = Typography;
 // 점심시간 상수 (11:40 ~ 12:40)
 const LUNCH_START = 11 * 60 + 40; // 700분 (11:40)
 const LUNCH_END = 12 * 60 + 40; // 760분 (12:40)
+const LUNCH_DURATION = LUNCH_END - LUNCH_START; // 60분
+
+// 점심시간을 제외한 실제 작업 시간 계산
+const calculateDurationExcludingLunch = (
+    start_mins: number,
+    end_mins: number
+): number => {
+    if (end_mins <= LUNCH_START || start_mins >= LUNCH_END) {
+        return end_mins - start_mins;
+    }
+    if (start_mins >= LUNCH_START && end_mins <= LUNCH_END) {
+        return 0;
+    }
+    if (start_mins < LUNCH_START && end_mins > LUNCH_END) {
+        return end_mins - start_mins - LUNCH_DURATION;
+    }
+    if (start_mins < LUNCH_START && end_mins <= LUNCH_END) {
+        return LUNCH_START - start_mins;
+    }
+    if (start_mins >= LUNCH_START && end_mins > LUNCH_END) {
+        return end_mins - LUNCH_END;
+    }
+    return end_mins - start_mins;
+};
 
 // 시간을 분으로 변환 (예: "09:30" -> 570)
 const timeToMinutes = (time_str: string): number => {
@@ -614,7 +638,11 @@ export default function DailyGanttChart() {
             const values = await form.validateFields();
             const start_mins = timeToMinutes(selected_time_range.start);
             const end_mins = timeToMinutes(selected_time_range.end);
-            const duration_minutes = end_mins - start_mins;
+            // 점심시간을 제외한 실제 작업 시간
+            const duration_minutes = calculateDurationExcludingLunch(
+                start_mins,
+                end_mins
+            );
 
             const new_session = {
                 id: crypto.randomUUID(),

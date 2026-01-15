@@ -530,7 +530,6 @@ export default function WorkRecordTable() {
         switchTemplate,
         setFormData,
         getElapsedSeconds,
-        syncFromStorage,
         templates,
         getAutoCompleteOptions,
         getCompletedRecords,
@@ -613,19 +612,6 @@ export default function WorkRecordTable() {
             if (interval) clearInterval(interval);
         };
     }, [timer.is_running]);
-
-    // 다른 탭에서의 변경 감지 (LocalStorage 동기화)
-    useEffect(() => {
-        const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === "work-time-storage") {
-                syncFromStorage();
-            }
-        };
-        window.addEventListener("storage", handleStorageChange);
-        return () => {
-            window.removeEventListener("storage", handleStorageChange);
-        };
-    }, [syncFromStorage]);
 
     // 단축키 이벤트 리스너: 새 작업 모달 열기
     useEffect(() => {

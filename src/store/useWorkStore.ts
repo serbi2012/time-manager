@@ -2,6 +2,42 @@ import { create } from 'zustand';
 import dayjs from 'dayjs';
 import type { WorkRecord, TimerState, WorkFormData, WorkTemplate, WorkSession } from '../types';
 
+// 점심시간 상수 (11:40 ~ 12:40)
+const LUNCH_START_MINUTES = 11 * 60 + 40; // 700분 (11:40)
+const LUNCH_END_MINUTES = 12 * 60 + 40;   // 760분 (12:40)
+const LUNCH_DURATION = LUNCH_END_MINUTES - LUNCH_START_MINUTES; // 60분
+
+// 점심시간을 제외한 실제 작업 시간 계산
+// 예: 11:00 ~ 13:00 -> 11:00~11:40(40분) + 12:40~13:00(20분) = 60분
+const calculateDurationExcludingLunch = (start_mins: number, end_mins: number): number => {
+  // 점심시간과 겹치지 않는 경우
+  if (end_mins <= LUNCH_START_MINUTES || start_mins >= LUNCH_END_MINUTES) {
+    return end_mins - start_mins;
+  }
+  
+  // 점심시간에 완전히 포함되는 경우
+  if (start_mins >= LUNCH_START_MINUTES && end_mins <= LUNCH_END_MINUTES) {
+    return 0;
+  }
+  
+  // 점심시간을 완전히 포함하는 경우
+  if (start_mins < LUNCH_START_MINUTES && end_mins > LUNCH_END_MINUTES) {
+    return (end_mins - start_mins) - LUNCH_DURATION;
+  }
+  
+  // 점심시간 시작 부분과 겹치는 경우 (작업이 점심시간 중간에 끝남)
+  if (start_mins < LUNCH_START_MINUTES && end_mins <= LUNCH_END_MINUTES) {
+    return LUNCH_START_MINUTES - start_mins;
+  }
+  
+  // 점심시간 끝 부분과 겹치는 경우 (작업이 점심시간 중간에 시작)
+  if (start_mins >= LUNCH_START_MINUTES && end_mins > LUNCH_END_MINUTES) {
+    return end_mins - LUNCH_END_MINUTES;
+  }
+  
+  return end_mins - start_mins;
+};
+
 // 템플릿 색상 팔레트
 export const TEMPLATE_COLORS = [
   '#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1',
@@ -115,7 +151,7 @@ const findExistingRecord = (
   );
 };
 
-// 새 세션 생성 (분 단위로 반올림)
+// 새 세션 생성 (분 단위로 반올림, 점심시간 제외)
 const createSession = (
   start_time: number,
   end_time: number
@@ -127,7 +163,9 @@ const createSession = (
   // 분 단위로 계산 (초는 버림)
   const start_minutes = start_dayjs.hour() * 60 + start_dayjs.minute();
   const end_minutes = end_dayjs.hour() * 60 + end_dayjs.minute();
-  const duration_minutes = Math.max(1, end_minutes - start_minutes); // 최소 1분
+  
+  // 점심시간을 제외한 실제 작업 시간 계산
+  const duration_minutes = Math.max(1, calculateDurationExcludingLunch(start_minutes, end_minutes));
   
   return {
     id: crypto.randomUUID(),
@@ -532,8 +570,8 @@ export const useWorkStore = create<WorkStore>()((set, get) => ({
           return { success: false, adjusted: false, message: '충돌을 피할 수 없습니다. 다른 시간을 선택하세요.' };
         }
 
-        // 세션 업데이트
-        const duration_minutes = Math.max(1, final_end_mins - final_start_mins);
+        // 세션 업데이트 (점심시간 제외한 실제 작업 시간)
+        const duration_minutes = Math.max(1, calculateDurationExcludingLunch(final_start_mins, final_end_mins));
         const updated_sessions = record.sessions.map((s, idx) =>
           idx === session_index
             ? { ...s, date: target_date, start_time: adjusted_start, end_time: adjusted_end, duration_minutes }

@@ -126,7 +126,6 @@ function AppLayout() {
     const navigate = useNavigate();
     const location = useLocation();
     const [is_settings_open, setIsSettingsOpen] = useState(false);
-    const [settings_tab, setSettingsTab] = useState<string>("data");
     const [is_syncing, setIsSyncing] = useState(false);
     const file_input_ref = useRef<HTMLInputElement>(null);
 
@@ -156,7 +155,6 @@ function AppLayout() {
             openNewPresetModal: () => emitEvent("shortcut:openNewPresetModal"),
             openSettings: () => setIsSettingsOpen(true),
             showShortcuts: () => {
-                setSettingsTab("shortcuts");
                 setIsSettingsOpen(true);
             },
             toggleTimer: () => {

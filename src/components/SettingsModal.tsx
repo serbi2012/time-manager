@@ -151,9 +151,7 @@ function DataTab({
 }) {
     return (
         <div>
-            <Divider orientation="left" style={{ marginTop: 0 }}>
-                백업 및 복원
-            </Divider>
+            <Divider style={{ marginTop: 0 }}>백업 및 복원</Divider>
             <Space direction="vertical" style={{ width: "100%" }} size="middle">
                 <Button icon={<DownloadOutlined />} onClick={onExport} block>
                     데이터 내보내기 (Export)
@@ -182,7 +180,7 @@ function DataTab({
                 </Text>
             </Space>
 
-            <Divider orientation="left">저장소 정보</Divider>
+            <Divider>저장소 정보</Divider>
             <Space direction="vertical" style={{ width: "100%" }}>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <Text>저장 위치</Text>
