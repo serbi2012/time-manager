@@ -1,5 +1,5 @@
 // 설정 모달 컴포넌트
-import { useRef } from "react";
+import { useRef, useState, useMemo } from "react";
 import {
     Modal,
     Tabs,
@@ -12,6 +12,10 @@ import {
     Divider,
     message,
     Popconfirm,
+    Checkbox,
+    Input,
+    Empty,
+    Collapse,
 } from "antd";
 import {
     DownloadOutlined,
@@ -19,9 +23,14 @@ import {
     KeyOutlined,
     DatabaseOutlined,
     ReloadOutlined,
+    UnorderedListOutlined,
+    PlusOutlined,
+    DeleteOutlined,
+    UndoOutlined,
 } from "@ant-design/icons";
 import { useShortcutStore, CATEGORY_LABELS, type ShortcutDefinition } from "../store/useShortcutStore";
 import { formatShortcutKeyForPlatform } from "../hooks/useShortcuts";
+import { useWorkStore } from "../store/useWorkStore";
 
 const { Text } = Typography;
 
@@ -137,6 +146,256 @@ function ShortcutsTab() {
     );
 }
 
+// 오토컴플리트 옵션 관리 탭
+function AutoCompleteTab() {
+    const {
+        records,
+        templates,
+        hidden_autocomplete_options,
+        hideAutoCompleteOption,
+        unhideAutoCompleteOption,
+    } = useWorkStore();
+
+    const [selected_work_names, setSelectedWorkNames] = useState<string[]>([]);
+    const [selected_deal_names, setSelectedDealNames] = useState<string[]>([]);
+    const [selected_project_codes, setSelectedProjectCodes] = useState<string[]>([]);
+
+    // 모든 옵션 수집 (레코드 + 템플릿에서 추출)
+    const all_options = useMemo(() => {
+        const work_names = new Set<string>();
+        const deal_names = new Set<string>();
+        const project_codes = new Set<string>();
+
+        records.forEach((r) => {
+            if (r.work_name?.trim()) work_names.add(r.work_name);
+            if (r.deal_name?.trim()) deal_names.add(r.deal_name);
+            if (r.project_code?.trim()) project_codes.add(r.project_code);
+        });
+
+        templates.forEach((t) => {
+            if (t.work_name?.trim()) work_names.add(t.work_name);
+            if (t.deal_name?.trim()) deal_names.add(t.deal_name);
+            if (t.project_code?.trim()) project_codes.add(t.project_code);
+        });
+
+        return {
+            work_names: Array.from(work_names).sort(),
+            deal_names: Array.from(deal_names).sort(),
+            project_codes: Array.from(project_codes).sort(),
+        };
+    }, [records, templates]);
+
+    // 숨겨진 옵션과 보이는 옵션 분리
+    const visible_work_names = all_options.work_names.filter(
+        (v) => !hidden_autocomplete_options.work_name.includes(v)
+    );
+    const visible_deal_names = all_options.deal_names.filter(
+        (v) => !hidden_autocomplete_options.deal_name.includes(v)
+    );
+    const visible_project_codes = all_options.project_codes.filter(
+        (v) => !hidden_autocomplete_options.project_code.includes(v)
+    );
+
+    // 선택된 항목 일괄 숨김
+    const handleBulkHide = (
+        field: "work_name" | "deal_name" | "project_code",
+        selected: string[],
+        clearSelection: () => void
+    ) => {
+        selected.forEach((v) => hideAutoCompleteOption(field, v));
+        clearSelection();
+        message.success(`${selected.length}개 항목이 숨겨졌습니다`);
+    };
+
+    // 숨겨진 항목 복원
+    const handleUnhide = (
+        field: "work_name" | "deal_name" | "project_code",
+        value: string
+    ) => {
+        unhideAutoCompleteOption(field, value);
+        message.success(`"${value}" 복원됨`);
+    };
+
+    // 숨겨진 항목 일괄 복원
+    const handleBulkUnhide = (
+        field: "work_name" | "deal_name" | "project_code"
+    ) => {
+        const hidden_list = hidden_autocomplete_options[field];
+        hidden_list.forEach((v) => unhideAutoCompleteOption(field, v));
+        message.success(`${hidden_list.length}개 항목이 복원되었습니다`);
+    };
+
+    // 옵션 목록 렌더링
+    const renderOptionList = (
+        title: string,
+        field: "work_name" | "deal_name" | "project_code",
+        visible_options: string[],
+        selected: string[],
+        setSelected: (values: string[]) => void
+    ) => {
+        const hidden_list = hidden_autocomplete_options[field];
+
+        return (
+            <div style={{ marginBottom: 16 }}>
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: 8,
+                    }}
+                >
+                    <Text strong>
+                        {title} ({visible_options.length}개)
+                    </Text>
+                    {selected.length > 0 && (
+                        <Popconfirm
+                            title={`${selected.length}개 항목을 숨기시겠습니까?`}
+                            onConfirm={() =>
+                                handleBulkHide(field, selected, () => setSelected([]))
+                            }
+                            okText="숨김"
+                            cancelText="취소"
+                        >
+                            <Button
+                                size="small"
+                                danger
+                                icon={<DeleteOutlined />}
+                            >
+                                선택 숨김 ({selected.length})
+                            </Button>
+                        </Popconfirm>
+                    )}
+                </div>
+
+                {visible_options.length === 0 ? (
+                    <Empty
+                        description="옵션 없음"
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        style={{ padding: "8px 0" }}
+                    />
+                ) : (
+                    <Checkbox.Group
+                        value={selected}
+                        onChange={(values) => setSelected(values as string[])}
+                        style={{ width: "100%" }}
+                    >
+                        <div
+                            style={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: 4,
+                                maxHeight: 120,
+                                overflowY: "auto",
+                                border: "1px solid #d9d9d9",
+                                borderRadius: 4,
+                                padding: 8,
+                            }}
+                        >
+                            {visible_options.map((opt) => (
+                                <Checkbox key={opt} value={opt}>
+                                    <Tag>{opt}</Tag>
+                                </Checkbox>
+                            ))}
+                        </div>
+                    </Checkbox.Group>
+                )}
+
+                {/* 숨겨진 항목 */}
+                {hidden_list.length > 0 && (
+                    <Collapse
+                        size="small"
+                        style={{ marginTop: 8 }}
+                        items={[
+                            {
+                                key: "hidden",
+                                label: (
+                                    <Text type="secondary">
+                                        숨겨진 항목 ({hidden_list.length}개)
+                                    </Text>
+                                ),
+                                extra: (
+                                    <Button
+                                        size="small"
+                                        type="link"
+                                        icon={<UndoOutlined />}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleBulkUnhide(field);
+                                        }}
+                                    >
+                                        전체 복원
+                                    </Button>
+                                ),
+                                children: (
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            flexWrap: "wrap",
+                                            gap: 4,
+                                        }}
+                                    >
+                                        {hidden_list.map((opt) => (
+                                            <Tag
+                                                key={opt}
+                                                closable
+                                                closeIcon={<UndoOutlined />}
+                                                onClose={(e) => {
+                                                    e.preventDefault();
+                                                    handleUnhide(field, opt);
+                                                }}
+                                                style={{
+                                                    opacity: 0.6,
+                                                    textDecoration: "line-through",
+                                                }}
+                                            >
+                                                {opt}
+                                            </Tag>
+                                        ))}
+                                    </div>
+                                ),
+                            },
+                        ]}
+                    />
+                )}
+            </div>
+        );
+    };
+
+    return (
+        <div>
+            <Text type="secondary" style={{ display: "block", marginBottom: 16 }}>
+                자동완성 옵션을 관리합니다. 숨긴 항목은 자동완성 목록에 표시되지
+                않지만, 데이터는 유지됩니다.
+            </Text>
+
+            {renderOptionList(
+                "작업명",
+                "work_name",
+                visible_work_names,
+                selected_work_names,
+                setSelectedWorkNames
+            )}
+
+            {renderOptionList(
+                "거래명",
+                "deal_name",
+                visible_deal_names,
+                selected_deal_names,
+                setSelectedDealNames
+            )}
+
+            {renderOptionList(
+                "프로젝트 코드",
+                "project_code",
+                visible_project_codes,
+                selected_project_codes,
+                setSelectedProjectCodes
+            )}
+        </div>
+    );
+}
+
 // 데이터 탭 컴포넌트
 function DataTab({
     onExport,
@@ -232,6 +491,15 @@ export default function SettingsModal({
                     file_input_ref={file_input_ref}
                 />
             ),
+        },
+        {
+            key: "autocomplete",
+            label: (
+                <span>
+                    <UnorderedListOutlined /> 자동완성
+                </span>
+            ),
+            children: <AutoCompleteTab />,
         },
         {
             key: "shortcuts",
