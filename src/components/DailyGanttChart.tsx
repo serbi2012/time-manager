@@ -447,11 +447,11 @@ export default function DailyGanttChart() {
             const mins = xToMinutes(e.clientX);
 
             e.preventDefault();
-            
+
             // 기존 세션 위에서 시작해도 드래그는 허용
             // 빈 영역에 마우스가 도달하면 그때부터 선택 영역 표시
             const on_existing = isOnExistingBar(mins);
-            
+
             drag_start_ref.current = {
                 mins,
                 available_min: time_range.start,
@@ -459,7 +459,7 @@ export default function DailyGanttChart() {
                 waiting_for_empty: on_existing, // 빈 영역 대기 중 플래그
             };
             setIsDragging(true);
-            
+
             // 빈 영역에서 시작했으면 바로 선택 영역 표시
             if (!on_existing) {
                 const available = getAvailableRange(mins);
