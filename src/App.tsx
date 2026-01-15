@@ -32,11 +32,11 @@ function MainPage() {
 
         // 기존 타이머가 있으면 중지
         if (timer.is_running) {
-            stopTimer();
+            useWorkStore.getState().stopTimer();
         }
 
         // 템플릿 적용 후 거래명에 유니크 ID 추가
-        applyTemplate(template_id);
+        useWorkStore.getState().applyTemplate(template_id);
         
         // 유니크 ID 생성 (MMdd_HHmm 형식)
         const now = new Date();
@@ -48,7 +48,8 @@ function MainPage() {
         // 거래명 업데이트
         useWorkStore.getState().setFormData({ deal_name: unique_deal_name });
         
-        startTimer(template_id);
+        // 최신 상태로 타이머 시작
+        useWorkStore.getState().startTimer(template_id);
         message.success(`"${template.work_name}" 작업이 시작되었습니다`);
     };
 
