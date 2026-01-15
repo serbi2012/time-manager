@@ -443,10 +443,10 @@ function AppLayout() {
                     custom_category_options: data.custom_category_options || [],
                 });
 
-                // Firebase에 동기화
+                // Firebase에 동기화 (import 시 강제 저장)
                 if (user && isAuthenticated) {
                     try {
-                        await syncToFirebase(user);
+                        await syncToFirebase(user, { force: true });
                         message.success(
                             "데이터를 가져오고 클라우드에 동기화했습니다"
                         );
