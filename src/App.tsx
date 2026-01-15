@@ -205,7 +205,7 @@ function AppLayout() {
                 footer={null}
                 width={400}
             >
-                <Divider orientation="left" style={{ marginTop: 0 }}>데이터 관리</Divider>
+                <Divider style={{ marginTop: 0 }}>데이터 관리</Divider>
                 <Space direction="vertical" style={{ width: "100%" }} size="middle">
                     <Button
                         icon={<DownloadOutlined />}
