@@ -117,6 +117,72 @@ const getRecordDurationMinutes = (record: WorkRecord): number => {
     return 0;
 };
 
+// 특정 날짜의 세션들만 시간 합산
+const getRecordDurationMinutesForDate = (
+    record: WorkRecord,
+    target_date: string
+): number => {
+    if (!record.sessions || record.sessions.length === 0) {
+        // 세션이 없으면 레코드 날짜가 맞는 경우만 전체 시간 반환
+        if (record.date === target_date) {
+            return getRecordDurationMinutes(record);
+        }
+        return 0;
+    }
+
+    // 해당 날짜의 세션들만 필터링하여 시간 합산
+    const date_sessions = record.sessions.filter(
+        (s) => (s.date || record.date) === target_date
+    );
+
+    if (date_sessions.length === 0) {
+        return 0;
+    }
+
+    return date_sessions.reduce(
+        (sum, s) => sum + getSessionDurationMinutes(s),
+        0
+    );
+};
+
+// 특정 날짜의 시작/종료 시간 가져오기
+const getTimeRangeForDate = (
+    record: WorkRecord,
+    target_date: string
+): { start_time: string; end_time: string } => {
+    if (!record.sessions || record.sessions.length === 0) {
+        // 세션이 없으면 레코드 날짜가 맞는 경우만 레코드 시간 반환
+        if (record.date === target_date) {
+            return {
+                start_time: record.start_time || "",
+                end_time: record.end_time || "",
+            };
+        }
+        return { start_time: "", end_time: "" };
+    }
+
+    // 해당 날짜의 세션들만 필터링
+    const date_sessions = record.sessions.filter(
+        (s) => (s.date || record.date) === target_date
+    );
+
+    if (date_sessions.length === 0) {
+        return { start_time: "", end_time: "" };
+    }
+
+    // 시간순 정렬
+    const sorted = [...date_sessions].sort((a, b) => {
+        const a_start = a.start_time || "00:00";
+        const b_start = b.start_time || "00:00";
+        return a_start.localeCompare(b_start);
+    });
+
+    return {
+        start_time: sorted[0].start_time || "",
+        end_time: sorted[sorted.length - 1].end_time || "",
+    };
+};
+
 // 세션 시간 편집용 Input 컴포넌트 (로컬 상태로 리렌더링 문제 해결)
 interface TimeInputProps {
     value: string;
@@ -624,12 +690,16 @@ export default function WorkRecordTable() {
         is_today,
     ]);
 
-    // 총 시간 계산 (가상 레코드 제외)
+    // 총 시간 계산 (가상 레코드 제외, 선택된 날짜의 세션만 합산)
     const total_minutes = useMemo(() => {
         return filtered_records
             .filter((r) => r.id !== "__active__")
-            .reduce((sum, r) => sum + getRecordDurationMinutes(r), 0);
-    }, [filtered_records]);
+            .reduce(
+                (sum, r) =>
+                    sum + getRecordDurationMinutesForDate(r, selected_date),
+                0
+            );
+    }, [filtered_records, selected_date]);
 
     // 현재 작업 중인 레코드 찾기
     const getActiveRecordId = () => {
@@ -913,22 +983,33 @@ export default function WorkRecordTable() {
             key: "duration_minutes",
             width: 60,
             align: "center",
-            render: (_: number, record: WorkRecord) => (
-                <Text strong style={{ color: "#1890ff" }}>
-                    {getRecordDurationMinutes(record)}분
-                </Text>
-            ),
+            render: (_: number, record: WorkRecord) => {
+                // 선택된 날짜의 시간만 표시
+                const date_minutes = getRecordDurationMinutesForDate(
+                    record,
+                    selected_date
+                );
+                return (
+                    <Text strong style={{ color: "#1890ff" }}>
+                        {date_minutes}분
+                    </Text>
+                );
+            },
         },
         {
             title: "시작-종료",
             key: "time_range",
             width: 120,
-            render: (_, record: WorkRecord) => (
-                <Text type="secondary" style={{ fontSize: 11 }}>
-                    {record.start_time?.slice(0, 5)} ~{" "}
-                    {record.end_time?.slice(0, 5)}
-                </Text>
-            ),
+            render: (_, record: WorkRecord) => {
+                // 선택된 날짜의 시간 범위만 표시
+                const time_range = getTimeRangeForDate(record, selected_date);
+                return (
+                    <Text type="secondary" style={{ fontSize: 11 }}>
+                        {time_range.start_time?.slice(0, 5) || "-"} ~{" "}
+                        {time_range.end_time?.slice(0, 5) || "-"}
+                    </Text>
+                );
+            },
         },
         {
             title: "날짜",
