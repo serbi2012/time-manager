@@ -1,5 +1,19 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { ConfigProvider, Layout, Typography, theme, message, Menu, Button, Modal, Space, Divider, Avatar, Dropdown, Spin } from "antd";
+import {
+    ConfigProvider,
+    Layout,
+    Typography,
+    theme,
+    message,
+    Menu,
+    Button,
+    Modal,
+    Space,
+    Divider,
+    Avatar,
+    Dropdown,
+    Spin,
+} from "antd";
 import {
     ClockCircleOutlined,
     CalendarOutlined,
@@ -27,7 +41,12 @@ import DailyGanttChart from "./components/DailyGanttChart";
 import WeeklySchedule from "./components/WeeklySchedule";
 import { useWorkStore } from "./store/useWorkStore";
 import { useAuth } from "./firebase/useAuth";
-import { syncToFirebase, syncFromFirebase, startRealtimeSync, stopRealtimeSync } from "./firebase/syncService";
+import {
+    syncToFirebase,
+    syncFromFirebase,
+    startRealtimeSync,
+    stopRealtimeSync,
+} from "./firebase/syncService";
 import "./App.css";
 
 const { Header, Sider, Content } = Layout;
@@ -37,21 +56,34 @@ function MainPage() {
     // 프리셋에서 작업 기록에 추가 (타이머 시작)
     const handleAddToRecord = (template_id: string) => {
         // 템플릿 찾기
-        const template = useWorkStore.getState().templates.find((t) => t.id === template_id);
+        const template = useWorkStore
+            .getState()
+            .templates.find((t) => t.id === template_id);
         if (!template) return;
 
         // 유니크 ID 생성 (MMdd_HHmmss_xxx 형식 - 초 + 랜덤 3자리)
         const now = new Date();
-        const random_suffix = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-        const unique_id = `${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}_${random_suffix}`;
-        const unique_deal_name = template.deal_name 
+        const random_suffix = Math.floor(Math.random() * 1000)
+            .toString()
+            .padStart(3, "0");
+        const unique_id = `${String(now.getMonth() + 1).padStart(
+            2,
+            "0"
+        )}${String(now.getDate()).padStart(2, "0")}_${String(
+            now.getHours()
+        ).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}${String(
+            now.getSeconds()
+        ).padStart(2, "0")}_${random_suffix}`;
+        const unique_deal_name = template.deal_name
             ? `${template.deal_name}_${unique_id}`
             : `작업_${unique_id}`;
 
         // 새 타이머 시작 함수
         const startNewTimer = () => {
             useWorkStore.getState().applyTemplate(template_id);
-            useWorkStore.getState().setFormData({ deal_name: unique_deal_name });
+            useWorkStore
+                .getState()
+                .setFormData({ deal_name: unique_deal_name });
             useWorkStore.getState().startTimer(template_id);
             message.success(`"${template.work_name}" 작업이 시작되었습니다`);
         };
@@ -96,32 +128,40 @@ function AppLayout() {
     const [is_settings_open, setIsSettingsOpen] = useState(false);
     const [is_syncing, setIsSyncing] = useState(false);
     const file_input_ref = useRef<HTMLInputElement>(null);
-    
+
     // Firebase Auth
-    const { user, loading: auth_loading, signInWithGoogle, logout, isAuthenticated } = useAuth();
-    
+    const {
+        user,
+        loading: auth_loading,
+        signInWithGoogle,
+        logout,
+        isAuthenticated,
+    } = useAuth();
+
     // 데이터 동기화 상태 관리
-    const [sync_status, setSyncStatus] = useState<'idle' | 'syncing' | 'synced' | 'error'>('idle');
+    const [sync_status, setSyncStatus] = useState<
+        "idle" | "syncing" | "synced" | "error"
+    >("idle");
 
     // 로그인 시 데이터 동기화
     useEffect(() => {
         if (user) {
-            setSyncStatus('syncing');
+            setSyncStatus("syncing");
             syncFromFirebase(user)
                 .then(() => {
-                    setSyncStatus('synced');
+                    setSyncStatus("synced");
                     startRealtimeSync(user);
-                    message.success('클라우드 데이터와 동기화되었습니다');
+                    message.success("클라우드 데이터와 동기화되었습니다");
                 })
                 .catch(() => {
-                    setSyncStatus('error');
-                    message.error('데이터 동기화에 실패했습니다');
+                    setSyncStatus("error");
+                    message.error("데이터 동기화에 실패했습니다");
                 });
         } else {
             stopRealtimeSync();
-            setSyncStatus('idle');
+            setSyncStatus("idle");
         }
-        
+
         return () => {
             stopRealtimeSync();
         };
@@ -130,19 +170,19 @@ function AppLayout() {
     // 데이터 변경 시 Firebase에 자동 저장
     const records = useWorkStore((state) => state.records);
     const templates = useWorkStore((state) => state.templates);
-    
+
     const syncData = useCallback(async () => {
         if (user && isAuthenticated) {
             try {
                 await syncToFirebase(user);
             } catch {
-                console.error('Firebase 동기화 실패');
+                console.error("Firebase 동기화 실패");
             }
         }
     }, [user, isAuthenticated]);
 
     useEffect(() => {
-        if (user && isAuthenticated && sync_status === 'synced') {
+        if (user && isAuthenticated && sync_status === "synced") {
             // 데이터 변경 시 1초 후 동기화 (debounce)
             const timeout = setTimeout(syncData, 1000);
             return () => clearTimeout(timeout);
@@ -152,13 +192,13 @@ function AppLayout() {
     // 수동 동기화
     const handleManualSync = async () => {
         if (!user) return;
-        
+
         setIsSyncing(true);
         try {
             await syncToFirebase(user);
-            message.success('동기화 완료');
+            message.success("동기화 완료");
         } catch {
-            message.error('동기화 실패');
+            message.error("동기화 실패");
         } finally {
             setIsSyncing(false);
         }
@@ -169,7 +209,7 @@ function AppLayout() {
         try {
             await signInWithGoogle();
         } catch {
-            message.error('로그인에 실패했습니다');
+            message.error("로그인에 실패했습니다");
         }
     };
 
@@ -177,9 +217,9 @@ function AppLayout() {
     const handleLogout = async () => {
         try {
             await logout();
-            message.success('로그아웃되었습니다');
+            message.success("로그아웃되었습니다");
         } catch {
-            message.error('로그아웃에 실패했습니다');
+            message.error("로그아웃에 실패했습니다");
         }
     };
 
@@ -199,37 +239,54 @@ function AppLayout() {
     // 유저 드롭다운 메뉴
     const user_menu_items = [
         {
-            key: 'sync',
+            key: "sync",
             icon: <SyncOutlined spin={is_syncing} />,
-            label: '수동 동기화',
+            label: "수동 동기화",
             onClick: handleManualSync,
         },
         {
-            key: 'divider',
-            type: 'divider' as const,
+            key: "divider",
+            type: "divider" as const,
         },
         {
-            key: 'logout',
+            key: "logout",
             icon: <LogoutOutlined />,
-            label: '로그아웃',
+            label: "로그아웃",
             onClick: handleLogout,
             danger: true,
         },
     ];
 
-    // 데이터 내보내기
+    // 데이터 내보내기 (Store에서 직접 추출, 기존 JSON 형식 유지)
     const handleExport = () => {
-        const storage_data = localStorage.getItem("work-time-storage");
-        if (!storage_data) {
+        const state = useWorkStore.getState();
+
+        // 기존 JSON 형식과 동일하게 구성
+        const export_data = {
+            state: {
+                records: state.records,
+                templates: state.templates,
+                timer: state.timer,
+                custom_task_options: state.custom_task_options,
+                custom_category_options: state.custom_category_options,
+            },
+            version: 0,
+        };
+
+        if (state.records.length === 0 && state.templates.length === 0) {
             message.warning("내보낼 데이터가 없습니다");
             return;
         }
 
-        const blob = new Blob([storage_data], { type: "application/json" });
+        const blob = new Blob([JSON.stringify(export_data, null, 2)], {
+            type: "application/json",
+        });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `time-manager-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        link.download = `time-manager-backup-${new Date()
+            .toISOString()
+            .slice(0, 10)}.json`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -239,43 +296,63 @@ function AppLayout() {
 
     // 데이터 가져오기
     const handleImport = () => {
+        if (!isAuthenticated) {
+            message.warning("로그인 후 데이터를 가져올 수 있습니다");
+            return;
+        }
         file_input_ref.current?.click();
     };
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
             try {
                 const content = e.target?.result as string;
                 const parsed = JSON.parse(content);
-                
+
+                // 기존 형식 지원 (state 래퍼가 있는 경우와 없는 경우 모두)
+                const data = parsed.state ? parsed.state : parsed;
+
                 // 데이터 유효성 검사
-                if (!parsed.state || !parsed.state.records) {
+                if (!data.records) {
                     message.error("유효하지 않은 데이터 형식입니다");
                     return;
                 }
 
-                // LocalStorage에 저장
-                localStorage.setItem("work-time-storage", content);
-                
-                // 스토어 동기화
-                useWorkStore.getState().syncFromStorage();
-                
-                message.success("데이터를 성공적으로 가져왔습니다. 페이지를 새로고침합니다.");
-                
-                // 페이지 새로고침으로 완전히 동기화
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
+                // Store에 직접 데이터 설정
+                useWorkStore.setState({
+                    records: data.records || [],
+                    templates: data.templates || [],
+                    custom_task_options: data.custom_task_options || [],
+                    custom_category_options: data.custom_category_options || [],
+                });
+
+                // Firebase에 동기화
+                if (user && isAuthenticated) {
+                    try {
+                        await syncToFirebase(user);
+                        message.success(
+                            "데이터를 가져오고 클라우드에 동기화했습니다"
+                        );
+                    } catch {
+                        message.warning(
+                            "데이터를 가져왔지만 클라우드 동기화에 실패했습니다"
+                        );
+                    }
+                } else {
+                    message.success("데이터를 성공적으로 가져왔습니다");
+                }
             } catch {
                 message.error("파일을 읽는 중 오류가 발생했습니다");
             }
         };
         reader.readAsText(file);
-        
+
         // 같은 파일 다시 선택 가능하도록 초기화
         event.target.value = "";
     };
@@ -306,10 +383,30 @@ function AppLayout() {
                 <Space size="middle">
                     {/* 동기화 상태 표시 */}
                     {isAuthenticated && (
-                        <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 12 }}>
-                            {sync_status === 'syncing' && <><SyncOutlined spin /> 동기화 중...</>}
-                            {sync_status === 'synced' && <><CloudSyncOutlined /> 클라우드 연결됨</>}
-                            {sync_status === 'error' && <><CloudOutlined style={{ color: '#ff4d4f' }} /> 동기화 오류</>}
+                        <span
+                            style={{
+                                color: "rgba(255,255,255,0.65)",
+                                fontSize: 12,
+                            }}
+                        >
+                            {sync_status === "syncing" && (
+                                <>
+                                    <SyncOutlined spin /> 동기화 중...
+                                </>
+                            )}
+                            {sync_status === "synced" && (
+                                <>
+                                    <CloudSyncOutlined /> 클라우드 연결됨
+                                </>
+                            )}
+                            {sync_status === "error" && (
+                                <>
+                                    <CloudOutlined
+                                        style={{ color: "#ff4d4f" }}
+                                    />{" "}
+                                    동기화 오류
+                                </>
+                            )}
                         </span>
                     )}
 
@@ -325,14 +422,17 @@ function AppLayout() {
                     {auth_loading ? (
                         <Spin size="small" />
                     ) : isAuthenticated && user ? (
-                        <Dropdown menu={{ items: user_menu_items }} placement="bottomRight">
-                            <Space style={{ cursor: 'pointer' }}>
-                                <Avatar 
-                                    src={user.photoURL} 
+                        <Dropdown
+                            menu={{ items: user_menu_items }}
+                            placement="bottomRight"
+                        >
+                            <Space style={{ cursor: "pointer" }}>
+                                <Avatar
+                                    src={user.photoURL}
                                     icon={<UserOutlined />}
                                     size="small"
                                 />
-                                <span style={{ color: 'white', fontSize: 13 }}>
+                                <span style={{ color: "white", fontSize: 13 }}>
                                     {user.displayName || user.email}
                                 </span>
                             </Space>
@@ -364,7 +464,11 @@ function AppLayout() {
                 width={400}
             >
                 <Divider style={{ marginTop: 0 }}>데이터 관리</Divider>
-                <Space direction="vertical" style={{ width: "100%" }} size="middle">
+                <Space
+                    direction="vertical"
+                    style={{ width: "100%" }}
+                    size="middle"
+                >
                     <Button
                         icon={<DownloadOutlined />}
                         onClick={handleExport}

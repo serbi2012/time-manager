@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import dayjs from 'dayjs';
 import type { WorkRecord, TimerState, WorkFormData, WorkTemplate, WorkSession } from '../types';
 
@@ -26,7 +25,6 @@ interface WorkStore {
   getElapsedSeconds: () => number;  // 실시간 경과 시간 계산
   resetTimer: () => void;
   switchTemplate: (template_id: string) => void;
-  syncFromStorage: () => void;      // 다른 탭과 동기화
   
   // 폼 액션
   setFormData: (data: Partial<WorkFormData>) => void;
@@ -163,9 +161,7 @@ const calculateTotalMinutes = (sessions: WorkSession[]): number => {
 export const DEFAULT_TASK_OPTIONS = ['개발', '작업', '분석', '설계', '테스트', '기타'];
 export const DEFAULT_CATEGORY_OPTIONS = ['개발', '문서작업', '회의', '환경세팅', '코드리뷰', '테스트', '기타'];
 
-export const useWorkStore = create<WorkStore>()(
-  persist(
-    (set, get) => ({
+export const useWorkStore = create<WorkStore>()((set, get) => ({
       records: [],
       templates: [],
       timer: DEFAULT_TIMER,
@@ -339,28 +335,6 @@ export const useWorkStore = create<WorkStore>()(
 
       resetTimer: () => {
         set({ timer: DEFAULT_TIMER, form_data: DEFAULT_FORM_DATA });
-      },
-
-      // 다른 탭에서 변경된 상태 동기화
-      syncFromStorage: () => {
-        const stored = localStorage.getItem('work-time-storage');
-        if (stored) {
-          try {
-            const parsed = JSON.parse(stored);
-            if (parsed.state) {
-              set({
-                records: parsed.state.records || [],
-                templates: parsed.state.templates || [],
-                timer: parsed.state.timer || DEFAULT_TIMER,
-                form_data: parsed.state.timer?.active_form_data || DEFAULT_FORM_DATA,
-                custom_task_options: parsed.state.custom_task_options || [],
-                custom_category_options: parsed.state.custom_category_options || [],
-              });
-            }
-          } catch {
-            // parse error - ignore
-          }
-        }
       },
 
       setFormData: (data) => {
@@ -839,22 +813,5 @@ export const useWorkStore = create<WorkStore>()(
           custom_category_options: state.custom_category_options.filter((o) => o !== option),
         }));
       },
-    }),
-    {
-      name: 'work-time-storage',
-      partialize: (state) => ({
-        records: state.records,
-        templates: state.templates,
-        timer: state.timer,  // 타이머 상태도 저장 (탭 간 동기화)
-        custom_task_options: state.custom_task_options,
-        custom_category_options: state.custom_category_options,
-      }),
-      onRehydrateStorage: () => (state) => {
-        // 저장소에서 복원 시 form_data도 동기화
-        if (state?.timer?.active_form_data) {
-          state.form_data = state.timer.active_form_data;
-        }
-      },
-    }
-  )
+    })
 );
