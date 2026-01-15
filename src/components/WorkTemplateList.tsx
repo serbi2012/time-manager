@@ -21,7 +21,6 @@ import {
     PlusOutlined,
     DeleteOutlined,
     EditOutlined,
-    PlayCircleOutlined,
     FolderOutlined,
     CloseOutlined,
 } from "@ant-design/icons";
@@ -412,8 +411,9 @@ export default function WorkTemplateList({
                                     {/* 항상 표시되는 버튼들 */}
                                     <Space size={4}>
                                         {onAddRecordOnly && (
-                                            <Tooltip title="작업 추가 (타이머 없이)">
+                                            <Tooltip title="작업 추가">
                                                 <Button
+                                                    type="primary"
                                                     size="small"
                                                     icon={<PlusOutlined />}
                                                     onClick={(e) => {
@@ -423,17 +423,6 @@ export default function WorkTemplateList({
                                                 />
                                             </Tooltip>
                                         )}
-                                        <Tooltip title="작업 시작">
-                                            <Button
-                                                type="primary"
-                                                size="small"
-                                                icon={<PlayCircleOutlined />}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleUseTemplate(template.id);
-                                                }}
-                                            />
-                                        </Tooltip>
                                     </Space>
                                 </div>
                             </div>
