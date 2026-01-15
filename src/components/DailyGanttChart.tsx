@@ -143,6 +143,9 @@ export default function DailyGanttChart() {
         const groups: Map<string, GroupedWork> = new Map();
 
         records.forEach((record) => {
+            // 삭제된 레코드는 제외
+            if (record.is_deleted) return;
+
             // 레코드의 세션 중 선택된 날짜의 세션만 필터링
             const all_sessions =
                 record.sessions && record.sessions.length > 0

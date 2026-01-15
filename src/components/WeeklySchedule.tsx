@@ -90,6 +90,9 @@ const WeeklySchedule = () => {
         const week_end = selected_week_start.add(6, "day").format("YYYY-MM-DD");
 
         return records.filter((record) => {
+            // 삭제된 레코드는 제외
+            if (record.is_deleted) return false;
+
             // 세션 날짜가 해당 주에 포함되는지 확인
             const has_session_in_week = record.sessions?.some((session) => {
                 const session_date = session.date || record.date;

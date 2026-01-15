@@ -631,15 +631,16 @@ export default function WorkRecordTable() {
 
     // 선택된 날짜의 레코드 필터링 + 과거 미완료 작업 포함 + 진행 중인 작업 포함
     const filtered_records = useMemo(() => {
-        // 미완료 작업: 선택된 날짜까지의 미완료 레코드
+        // 미완료 작업: 선택된 날짜까지의 미완료 레코드 (삭제된 것 제외)
         const incomplete_records = records.filter((r) => {
+            if (r.is_deleted) return false;
             if (r.is_completed) return false;
             return r.date <= selected_date;
         });
 
-        // 선택된 날짜의 완료된 레코드도 포함
+        // 선택된 날짜의 완료된 레코드도 포함 (삭제된 것 제외)
         const completed_today = records.filter(
-            (r) => r.date === selected_date && r.is_completed
+            (r) => r.date === selected_date && r.is_completed && !r.is_deleted
         );
 
         const all_records = [...incomplete_records, ...completed_today];
