@@ -26,6 +26,10 @@ import type { WorkRecord, WorkSession } from "../types";
 
 const { Text } = Typography;
 
+// 점심시간 상수 (11:40 ~ 12:40)
+const LUNCH_START = 11 * 60 + 40; // 700분 (11:40)
+const LUNCH_END = 12 * 60 + 40; // 760분 (12:40)
+
 // 시간을 분으로 변환 (예: "09:30" -> 570)
 const timeToMinutes = (time_str: string): number => {
     const parts = time_str.split(":").map(Number);
@@ -256,8 +260,13 @@ export default function DailyGanttChart() {
     ]);
 
     // 모든 세션의 시간 슬롯 (충돌 감지용) - 시작 시간순 정렬
+    // 점심시간도 점유된 슬롯으로 처리
     const occupied_slots = useMemo((): TimeSlot[] => {
         const slots: TimeSlot[] = [];
+
+        // 점심시간 슬롯 추가
+        slots.push({ start: LUNCH_START, end: LUNCH_END });
+
         grouped_works.forEach((group) => {
             group.sessions.forEach((session) => {
                 slots.push({
@@ -421,6 +430,25 @@ export default function DailyGanttChart() {
             }),
         };
     };
+
+    // 점심시간 오버레이 스타일 계산
+    const lunch_overlay_style = useMemo(() => {
+        // 점심시간이 현재 시간 범위에 포함되는지 확인
+        if (LUNCH_END <= time_range.start || LUNCH_START >= time_range.end) {
+            return null; // 점심시간이 범위 밖
+        }
+
+        const visible_start = Math.max(LUNCH_START, time_range.start);
+        const visible_end = Math.min(LUNCH_END, time_range.end);
+
+        const left = ((visible_start - time_range.start) / total_minutes) * 100;
+        const width = ((visible_end - visible_start) / total_minutes) * 100;
+
+        return {
+            left: `${left}%`,
+            width: `${width}%`,
+        };
+    }, [time_range, total_minutes]);
 
     // 분을 읽기 쉬운 형식으로
     const formatMinutes = (minutes: number): string => {
@@ -768,6 +796,16 @@ export default function DailyGanttChart() {
                                         }}
                                     />
                                 ))}
+
+                                {/* 점심시간 오버레이 */}
+                                {lunch_overlay_style && (
+                                    <Tooltip title="점심시간 (11:40 ~ 12:40)">
+                                        <div
+                                            className="gantt-lunch-overlay"
+                                            style={lunch_overlay_style}
+                                        />
+                                    </Tooltip>
+                                )}
                             </div>
 
                             {/* 선택 영역 */}
@@ -844,6 +882,16 @@ export default function DailyGanttChart() {
                                         }}
                                     />
                                 ))}
+
+                                {/* 점심시간 오버레이 */}
+                                {lunch_overlay_style && (
+                                    <Tooltip title="점심시간 (11:40 ~ 12:40)">
+                                        <div
+                                            className="gantt-lunch-overlay"
+                                            style={lunch_overlay_style}
+                                        />
+                                    </Tooltip>
+                                )}
 
                                 {/* 선택 영역 */}
                                 {is_dragging && drag_selection && (
@@ -1082,6 +1130,33 @@ export default function DailyGanttChart() {
                         border-radius: 4px;
                         font-size: 12px;
                         white-space: nowrap;
+                    }
+                    
+                    .gantt-lunch-overlay {
+                        position: absolute;
+                        top: 0;
+                        bottom: 0;
+                        background: repeating-linear-gradient(
+                            45deg,
+                            rgba(0, 0, 0, 0.03),
+                            rgba(0, 0, 0, 0.03) 10px,
+                            rgba(0, 0, 0, 0.06) 10px,
+                            rgba(0, 0, 0, 0.06) 20px
+                        );
+                        border-left: 2px dashed #d9d9d9;
+                        border-right: 2px dashed #d9d9d9;
+                        z-index: 1;
+                        cursor: not-allowed;
+                    }
+                    
+                    .gantt-lunch-overlay::before {
+                        content: '🍽️';
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        font-size: 20px;
+                        opacity: 0.5;
                     }
                     
                     .gantt-empty-hint {
