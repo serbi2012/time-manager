@@ -1110,11 +1110,6 @@ export default function WorkRecordTable() {
                                 진행 중
                             </Tag>
                         )}
-                        {filtered_records.some(
-                            (r) =>
-                                r.date < dayjs().format("YYYY-MM-DD") &&
-                                !r.is_completed
-                        ) && <Tag color="warning">미완료 작업 있음</Tag>}
                     </Space>
                 }
                 extra={
