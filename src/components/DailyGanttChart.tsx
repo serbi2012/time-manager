@@ -89,6 +89,7 @@ export default function DailyGanttChart() {
         addRecord,
         updateRecord,
         getAutoCompleteOptions,
+        getProjectCodeOptions,
         custom_task_options,
         custom_category_options,
         addCustomTaskOption,
@@ -340,6 +341,10 @@ export default function DailyGanttChart() {
     const total_minutes = time_range.end - time_range.start;
 
     // 자동완성 옵션
+    const project_code_options = useMemo(() => {
+        return getProjectCodeOptions();
+    }, [records, templates, getProjectCodeOptions]);
+
     const work_name_options = useMemo(() => {
         return getAutoCompleteOptions("work_name").map((v) => ({ value: v }));
     }, [records, templates, getAutoCompleteOptions]);
@@ -1177,7 +1182,15 @@ export default function DailyGanttChart() {
             >
                 <Form form={form} layout="vertical">
                     <Form.Item name="project_code" label="프로젝트 코드">
-                        <Input placeholder="예: A25_01846 (미입력 시 A00_00000)" />
+                        <AutoComplete
+                            options={project_code_options}
+                            placeholder="예: A25_01846 (미입력 시 A00_00000)"
+                            filterOption={(input, option) =>
+                                (option?.label ?? "")
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase())
+                            }
+                        />
                     </Form.Item>
 
                     <Form.Item

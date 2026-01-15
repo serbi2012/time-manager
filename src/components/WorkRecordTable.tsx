@@ -540,6 +540,7 @@ export default function WorkRecordTable() {
         custom_category_options,
         addCustomTaskOption,
         addCustomCategoryOption,
+        getProjectCodeOptions,
     } = useWorkStore();
 
     // 타이머 표시를 위한 리렌더링 트리거
@@ -860,6 +861,11 @@ export default function WorkRecordTable() {
     const deleted_records = useMemo(() => {
         return getDeletedRecords();
     }, [records, getDeletedRecords]);
+
+    // 프로젝트 코드 자동완성 옵션
+    const project_code_options = useMemo(() => {
+        return getProjectCodeOptions();
+    }, [records, templates, getProjectCodeOptions]);
 
     // 확장 행 렌더링 (record_id만 전달하여 타이머 리렌더링 영향 완전 차단)
     const expandedRowRender = useCallback(
@@ -1235,7 +1241,15 @@ export default function WorkRecordTable() {
             >
                 <Form form={form} layout="vertical">
                     <Form.Item name="project_code" label="프로젝트 코드">
-                        <Input placeholder="예: A25_01846 (미입력 시 A00_00000)" />
+                        <AutoComplete
+                            options={project_code_options}
+                            placeholder="예: A25_01846 (미입력 시 A00_00000)"
+                            filterOption={(input, option) =>
+                                (option?.label ?? "")
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase())
+                            }
+                        />
                     </Form.Item>
 
                     <Form.Item
@@ -1448,7 +1462,15 @@ export default function WorkRecordTable() {
             >
                 <Form form={edit_form} layout="vertical">
                     <Form.Item name="project_code" label="프로젝트 코드">
-                        <Input placeholder="예: A25_01846 (미입력 시 A00_00000)" />
+                        <AutoComplete
+                            options={project_code_options}
+                            placeholder="예: A25_01846 (미입력 시 A00_00000)"
+                            filterOption={(input, option) =>
+                                (option?.label ?? "")
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase())
+                            }
+                        />
                     </Form.Item>
 
                     <Form.Item

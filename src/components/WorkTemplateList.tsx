@@ -49,6 +49,7 @@ export default function WorkTemplateList({
         updateTemplate,
         deleteTemplate,
         getAutoCompleteOptions,
+        getProjectCodeOptions,
         custom_task_options,
         custom_category_options,
         addCustomTaskOption,
@@ -66,6 +67,11 @@ export default function WorkTemplateList({
     // Input refs for focus management
     const new_task_input_ref = useRef<InputRef>(null);
     const new_category_input_ref = useRef<InputRef>(null);
+
+    // 프로젝트 코드 자동완성 옵션
+    const project_code_options = useMemo(() => {
+        return getProjectCodeOptions();
+    }, [records, templates, getProjectCodeOptions]);
 
     // 작업명/거래명 자동완성 옵션 (records, templates 변경 시 갱신)
     const work_name_options = useMemo(() => {
@@ -355,7 +361,15 @@ export default function WorkTemplateList({
                         name="project_code"
                         label="프로젝트 코드"
                     >
-                        <Input placeholder="예: A25_01846 (미입력 시 A00_00000)" />
+                        <AutoComplete
+                            options={project_code_options}
+                            placeholder="예: A25_01846 (미입력 시 A00_00000)"
+                            filterOption={(input, option) =>
+                                (option?.label ?? "")
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase())
+                            }
+                        />
                     </Form.Item>
 
                     <Form.Item

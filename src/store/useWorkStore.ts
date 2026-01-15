@@ -70,6 +70,7 @@ interface WorkStore {
   
   // 자동완성 헬퍼
   getAutoCompleteOptions: (field: keyof WorkFormData) => string[];
+  getProjectCodeOptions: () => { value: string; label: string }[];  // 프로젝트 코드 자동완성
   
   // 사용자 정의 옵션 관리
   addCustomTaskOption: (option: string) => void;
@@ -761,6 +762,49 @@ export const useWorkStore = create<WorkStore>()(
         });
         
         return Array.from(values).sort();
+      },
+
+      // 프로젝트 코드 자동완성 옵션 (코드 + 작업명 표시)
+      getProjectCodeOptions: () => {
+        const { records, templates } = get();
+        const code_map = new Map<string, Set<string>>(); // code -> work_names
+        
+        // 레코드에서 추출
+        records.forEach((r) => {
+          if (r.project_code && r.project_code.trim()) {
+            if (!code_map.has(r.project_code)) {
+              code_map.set(r.project_code, new Set());
+            }
+            if (r.work_name) {
+              code_map.get(r.project_code)!.add(r.work_name);
+            }
+          }
+        });
+        
+        // 템플릿에서도 추출
+        templates.forEach((t) => {
+          if (t.project_code && t.project_code.trim()) {
+            if (!code_map.has(t.project_code)) {
+              code_map.set(t.project_code, new Set());
+            }
+            if (t.work_name) {
+              code_map.get(t.project_code)!.add(t.work_name);
+            }
+          }
+        });
+        
+        // 옵션 생성: { value: 코드, label: "[코드] 작업명1, 작업명2..." }
+        const options: { value: string; label: string }[] = [];
+        code_map.forEach((work_names, code) => {
+          const names = Array.from(work_names).slice(0, 3).join(', ');
+          const suffix = work_names.size > 3 ? ` 외 ${work_names.size - 3}개` : '';
+          options.push({
+            value: code,
+            label: `[${code}] ${names}${suffix}`,
+          });
+        });
+        
+        return options.sort((a, b) => a.value.localeCompare(b.value));
       },
 
       // 사용자 정의 옵션 관리
