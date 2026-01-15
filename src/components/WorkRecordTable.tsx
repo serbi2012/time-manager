@@ -1248,7 +1248,7 @@ export default function WorkRecordTable() {
                 }}
                 footer={[
                     <Button key="ok" type="primary" onClick={handleAddNewWork}>
-                        시작 (Enter)
+                        시작 (Ctrl+Shift+Enter)
                     </Button>,
                     <Button
                         key="cancel"
@@ -1261,7 +1261,16 @@ export default function WorkRecordTable() {
                     </Button>,
                 ]}
             >
-                <Form form={form} layout="vertical" onFinish={handleAddNewWork}>
+                <Form
+                    form={form}
+                    layout="vertical"
+                    onKeyDown={(e) => {
+                        if (e.ctrlKey && e.shiftKey && e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddNewWork();
+                        }
+                    }}
+                >
                     <Form.Item name="project_code" label="프로젝트 코드">
                         <AutoComplete
                             options={project_code_options}
@@ -1480,7 +1489,7 @@ export default function WorkRecordTable() {
                 }}
                 footer={[
                     <Button key="ok" type="primary" onClick={handleSaveEdit}>
-                        저장 (Enter)
+                        저장 (Ctrl+Shift+Enter)
                     </Button>,
                     <Button
                         key="cancel"
@@ -1494,7 +1503,16 @@ export default function WorkRecordTable() {
                     </Button>,
                 ]}
             >
-                <Form form={edit_form} layout="vertical" onFinish={handleSaveEdit}>
+                <Form
+                    form={edit_form}
+                    layout="vertical"
+                    onKeyDown={(e) => {
+                        if (e.ctrlKey && e.shiftKey && e.key === "Enter") {
+                            e.preventDefault();
+                            handleSaveEdit();
+                        }
+                    }}
+                >
                     <Form.Item name="project_code" label="프로젝트 코드">
                         <AutoComplete
                             options={project_code_options}

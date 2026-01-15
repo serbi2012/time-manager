@@ -1178,14 +1178,23 @@ export default function DailyGanttChart() {
                 onCancel={handleModalCancel}
                 footer={[
                     <Button key="ok" type="primary" onClick={handleAddWork}>
-                        추가 (Enter)
+                        추가 (Ctrl+Shift+Enter)
                     </Button>,
                     <Button key="cancel" onClick={handleModalCancel}>
                         취소
                     </Button>,
                 ]}
             >
-                <Form form={form} layout="vertical" onFinish={handleAddWork}>
+                <Form
+                    form={form}
+                    layout="vertical"
+                    onKeyDown={(e) => {
+                        if (e.ctrlKey && e.shiftKey && e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddWork();
+                        }
+                    }}
+                >
                     <Form.Item name="project_code" label="프로젝트 코드">
                         <AutoComplete
                             options={project_code_options}

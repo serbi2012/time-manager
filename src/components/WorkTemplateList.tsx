@@ -369,14 +369,23 @@ export default function WorkTemplateList({
                 onCancel={handleCloseModal}
                 footer={[
                     <Button key="ok" type="primary" onClick={handleSubmit}>
-                        {is_edit_mode ? "수정" : "추가"} (Enter)
+                        {is_edit_mode ? "수정" : "추가"} (Ctrl+Shift+Enter)
                     </Button>,
                     <Button key="cancel" onClick={handleCloseModal}>
                         취소
                     </Button>,
                 ]}
             >
-                <Form form={form} layout="vertical" onFinish={handleSubmit}>
+                <Form
+                    form={form}
+                    layout="vertical"
+                    onKeyDown={(e) => {
+                        if (e.ctrlKey && e.shiftKey && e.key === "Enter") {
+                            e.preventDefault();
+                            handleSubmit();
+                        }
+                    }}
+                >
                     <Form.Item
                         name="project_code"
                         label="프로젝트 코드"
