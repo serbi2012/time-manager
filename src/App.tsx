@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { ConfigProvider, Layout, Typography, theme, message, Menu, Button, Modal, Space, Divider } from "antd";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { ConfigProvider, Layout, Typography, theme, message, Menu, Button, Modal, Space, Divider, Avatar, Dropdown, Spin } from "antd";
 import {
     ClockCircleOutlined,
     CalendarOutlined,
@@ -7,6 +7,12 @@ import {
     SettingOutlined,
     DownloadOutlined,
     UploadOutlined,
+    GoogleOutlined,
+    UserOutlined,
+    LogoutOutlined,
+    SyncOutlined,
+    CloudOutlined,
+    CloudSyncOutlined,
 } from "@ant-design/icons";
 import {
     BrowserRouter,
@@ -20,6 +26,8 @@ import WorkTemplateList from "./components/WorkTemplateList";
 import DailyGanttChart from "./components/DailyGanttChart";
 import WeeklySchedule from "./components/WeeklySchedule";
 import { useWorkStore } from "./store/useWorkStore";
+import { useAuth } from "./firebase/useAuth";
+import { syncToFirebase, syncFromFirebase, startRealtimeSync, stopRealtimeSync } from "./firebase/syncService";
 import "./App.css";
 
 const { Header, Sider, Content } = Layout;
@@ -86,7 +94,94 @@ function AppLayout() {
     const navigate = useNavigate();
     const location = useLocation();
     const [is_settings_open, setIsSettingsOpen] = useState(false);
+    const [is_syncing, setIsSyncing] = useState(false);
     const file_input_ref = useRef<HTMLInputElement>(null);
+    
+    // Firebase Auth
+    const { user, loading: auth_loading, signInWithGoogle, logout, isAuthenticated } = useAuth();
+    
+    // 데이터 동기화 상태 관리
+    const [sync_status, setSyncStatus] = useState<'idle' | 'syncing' | 'synced' | 'error'>('idle');
+
+    // 로그인 시 데이터 동기화
+    useEffect(() => {
+        if (user) {
+            setSyncStatus('syncing');
+            syncFromFirebase(user)
+                .then(() => {
+                    setSyncStatus('synced');
+                    startRealtimeSync(user);
+                    message.success('클라우드 데이터와 동기화되었습니다');
+                })
+                .catch(() => {
+                    setSyncStatus('error');
+                    message.error('데이터 동기화에 실패했습니다');
+                });
+        } else {
+            stopRealtimeSync();
+            setSyncStatus('idle');
+        }
+        
+        return () => {
+            stopRealtimeSync();
+        };
+    }, [user]);
+
+    // 데이터 변경 시 Firebase에 자동 저장
+    const records = useWorkStore((state) => state.records);
+    const templates = useWorkStore((state) => state.templates);
+    
+    const syncData = useCallback(async () => {
+        if (user && isAuthenticated) {
+            try {
+                await syncToFirebase(user);
+            } catch {
+                console.error('Firebase 동기화 실패');
+            }
+        }
+    }, [user, isAuthenticated]);
+
+    useEffect(() => {
+        if (user && isAuthenticated && sync_status === 'synced') {
+            // 데이터 변경 시 1초 후 동기화 (debounce)
+            const timeout = setTimeout(syncData, 1000);
+            return () => clearTimeout(timeout);
+        }
+    }, [records, templates, user, isAuthenticated, sync_status, syncData]);
+
+    // 수동 동기화
+    const handleManualSync = async () => {
+        if (!user) return;
+        
+        setIsSyncing(true);
+        try {
+            await syncToFirebase(user);
+            message.success('동기화 완료');
+        } catch {
+            message.error('동기화 실패');
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    // 로그인 처리
+    const handleLogin = async () => {
+        try {
+            await signInWithGoogle();
+        } catch {
+            message.error('로그인에 실패했습니다');
+        }
+    };
+
+    // 로그아웃 처리
+    const handleLogout = async () => {
+        try {
+            await logout();
+            message.success('로그아웃되었습니다');
+        } catch {
+            message.error('로그아웃에 실패했습니다');
+        }
+    };
 
     const menu_items = [
         {
@@ -98,6 +193,27 @@ function AppLayout() {
             key: "/weekly",
             icon: <CalendarOutlined />,
             label: "주간 일정",
+        },
+    ];
+
+    // 유저 드롭다운 메뉴
+    const user_menu_items = [
+        {
+            key: 'sync',
+            icon: <SyncOutlined spin={is_syncing} />,
+            label: '수동 동기화',
+            onClick: handleManualSync,
+        },
+        {
+            key: 'divider',
+            type: 'divider' as const,
+        },
+        {
+            key: 'logout',
+            icon: <LogoutOutlined />,
+            label: '로그아웃',
+            onClick: handleLogout,
+            danger: true,
         },
     ];
 
@@ -187,12 +303,51 @@ function AppLayout() {
                     }}
                     theme="dark"
                 />
-                <Button
-                    type="text"
-                    icon={<SettingOutlined />}
-                    onClick={() => setIsSettingsOpen(true)}
-                    style={{ color: "white", fontSize: 18 }}
-                />
+                <Space size="middle">
+                    {/* 동기화 상태 표시 */}
+                    {isAuthenticated && (
+                        <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 12 }}>
+                            {sync_status === 'syncing' && <><SyncOutlined spin /> 동기화 중...</>}
+                            {sync_status === 'synced' && <><CloudSyncOutlined /> 클라우드 연결됨</>}
+                            {sync_status === 'error' && <><CloudOutlined style={{ color: '#ff4d4f' }} /> 동기화 오류</>}
+                        </span>
+                    )}
+
+                    {/* 설정 버튼 */}
+                    <Button
+                        type="text"
+                        icon={<SettingOutlined />}
+                        onClick={() => setIsSettingsOpen(true)}
+                        style={{ color: "white", fontSize: 18 }}
+                    />
+
+                    {/* 로그인/유저 정보 */}
+                    {auth_loading ? (
+                        <Spin size="small" />
+                    ) : isAuthenticated && user ? (
+                        <Dropdown menu={{ items: user_menu_items }} placement="bottomRight">
+                            <Space style={{ cursor: 'pointer' }}>
+                                <Avatar 
+                                    src={user.photoURL} 
+                                    icon={<UserOutlined />}
+                                    size="small"
+                                />
+                                <span style={{ color: 'white', fontSize: 13 }}>
+                                    {user.displayName || user.email}
+                                </span>
+                            </Space>
+                        </Dropdown>
+                    ) : (
+                        <Button
+                            type="primary"
+                            icon={<GoogleOutlined />}
+                            onClick={handleLogin}
+                            size="small"
+                        >
+                            로그인
+                        </Button>
+                    )}
+                </Space>
             </Header>
 
             <Routes>
