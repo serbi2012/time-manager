@@ -1,8 +1,12 @@
-import { ConfigProvider, Layout, Typography, theme, message, Menu } from "antd";
+import { useState, useRef } from "react";
+import { ConfigProvider, Layout, Typography, theme, message, Menu, Button, Modal, Space, Divider } from "antd";
 import {
     ClockCircleOutlined,
     CalendarOutlined,
     HomeOutlined,
+    SettingOutlined,
+    DownloadOutlined,
+    UploadOutlined,
 } from "@ant-design/icons";
 import {
     BrowserRouter,
@@ -78,6 +82,8 @@ function MainPage() {
 function AppLayout() {
     const navigate = useNavigate();
     const location = useLocation();
+    const [is_settings_open, setIsSettingsOpen] = useState(false);
+    const file_input_ref = useRef<HTMLInputElement>(null);
 
     const menu_items = [
         {
@@ -91,6 +97,69 @@ function AppLayout() {
             label: "주간 일정",
         },
     ];
+
+    // 데이터 내보내기
+    const handleExport = () => {
+        const storage_data = localStorage.getItem("work-time-storage");
+        if (!storage_data) {
+            message.warning("내보낼 데이터가 없습니다");
+            return;
+        }
+
+        const blob = new Blob([storage_data], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `time-manager-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        message.success("데이터가 내보내졌습니다");
+    };
+
+    // 데이터 가져오기
+    const handleImport = () => {
+        file_input_ref.current?.click();
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const content = e.target?.result as string;
+                const parsed = JSON.parse(content);
+                
+                // 데이터 유효성 검사
+                if (!parsed.state || !parsed.state.records) {
+                    message.error("유효하지 않은 데이터 형식입니다");
+                    return;
+                }
+
+                // LocalStorage에 저장
+                localStorage.setItem("work-time-storage", content);
+                
+                // 스토어 동기화
+                useWorkStore.getState().syncFromStorage();
+                
+                message.success("데이터를 성공적으로 가져왔습니다. 페이지를 새로고침합니다.");
+                
+                // 페이지 새로고침으로 완전히 동기화
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } catch {
+                message.error("파일을 읽는 중 오류가 발생했습니다");
+            }
+        };
+        reader.readAsText(file);
+        
+        // 같은 파일 다시 선택 가능하도록 초기화
+        event.target.value = "";
+    };
 
     return (
         <Layout className="app-layout">
@@ -115,12 +184,55 @@ function AppLayout() {
                     }}
                     theme="dark"
                 />
+                <Button
+                    type="text"
+                    icon={<SettingOutlined />}
+                    onClick={() => setIsSettingsOpen(true)}
+                    style={{ color: "white", fontSize: 18 }}
+                />
             </Header>
 
             <Routes>
                 <Route path="/" element={<MainPage />} />
                 <Route path="/weekly" element={<WeeklySchedule />} />
             </Routes>
+
+            {/* 설정 모달 */}
+            <Modal
+                title="설정"
+                open={is_settings_open}
+                onCancel={() => setIsSettingsOpen(false)}
+                footer={null}
+                width={400}
+            >
+                <Divider orientation="left" style={{ marginTop: 0 }}>데이터 관리</Divider>
+                <Space direction="vertical" style={{ width: "100%" }} size="middle">
+                    <Button
+                        icon={<DownloadOutlined />}
+                        onClick={handleExport}
+                        block
+                    >
+                        데이터 내보내기 (Export)
+                    </Button>
+                    <Button
+                        icon={<UploadOutlined />}
+                        onClick={handleImport}
+                        block
+                    >
+                        데이터 가져오기 (Import)
+                    </Button>
+                    <input
+                        ref={file_input_ref}
+                        type="file"
+                        accept=".json"
+                        onChange={handleFileChange}
+                        style={{ display: "none" }}
+                    />
+                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                        * 가져오기 시 기존 데이터가 덮어씌워집니다
+                    </Typography.Text>
+                </Space>
+            </Modal>
         </Layout>
     );
 }
