@@ -138,38 +138,47 @@ export default function DailyGanttChart() {
     const new_category_input_ref = useRef<InputRef>(null);
 
     // 거래명 기준으로 세션을 그룹화 (진행 중인 작업 포함)
+    // 선택된 날짜의 세션만 표시 (레코드 날짜가 아닌 세션 날짜 기준)
     const grouped_works = useMemo(() => {
         const groups: Map<string, GroupedWork> = new Map();
 
-        records
-            .filter((r) => r.date === selected_date)
-            .forEach((record) => {
-                const key = record.deal_name || record.work_name;
-                const sessions =
-                    record.sessions && record.sessions.length > 0
-                        ? record.sessions
-                        : [
-                              {
-                                  id: record.id,
-                                  date: record.date,
-                                  start_time: record.start_time,
-                                  end_time: record.end_time,
-                                  duration_minutes: record.duration_minutes,
-                              },
-                          ];
+        records.forEach((record) => {
+            // 레코드의 세션 중 선택된 날짜의 세션만 필터링
+            const all_sessions =
+                record.sessions && record.sessions.length > 0
+                    ? record.sessions
+                    : [
+                          {
+                              id: record.id,
+                              date: record.date,
+                              start_time: record.start_time,
+                              end_time: record.end_time,
+                              duration_minutes: record.duration_minutes,
+                          },
+                      ];
 
-                if (groups.has(key)) {
-                    const group = groups.get(key)!;
-                    group.sessions.push(...sessions);
-                } else {
-                    groups.set(key, {
-                        key,
-                        record,
-                        sessions: [...sessions],
-                        first_start: timeToMinutes(sessions[0].start_time),
-                    });
-                }
-            });
+            // 선택된 날짜의 세션만 필터링
+            const date_sessions = all_sessions.filter(
+                (s) => (s.date || record.date) === selected_date
+            );
+
+            // 해당 날짜에 세션이 없으면 스킵
+            if (date_sessions.length === 0) return;
+
+            const key = record.deal_name || record.work_name;
+
+            if (groups.has(key)) {
+                const group = groups.get(key)!;
+                group.sessions.push(...date_sessions);
+            } else {
+                groups.set(key, {
+                    key,
+                    record,
+                    sessions: [...date_sessions],
+                    first_start: timeToMinutes(date_sessions[0].start_time),
+                });
+            }
+        });
 
         // 현재 진행 중인 작업이 있고, 오늘 날짜인 경우 가상 세션 추가
         if (timer.is_running && timer.active_form_data && timer.start_time) {
