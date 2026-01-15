@@ -23,6 +23,8 @@ export interface WorkRecord {
   sessions: WorkSession[]; // 세션 이력
   is_completed: boolean;  // 완료 여부
   completed_at?: string;  // 완료 시각 (ISO string)
+  is_deleted?: boolean;   // 삭제 여부 (휴지통)
+  deleted_at?: string;    // 삭제 시각 (ISO string)
 }
 
 export interface TimerState {

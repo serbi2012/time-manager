@@ -35,6 +35,10 @@ interface WorkStore {
   // 레코드 액션
   addRecord: (record: WorkRecord) => void;
   deleteRecord: (id: string) => void;
+  softDeleteRecord: (id: string) => void;      // 휴지통으로 이동
+  restoreRecord: (id: string) => void;         // 휴지통에서 복원
+  permanentlyDeleteRecord: (id: string) => void; // 완전 삭제
+  getDeletedRecords: () => WorkRecord[];       // 삭제된 작업 목록
   updateRecord: (id: string, record: Partial<WorkRecord>) => void;
   
   // 세션 수정 (시간 충돌 방지 포함)
@@ -380,6 +384,40 @@ export const useWorkStore = create<WorkStore>()(
         }));
       },
 
+      // 휴지통으로 이동 (soft delete)
+      softDeleteRecord: (id) => {
+        set((state) => ({
+          records: state.records.map((r) =>
+            r.id === id
+              ? { ...r, is_deleted: true, deleted_at: new Date().toISOString() }
+              : r
+          ),
+        }));
+      },
+
+      // 휴지통에서 복원
+      restoreRecord: (id) => {
+        set((state) => ({
+          records: state.records.map((r) =>
+            r.id === id
+              ? { ...r, is_deleted: false, deleted_at: undefined }
+              : r
+          ),
+        }));
+      },
+
+      // 완전 삭제
+      permanentlyDeleteRecord: (id) => {
+        set((state) => ({
+          records: state.records.filter((r) => r.id !== id),
+        }));
+      },
+
+      // 삭제된 작업 목록
+      getDeletedRecords: () => {
+        return get().records.filter((r) => r.is_deleted === true);
+      },
+
       updateRecord: (id, record) => {
         set((state) => ({
           records: state.records.map((r) =>
@@ -651,13 +689,15 @@ export const useWorkStore = create<WorkStore>()(
 
       getFilteredRecords: () => {
         const { records, selected_date } = get();
-        return records.filter((r) => r.date === selected_date);
+        return records.filter((r) => r.date === selected_date && !r.is_deleted);
       },
 
       // 미완료 작업: 선택된 날짜의 레코드 + 과거 미완료 레코드
       getIncompleteRecords: () => {
         const { records, selected_date } = get();
         return records.filter((r) => {
+          // 삭제된 레코드는 제외
+          if (r.is_deleted) return false;
           // 완료된 레코드는 제외
           if (r.is_completed) return false;
           // 선택된 날짜의 레코드 또는 과거의 미완료 레코드
@@ -669,7 +709,7 @@ export const useWorkStore = create<WorkStore>()(
       getCompletedRecords: () => {
         const { records } = get();
         return records
-          .filter((r) => r.is_completed)
+          .filter((r) => r.is_completed && !r.is_deleted)
           .sort((a, b) => {
             // 완료 시간 기준 내림차순 정렬
             const a_time = a.completed_at || a.date;

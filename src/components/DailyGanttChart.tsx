@@ -436,8 +436,8 @@ export default function DailyGanttChart() {
             const relative_x = x - rect.left;
             const percentage = relative_x / rect.width;
             const mins = time_range.start + percentage * total_minutes;
-            // 5분 단위로 스냅
-            return Math.round(mins / 5) * 5;
+            // 1분 단위로 스냅
+            return Math.round(mins);
         },
         [time_range, total_minutes]
     );
@@ -547,8 +547,8 @@ export default function DailyGanttChart() {
 
         const duration = drag_selection.end_mins - drag_selection.start_mins;
 
-        // 최소 5분 이상 선택해야 함 (충돌은 자동으로 방지됨)
-        if (duration >= 5) {
+        // 최소 1분 이상 선택해야 함 (충돌은 자동으로 방지됨)
+        if (duration >= 1) {
             setSelectedTimeRange({
                 start: minutesToTime(drag_selection.start_mins),
                 end: minutesToTime(drag_selection.end_mins),

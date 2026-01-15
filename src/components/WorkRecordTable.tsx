@@ -34,6 +34,7 @@ import {
     RollbackOutlined,
     CheckCircleOutlined,
     DownOutlined,
+    UndoOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
@@ -518,7 +519,10 @@ export default function WorkRecordTable() {
         records,
         selected_date,
         setSelectedDate,
-        deleteRecord,
+        softDeleteRecord,
+        restoreRecord,
+        permanentlyDeleteRecord,
+        getDeletedRecords,
         updateRecord,
         timer,
         startTimer,
@@ -544,6 +548,7 @@ export default function WorkRecordTable() {
     const [is_modal_open, setIsModalOpen] = useState(false);
     const [is_edit_modal_open, setIsEditModalOpen] = useState(false);
     const [is_completed_modal_open, setIsCompletedModalOpen] = useState(false);
+    const [is_deleted_modal_open, setIsDeletedModalOpen] = useState(false);
     const [editing_record, setEditingRecord] = useState<WorkRecord | null>(
         null
     );
@@ -850,6 +855,11 @@ export default function WorkRecordTable() {
         return getCompletedRecords();
     }, [records, getCompletedRecords]);
 
+    // 삭제된 작업 목록
+    const deleted_records = useMemo(() => {
+        return getDeletedRecords();
+    }, [records, getDeletedRecords]);
+
     // 확장 행 렌더링 (record_id만 전달하여 타이머 리렌더링 영향 완전 차단)
     const expandedRowRender = useCallback(
         (record: WorkRecord) => <SessionEditTable record_id={record.id} />,
@@ -1074,8 +1084,8 @@ export default function WorkRecordTable() {
                         {/* 삭제 버튼 */}
                         <Popconfirm
                             title="삭제 확인"
-                            description="이 기록을 삭제하시겠습니까?"
-                            onConfirm={() => deleteRecord(record.id)}
+                            description="이 기록을 휴지통으로 이동하시겠습니까?"
+                            onConfirm={() => softDeleteRecord(record.id)}
                             okText="삭제"
                             cancelText="취소"
                             okButtonProps={{ danger: true }}
@@ -1127,6 +1137,15 @@ export default function WorkRecordTable() {
                         >
                             완료된 작업 ({completed_records.length})
                         </Button>
+                        {deleted_records.length > 0 && (
+                            <Button
+                                icon={<DeleteOutlined />}
+                                onClick={() => setIsDeletedModalOpen(true)}
+                                danger
+                            >
+                                휴지통 ({deleted_records.length})
+                            </Button>
+                        )}
                         <DatePicker
                             value={dayjs(selected_date)}
                             onChange={(date) =>
@@ -1736,9 +1755,9 @@ export default function WorkRecordTable() {
                                     </Tooltip>
                                     <Popconfirm
                                         title="삭제 확인"
-                                        description="이 기록을 삭제하시겠습니까?"
+                                        description="이 기록을 휴지통으로 이동하시겠습니까?"
                                         onConfirm={() =>
-                                            deleteRecord(record.id)
+                                            softDeleteRecord(record.id)
                                         }
                                         okText="삭제"
                                         cancelText="취소"
@@ -1757,6 +1776,113 @@ export default function WorkRecordTable() {
                     ]}
                     locale={{
                         emptyText: "완료된 작업이 없습니다.",
+                    }}
+                />
+            </Modal>
+
+            {/* 삭제된 작업 (휴지통) 모달 */}
+            <Modal
+                title={
+                    <Space>
+                        <DeleteOutlined style={{ color: "#ff4d4f" }} />
+                        <span>휴지통</span>
+                        <Tag color="error">{deleted_records.length}건</Tag>
+                    </Space>
+                }
+                open={is_deleted_modal_open}
+                onCancel={() => setIsDeletedModalOpen(false)}
+                footer={[
+                    <Button
+                        key="close"
+                        onClick={() => setIsDeletedModalOpen(false)}
+                    >
+                        닫기
+                    </Button>,
+                ]}
+                width={800}
+            >
+                <Table
+                    dataSource={deleted_records}
+                    rowKey="id"
+                    size="small"
+                    pagination={{ pageSize: 10 }}
+                    columns={[
+                        {
+                            title: "거래명",
+                            dataIndex: "deal_name",
+                            key: "deal_name",
+                            ellipsis: true,
+                            render: (text: string) => (
+                                <Typography.Text strong>{text}</Typography.Text>
+                            ),
+                        },
+                        {
+                            title: "작업명",
+                            dataIndex: "work_name",
+                            key: "work_name",
+                            width: 120,
+                            render: (text: string) => (
+                                <Tag color="blue">{text}</Tag>
+                            ),
+                        },
+                        {
+                            title: "시간",
+                            dataIndex: "duration_minutes",
+                            key: "duration_minutes",
+                            width: 80,
+                            render: (mins: number) => formatDuration(mins),
+                        },
+                        {
+                            title: "삭제일",
+                            dataIndex: "deleted_at",
+                            key: "deleted_at",
+                            width: 100,
+                            render: (date: string) =>
+                                date ? dayjs(date).format("MM/DD HH:mm") : "-",
+                        },
+                        {
+                            title: "작업",
+                            key: "actions",
+                            width: 120,
+                            render: (_: unknown, record: WorkRecord) => (
+                                <Space size="small">
+                                    <Tooltip title="복원">
+                                        <Button
+                                            type="text"
+                                            icon={<UndoOutlined />}
+                                            size="small"
+                                            onClick={() => {
+                                                restoreRecord(record.id);
+                                                message.success("작업이 복원되었습니다");
+                                            }}
+                                        />
+                                    </Tooltip>
+                                    <Popconfirm
+                                        title="완전 삭제"
+                                        description="이 기록을 완전히 삭제하시겠습니까? 복구할 수 없습니다."
+                                        onConfirm={() => {
+                                            permanentlyDeleteRecord(record.id);
+                                            message.success("작업이 완전히 삭제되었습니다");
+                                        }}
+                                        okText="삭제"
+                                        cancelText="취소"
+                                        okButtonProps={{ danger: true }}
+                                    >
+                                        <Tooltip title="완전 삭제">
+                                            <Button
+                                                type="text"
+                                                danger
+                                                icon={<DeleteOutlined />}
+                                                size="small"
+                                            />
+                                        </Tooltip>
+                                    </Popconfirm>
+                                </Space>
+                            ),
+                        },
+                    ]}
+                    locale={{
+                        emptyText: "휴지통이 비어있습니다.",
                     }}
                 />
             </Modal>
