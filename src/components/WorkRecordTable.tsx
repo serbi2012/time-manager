@@ -823,11 +823,10 @@ export default function WorkRecordTable() {
     const handleAddNewWork = async () => {
         try {
             const values = await form.validateFields();
-            const now = dayjs();
-            const current_time = now.format("HH:mm");
-            const today_date = now.format("YYYY-MM-DD");
+            const today_date = dayjs().format("YYYY-MM-DD");
 
             // 새 레코드 생성 (타이머 없이 즉시 추가)
+            // start_time/end_time 비워서 간트에 표시되지 않도록
             const new_record: WorkRecord = {
                 id: crypto.randomUUID(),
                 project_code: values.project_code || "A00_00000",
@@ -837,8 +836,8 @@ export default function WorkRecordTable() {
                 category_name: values.category_name || "",
                 note: values.note || "",
                 duration_minutes: 0,
-                start_time: current_time,
-                end_time: current_time,
+                start_time: "",
+                end_time: "",
                 date: today_date,
                 sessions: [],
                 is_completed: false,
