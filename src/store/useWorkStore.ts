@@ -88,6 +88,7 @@ interface WorkStore {
     getElapsedSeconds: () => number; // 실시간 경과 시간 계산
     resetTimer: () => void;
     switchTemplate: (template_id: string) => void;
+    updateActiveFormData: (data: Partial<WorkFormData>) => void; // 타이머 실행 중 form_data 업데이트
 
     // 폼 액션
     setFormData: (data: Partial<WorkFormData>) => void;
@@ -456,6 +457,19 @@ export const useWorkStore = create<WorkStore>()((set, get) => ({
 
     resetTimer: () => {
         set({ timer: DEFAULT_TIMER, form_data: DEFAULT_FORM_DATA });
+    },
+
+    // 타이머 실행 중 active_form_data 업데이트
+    updateActiveFormData: (data) => {
+        set((state) => ({
+            timer: {
+                ...state.timer,
+                active_form_data: state.timer.active_form_data
+                    ? { ...state.timer.active_form_data, ...data }
+                    : null,
+            },
+            form_data: { ...state.form_data, ...data },
+        }));
     },
 
     setFormData: (data) => {

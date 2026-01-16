@@ -530,6 +530,7 @@ export default function WorkRecordTable() {
         stopTimer,
         switchTemplate,
         setFormData,
+        updateActiveFormData,
         getElapsedSeconds,
         templates,
         getAutoCompleteOptions,
@@ -873,14 +874,37 @@ export default function WorkRecordTable() {
         if (!editing_record) return;
         try {
             const values = await edit_form.validateFields();
-            updateRecord(editing_record.id, {
+            
+            const updated_data = {
                 project_code: values.project_code || "",
                 work_name: values.work_name,
                 task_name: values.task_name || "",
                 deal_name: values.deal_name || "",
                 category_name: values.category_name || "",
                 note: values.note || "",
-            });
+            };
+            
+            // 레코딩 중인 가상 레코드인 경우
+            if (editing_record.id === "__active__") {
+                // timer.active_form_data + form_data 모두 업데이트
+                updateActiveFormData(updated_data);
+            } else {
+                // 실제 레코드 업데이트
+                updateRecord(editing_record.id, updated_data);
+                
+                // 타이머가 실행 중이고, 현재 수정한 레코드가 타이머 추적 중인 레코드인 경우
+                // timer.active_form_data도 함께 업데이트
+                const active_form = timer.active_form_data;
+                if (
+                    timer.is_running &&
+                    active_form &&
+                    editing_record.work_name === active_form.work_name &&
+                    editing_record.deal_name === active_form.deal_name
+                ) {
+                    updateActiveFormData(updated_data);
+                }
+            }
+            
             edit_form.resetFields();
             setEditingRecord(null);
             setIsEditModalOpen(false);
@@ -1125,34 +1149,34 @@ export default function WorkRecordTable() {
             key: "action",
             width: 120,
             render: (_, record: WorkRecord) => {
-                // 가상 레코드(진행 중)는 액션 불가
-                if (record.id === "__active__") {
-                    return null;
-                }
+                const is_active = record.id === "__active__";
+                
                 return (
                     <Space size={4}>
-                        {/* 완료/완료 취소 버튼 */}
-                        {record.is_completed ? (
-                            <Tooltip title="완료 취소">
-                                <Button
-                                    type="text"
-                                    icon={<RollbackOutlined />}
-                                    size="small"
-                                    onClick={() => handleMarkIncomplete(record)}
-                                />
-                            </Tooltip>
-                        ) : (
-                            <Tooltip title="완료">
-                                <Button
-                                    type="text"
-                                    style={{ color: "#52c41a" }}
-                                    icon={<CheckOutlined />}
-                                    size="small"
-                                    onClick={() => handleMarkComplete(record)}
-                                />
-                            </Tooltip>
+                        {/* 완료/완료 취소 버튼 (가상 레코드는 불가) */}
+                        {!is_active && (
+                            record.is_completed ? (
+                                <Tooltip title="완료 취소">
+                                    <Button
+                                        type="text"
+                                        icon={<RollbackOutlined />}
+                                        size="small"
+                                        onClick={() => handleMarkIncomplete(record)}
+                                    />
+                                </Tooltip>
+                            ) : (
+                                <Tooltip title="완료">
+                                    <Button
+                                        type="text"
+                                        style={{ color: "#52c41a" }}
+                                        icon={<CheckOutlined />}
+                                        size="small"
+                                        onClick={() => handleMarkComplete(record)}
+                                    />
+                                </Tooltip>
+                            )
                         )}
-                        {/* 수정 버튼 */}
+                        {/* 수정 버튼 (가상 레코드도 가능) */}
                         <Tooltip title="수정">
                             <Button
                                 type="text"
@@ -1161,22 +1185,24 @@ export default function WorkRecordTable() {
                                 onClick={() => handleOpenEditModal(record)}
                             />
                         </Tooltip>
-                        {/* 삭제 버튼 */}
-                        <Popconfirm
-                            title="삭제 확인"
-                            description="이 기록을 휴지통으로 이동하시겠습니까?"
-                            onConfirm={() => softDeleteRecord(record.id)}
-                            okText="삭제"
-                            cancelText="취소"
-                            okButtonProps={{ danger: true }}
-                        >
-                            <Button
-                                type="text"
-                                danger
-                                icon={<DeleteOutlined />}
-                                size="small"
-                            />
-                        </Popconfirm>
+                        {/* 삭제 버튼 (가상 레코드는 불가) */}
+                        {!is_active && (
+                            <Popconfirm
+                                title="삭제 확인"
+                                description="이 기록을 휴지통으로 이동하시겠습니까?"
+                                onConfirm={() => softDeleteRecord(record.id)}
+                                okText="삭제"
+                                cancelText="취소"
+                                okButtonProps={{ danger: true }}
+                            >
+                                <Button
+                                    type="text"
+                                    danger
+                                    icon={<DeleteOutlined />}
+                                    size="small"
+                                />
+                            </Popconfirm>
+                        )}
                     </Space>
                 );
             },

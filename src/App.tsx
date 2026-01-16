@@ -657,7 +657,7 @@ function AppLayout() {
 }
 
 function App() {
-    return (
+  return (
         <ConfigProvider
             theme={{
                 algorithm: theme.defaultAlgorithm,
