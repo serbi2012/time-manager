@@ -11,6 +11,7 @@ import {
     message,
     Empty,
     Tooltip,
+    Radio,
 } from "antd";
 import {
     CopyOutlined,
@@ -74,6 +75,9 @@ const WeeklySchedule = () => {
     const [editable_data, setEditableData] = useState<
         Record<string, { status: string }>
     >({});
+
+    // 관리업무 숨기기 옵션
+    const [hide_management_work, setHideManagementWork] = useState(false);
 
     // 주간 범위의 날짜들 (월~일)
     const week_dates = useMemo(() => {
@@ -205,16 +209,28 @@ const WeeklySchedule = () => {
             });
 
             if (work_map.size > 0) {
-                groups.push({
-                    date,
-                    day_name,
-                    works: Array.from(work_map.values()),
-                });
+                // 관리업무 숨기기 필터 적용
+                const filtered_works = Array.from(work_map.values()).filter(
+                    (work) => {
+                        if (hide_management_work && work.project_code === "A24_05591") {
+                            return false;
+                        }
+                        return true;
+                    }
+                );
+
+                if (filtered_works.length > 0) {
+                    groups.push({
+                        date,
+                        day_name,
+                        works: filtered_works,
+                    });
+                }
             }
         });
 
         return groups;
-    }, [week_dates, weekly_records, records, editable_data]);
+    }, [week_dates, weekly_records, records, editable_data, hide_management_work]);
 
     // 진행상태 수정
     const handleStatusChange = (work_name: string, value: string) => {
@@ -308,16 +324,29 @@ const WeeklySchedule = () => {
                         <Button onClick={handleThisWeek}>이번 주</Button>
                     </Space>
 
-                    <Tooltip title="복사하기">
-                        <Button
-                            type="primary"
-                            icon={<CopyOutlined />}
-                            onClick={handleCopy}
-                            disabled={day_groups.length === 0}
+                    <Space>
+                        <Radio.Group
+                            value={hide_management_work}
+                            onChange={(e) => setHideManagementWork(e.target.value)}
+                            optionType="button"
+                            buttonStyle="solid"
+                            size="small"
                         >
-                            복사
-                        </Button>
-                    </Tooltip>
+                            <Radio.Button value={false}>전체 보기</Radio.Button>
+                            <Radio.Button value={true}>[A24_05591] 관리업무 제외</Radio.Button>
+                        </Radio.Group>
+
+                        <Tooltip title="복사하기">
+                            <Button
+                                type="primary"
+                                icon={<CopyOutlined />}
+                                onClick={handleCopy}
+                                disabled={day_groups.length === 0}
+                            >
+                                복사
+                            </Button>
+                        </Tooltip>
+                    </Space>
                 </div>
 
                 <Divider style={{ margin: "16px 0" }} />
