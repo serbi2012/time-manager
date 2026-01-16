@@ -324,12 +324,16 @@ export const useWorkStore = create<WorkStore>()((set, get) => ({
             ];
             const total_minutes = calculateTotalMinutes(updated_sessions);
 
+            // start_time이 비어있으면 첫 세션의 시작 시간으로 설정
+            const new_start_time = existing_record.start_time || new_session.start_time;
+
             set((state) => ({
                 records: state.records.map((r) =>
                     r.id === existing_record.id
                         ? {
                               ...r,
                               duration_minutes: total_minutes,
+                              start_time: new_start_time,
                               end_time: new_session.end_time,
                               sessions: updated_sessions,
                           }
@@ -395,12 +399,16 @@ export const useWorkStore = create<WorkStore>()((set, get) => ({
                 ];
                 const total_minutes = calculateTotalMinutes(updated_sessions);
 
+                // start_time이 비어있으면 첫 세션의 시작 시간으로 설정
+                const new_start_time = existing_record.start_time || new_session.start_time;
+
                 set((state) => ({
                     records: state.records.map((r) =>
                         r.id === existing_record.id
                             ? {
                                   ...r,
                                   duration_minutes: total_minutes,
+                                  start_time: new_start_time,
                                   end_time: new_session.end_time,
                                   sessions: updated_sessions,
                               }

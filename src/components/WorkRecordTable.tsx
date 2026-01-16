@@ -798,6 +798,7 @@ export default function WorkRecordTable() {
                 // 템플릿 없으면 직접 form_data 설정 후 전환
                 stopTimer();
                 setFormData({
+                    project_code: record.project_code || "",
                     work_name: record.work_name,
                     task_name: record.task_name,
                     deal_name: record.deal_name,
@@ -809,6 +810,7 @@ export default function WorkRecordTable() {
         } else {
             // 새로 시작
             setFormData({
+                project_code: record.project_code || "",
                 work_name: record.work_name,
                 task_name: record.task_name,
                 deal_name: record.deal_name,
