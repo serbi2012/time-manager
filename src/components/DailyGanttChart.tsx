@@ -178,18 +178,25 @@ export default function DailyGanttChart() {
             if (record.is_deleted) return;
 
             // 레코드의 세션 중 선택된 날짜의 세션만 필터링
-            const all_sessions =
-                record.sessions && record.sessions.length > 0
-                    ? record.sessions
-                    : [
-                          {
-                              id: record.id,
-                              date: record.date,
-                              start_time: record.start_time,
-                              end_time: record.end_time,
-                              duration_minutes: record.duration_minutes,
-                          },
-                      ];
+            // sessions가 비어있고 start_time도 없으면 간트에 표시하지 않음
+            let all_sessions: typeof record.sessions = [];
+            if (record.sessions && record.sessions.length > 0) {
+                all_sessions = record.sessions;
+            } else if (record.start_time) {
+                // start_time이 있는 경우에만 가상 세션 생성
+                all_sessions = [
+                    {
+                        id: record.id,
+                        date: record.date,
+                        start_time: record.start_time,
+                        end_time: record.end_time,
+                        duration_minutes: record.duration_minutes,
+                    },
+                ];
+            }
+
+            // 세션이 없으면 스킵
+            if (all_sessions.length === 0) return;
 
             // 선택된 날짜의 세션만 필터링
             const date_sessions = all_sessions.filter(
