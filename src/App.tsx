@@ -127,10 +127,10 @@ function MainPage() {
             ? `${template.deal_name}_${unique_id}`
             : `작업_${unique_id}`;
 
-        const current_time = dayjs().format("HH:mm");
         const today_date = dayjs().format("YYYY-MM-DD");
 
         // 새 레코드 생성 (타이머 없이 즉시 추가)
+        // start_time/end_time 비워서 간트에 표시되지 않도록
         const new_record = {
             id: crypto.randomUUID(),
             project_code: template.project_code || "A00_00000",
@@ -140,8 +140,8 @@ function MainPage() {
             category_name: template.category_name,
             note: template.note,
             duration_minutes: 0,
-            start_time: current_time,
-            end_time: current_time,
+            start_time: "",
+            end_time: "",
             date: today_date,
             sessions: [],
             is_completed: false,
