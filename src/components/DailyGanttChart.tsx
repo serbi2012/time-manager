@@ -173,6 +173,17 @@ export default function DailyGanttChart() {
     const grouped_works = useMemo(() => {
         const groups: Map<string, GroupedWork> = new Map();
 
+        // 타이머 관련 정보 미리 계산 (중복 세션 필터링용)
+        let timer_key: string | null = null;
+        let timer_start_min = 0;
+        let timer_date: string | null = null;
+
+        if (timer.is_running && timer.active_form_data && timer.start_time) {
+            timer_key = timer.active_form_data.deal_name || timer.active_form_data.work_name;
+            timer_date = dayjs(timer.start_time).format("YYYY-MM-DD");
+            timer_start_min = timeToMinutes(dayjs(timer.start_time).format("HH:mm"));
+        }
+
         records.forEach((record) => {
             // 삭제된 레코드는 제외
             if (record.is_deleted) return;
@@ -199,7 +210,7 @@ export default function DailyGanttChart() {
             if (all_sessions.length === 0) return;
 
             // 선택된 날짜의 세션만 필터링
-            const date_sessions = all_sessions.filter(
+            let date_sessions = all_sessions.filter(
                 (s) => (s.date || record.date) === selected_date
             );
 
@@ -207,6 +218,19 @@ export default function DailyGanttChart() {
             if (date_sessions.length === 0) return;
 
             const key = record.deal_name || record.work_name;
+
+            // 타이머가 실행 중이고, 이 레코드가 현재 타이머 작업과 같으면
+            // 시작 시간이 같은(중복) 세션만 필터링 (1분 이내 차이)
+            if (timer_key && timer_date === selected_date && key === timer_key) {
+                date_sessions = date_sessions.filter((s) => {
+                    const s_start = timeToMinutes(s.start_time);
+                    // 시작 시간이 1분 이상 차이나는 세션만 유지
+                    return Math.abs(s_start - timer_start_min) > 1;
+                });
+            }
+
+            // 필터링 후 세션이 없으면 스킵 (타이머 가상 세션으로 대체됨)
+            if (date_sessions.length === 0) return;
 
             if (groups.has(key)) {
                 const group = groups.get(key)!;
@@ -222,6 +246,7 @@ export default function DailyGanttChart() {
         });
 
         // 현재 진행 중인 작업이 있고, 오늘 날짜인 경우 가상 세션 추가
+        // (겹치는 세션은 위 records.forEach에서 이미 필터링됨)
         if (timer.is_running && timer.active_form_data && timer.start_time) {
             const start_date = dayjs(timer.start_time).format("YYYY-MM-DD");
 
@@ -230,9 +255,13 @@ export default function DailyGanttChart() {
                 const elapsed_seconds = getElapsedSeconds();
                 const elapsed_minutes = Math.floor(elapsed_seconds / 60);
                 const start_time_str = dayjs(timer.start_time).format("HH:mm");
-                const now = dayjs();
-                const end_time_str = now.format("HH:mm");
+                const end_time_str = dayjs().format("HH:mm");
 
+                const key =
+                    timer.active_form_data.deal_name ||
+                    timer.active_form_data.work_name;
+
+                // 가상 세션 생성
                 const virtual_session: WorkSession = {
                     id: "virtual-running-session",
                     date: selected_date,
@@ -241,14 +270,11 @@ export default function DailyGanttChart() {
                     duration_minutes: elapsed_minutes,
                 };
 
-                const key =
-                    timer.active_form_data.deal_name ||
-                    timer.active_form_data.work_name;
+                const existing_group = groups.get(key);
 
-                if (groups.has(key)) {
-                    // 기존 그룹에 가상 세션 추가
-                    const group = groups.get(key)!;
-                    group.sessions.push(virtual_session);
+                if (existing_group) {
+                    // 기존 그룹에 가상 세션 추가 (겹치는 세션은 이미 필터링됨)
+                    existing_group.sessions.push(virtual_session);
                 } else {
                     // 새 그룹 생성 (가상 레코드)
                     const virtual_record: WorkRecord = {
