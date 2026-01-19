@@ -24,6 +24,7 @@ import {
     CloudOutlined,
     CloudSyncOutlined,
     CheckCircleFilled,
+    InfoCircleOutlined,
 } from "@ant-design/icons";
 import {
     BrowserRouter,
@@ -38,6 +39,8 @@ import WorkTemplateList from "./components/WorkTemplateList";
 import DailyGanttChart from "./components/DailyGanttChart";
 import WeeklySchedule from "./components/WeeklySchedule";
 import SettingsModal from "./components/SettingsModal";
+import ChangelogModal from "./components/ChangelogModal";
+import { CURRENT_VERSION } from "./constants/changelog";
 import { useWorkStore } from "./store/useWorkStore";
 import { useShortcutStore } from "./store/useShortcutStore";
 import { useAuth } from "./firebase/useAuth";
@@ -135,6 +138,7 @@ function AppLayout() {
     const navigate = useNavigate();
     const location = useLocation();
     const [is_settings_open, setIsSettingsOpen] = useState(false);
+    const [is_changelog_open, setIsChangelogOpen] = useState(false);
     const [is_syncing, setIsSyncing] = useState(false);
     const file_input_ref = useRef<HTMLInputElement>(null);
 
@@ -550,6 +554,21 @@ function AppLayout() {
                         </span>
                     )}
 
+                    {/* 버전 정보 버튼 */}
+                    <Button
+                        type="text"
+                        icon={<InfoCircleOutlined />}
+                        onClick={() => setIsChangelogOpen(true)}
+                        style={{
+                            color: "rgba(255,255,255,0.85)",
+                            fontSize: 12,
+                            padding: "4px 8px",
+                            height: "auto",
+                        }}
+                    >
+                        v{CURRENT_VERSION}
+                    </Button>
+
                     {/* 설정 버튼 */}
                     <Button
                         type="text"
@@ -627,6 +646,12 @@ function AppLayout() {
                 onExport={handleExport}
                 onImport={handleImport}
                 isAuthenticated={isAuthenticated}
+            />
+
+            {/* 업데이트 내역 모달 */}
+            <ChangelogModal
+                open={is_changelog_open}
+                onClose={() => setIsChangelogOpen(false)}
             />
 
             {/* 파일 입력 (Import용) */}
