@@ -25,6 +25,7 @@ import isoWeek from "dayjs/plugin/isoWeek";
 import "dayjs/locale/ko";
 import { useWorkStore } from "../store/useWorkStore";
 import type { WorkRecord } from "../types";
+import { useResponsive } from "../hooks/useResponsive";
 
 dayjs.extend(weekday);
 dayjs.extend(isoWeek);
@@ -64,6 +65,7 @@ interface DayGroup {
 }
 
 const WeeklySchedule = () => {
+    const { is_mobile } = useResponsive();
     const { records } = useWorkStore();
 
     // 선택된 주의 시작일 (월요일)
@@ -293,16 +295,19 @@ const WeeklySchedule = () => {
         <Content className="weekly-schedule-content">
             <div className="weekly-schedule-container">
                 {/* 헤더 */}
-                <div className="weekly-header">
-                    <Title level={4} style={{ margin: 0 }}>
-                        <CalendarOutlined style={{ marginRight: 8 }} />
-                        주간 일정
-                    </Title>
+                <div className={`weekly-header ${is_mobile ? "weekly-header-mobile" : ""}`}>
+                    {!is_mobile && (
+                        <Title level={4} style={{ margin: 0 }}>
+                            <CalendarOutlined style={{ marginRight: 8 }} />
+                            주간 일정
+                        </Title>
+                    )}
 
-                    <Space>
+                    <Space size={is_mobile ? "small" : "middle"}>
                         <Button
                             icon={<LeftOutlined />}
                             onClick={handlePrevWeek}
+                            size={is_mobile ? "middle" : "middle"}
                         />
                         <DatePicker
                             picker="week"
@@ -312,19 +317,23 @@ const WeeklySchedule = () => {
                                 setSelectedWeekStart(date.startOf("isoWeek"))
                             }
                             format={(value) =>
-                                `${value.format("YYYY년 M월")} ${Math.ceil(
-                                    value.date() / 7
-                                )}주차`
+                                is_mobile
+                                    ? `${value.format("M월")} ${Math.ceil(value.date() / 7)}주`
+                                    : `${value.format("YYYY년 M월")} ${Math.ceil(value.date() / 7)}주차`
                             }
+                            style={is_mobile ? { width: 100 } : undefined}
                         />
                         <Button
                             icon={<RightOutlined />}
                             onClick={handleNextWeek}
+                            size={is_mobile ? "middle" : "middle"}
                         />
-                        <Button onClick={handleThisWeek}>이번 주</Button>
+                        <Button onClick={handleThisWeek} size={is_mobile ? "small" : "middle"}>
+                            {is_mobile ? "오늘" : "이번 주"}
+                        </Button>
                     </Space>
 
-                    <Space>
+                    <Space size={is_mobile ? "small" : "middle"}>
                         <Radio.Group
                             value={hide_management_work}
                             onChange={(e) => setHideManagementWork(e.target.value)}
@@ -332,8 +341,12 @@ const WeeklySchedule = () => {
                             buttonStyle="solid"
                             size="small"
                         >
-                            <Radio.Button value={false}>전체 보기</Radio.Button>
-                            <Radio.Button value={true}>[A24_05591] 관리업무 제외</Radio.Button>
+                            <Radio.Button value={false}>
+                                {is_mobile ? "전체" : "전체 보기"}
+                            </Radio.Button>
+                            <Radio.Button value={true}>
+                                {is_mobile ? "관리제외" : "[A24_05591] 관리업무 제외"}
+                            </Radio.Button>
                         </Radio.Group>
 
                         <Tooltip title="복사하기">
@@ -342,8 +355,9 @@ const WeeklySchedule = () => {
                                 icon={<CopyOutlined />}
                                 onClick={handleCopy}
                                 disabled={day_groups.length === 0}
+                                size={is_mobile ? "middle" : "middle"}
                             >
-                                복사
+                                {is_mobile ? "" : "복사"}
                             </Button>
                         </Tooltip>
                     </Space>

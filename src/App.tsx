@@ -11,6 +11,7 @@ import {
     Dropdown,
     Spin,
     Space,
+    Drawer,
 } from "antd";
 import {
     ClockCircleOutlined,
@@ -25,7 +26,9 @@ import {
     CloudSyncOutlined,
     CheckCircleFilled,
     InfoCircleOutlined,
+    AppstoreOutlined,
 } from "@ant-design/icons";
+import { useResponsive } from "./hooks/useResponsive";
 import {
     BrowserRouter,
     Routes,
@@ -60,6 +63,9 @@ const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
 
 function MainPage() {
+    const { is_mobile } = useResponsive();
+    const [is_preset_drawer_open, setIsPresetDrawerOpen] = useState(false);
+
     // 프리셋에서 작업 기록에만 추가 (타이머 없이)
     const handleAddRecordOnly = (template_id: string) => {
         const template = useWorkStore
@@ -107,11 +113,16 @@ function MainPage() {
 
         useWorkStore.getState().addRecord(new_record);
         message.success(`"${template.work_name}" 작업이 추가되었습니다`);
+
+        // 모바일에서 드로어 닫기
+        if (is_mobile) {
+            setIsPresetDrawerOpen(false);
+        }
     };
 
     return (
         <Layout className="app-body">
-            {/* 좌측 사이드바: 작업 프리셋 */}
+            {/* 좌측 사이드바: 작업 프리셋 (데스크톱 전용) */}
             <Sider width={300} className="app-sider" theme="light">
                 <WorkTemplateList
                     onAddRecordOnly={handleAddRecordOnly}
@@ -130,6 +141,34 @@ function MainPage() {
                     <WorkRecordTable />
                 </div>
             </Content>
+
+            {/* 모바일 프리셋 FAB 버튼 */}
+            {is_mobile && (
+                <button
+                    className="mobile-preset-fab"
+                    onClick={() => setIsPresetDrawerOpen(true)}
+                    aria-label="프리셋 열기"
+                >
+                    <AppstoreOutlined />
+                </button>
+            )}
+
+            {/* 모바일 프리셋 드로어 */}
+            <Drawer
+                title="작업 프리셋"
+                placement="bottom"
+                open={is_preset_drawer_open}
+                onClose={() => setIsPresetDrawerOpen(false)}
+                className="mobile-preset-drawer"
+                styles={{
+                    body: { padding: 12 },
+                    wrapper: { maxHeight: "70vh" },
+                }}
+            >
+                <WorkTemplateList
+                    onAddRecordOnly={handleAddRecordOnly}
+                />
+            </Drawer>
         </Layout>
     );
 }
@@ -137,6 +176,7 @@ function MainPage() {
 function AppLayout() {
     const navigate = useNavigate();
     const location = useLocation();
+    const { is_mobile } = useResponsive();
     const [is_settings_open, setIsSettingsOpen] = useState(false);
     const [is_changelog_open, setIsChangelogOpen] = useState(false);
     const [is_syncing, setIsSyncing] = useState(false);
@@ -508,18 +548,19 @@ function AppLayout() {
                     }}
                     theme="dark"
                 />
-                <Space size="middle">
+                <Space size={is_mobile ? "small" : "middle"}>
                     {/* 동기화 상태 표시 */}
                     {isAuthenticated && (
                         <span
                             style={{
                                 color: "rgba(255,255,255,0.65)",
-                                fontSize: 12,
+                                fontSize: is_mobile ? 10 : 12,
                             }}
                         >
                             {sync_status === "syncing" && (
                                 <>
-                                    <SyncOutlined spin /> 동기화 중...
+                                    <SyncOutlined spin />
+                                    {!is_mobile && " 동기화 중..."}
                                 </>
                             )}
                             {sync_status === "synced" && (
@@ -530,7 +571,8 @@ function AppLayout() {
                                         gap: 4,
                                     }}
                                 >
-                                    <CloudSyncOutlined /> 클라우드 연결됨
+                                    <CloudSyncOutlined />
+                                    {!is_mobile && " 클라우드 연결됨"}
                                     {show_sync_check && (
                                         <CheckCircleFilled
                                             style={{
@@ -547,34 +589,36 @@ function AppLayout() {
                                 <>
                                     <CloudOutlined
                                         style={{ color: "#ff4d4f" }}
-                                    />{" "}
-                                    동기화 오류
+                                    />
+                                    {!is_mobile && " 동기화 오류"}
                                 </>
                             )}
                         </span>
                     )}
 
-                    {/* 버전 정보 버튼 */}
-                    <Button
-                        type="text"
-                        icon={<InfoCircleOutlined />}
-                        onClick={() => setIsChangelogOpen(true)}
-                        style={{
-                            color: "rgba(255,255,255,0.85)",
-                            fontSize: 12,
-                            padding: "4px 8px",
-                            height: "auto",
-                        }}
-                    >
-                        v{CURRENT_VERSION}
-                    </Button>
+                    {/* 버전 정보 버튼 (데스크톱 전용) */}
+                    {!is_mobile && (
+                        <Button
+                            type="text"
+                            icon={<InfoCircleOutlined />}
+                            onClick={() => setIsChangelogOpen(true)}
+                            style={{
+                                color: "rgba(255,255,255,0.85)",
+                                fontSize: 12,
+                                padding: "4px 8px",
+                                height: "auto",
+                            }}
+                        >
+                            v{CURRENT_VERSION}
+                        </Button>
+                    )}
 
                     {/* 설정 버튼 */}
                     <Button
                         type="text"
                         icon={<SettingOutlined />}
                         onClick={() => setIsSettingsOpen(true)}
-                        style={{ color: "white", fontSize: 18 }}
+                        style={{ color: "white", fontSize: is_mobile ? 20 : 18 }}
                     />
 
                     {/* 로그인/유저 정보 */}
@@ -591,9 +635,11 @@ function AppLayout() {
                                     icon={<UserOutlined />}
                                     size="small"
                                 />
-                                <span style={{ color: "white", fontSize: 13 }}>
-                                    {user.displayName || user.email}
-                                </span>
+                                {!is_mobile && (
+                                    <span style={{ color: "white", fontSize: 13 }}>
+                                        {user.displayName || user.email}
+                                    </span>
+                                )}
                             </Space>
                         </Dropdown>
                     ) : (
@@ -603,7 +649,7 @@ function AppLayout() {
                             onClick={handleLogin}
                             size="small"
                         >
-                            로그인
+                            {is_mobile ? "" : "로그인"}
                         </Button>
                     )}
                 </Space>
@@ -662,6 +708,33 @@ function AppLayout() {
                 onChange={handleFileChange}
                 style={{ display: "none" }}
             />
+
+            {/* 모바일 하단 네비게이션 */}
+            {is_mobile && (
+                <nav className="mobile-bottom-nav">
+                    <button
+                        className={`mobile-nav-item ${location.pathname === "/" ? "active" : ""}`}
+                        onClick={() => navigate("/")}
+                    >
+                        <HomeOutlined />
+                        <span>일간 기록</span>
+                    </button>
+                    <button
+                        className={`mobile-nav-item ${location.pathname === "/weekly" ? "active" : ""}`}
+                        onClick={() => navigate("/weekly")}
+                    >
+                        <CalendarOutlined />
+                        <span>주간 일정</span>
+                    </button>
+                    <button
+                        className="mobile-nav-item"
+                        onClick={() => setIsSettingsOpen(true)}
+                    >
+                        <SettingOutlined />
+                        <span>설정</span>
+                    </button>
+                </nav>
+            )}
         </Layout>
     );
 }

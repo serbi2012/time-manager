@@ -23,6 +23,7 @@ import {
     DEFAULT_CATEGORY_OPTIONS,
 } from "../store/useWorkStore";
 import type { WorkRecord, WorkSession } from "../types";
+import { useResponsive } from "../hooks/useResponsive";
 
 const { Text } = Typography;
 
@@ -108,6 +109,8 @@ interface TimeSlot {
 }
 
 export default function DailyGanttChart() {
+    const { is_mobile } = useResponsive();
+
     const {
         records,
         selected_date,
@@ -912,12 +915,38 @@ export default function DailyGanttChart() {
                     </Text>
                 }
             >
-                <div
-                    className="gantt-wrapper"
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseLeave}
-                >
+                {/* 모바일: 수평 스크롤 컨테이너 */}
+                <div className={is_mobile ? "gantt-scroll-container" : ""}>
+                    <div
+                        className={`gantt-wrapper ${is_mobile ? "gantt-mobile-scroll" : ""}`}
+                        onMouseMove={handleMouseMove}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={handleMouseLeave}
+                        onTouchMove={is_mobile ? (e) => {
+                            // 모바일 터치 드래그 지원
+                            if (!is_dragging || !drag_start_ref.current) return;
+                            const touch = e.touches[0];
+                            const grid = grid_ref.current;
+                            if (!grid) return;
+                            const rect = grid.getBoundingClientRect();
+                            const x_ratio = (touch.clientX - rect.left) / rect.width;
+                            const current_mins = Math.round(
+                                time_range.start +
+                                    x_ratio * total_minutes
+                            );
+                            const { mins: start_mins, available_min, available_max } = drag_start_ref.current;
+                            const clamped_mins = Math.max(
+                                available_min,
+                                Math.min(available_max, current_mins)
+                            );
+                            const [sel_start, sel_end] =
+                                start_mins < clamped_mins
+                                    ? [start_mins, clamped_mins]
+                                    : [clamped_mins, start_mins];
+                            setDragSelection({ start_mins: sel_start, end_mins: sel_end });
+                        } : undefined}
+                        onTouchEnd={is_mobile ? handleMouseUp : undefined}
+                    >
                     {grouped_works.length === 0 ? (
                         <div
                             className="gantt-empty-container"
@@ -1199,6 +1228,7 @@ export default function DailyGanttChart() {
                             </div>
                         </div>
                     )}
+                    </div>
                 </div>
 
                 <style>{`

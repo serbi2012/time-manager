@@ -1,6 +1,8 @@
 .app-layout {
     min-height: 100vh;
     background: #f5f7fa;
+    overflow-x: hidden; /* 가로 스크롤 방지 */
+    max-width: 100vw;
 }
 
 .app-header {
@@ -9,6 +11,7 @@
     height: 56px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     position: sticky;
     top: 0;
@@ -245,5 +248,621 @@
     }
     100% {
         opacity: 0;
+    }
+}
+
+/* ========================================
+   모바일 반응형 스타일 (767px 이하)
+   ======================================== */
+
+@media (max-width: 767px) {
+    /* 헤더 모바일 최적화 */
+    .app-header {
+        padding: 0 12px;
+        height: 52px;
+    }
+
+    .app-header .header-title {
+        display: none; /* 타이틀 숨김, 아이콘만 표시 */
+    }
+
+    .app-header .header-icon {
+        font-size: 24px;
+    }
+
+    /* 헤더 메뉴 숨김 (하단 탭으로 대체) */
+    .app-header .ant-menu {
+        display: none !important;
+        flex: 0 !important;
+    }
+
+    /* 헤더 우측 영역 간소화 */
+    .app-header .ant-space {
+        gap: 6px !important;
+    }
+
+    /* 모바일 헤더 우측 버튼 크기 조정 */
+    .app-header .ant-btn {
+        padding: 4px 8px;
+    }
+
+    /* 모바일에서 body 하단 패딩 (하단 네비게이션 공간) */
+    .app-body {
+        min-height: calc(100vh - 52px); /* 헤더 */
+        padding-bottom: 56px; /* 하단 네비 높이만큼 패딩 */
+    }
+
+    /* 사이드바 모바일에서 숨김 (프리셋 드로어로 대체) */
+    .app-sider {
+        display: none !important;
+    }
+
+    /* 컨텐츠 영역 모바일 최적화 */
+    .app-content {
+        padding: 12px;
+        gap: 16px; /* 카드 간 간격 증가 */
+        overflow-x: hidden;
+        max-width: 100vw;
+    }
+
+    /* 카드 모바일 최적화 - 모든 카드에 충분한 여백 적용 */
+    .ant-card {
+        border-radius: 8px;
+    }
+
+    .ant-card > .ant-card-head,
+    .ant-card.ant-card-small > .ant-card-head,
+    .ant-card.ant-card-bordered > .ant-card-head {
+        padding: 14px 16px !important;
+        min-height: auto !important;
+    }
+
+    /* Card 헤더 래퍼 - 세로 방향으로 변경 */
+    .ant-card-head-wrapper {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 10px;
+    }
+
+    .ant-card > .ant-card-head .ant-card-head-title,
+    .ant-card-head-title {
+        font-size: 15px !important;
+        font-weight: 600 !important;
+    }
+
+    /* Card extra 영역 버튼 줄바꿈 */
+    .ant-card-extra {
+        margin-left: 0 !important;
+        padding: 0 !important;
+    }
+
+    .ant-card-extra .ant-space {
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+
+    .ant-card-extra .ant-space-item {
+        margin-right: 0 !important;
+    }
+
+    /* 모든 카드 바디에 충분한 패딩 */
+    .ant-card > .ant-card-body,
+    .ant-card.ant-card-small > .ant-card-body,
+    .ant-card.ant-card-bordered > .ant-card-body {
+        padding: 14px 16px !important;
+    }
+
+    /* 버튼 터치 영역 확대 */
+    .ant-btn {
+        min-height: 36px;
+        min-width: 36px;
+    }
+
+    .ant-btn-sm {
+        min-height: 32px;
+        min-width: 32px;
+    }
+
+    /* 모달 모바일 최적화 */
+    .ant-modal {
+        max-width: calc(100vw - 24px) !important;
+        margin: 12px !important;
+    }
+
+    .ant-modal-content {
+        border-radius: 12px;
+    }
+
+    .ant-modal-body {
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+    }
+
+    /* 드롭다운/팝오버 모바일 최적화 */
+    .ant-dropdown {
+        max-width: calc(100vw - 24px);
+    }
+
+    /* Select 모바일 최적화 */
+    .ant-select-dropdown {
+        max-height: 50vh !important;
+    }
+
+    /* DatePicker 모바일 최적화 */
+    .ant-picker-dropdown {
+        max-width: calc(100vw - 24px);
+    }
+
+    /* 통계 카드 모바일 */
+    .ant-statistic-title {
+        font-size: 12px;
+    }
+
+    .ant-statistic-content {
+        font-size: 18px;
+    }
+
+    /* 태그 모바일 최적화 */
+    .ant-tag {
+        font-size: 11px;
+        padding: 2px 6px;
+    }
+}
+
+/* ========================================
+   하단 탭 네비게이션 스타일
+   ======================================== */
+
+.mobile-bottom-nav {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 56px;
+        background: white;
+        border-top: 1px solid #e8e8e8;
+        z-index: 100;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .mobile-nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        color: #8c8c8c;
+        font-size: 10px;
+        text-decoration: none;
+        transition: all 0.2s;
+        -webkit-tap-highlight-color: transparent;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        padding: 0;
+    }
+
+    .mobile-nav-item:active {
+        background: #f5f5f5;
+    }
+
+    .mobile-nav-item.active {
+        color: #1890ff;
+    }
+
+    .mobile-nav-item .anticon {
+        font-size: 20px;
+    }
+
+    .mobile-nav-item span:last-child {
+        font-weight: 500;
+    }
+}
+
+/* ========================================
+   모바일 프리셋 드로어 스타일
+   ======================================== */
+
+.mobile-preset-fab {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .mobile-preset-fab {
+        display: flex;
+        position: fixed;
+        bottom: 72px; /* 하단 네비 위 */
+        right: 16px;
+        width: 56px;
+        height: 56px;
+        border-radius: 28px;
+        background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+        color: white;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+        z-index: 99;
+        cursor: pointer;
+        border: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .mobile-preset-fab:active {
+        transform: scale(0.95);
+    }
+
+    .mobile-preset-fab .anticon {
+        font-size: 24px;
+    }
+
+    /* 프리셋 드로어 */
+    .mobile-preset-drawer .ant-drawer-content-wrapper {
+        max-height: 70vh !important;
+    }
+
+    .mobile-preset-drawer .ant-drawer-body {
+        padding: 12px;
+    }
+}
+
+/* ========================================
+   모바일 작업 기록 카드 뷰 스타일
+   ======================================== */
+
+.mobile-record-list {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    /* 데스크톱 테이블 숨김 */
+    .desktop-record-table {
+        display: none !important;
+    }
+
+    /* 모바일 카드 리스트 표시 */
+    .mobile-record-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .mobile-record-card {
+        background: white;
+        border-radius: 12px;
+        padding: 14px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        border: 1px solid #f0f0f0;
+    }
+
+    .mobile-record-card.running {
+        border: 2px solid #1890ff;
+        animation: pulse-border 2s infinite;
+    }
+
+    .mobile-record-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 8px;
+    }
+
+    .mobile-record-card-title {
+        font-weight: 600;
+        font-size: 15px;
+        color: #262626;
+        line-height: 1.4;
+        flex: 1;
+        margin-right: 8px;
+    }
+
+    .mobile-record-card-timer {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1890ff;
+        font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
+    }
+
+    .mobile-record-card-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+
+    .mobile-record-card-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        color: #8c8c8c;
+    }
+
+    .mobile-record-card-time {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .mobile-record-card-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .mobile-record-card-actions .ant-btn {
+        flex: 1;
+        height: 40px;
+    }
+}
+
+/* ========================================
+   모바일 간트차트 스타일
+   ======================================== */
+
+@media (max-width: 767px) {
+    .gantt-section {
+        margin: 0;
+        width: 100%;
+        overflow: hidden; /* 간트 영역 overflow 방지 */
+    }
+
+    .gantt-section .ant-card {
+        border-radius: 8px;
+    }
+
+    .gantt-section .ant-card-body {
+        padding: 12px 16px;
+        overflow: hidden;
+    }
+
+    /* 간트차트 수평 스크롤 컨테이너 */
+    .gantt-scroll-container {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        max-width: 100%;
+    }
+
+    .gantt-scroll-container::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* 간트차트 모바일 스크롤 래퍼 */
+    .gantt-mobile-scroll {
+        min-width: 600px;
+    }
+
+    /* 시간 라벨 간소화 */
+    .gantt-time-label {
+        font-size: 10px;
+    }
+
+    /* 간트 바 터치 영역 확대 */
+    .gantt-bar {
+        min-height: 28px;
+    }
+
+    .gantt-bar-label {
+        font-size: 10px;
+    }
+}
+
+/* ========================================
+   모바일 주간 일정 스타일
+   ======================================== */
+
+@media (max-width: 767px) {
+    .weekly-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch !important;
+    }
+
+    .weekly-header .ant-space {
+        justify-content: center;
+    }
+
+    .weekly-header .ant-btn {
+        padding: 4px 12px;
+    }
+
+    .weekly-day-card {
+        margin-bottom: 12px;
+    }
+
+    .weekly-day-header {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+
+    .weekly-work-item {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .weekly-deal-item {
+        padding-left: 20px;
+        font-size: 12px;
+    }
+
+    /* 복사 미리보기 영역 */
+    .weekly-preview {
+        font-size: 12px;
+    }
+
+    .weekly-preview pre {
+        font-size: 11px;
+        padding: 12px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+}
+
+/* ========================================
+   모바일 설정 모달 스타일
+   ======================================== */
+
+@media (max-width: 767px) {
+    .settings-modal .ant-modal-content {
+        height: calc(100vh - 24px);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .settings-modal .ant-modal-body {
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .settings-modal .ant-tabs {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .settings-modal .ant-tabs-content {
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .settings-modal .ant-tabs-nav {
+        margin-bottom: 12px;
+    }
+
+    .settings-modal .ant-tabs-tab {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+}
+
+/* ========================================
+   모바일 프리셋 리스트 스타일
+   ======================================== */
+
+@media (max-width: 767px) {
+    .template-list-mobile {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .template-card-mobile {
+        background: white;
+        border-radius: 10px;
+        padding: 12px;
+        border: 1px solid #f0f0f0;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .template-card-mobile:active {
+        background: #f5f5f5;
+        transform: scale(0.98);
+    }
+
+    .template-card-mobile-title {
+        font-weight: 600;
+        font-size: 13px;
+        color: #262626;
+        margin-bottom: 4px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .template-card-mobile-subtitle {
+        font-size: 11px;
+        color: #8c8c8c;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .template-card-mobile-color {
+        width: 4px;
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        border-radius: 10px 0 0 10px;
+    }
+}
+
+/* ========================================
+   모바일 유틸리티 클래스
+   ======================================== */
+
+@media (max-width: 767px) {
+    .hide-on-mobile {
+        display: none !important;
+    }
+}
+
+@media (min-width: 768px) {
+    .show-only-mobile {
+        display: none !important;
+    }
+}
+
+/* 터치 하이라이트 제거 */
+@media (max-width: 767px) {
+    * {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* 터치 시 피드백 */
+    .touchable:active {
+        opacity: 0.7;
+    }
+}
+
+/* ========================================
+   모바일 폼 스타일
+   ======================================== */
+
+@media (max-width: 767px) {
+    .ant-form-item-label {
+        padding-bottom: 4px !important;
+    }
+
+    .ant-form-item-label > label {
+        font-size: 13px;
+    }
+
+    .ant-input,
+    .ant-select-selector,
+    .ant-picker {
+        font-size: 16px !important; /* iOS 줌 방지 */
+        height: 44px !important;
+    }
+
+    .ant-select-selector {
+        padding: 6px 11px !important;
+    }
+
+    .ant-form-item {
+        margin-bottom: 16px;
+    }
+
+    /* 모달 폼 버튼 영역 */
+    .ant-modal-footer {
+        padding: 12px 16px;
+    }
+
+    .ant-modal-footer .ant-btn {
+        height: 44px;
+        font-size: 15px;
     }
 }

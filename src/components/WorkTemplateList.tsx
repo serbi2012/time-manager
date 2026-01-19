@@ -31,6 +31,7 @@ import {
     closestCenter,
     KeyboardSensor,
     PointerSensor,
+    TouchSensor,
     useSensor,
     useSensors,
     type DragEndEvent,
@@ -49,6 +50,7 @@ import {
     DEFAULT_CATEGORY_OPTIONS,
 } from "../store/useWorkStore";
 import type { WorkTemplate } from "../types";
+import { useResponsive } from "../hooks/useResponsive";
 
 const { Text } = Typography;
 
@@ -189,6 +191,8 @@ interface WorkTemplateListProps {
 export default function WorkTemplateList({
     onAddRecordOnly,
 }: WorkTemplateListProps) {
+    const { is_mobile } = useResponsive();
+
     const {
         templates,
         records,
@@ -206,11 +210,17 @@ export default function WorkTemplateList({
         hideAutoCompleteOption,
     } = useWorkStore();
 
-    // dnd-kit 센서 설정
+    // dnd-kit 센서 설정 (모바일에서는 터치 센서 추가)
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
                 distance: 8, // 8px 이동해야 드래그 시작
+            },
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 250, // 250ms 터치 유지해야 드래그 시작
+                tolerance: 5,
             },
         }),
         useSensor(KeyboardSensor, {
@@ -459,18 +469,20 @@ export default function WorkTemplateList({
                         size="small"
                         onClick={handleOpenAddModal}
                     >
-                        추가 (Alt+P)
+                        {is_mobile ? "추가" : "추가 (Alt+P)"}
                     </Button>
                 }
             >
-                <Text
-                    type="secondary"
-                    style={{ fontSize: 12, display: "block", marginBottom: 12 }}
-                >
-                    자주 사용하는 작업을 프리셋으로 저장하세요.
-                    <br />
-                    클릭하면 오늘의 작업 기록에 추가됩니다.
-                </Text>
+                {!is_mobile && (
+                    <Text
+                        type="secondary"
+                        style={{ fontSize: 12, display: "block", marginBottom: 12 }}
+                    >
+                        자주 사용하는 작업을 프리셋으로 저장하세요.
+                        <br />
+                        클릭하면 오늘의 작업 기록에 추가됩니다.
+                    </Text>
+                )}
 
                 {templates.length === 0 ? (
                     <Empty

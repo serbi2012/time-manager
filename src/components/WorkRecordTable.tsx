@@ -20,6 +20,7 @@ import {
     AutoComplete,
     Divider,
     message,
+    Empty,
 } from "antd";
 import {
     DeleteOutlined,
@@ -36,6 +37,7 @@ import {
     DownOutlined,
     UndoOutlined,
     CloseOutlined,
+    MoreOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
@@ -45,8 +47,23 @@ import {
     DEFAULT_CATEGORY_OPTIONS,
 } from "../store/useWorkStore";
 import type { WorkRecord, WorkSession } from "../types";
+import { useResponsive } from "../hooks/useResponsive";
 
 const { Text } = Typography;
+
+// 카테고리별 색상 매핑
+const getCategoryColor = (category: string): string => {
+    const color_map: Record<string, string> = {
+        개발: "green",
+        문서작업: "orange",
+        회의: "purple",
+        환경세팅: "cyan",
+        코드리뷰: "magenta",
+        테스트: "blue",
+        기타: "default",
+    };
+    return color_map[category] || "default";
+};
 
 // 분을 읽기 쉬운 형식으로 변환
 const formatDuration = (minutes: number): string => {
@@ -516,6 +533,8 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
 }
 
 export default function WorkRecordTable() {
+    const { is_mobile } = useResponsive();
+
     const {
         records,
         selected_date,
@@ -549,6 +568,9 @@ export default function WorkRecordTable() {
 
     // 타이머 표시를 위한 리렌더링 트리거
     const [, setTick] = useState(0);
+
+    // 모바일 카드 확장 상태
+    const [expanded_card_id, setExpandedCardId] = useState<string | null>(null);
 
     const [is_modal_open, setIsModalOpen] = useState(false);
     const [is_edit_modal_open, setIsEditModalOpen] = useState(false);
@@ -1076,17 +1098,8 @@ export default function WorkRecordTable() {
             key: "category_name",
             width: 90,
             render: (text: string) => {
-                const color_map: Record<string, string> = {
-                    개발: "green",
-                    문서작업: "orange",
-                    회의: "purple",
-                    환경세팅: "cyan",
-                    코드리뷰: "magenta",
-                    테스트: "blue",
-                    기타: "default",
-                };
                 return text ? (
-                    <Tag color={color_map[text] || "default"}>{text}</Tag>
+                    <Tag color={getCategoryColor(text)}>{text}</Tag>
                 ) : (
                     "-"
                 );
@@ -1230,19 +1243,23 @@ export default function WorkRecordTable() {
                     </Space>
                 }
                 extra={
-                    <Space>
+                    <Space size={is_mobile ? 4 : 8}>
                         <Button
                             type="primary"
                             icon={<PlusOutlined />}
                             onClick={() => setIsModalOpen(true)}
                         >
-                            새 작업 (Alt+N)
+                            {is_mobile ? null : "새 작업 (Alt+N)"}
                         </Button>
                         <Button
                             icon={<CheckCircleOutlined />}
                             onClick={() => setIsCompletedModalOpen(true)}
                         >
-                            완료된 작업 ({completed_records.length})
+                            {is_mobile
+                                ? completed_records.length > 0
+                                    ? completed_records.length
+                                    : null
+                                : `완료된 작업 (${completed_records.length})`}
                         </Button>
                         {deleted_records.length > 0 && (
                             <Button
@@ -1250,7 +1267,9 @@ export default function WorkRecordTable() {
                                 onClick={() => setIsDeletedModalOpen(true)}
                                 danger
                             >
-                                휴지통 ({deleted_records.length})
+                                {is_mobile
+                                    ? deleted_records.length
+                                    : `휴지통 (${deleted_records.length})`}
                             </Button>
                         )}
                         <DatePicker
@@ -1262,13 +1281,14 @@ export default function WorkRecordTable() {
                                 )
                             }
                             allowClear={false}
+                            style={is_mobile ? { width: 120 } : undefined}
                         />
                         <Button
                             icon={<CopyOutlined />}
                             onClick={handleCopyToClipboard}
                             disabled={filtered_records.length === 0}
                         >
-                            복사
+                            {is_mobile ? null : "복사"}
                         </Button>
                     </Space>
                 }
@@ -1297,35 +1317,224 @@ export default function WorkRecordTable() {
                     </Col>
                 </Row>
 
-                <Table
-                    columns={columns}
-                    dataSource={filtered_records}
-                    rowKey="id"
-                    pagination={false}
-                    size="small"
-                    scroll={{ x: 900 }}
-                    expandable={{
-                        expandedRowRender,
-                        rowExpandable: () => true,
-                        expandIcon: ({ expanded, onExpand, record }) => (
-                            <div
-                                className={`expand-icon ${
-                                    expanded ? "expanded" : ""
-                                }`}
-                                onClick={(e) => onExpand(record, e)}
-                            >
-                                <DownOutlined />
-                            </div>
-                        ),
-                    }}
-                    rowClassName={(record) =>
-                        getActiveRecordId() === record.id ? "active-row" : ""
-                    }
-                    locale={{
-                        emptyText:
-                            "작업 기록이 없습니다. 프리셋에서 작업을 추가하거나 새 작업을 시작하세요.",
-                    }}
-                />
+                {/* 데스크톱 테이블 뷰 */}
+                {!is_mobile && (
+                    <div className="desktop-record-table">
+                        <Table
+                            columns={columns}
+                            dataSource={filtered_records}
+                            rowKey="id"
+                            pagination={false}
+                            size="small"
+                            scroll={{ x: 900 }}
+                            expandable={{
+                                expandedRowRender,
+                                rowExpandable: () => true,
+                                expandIcon: ({ expanded, onExpand, record }) => (
+                                    <div
+                                        className={`expand-icon ${
+                                            expanded ? "expanded" : ""
+                                        }`}
+                                        onClick={(e) => onExpand(record, e)}
+                                    >
+                                        <DownOutlined />
+                                    </div>
+                                ),
+                            }}
+                            rowClassName={(record) =>
+                                getActiveRecordId() === record.id ? "active-row" : ""
+                            }
+                            locale={{
+                                emptyText:
+                                    "작업 기록이 없습니다. 프리셋에서 작업을 추가하거나 새 작업을 시작하세요.",
+                            }}
+                        />
+                    </div>
+                )}
+
+                {/* 모바일 카드 뷰 */}
+                {is_mobile && (
+                    <div className="mobile-record-list">
+                        {filtered_records.length === 0 ? (
+                            <Empty
+                                description="작업 기록이 없습니다"
+                                style={{ padding: "40px 0" }}
+                            />
+                        ) : (
+                            filtered_records.map((record) => {
+                                const is_active = getActiveRecordId() === record.id;
+                                const is_running = timer.is_running && is_active;
+                                const elapsed = is_running ? getElapsedSeconds() : 0;
+                                const duration_for_date = getRecordDurationMinutesForDate(record, selected_date);
+                                const time_range = getTimeRangeForDate(record, selected_date);
+                                const is_expanded = expanded_card_id === record.id;
+
+                                return (
+                                    <div
+                                        key={record.id}
+                                        className={`mobile-record-card ${is_running ? "running" : ""}`}
+                                    >
+                                        {/* 헤더: 거래명 + 타이머 */}
+                                        <div className="mobile-record-card-header">
+                                            <div className="mobile-record-card-title">
+                                                {record.deal_name || record.work_name}
+                                            </div>
+                                            {is_running && (
+                                                <div className="mobile-record-card-timer">
+                                                    {formatTimer(elapsed)}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* 태그 영역 */}
+                                        <div className="mobile-record-card-tags">
+                                            <Tag color="blue" style={{ margin: 0 }}>
+                                                {record.work_name}
+                                            </Tag>
+                                            {record.task_name && (
+                                                <Tag color="cyan" style={{ margin: 0 }}>
+                                                    {record.task_name}
+                                                </Tag>
+                                            )}
+                                            {record.category_name && (
+                                                <Tag
+                                                    color={getCategoryColor(record.category_name)}
+                                                    style={{ margin: 0 }}
+                                                >
+                                                    {record.category_name}
+                                                </Tag>
+                                            )}
+                                        </div>
+
+                                        {/* 정보 영역 */}
+                                        <div className="mobile-record-card-info">
+                                            <div className="mobile-record-card-time">
+                                                <ClockCircleOutlined />
+                                                <span>
+                                                    {is_running
+                                                        ? formatDuration(duration_for_date + Math.floor(elapsed / 60))
+                                                        : formatDuration(duration_for_date)}
+                                                </span>
+                                            </div>
+                                            {time_range.start_time && (
+                                                <span>
+                                                    {time_range.start_time} ~ {time_range.end_time || "진행중"}
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* 액션 버튼 */}
+                                        <div className="mobile-record-card-actions">
+                                            {is_running ? (
+                                                <Button
+                                                    type="primary"
+                                                    danger
+                                                    icon={<PauseCircleOutlined />}
+                                                    onClick={() => stopTimer()}
+                                                >
+                                                    정지
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    type="primary"
+                                                    icon={<PlayCircleOutlined />}
+                                                    onClick={() => {
+                                                        if (timer.is_running) {
+                                                            // 다른 작업 진행 중이면 전환
+                                                            const tpl = templates.find(
+                                                                (t) =>
+                                                                    t.work_name === record.work_name &&
+                                                                    t.deal_name === record.deal_name
+                                                            );
+                                                            if (tpl) {
+                                                                switchTemplate(tpl.id);
+                                                            } else {
+                                                                setFormData({
+                                                                    project_code: record.project_code,
+                                                                    work_name: record.work_name,
+                                                                    task_name: record.task_name,
+                                                                    deal_name: record.deal_name,
+                                                                    category_name: record.category_name,
+                                                                    note: record.note || "",
+                                                                });
+                                                                stopTimer();
+                                                                startTimer();
+                                                            }
+                                                        } else {
+                                                            setFormData({
+                                                                project_code: record.project_code,
+                                                                work_name: record.work_name,
+                                                                task_name: record.task_name,
+                                                                deal_name: record.deal_name,
+                                                                category_name: record.category_name,
+                                                                note: record.note || "",
+                                                            });
+                                                            startTimer();
+                                                        }
+                                                    }}
+                                                >
+                                                    시작
+                                                </Button>
+                                            )}
+                                            <Button
+                                                icon={<EditOutlined />}
+                                                onClick={() => {
+                                                    setEditingRecord(record);
+                                                    edit_form.setFieldsValue({
+                                                        project_code: record.project_code,
+                                                        work_name: record.work_name,
+                                                        task_name: record.task_name,
+                                                        deal_name: record.deal_name,
+                                                        category_name: record.category_name,
+                                                        note: record.note,
+                                                    });
+                                                    setIsEditModalOpen(true);
+                                                }}
+                                            >
+                                                수정
+                                            </Button>
+                                            <Button
+                                                icon={<MoreOutlined />}
+                                                onClick={() => {
+                                                    setExpandedCardId(is_expanded ? null : record.id);
+                                                }}
+                                            />
+                                        </div>
+
+                                        {/* 확장 영역: 세션 이력 */}
+                                        {is_expanded && (
+                                            <div style={{ marginTop: 12 }}>
+                                                <SessionEditTable record_id={record.id} />
+                                                <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+                                                    <Popconfirm
+                                                        title="작업 삭제"
+                                                        description="휴지통으로 이동합니다"
+                                                        onConfirm={() => softDeleteRecord(record.id)}
+                                                        okText="삭제"
+                                                        cancelText="취소"
+                                                    >
+                                                        <Button danger icon={<DeleteOutlined />} size="small">
+                                                            삭제
+                                                        </Button>
+                                                    </Popconfirm>
+                                                    {!record.is_completed && (
+                                                        <Button
+                                                            icon={<CheckCircleOutlined />}
+                                                            size="small"
+                                                            onClick={() => markAsCompleted(record.id)}
+                                                        >
+                                                            완료
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
+                )}
             </Card>
 
             <Modal
