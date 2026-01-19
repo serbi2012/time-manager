@@ -3,7 +3,7 @@
  *
  * 단축키 상태 관리 스토어 테스트
  */
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import {
     useShortcutStore,
     DEFAULT_SHORTCUTS,

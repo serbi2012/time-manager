@@ -128,9 +128,8 @@ describe('syncService', () => {
     // =====================================================
     describe('markLocalChange', () => {
         it('로컬 변경 시간을 기록함', () => {
-            const before = Date.now()
+            // markLocalChange 함수 호출
             markLocalChange()
-            const after = Date.now()
 
             // 직접 확인은 어렵지만, 함수가 에러 없이 실행되는지 확인
             expect(true).toBe(true)
