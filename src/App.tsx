@@ -152,6 +152,9 @@ function AppLayout() {
         "idle" | "syncing" | "synced" | "error"
     >("idle");
 
+    // 초기 데이터 로딩 완료 여부
+    const [initial_load_done, setInitialLoadDone] = useState(false);
+
     // 동기화 완료 체크 애니메이션 표시
     const [show_sync_check, setShowSyncCheck] = useState(false);
     const sync_check_timeout = useRef<ReturnType<typeof setTimeout> | null>(
@@ -234,22 +237,26 @@ function AppLayout() {
     useEffect(() => {
         if (user) {
             setSyncStatus("syncing");
+            setInitialLoadDone(false);
 
             // 먼저 미저장 백업이 있는지 확인 후 동기화
             checkPendingSync(user)
                 .then(() => syncFromFirebase(user))
                 .then(() => {
                     setSyncStatus("synced");
+                    setInitialLoadDone(true);
                     startRealtimeSync(user);
                     showSyncCheckAnimation();
                 })
                 .catch(() => {
                     setSyncStatus("error");
+                    setInitialLoadDone(true); // 에러가 나도 로딩 완료 처리
                     message.error("데이터 동기화에 실패했습니다");
                 });
         } else {
             stopRealtimeSync();
             setSyncStatus("idle");
+            setInitialLoadDone(true); // 비로그인 상태도 로딩 완료
         }
 
         return () => {
@@ -582,6 +589,31 @@ function AppLayout() {
                     )}
                 </Space>
             </Header>
+
+            {/* 초기 데이터 로딩 오버레이 (Auth 로딩 중 또는 데이터 동기화 중) */}
+            {(auth_loading || (isAuthenticated && !initial_load_done)) && (
+                <div
+                    style={{
+                        position: "fixed",
+                        top: 64,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        flexDirection: "column",
+                        gap: 16,
+                        background: "rgba(255, 255, 255, 0.9)",
+                        zIndex: 1000,
+                    }}
+                >
+                    <Spin size="large" />
+                    <span style={{ color: "#666" }}>
+                        {auth_loading ? "로그인 확인 중..." : "데이터를 불러오는 중..."}
+                    </span>
+                </div>
+            )}
 
             <Routes>
                 <Route path="/" element={<MainPage />} />
