@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "1.0.0";
+export const CURRENT_VERSION = "1.1.0";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -46,6 +46,22 @@ export const CHANGE_TYPE_CONFIG: Record<ChangeType, { emoji: string; label: stri
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "1.1.0",
+        date: "2026-01-19",
+        title: "모바일 반응형 지원 📱",
+        changes: [
+            { type: "feature", description: "모바일 반응형 디자인 전면 지원" },
+            { type: "feature", description: "모바일 하단 네비게이션 바 추가" },
+            { type: "feature", description: "모바일 프리셋 플로팅 버튼 (FAB) 추가" },
+            { type: "feature", description: "모바일 작업 기록 카드 뷰 추가" },
+            { type: "improvement", description: "간트차트 모바일 수평 스크롤 최적화" },
+            { type: "improvement", description: "모바일 버튼 아이콘 중심 미니멀 디자인" },
+            { type: "improvement", description: "모바일 카드 여백 및 터치 영역 최적화" },
+            { type: "improvement", description: "모바일 헤더 레이아웃 개선" },
+            { type: "style", description: "useResponsive 훅으로 반응형 상태 관리" },
+        ],
+    },
     {
         version: "1.0.0",
         date: "2026-01-19",
