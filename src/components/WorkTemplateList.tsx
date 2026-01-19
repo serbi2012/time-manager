@@ -23,8 +23,25 @@ import {
     EditOutlined,
     FolderOutlined,
     CloseOutlined,
+    HolderOutlined,
 } from "@ant-design/icons";
 import { Tag } from "antd";
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
     useWorkStore,
     TEMPLATE_COLORS,
@@ -35,13 +52,141 @@ import type { WorkTemplate } from "../types";
 
 const { Text } = Typography;
 
+// Sortable 템플릿 카드 컴포넌트
+interface SortableTemplateCardProps {
+    template: WorkTemplate;
+    onEdit: (template: WorkTemplate) => void;
+    onDelete: (id: string) => void;
+    onAddRecordOnly?: (template_id: string) => void;
+}
+
+function SortableTemplateCard({
+    template,
+    onEdit,
+    onDelete,
+    onAddRecordOnly,
+}: SortableTemplateCardProps) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: template.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+        borderLeftColor: template.color,
+    };
+
+    return (
+        <div
+            ref={setNodeRef}
+            className="template-card"
+            style={style}
+        >
+            {/* 드래그 핸들 */}
+            <div
+                className="template-drag-handle"
+                {...attributes}
+                {...listeners}
+            >
+                <HolderOutlined />
+            </div>
+
+            {/* 메인 콘텐츠 영역 */}
+            <div className="template-content">
+                {/* 상단: 작업명 태그 */}
+                <div className="template-header">
+                    <Tag
+                        color={template.color}
+                        style={{
+                            fontSize: 10,
+                            lineHeight: 1.3,
+                            padding: "1px 6px",
+                            margin: 0,
+                        }}
+                    >
+                        {template.work_name}
+                    </Tag>
+                </div>
+
+                {/* 중앙: 거래명 (제목) */}
+                <Text strong className="template-title">
+                    {template.deal_name || template.work_name}
+                </Text>
+
+                {/* 하단: 업무명 · 카테고리 */}
+                {(template.task_name || template.category_name) && (
+                    <Text type="secondary" className="template-subtitle">
+                        {[template.task_name, template.category_name]
+                            .filter(Boolean)
+                            .join(" · ")}
+                    </Text>
+                )}
+            </div>
+
+            {/* 액션 버튼 영역 */}
+            <div className="template-actions">
+                {/* 호버 시 표시되는 수정/삭제 버튼 */}
+                <div className="template-hover-buttons">
+                    <Tooltip title="수정">
+                        <Button
+                            size="small"
+                            icon={<EditOutlined />}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onEdit(template);
+                            }}
+                        />
+                    </Tooltip>
+                    <Popconfirm
+                        title="프리셋 삭제"
+                        description="이 프리셋을 삭제하시겠습니까?"
+                        onConfirm={() => onDelete(template.id)}
+                        okText="삭제"
+                        cancelText="취소"
+                    >
+                        <Tooltip title="삭제">
+                            <Button
+                                danger
+                                size="small"
+                                icon={<DeleteOutlined />}
+                                onClick={(e) => e.stopPropagation()}
+                            />
+                        </Tooltip>
+                    </Popconfirm>
+                </div>
+
+                {/* 항상 표시되는 버튼들 */}
+                <Space size={4}>
+                    {onAddRecordOnly && (
+                        <Tooltip title="작업 추가">
+                            <Button
+                                type="primary"
+                                size="small"
+                                icon={<PlusOutlined />}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onAddRecordOnly(template.id);
+                                }}
+                            />
+                        </Tooltip>
+                    )}
+                </Space>
+            </div>
+        </div>
+    );
+}
+
 interface WorkTemplateListProps {
-    onAddToRecord: (template_id: string) => void;
     onAddRecordOnly?: (template_id: string) => void; // 타이머 없이 작업 기록에만 추가
 }
 
 export default function WorkTemplateList({
-    onAddToRecord,
     onAddRecordOnly,
 }: WorkTemplateListProps) {
     const {
@@ -50,6 +195,7 @@ export default function WorkTemplateList({
         addTemplate,
         updateTemplate,
         deleteTemplate,
+        reorderTemplates,
         getAutoCompleteOptions,
         getProjectCodeOptions,
         custom_task_options,
@@ -59,6 +205,26 @@ export default function WorkTemplateList({
         addCustomCategoryOption,
         hideAutoCompleteOption,
     } = useWorkStore();
+
+    // dnd-kit 센서 설정
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8, // 8px 이동해야 드래그 시작
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    // 드래그 종료 핸들러
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (over && active.id !== over.id) {
+            reorderTemplates(active.id as string, over.id as string);
+        }
+    };
 
     const [is_modal_open, setIsModalOpen] = useState(false);
     const [is_edit_mode, setIsEditMode] = useState(false);
@@ -253,11 +419,6 @@ export default function WorkTemplateList({
         }
     };
 
-    const handleUseTemplate = (template_id: string) => {
-        onAddToRecord(template_id);
-        message.success("작업 기록에 추가되었습니다");
-    };
-
     // 업무명 추가
     const handleAddTaskOption = () => {
         if (new_task_input.trim()) {
@@ -325,116 +486,28 @@ export default function WorkTemplateList({
                         }
                     />
                 ) : (
-                    <div className="template-items">
-                        {templates.map((template) => (
-                            <div
-                                key={template.id}
-                                className="template-card"
-                                style={{ borderLeftColor: template.color }}
-                            >
-                                {/* 메인 콘텐츠 영역 - 클릭 시 작업 시작 */}
-                                <div
-                                    className="template-content"
-                                    onClick={() =>
-                                        handleUseTemplate(template.id)
-                                    }
-                                >
-                                    {/* 상단: 작업명 태그 */}
-                                    <div className="template-header">
-                                        <Tag
-                                            color={template.color}
-                                            style={{
-                                                fontSize: 10,
-                                                lineHeight: 1.3,
-                                                padding: "1px 6px",
-                                                margin: 0,
-                                            }}
-                                        >
-                                            {template.work_name}
-                                        </Tag>
-                                    </div>
-
-                                    {/* 중앙: 거래명 (제목) */}
-                                    <Text strong className="template-title">
-                                        {template.deal_name ||
-                                            template.work_name}
-                                    </Text>
-
-                                    {/* 하단: 업무명 · 카테고리 */}
-                                    {(template.task_name ||
-                                        template.category_name) && (
-                                        <Text
-                                            type="secondary"
-                                            className="template-subtitle"
-                                        >
-                                            {[
-                                                template.task_name,
-                                                template.category_name,
-                                            ]
-                                                .filter(Boolean)
-                                                .join(" · ")}
-                                        </Text>
-                                    )}
-                                </div>
-
-                                {/* 액션 버튼 영역 */}
-                                <div className="template-actions">
-                                    {/* 호버 시 표시되는 수정/삭제 버튼 */}
-                                    <div className="template-hover-buttons">
-                                        <Tooltip title="수정">
-                                            <Button
-                                                size="small"
-                                                icon={<EditOutlined />}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleOpenEditModal(
-                                                        template
-                                                    );
-                                                }}
-                                            />
-                                        </Tooltip>
-                                        <Popconfirm
-                                            title="프리셋 삭제"
-                                            description="이 프리셋을 삭제하시겠습니까?"
-                                            onConfirm={() =>
-                                                deleteTemplate(template.id)
-                                            }
-                                            okText="삭제"
-                                            cancelText="취소"
-                                        >
-                                            <Tooltip title="삭제">
-                                                <Button
-                                                    danger
-                                                    size="small"
-                                                    icon={<DeleteOutlined />}
-                                                    onClick={(e) =>
-                                                        e.stopPropagation()
-                                                    }
-                                                />
-                                            </Tooltip>
-                                        </Popconfirm>
-                                    </div>
-
-                                    {/* 항상 표시되는 버튼들 */}
-                                    <Space size={4}>
-                                        {onAddRecordOnly && (
-                                            <Tooltip title="작업 추가">
-                                                <Button
-                                                    type="primary"
-                                                    size="small"
-                                                    icon={<PlusOutlined />}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        onAddRecordOnly(template.id);
-                                                    }}
-                                                />
-                                            </Tooltip>
-                                        )}
-                                    </Space>
-                                </div>
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                    >
+                        <SortableContext
+                            items={templates.map((t) => t.id)}
+                            strategy={verticalListSortingStrategy}
+                        >
+                            <div className="template-items">
+                                {templates.map((template) => (
+                                    <SortableTemplateCard
+                                        key={template.id}
+                                        template={template}
+                                        onEdit={handleOpenEditModal}
+                                        onDelete={deleteTemplate}
+                                        onAddRecordOnly={onAddRecordOnly}
+                                    />
+                                ))}
                             </div>
-                        ))}
-                    </div>
+                        </SortableContext>
+                    </DndContext>
                 )}
             </Card>
 
@@ -724,11 +797,30 @@ export default function WorkTemplateList({
                     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
                 }
                 
+                .template-drag-handle {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 0 8px;
+                    cursor: grab;
+                    color: #bbb;
+                    transition: color 0.2s;
+                    align-self: stretch;
+                }
+                
+                .template-drag-handle:hover {
+                    color: #666;
+                }
+                
+                .template-drag-handle:active {
+                    cursor: grabbing;
+                }
+                
                 .template-content {
                     flex: 1;
                     padding: 10px 12px;
+                    padding-left: 0;
                     padding-right: 8px;
-                    cursor: pointer;
                     min-height: 60px;
                     min-width: 0;
                     display: flex;

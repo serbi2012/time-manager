@@ -57,52 +57,6 @@ const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
 
 function MainPage() {
-    // 프리셋에서 작업 기록에 추가 (타이머 시작)
-    const handleAddToRecord = (template_id: string) => {
-        // 템플릿 찾기
-        const template = useWorkStore
-            .getState()
-            .templates.find((t) => t.id === template_id);
-        if (!template) return;
-
-        // 유니크 ID 생성 (MMdd_HHmmss_xxx 형식 - 초 + 랜덤 3자리)
-        const now = new Date();
-        const random_suffix = Math.floor(Math.random() * 1000)
-            .toString()
-            .padStart(3, "0");
-        const unique_id = `${String(now.getMonth() + 1).padStart(
-            2,
-            "0"
-        )}${String(now.getDate()).padStart(2, "0")}_${String(
-            now.getHours()
-        ).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}${String(
-            now.getSeconds()
-        ).padStart(2, "0")}_${random_suffix}`;
-        const unique_deal_name = template.deal_name
-            ? `${template.deal_name}_${unique_id}`
-            : `작업_${unique_id}`;
-
-        // 새 타이머 시작 함수
-        const startNewTimer = () => {
-            useWorkStore.getState().applyTemplate(template_id);
-            useWorkStore
-                .getState()
-                .setFormData({ deal_name: unique_deal_name });
-            useWorkStore.getState().startTimer(template_id);
-            message.success(`"${template.work_name}" 작업이 시작되었습니다`);
-        };
-
-        // 기존 타이머가 있으면 중지 후 약간의 지연을 두고 새 타이머 시작
-        // (persist 미들웨어 상태 동기화 대기)
-        if (useWorkStore.getState().timer.is_running) {
-            useWorkStore.getState().stopTimer();
-            // 상태 업데이트가 완료될 때까지 대기
-            setTimeout(startNewTimer, 10);
-        } else {
-            startNewTimer();
-        }
-    };
-
     // 프리셋에서 작업 기록에만 추가 (타이머 없이)
     const handleAddRecordOnly = (template_id: string) => {
         const template = useWorkStore
@@ -157,7 +111,6 @@ function MainPage() {
             {/* 좌측 사이드바: 작업 프리셋 */}
             <Sider width={300} className="app-sider" theme="light">
                 <WorkTemplateList
-                    onAddToRecord={handleAddToRecord}
                     onAddRecordOnly={handleAddRecordOnly}
                 />
             </Sider>

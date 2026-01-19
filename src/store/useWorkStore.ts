@@ -120,6 +120,7 @@ interface WorkStore {
     ) => WorkTemplate;
     deleteTemplate: (id: string) => void;
     updateTemplate: (id: string, template: Partial<WorkTemplate>) => void;
+    reorderTemplates: (active_id: string, over_id: string) => void;
     applyTemplate: (template_id: string) => void;
 
     // 날짜 필터
@@ -859,6 +860,20 @@ export const useWorkStore = create<WorkStore>()((set, get) => ({
                 t.id === id ? { ...t, ...template } : t
             ),
         }));
+    },
+
+    reorderTemplates: (active_id, over_id) => {
+        set((state) => {
+            const old_index = state.templates.findIndex((t) => t.id === active_id);
+            const new_index = state.templates.findIndex((t) => t.id === over_id);
+            if (old_index === -1 || new_index === -1) return state;
+
+            const new_templates = [...state.templates];
+            const [removed] = new_templates.splice(old_index, 1);
+            new_templates.splice(new_index, 0, removed);
+
+            return { templates: new_templates };
+        });
     },
 
     applyTemplate: (template_id) => {
