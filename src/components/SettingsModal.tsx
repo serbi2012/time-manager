@@ -135,6 +135,7 @@ function ShortcutsTab() {
                     onConfirm={handleReset}
                     okText="초기화"
                     cancelText="취소"
+                    okButtonProps={{ autoFocus: true }}
                 >
                     <Button icon={<ReloadOutlined />} size="small">
                         기본값으로 초기화
@@ -307,6 +308,7 @@ function AutoCompleteTab() {
                             }
                             okText="숨김"
                             cancelText="취소"
+                            okButtonProps={{ autoFocus: true }}
                         >
                             <Button
                                 size="small"

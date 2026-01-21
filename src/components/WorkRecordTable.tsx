@@ -493,7 +493,7 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                                 }
                                 okText="삭제"
                                 cancelText="취소"
-                                okButtonProps={{ danger: true }}
+                                okButtonProps={{ danger: true, autoFocus: true }}
                             >
                                 <Button
                                     type="text"
@@ -1207,7 +1207,7 @@ export default function WorkRecordTable() {
                                 onConfirm={() => softDeleteRecord(record.id)}
                                 okText="삭제"
                                 cancelText="취소"
-                                okButtonProps={{ danger: true }}
+                                okButtonProps={{ danger: true, autoFocus: true }}
                             >
                                 <Button
                                     type="text"
@@ -1512,6 +1512,7 @@ export default function WorkRecordTable() {
                                                         onConfirm={() => softDeleteRecord(record.id)}
                                                         okText="삭제"
                                                         cancelText="취소"
+                                                        okButtonProps={{ danger: true, autoFocus: true }}
                                                     >
                                                         <Button danger icon={<DeleteOutlined />} size="small">
                                                             삭제
@@ -1546,7 +1547,7 @@ export default function WorkRecordTable() {
                 }}
                 footer={[
                     <Button key="ok" type="primary" onClick={handleAddNewWork}>
-                        추가 (Ctrl+Shift+Enter)
+                        추가 (F8)
                     </Button>,
                     <Button
                         key="cancel"
@@ -1563,7 +1564,7 @@ export default function WorkRecordTable() {
                     form={form}
                     layout="vertical"
                     onKeyDown={(e) => {
-                        if (e.ctrlKey && e.shiftKey && e.key === "Enter") {
+                        if (e.key === "F8") {
                             e.preventDefault();
                             handleAddNewWork();
                         }
@@ -2188,7 +2189,7 @@ export default function WorkRecordTable() {
                                         }
                                         okText="삭제"
                                         cancelText="취소"
-                                        okButtonProps={{ danger: true }}
+                                        okButtonProps={{ danger: true, autoFocus: true }}
                                     >
                                         <Button
                                             type="text"
@@ -2293,7 +2294,7 @@ export default function WorkRecordTable() {
                                         }}
                                         okText="삭제"
                                         cancelText="취소"
-                                        okButtonProps={{ danger: true }}
+                                        okButtonProps={{ danger: true, autoFocus: true }}
                                     >
                                         <Tooltip title="완전 삭제">
                                             <Button

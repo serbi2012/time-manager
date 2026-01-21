@@ -27,6 +27,7 @@ import {
     CheckCircleFilled,
     InfoCircleOutlined,
     AppstoreOutlined,
+    MessageOutlined,
 } from "@ant-design/icons";
 import { useResponsive } from "./hooks/useResponsive";
 import {
@@ -41,6 +42,7 @@ import WorkRecordTable from "./components/WorkRecordTable";
 import WorkTemplateList from "./components/WorkTemplateList";
 import DailyGanttChart from "./components/DailyGanttChart";
 import WeeklySchedule from "./components/WeeklySchedule";
+import SuggestionBoard from "./components/SuggestionBoard";
 import SettingsModal from "./components/SettingsModal";
 import ChangelogModal from "./components/ChangelogModal";
 import { CURRENT_VERSION } from "./constants/changelog";
@@ -402,6 +404,11 @@ function AppLayout() {
             icon: <CalendarOutlined />,
             label: "주간 일정",
         },
+        {
+            key: "/suggestions",
+            icon: <MessageOutlined />,
+            label: "건의사항",
+        },
     ];
 
     // 유저 드롭다운 메뉴
@@ -694,6 +701,7 @@ function AppLayout() {
             <Routes>
                 <Route path="/" element={<MainPage />} />
                 <Route path="/weekly" element={<WeeklySchedule />} />
+                <Route path="/suggestions" element={<SuggestionBoard />} />
             </Routes>
 
             {/* 설정 모달 */}
@@ -728,14 +736,21 @@ function AppLayout() {
                         onClick={() => navigate("/")}
                     >
                         <HomeOutlined />
-                        <span>일간 기록</span>
+                        <span>일간</span>
                     </button>
                     <button
                         className={`mobile-nav-item ${location.pathname === "/weekly" ? "active" : ""}`}
                         onClick={() => navigate("/weekly")}
                     >
                         <CalendarOutlined />
-                        <span>주간 일정</span>
+                        <span>주간</span>
+                    </button>
+                    <button
+                        className={`mobile-nav-item ${location.pathname === "/suggestions" ? "active" : ""}`}
+                        onClick={() => navigate("/suggestions")}
+                    >
+                        <MessageOutlined />
+                        <span>건의</span>
                     </button>
                     <button
                         className="mobile-nav-item"

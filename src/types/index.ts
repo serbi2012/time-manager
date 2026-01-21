@@ -55,3 +55,28 @@ export interface WorkTemplate {
   color: string;          // 구분용 색상
   created_at: string;
 }
+
+// 건의사항 상태
+export type SuggestionStatus = 'pending' | 'reviewing' | 'in_progress' | 'completed' | 'rejected';
+
+// 건의사항 답글
+export interface SuggestionReply {
+  id: string;
+  author_name: string;
+  content: string;
+  created_at: string;
+}
+
+// 건의사항 게시글
+export interface SuggestionPost {
+  id: string;
+  author_id: string;
+  author_name: string;
+  title: string;
+  content: string;
+  created_at: string;
+  replies: SuggestionReply[];
+  status: SuggestionStatus;
+  resolved_version?: string;
+  admin_comment?: string;
+}

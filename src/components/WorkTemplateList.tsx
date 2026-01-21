@@ -151,6 +151,7 @@ function SortableTemplateCard({
                         onConfirm={() => onDelete(template.id)}
                         okText="삭제"
                         cancelText="취소"
+                        okButtonProps={{ danger: true, autoFocus: true }}
                     >
                         <Tooltip title="삭제">
                             <Button
@@ -529,7 +530,7 @@ export default function WorkTemplateList({
                 onCancel={handleCloseModal}
                 footer={[
                     <Button key="ok" type="primary" onClick={handleSubmit}>
-                        {is_edit_mode ? "수정" : "추가"} (Ctrl+Shift+Enter)
+                        {is_edit_mode ? "수정" : "추가"} (F8)
                     </Button>,
                     <Button key="cancel" onClick={handleCloseModal}>
                         취소
@@ -540,7 +541,7 @@ export default function WorkTemplateList({
                     form={form}
                     layout="vertical"
                     onKeyDown={(e) => {
-                        if (e.ctrlKey && e.shiftKey && e.key === "Enter") {
+                        if (e.key === "F8") {
                             e.preventDefault();
                             handleSubmit();
                         }
