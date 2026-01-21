@@ -12,7 +12,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-html, body, #root {
+html {
+  height: 100%;
+  overflow-y: scroll;
+}
+
+body, #root {
   height: 100%;
 }
 

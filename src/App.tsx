@@ -28,6 +28,7 @@ import {
     InfoCircleOutlined,
     AppstoreOutlined,
     MessageOutlined,
+    BookOutlined,
 } from "@ant-design/icons";
 import { useResponsive } from "./hooks/useResponsive";
 import {
@@ -43,6 +44,7 @@ import WorkTemplateList from "./components/WorkTemplateList";
 import DailyGanttChart from "./components/DailyGanttChart";
 import WeeklySchedule from "./components/WeeklySchedule";
 import SuggestionBoard from "./components/SuggestionBoard";
+import GuideBook from "./components/GuideBook";
 import SettingsModal from "./components/SettingsModal";
 import ChangelogModal from "./components/ChangelogModal";
 import { CURRENT_VERSION } from "./constants/changelog";
@@ -409,6 +411,11 @@ function AppLayout() {
             icon: <MessageOutlined />,
             label: "건의사항",
         },
+        {
+            key: "/guide",
+            icon: <BookOutlined />,
+            label: "사용 설명서",
+        },
     ];
 
     // 유저 드롭다운 메뉴
@@ -702,6 +709,7 @@ function AppLayout() {
                 <Route path="/" element={<MainPage />} />
                 <Route path="/weekly" element={<WeeklySchedule />} />
                 <Route path="/suggestions" element={<SuggestionBoard />} />
+                <Route path="/guide" element={<GuideBook />} />
             </Routes>
 
             {/* 설정 모달 */}
@@ -753,11 +761,11 @@ function AppLayout() {
                         <span>건의</span>
                     </button>
                     <button
-                        className="mobile-nav-item"
-                        onClick={() => setIsSettingsOpen(true)}
+                        className={`mobile-nav-item ${location.pathname === "/guide" ? "active" : ""}`}
+                        onClick={() => navigate("/guide")}
                     >
-                        <SettingOutlined />
-                        <span>설정</span>
+                        <BookOutlined />
+                        <span>설명서</span>
                     </button>
                 </nav>
             )}

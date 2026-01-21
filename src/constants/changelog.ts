@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "1.1.0";
+export const CURRENT_VERSION = "1.2.0";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,47 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "1.2.0",
+        date: "2026-01-21",
+        title: "사용 설명서 📖",
+        changes: [
+            {
+                type: "feature",
+                description: "사용 설명서 페이지 추가 (/guide)",
+            },
+            {
+                type: "feature",
+                description: "마크다운 기반 위키 스타일 문서 시스템",
+            },
+            {
+                type: "feature",
+                description: "문서 내 검색 기능",
+            },
+            {
+                type: "feature",
+                description: "문서 간 위키 링크 (wiki:section-id) 지원",
+            },
+            {
+                type: "feature",
+                description:
+                    "실제 UI 미리보기 데모 컴포넌트 (작업 테이블, 프리셋 목록 등)",
+            },
+            {
+                type: "feature",
+                description: "Mermaid 다이어그램으로 프로세스 시각화",
+            },
+            {
+                type: "docs",
+                description:
+                    "시작하기, 일간 기록, 작업 프리셋, 주간 일정, 건의사항, 설정, 단축키 문서 작성",
+            },
+            {
+                type: "style",
+                description: "이전/다음 페이지 네비게이션 버튼",
+            },
+        ],
+    },
     {
         version: "1.1.0",
         date: "2026-01-21",
