@@ -62,6 +62,7 @@ export type SuggestionStatus = 'pending' | 'reviewing' | 'in_progress' | 'comple
 // 건의사항 답글
 export interface SuggestionReply {
   id: string;
+  author_id?: string;
   author_name: string;
   content: string;
   created_at: string;

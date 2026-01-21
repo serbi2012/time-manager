@@ -35,6 +35,8 @@ import {
     subscribeToSuggestions,
     addSuggestion,
     addReply,
+    updateReply,
+    deleteReply,
     updateSuggestionStatus,
     updateSuggestion,
     deleteSuggestion,
@@ -79,9 +81,10 @@ function formatRelativeTime(date_string: string): string {
 interface ReplyFormProps {
     post_id: string;
     default_author?: string;
+    author_id: string;
 }
 
-function ReplyForm({ post_id, default_author = "" }: ReplyFormProps) {
+function ReplyForm({ post_id, default_author = "", author_id }: ReplyFormProps) {
     const [author_name, setAuthorName] = useState(default_author);
     const [content, setContent] = useState("");
     const [is_submitting, setIsSubmitting] = useState(false);
@@ -100,6 +103,7 @@ function ReplyForm({ post_id, default_author = "" }: ReplyFormProps) {
         try {
             const reply: SuggestionReply = {
                 id: crypto.randomUUID(),
+                author_id,
                 author_name: author_name.trim(),
                 content: content.trim(),
                 created_at: new Date().toISOString(),
@@ -114,9 +118,16 @@ function ReplyForm({ post_id, default_author = "" }: ReplyFormProps) {
         }
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSubmit();
+        }
+    };
+
     return (
         <div className="suggestion-reply-form">
-            <Space.Compact style={{ width: "100%" }}>
+            <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
                 <Input
                     placeholder="닉네임"
                     prefix={<UserOutlined />}
@@ -124,11 +135,12 @@ function ReplyForm({ post_id, default_author = "" }: ReplyFormProps) {
                     onChange={(e) => setAuthorName(e.target.value)}
                     style={{ width: 120 }}
                 />
-                <Input
-                    placeholder="답글을 입력하세요"
+                <TextArea
+                    placeholder="답글을 입력하세요 (Shift+Enter: 줄바꿈, Enter: 등록)"
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
-                    onPressEnter={handleSubmit}
+                    onKeyDown={handleKeyDown}
+                    autoSize={{ minRows: 1, maxRows: 4 }}
                     style={{ flex: 1 }}
                 />
                 <Button
@@ -137,7 +149,7 @@ function ReplyForm({ post_id, default_author = "" }: ReplyFormProps) {
                     onClick={handleSubmit}
                     loading={is_submitting}
                 />
-            </Space.Compact>
+            </div>
         </div>
     );
 }
@@ -229,6 +241,9 @@ export default function SuggestionBoard() {
     const [form] = Form.useForm();
     const [edit_form] = Form.useForm();
 
+    const [editing_reply, setEditingReply] = useState<{ post_id: string; reply_id: string } | null>(null);
+    const [edit_reply_content, setEditReplyContent] = useState("");
+
     const is_admin = user?.email === ADMIN_EMAIL;
     const my_author_id = getAuthorId(user);
 
@@ -276,6 +291,48 @@ export default function SuggestionBoard() {
 
     const canDeletePost = (post: SuggestionPost) => {
         return is_admin || (post.author_id && post.author_id === my_author_id);
+    };
+
+    const canEditReply = (reply: SuggestionReply) => {
+        return is_admin || (reply.author_id && reply.author_id === my_author_id);
+    };
+
+    const canDeleteReply = (reply: SuggestionReply) => {
+        return is_admin || (reply.author_id && reply.author_id === my_author_id);
+    };
+
+    const handleEditReply = async (post_id: string, reply_id: string) => {
+        if (!edit_reply_content.trim()) {
+            message.warning("답글 내용을 입력해주세요");
+            return;
+        }
+        try {
+            await updateReply(post_id, reply_id, edit_reply_content.trim());
+            message.success("답글이 수정되었습니다");
+            setEditingReply(null);
+            setEditReplyContent("");
+        } catch {
+            message.error("답글 수정에 실패했습니다");
+        }
+    };
+
+    const handleDeleteReply = async (post_id: string, reply_id: string) => {
+        try {
+            await deleteReply(post_id, reply_id);
+            message.success("답글이 삭제되었습니다");
+        } catch {
+            message.error("답글 삭제에 실패했습니다");
+        }
+    };
+
+    const startEditReply = (post_id: string, reply: SuggestionReply) => {
+        setEditingReply({ post_id, reply_id: reply.id });
+        setEditReplyContent(reply.content);
+    };
+
+    const cancelEditReply = () => {
+        setEditingReply(null);
+        setEditReplyContent("");
     };
 
     const handleSubmitPost = async () => {
@@ -456,19 +513,133 @@ export default function SuggestionBoard() {
                             </Text>
                             <List
                                 dataSource={post.replies}
-                                renderItem={(reply) => (
-                                    <div className="suggestion-reply-item">
-                                        <div className="suggestion-reply-content">
-                                            <Text>{reply.content}</Text>
+                                renderItem={(reply) => {
+                                    const is_editing =
+                                        editing_reply?.post_id === post.id &&
+                                        editing_reply?.reply_id === reply.id;
+                                    const can_edit = canEditReply(reply);
+                                    const can_delete = canDeleteReply(reply);
+
+                                    return (
+                                        <div className="suggestion-reply-item">
+                                            {is_editing ? (
+                                                <div style={{ width: "100%" }}>
+                                                    <TextArea
+                                                        value={edit_reply_content}
+                                                        onChange={(e) =>
+                                                            setEditReplyContent(e.target.value)
+                                                        }
+                                                        autoSize={{ minRows: 1, maxRows: 4 }}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === "Enter" && !e.shiftKey) {
+                                                                e.preventDefault();
+                                                                handleEditReply(post.id, reply.id);
+                                                            } else if (e.key === "Escape") {
+                                                                cancelEditReply();
+                                                            }
+                                                        }}
+                                                        autoFocus
+                                                    />
+                                                    <Space style={{ marginTop: 8 }}>
+                                                        <Button
+                                                            size="small"
+                                                            type="primary"
+                                                            onClick={() =>
+                                                                handleEditReply(post.id, reply.id)
+                                                            }
+                                                        >
+                                                            저장
+                                                        </Button>
+                                                        <Button
+                                                            size="small"
+                                                            onClick={cancelEditReply}
+                                                        >
+                                                            취소
+                                                        </Button>
+                                                    </Space>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div className="suggestion-reply-content">
+                                                        <Text style={{ whiteSpace: "pre-wrap" }}>
+                                                            {reply.content}
+                                                        </Text>
+                                                    </div>
+                                                    <div
+                                                        className="suggestion-reply-meta"
+                                                        style={{
+                                                            display: "flex",
+                                                            justifyContent: "space-between",
+                                                            alignItems: "center",
+                                                        }}
+                                                    >
+                                                        <Text
+                                                            type="secondary"
+                                                            style={{ fontSize: 12 }}
+                                                        >
+                                                            {reply.author_name} ·{" "}
+                                                            {formatRelativeTime(reply.created_at)}
+                                                        </Text>
+                                                        {(can_edit || can_delete) && (
+                                                            <Space size="small">
+                                                                {can_edit && (
+                                                                    <Button
+                                                                        type="link"
+                                                                        size="small"
+                                                                        style={{
+                                                                            padding: 0,
+                                                                            height: "auto",
+                                                                            fontSize: 12,
+                                                                        }}
+                                                                        onClick={() =>
+                                                                            startEditReply(
+                                                                                post.id,
+                                                                                reply
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        수정
+                                                                    </Button>
+                                                                )}
+                                                                {can_delete && (
+                                                                    <Popconfirm
+                                                                        title="답글 삭제"
+                                                                        description="정말 이 답글을 삭제하시겠습니까?"
+                                                                        onConfirm={() =>
+                                                                            handleDeleteReply(
+                                                                                post.id,
+                                                                                reply.id
+                                                                            )
+                                                                        }
+                                                                        okText="삭제"
+                                                                        cancelText="취소"
+                                                                        okButtonProps={{
+                                                                            danger: true,
+                                                                            autoFocus: true,
+                                                                        }}
+                                                                    >
+                                                                        <Button
+                                                                            type="link"
+                                                                            size="small"
+                                                                            danger
+                                                                            style={{
+                                                                                padding: 0,
+                                                                                height: "auto",
+                                                                                fontSize: 12,
+                                                                            }}
+                                                                        >
+                                                                            삭제
+                                                                        </Button>
+                                                                    </Popconfirm>
+                                                                )}
+                                                            </Space>
+                                                        )}
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
-                                        <div className="suggestion-reply-meta">
-                                            <Text type="secondary" style={{ fontSize: 12 }}>
-                                                {reply.author_name} ·{" "}
-                                                {formatRelativeTime(reply.created_at)}
-                                            </Text>
-                                        </div>
-                                    </div>
-                                )}
+                                    );
+                                }}
                             />
                         </div>
                     )}
@@ -477,6 +648,7 @@ export default function SuggestionBoard() {
                     <ReplyForm
                         post_id={post.id}
                         default_author={user?.displayName || ""}
+                        author_id={my_author_id}
                     />
 
                     {is_admin && <AdminControls post={post} />}

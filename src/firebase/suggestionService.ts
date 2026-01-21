@@ -4,6 +4,7 @@ import {
     setDoc,
     updateDoc,
     deleteDoc,
+    getDoc,
     query,
     orderBy,
     onSnapshot,
@@ -32,6 +33,37 @@ export async function addReply(
     await updateDoc(doc_ref, {
         replies: arrayUnion(reply),
     });
+}
+
+export async function updateReply(
+    post_id: string,
+    reply_id: string,
+    new_content: string
+): Promise<void> {
+    const doc_ref = doc(db, COLLECTION_NAME, post_id);
+    const doc_snap = await getDoc(doc_ref);
+    if (!doc_snap.exists()) return;
+
+    const data = doc_snap.data();
+    const replies = (data.replies || []) as SuggestionReply[];
+    const updated_replies = replies.map((reply) =>
+        reply.id === reply_id ? { ...reply, content: new_content } : reply
+    );
+    await updateDoc(doc_ref, { replies: updated_replies });
+}
+
+export async function deleteReply(
+    post_id: string,
+    reply_id: string
+): Promise<void> {
+    const doc_ref = doc(db, COLLECTION_NAME, post_id);
+    const doc_snap = await getDoc(doc_ref);
+    if (!doc_snap.exists()) return;
+
+    const data = doc_snap.data();
+    const replies = (data.replies || []) as SuggestionReply[];
+    const filtered_replies = replies.filter((reply) => reply.id !== reply_id);
+    await updateDoc(doc_ref, { replies: filtered_replies });
 }
 
 export async function deleteSuggestion(post_id: string): Promise<void> {
