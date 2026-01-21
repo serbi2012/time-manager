@@ -59,14 +59,13 @@
 
 .app-body {
     display: flex;
-    min-height: calc(100vh - 56px);
+    height: calc(100vh - 56px);
+    overflow: hidden;
 }
 
 .app-sider {
     border-right: 1px solid #e8e8e8;
-    position: sticky;
-    top: 56px; /* 헤더 높이 */
-    height: calc(100vh - 56px);
+    height: 100%;
     overflow: auto;
     flex-shrink: 0;
 }
@@ -96,6 +95,8 @@
     flex-direction: column;
     gap: 16px;
     flex: 1;
+    overflow-y: auto;
+    height: 100%;
 }
 
 /* 타이머 바 스타일 */
@@ -174,6 +175,9 @@
 @media (max-width: 1024px) {
     .app-body {
         flex-direction: column;
+        height: auto;
+        min-height: calc(100vh - 56px);
+        overflow: visible;
     }
 
     .app-sider {
@@ -182,7 +186,6 @@
         min-width: 100% !important;
         border-right: none;
         border-bottom: 1px solid #e8e8e8;
-        position: static;
         height: auto;
         max-height: 300px;
     }
@@ -193,6 +196,8 @@
 
     .app-content {
         padding: 16px;
+        height: auto;
+        overflow: visible;
     }
 }
 
@@ -288,8 +293,10 @@
 
     /* 모바일에서 body 하단 패딩 (하단 네비게이션 공간) */
     .app-body {
+        height: auto;
         min-height: calc(100vh - 52px); /* 헤더 */
         padding-bottom: 56px; /* 하단 네비 높이만큼 패딩 */
+        overflow: visible;
     }
 
     /* 사이드바 모바일에서 숨김 (프리셋 드로어로 대체) */
