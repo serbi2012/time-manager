@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "1.1.0";
+export const CURRENT_VERSION = "1.2.0";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -46,6 +46,18 @@ export const CHANGE_TYPE_CONFIG: Record<ChangeType, { emoji: string; label: stri
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "1.2.0",
+        date: "2026-01-20",
+        title: "PWA 지원 🚀",
+        changes: [
+            { type: "feature", description: "PWA (Progressive Web App) 지원 - 홈 화면에 추가 가능" },
+            { type: "feature", description: "오프라인 캐싱으로 빠른 앱 로딩" },
+            { type: "feature", description: "앱 아이콘 및 스플래시 스크린 추가" },
+            { type: "improvement", description: "Service Worker를 통한 리소스 캐싱" },
+            { type: "style", description: "앱 테마 컬러 및 메타 태그 최적화" },
+        ],
+    },
     {
         version: "1.1.0",
         date: "2026-01-19",
