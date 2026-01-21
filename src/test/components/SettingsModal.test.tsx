@@ -108,21 +108,10 @@ describe('SettingsModal', () => {
             expect(on_export).toHaveBeenCalledTimes(1)
         })
 
-        it('로그인되지 않으면 가져오기 버튼 비활성화', () => {
+        it('가져오기 버튼이 항상 활성화됨', () => {
             render(
                 <TestWrapper>
                     <SettingsModal {...defaultProps} isAuthenticated={false} />
-                </TestWrapper>
-            )
-
-            const import_button = screen.getByText('데이터 가져오기 (Import)')
-            expect(import_button.closest('button')).toBeDisabled()
-        })
-
-        it('로그인되면 가져오기 버튼 활성화', () => {
-            render(
-                <TestWrapper>
-                    <SettingsModal {...defaultProps} isAuthenticated={true} />
                 </TestWrapper>
             )
 
@@ -130,7 +119,7 @@ describe('SettingsModal', () => {
             expect(import_button.closest('button')).not.toBeDisabled()
         })
 
-        it('로그인되지 않으면 경고 메시지 표시', () => {
+        it('가져오기 시 주의 메시지 표시', () => {
             render(
                 <TestWrapper>
                     <SettingsModal {...defaultProps} isAuthenticated={false} />
@@ -138,7 +127,7 @@ describe('SettingsModal', () => {
             )
 
             expect(
-                screen.getByText(/데이터 가져오기는 로그인 후 사용할 수 있습니다/)
+                screen.getByText(/가져오기 시 기존 데이터가 덮어씌워집니다/)
             ).toBeInTheDocument()
         })
 
@@ -152,14 +141,14 @@ describe('SettingsModal', () => {
             expect(screen.getByText('Firebase Cloud')).toBeInTheDocument()
         })
 
-        it('로그인되지 않으면 메모리 저장 태그 표시', () => {
+        it('로그인되지 않으면 LocalStorage 태그 표시', () => {
             render(
                 <TestWrapper>
                     <SettingsModal {...defaultProps} isAuthenticated={false} />
                 </TestWrapper>
             )
 
-            expect(screen.getByText('메모리 (로그인 필요)')).toBeInTheDocument()
+            expect(screen.getByText('LocalStorage (브라우저)')).toBeInTheDocument()
         })
     })
 
