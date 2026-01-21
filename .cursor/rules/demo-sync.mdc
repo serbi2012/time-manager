@@ -1,0 +1,74 @@
+---
+description: UI 컴포넌트 변경 시 데모 컴포넌트 동기화 규칙
+alwaysApply: false
+---
+
+# 데모 컴포넌트 동기화 규칙
+
+## 개요
+
+이 프로젝트는 사용 설명서(`/guide`)에서 실제 UI를 데모로 보여주는 `DemoComponents.tsx`를 사용합니다.
+**UI 컴포넌트가 변경되면 반드시 데모 컴포넌트도 함께 업데이트해야 합니다.**
+
+## 데모 컴포넌트 위치
+
+```
+src/components/guide/DemoComponents.tsx
+```
+
+## 동기화 대상 컴포넌트
+
+| 실제 컴포넌트          | 데모 컴포넌트          |
+| ---------------------- | ---------------------- |
+| `WorkRecordTable.tsx`  | `DemoWorkRecordTable`  |
+| `WorkTemplateList.tsx` | `DemoWorkTemplateList` |
+| `DailyGanttChart.tsx`  | `DemoDailyGanttChart`  |
+
+## 변경 시 체크리스트
+
+UI 컴포넌트 수정 시 다음을 확인하세요:
+
+1. **테이블 컬럼 변경**: `DemoWorkRecordTable`의 `columns` 배열 업데이트
+2. **카드/리스트 레이아웃 변경**: `DemoWorkTemplateList`의 JSX 구조 업데이트
+3. **버튼/아이콘 추가/제거**: 해당 데모 컴포넌트에 동일하게 반영
+4. **스타일 클래스 변경**: `App.css`의 `.demo-*` 스타일도 업데이트
+5. **새로운 기능 UI 추가**: 필요시 새 데모 컴포넌트 생성
+
+## 데모 컴포넌트 작성 규칙
+
+1. **완전한 격리**: 실제 store(`useWorkStore`) 절대 사용 금지
+2. **더미 데이터 사용**: 컴포넌트 내부에 하드코딩된 데이터 사용
+3. **읽기 전용**: 버튼 클릭 등 인터랙션은 비활성화 (`disabled` 또는 빈 핸들러)
+4. **실제 UI와 동일한 모습**: 레이아웃, 스타일, 아이콘 등 최대한 일치
+
+## 예시: 새 컬럼 추가 시
+
+**WorkRecordTable.tsx에 "우선순위" 컬럼 추가 시:**
+
+```tsx
+// DemoComponents.tsx의 DemoWorkRecordTable에도 추가
+{
+    title: "우선순위",
+    dataIndex: "priority",
+    key: "priority",
+    render: (text: string) => <Tag color="red">{text}</Tag>,
+},
+```
+
+**더미 데이터에도 추가:**
+
+```tsx
+const DEMO_RECORDS: DemoRecord[] = [
+    {
+        id: "1",
+        // ... 기존 필드
+        priority: "높음", // 새 필드 추가
+    },
+];
+```
+
+## 주의사항
+
+-   데모 컴포넌트는 **문서용 미리보기**이므로 완벽한 기능 구현은 불필요
+-   핵심은 **시각적으로 실제 UI와 동일하게 보이는 것**
+-   복잡한 상태 로직은 생략하고 정적인 모습만 표현

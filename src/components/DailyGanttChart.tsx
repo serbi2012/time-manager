@@ -177,6 +177,11 @@ export default function DailyGanttChart() {
     } | null>(null);
     const [form] = Form.useForm();
 
+    // 수정 모달 상태
+    const [is_edit_modal_open, setIsEditModalOpen] = useState(false);
+    const [edit_record, setEditRecord] = useState<WorkRecord | null>(null);
+    const [edit_form] = Form.useForm();
+
     // 사용자 정의 옵션 입력
     const [new_task_input, setNewTaskInput] = useState("");
     const [new_category_input, setNewCategoryInput] = useState("");
@@ -196,9 +201,13 @@ export default function DailyGanttChart() {
         let timer_date: string | null = null;
 
         if (timer.is_running && timer.active_form_data && timer.start_time) {
-            timer_key = timer.active_form_data.deal_name || timer.active_form_data.work_name;
+            timer_key =
+                timer.active_form_data.deal_name ||
+                timer.active_form_data.work_name;
             timer_date = dayjs(timer.start_time).format("YYYY-MM-DD");
-            timer_start_min = timeToMinutes(dayjs(timer.start_time).format("HH:mm"));
+            timer_start_min = timeToMinutes(
+                dayjs(timer.start_time).format("HH:mm")
+            );
         }
 
         records.forEach((record) => {
@@ -238,7 +247,11 @@ export default function DailyGanttChart() {
 
             // 타이머가 실행 중이고, 이 레코드가 현재 타이머 작업과 같으면
             // 시작 시간이 같은(중복) 세션만 필터링 (1분 이내 차이)
-            if (timer_key && timer_date === selected_date && key === timer_key) {
+            if (
+                timer_key &&
+                timer_date === selected_date &&
+                key === timer_key
+            ) {
                 date_sessions = date_sessions.filter((s) => {
                     const s_start = timeToMinutes(s.start_time);
                     // 시작 시간이 1분 이상 차이나는 세션만 유지
@@ -516,7 +529,13 @@ export default function DailyGanttChart() {
                 </div>
             ),
         }));
-    }, [records, templates, hidden_autocomplete_options, getAutoCompleteOptions, hideAutoCompleteOption]);
+    }, [
+        records,
+        templates,
+        hidden_autocomplete_options,
+        getAutoCompleteOptions,
+        hideAutoCompleteOption,
+    ]);
 
     const deal_name_options = useMemo(() => {
         return getAutoCompleteOptions("deal_name").map((v) => ({
@@ -545,7 +564,13 @@ export default function DailyGanttChart() {
                 </div>
             ),
         }));
-    }, [records, templates, hidden_autocomplete_options, getAutoCompleteOptions, hideAutoCompleteOption]);
+    }, [
+        records,
+        templates,
+        hidden_autocomplete_options,
+        getAutoCompleteOptions,
+        hideAutoCompleteOption,
+    ]);
 
     const task_options = useMemo(() => {
         const all = [...DEFAULT_TASK_OPTIONS, ...custom_task_options];
@@ -893,8 +918,7 @@ export default function DailyGanttChart() {
 
             const { handle, original_start, original_end, current_value } =
                 resize_state;
-            const start =
-                handle === "left" ? current_value : original_start;
+            const start = handle === "left" ? current_value : original_start;
             const end = handle === "right" ? current_value : original_end;
 
             // 유효하지 않은 범위면 원래 스타일 반환
@@ -1016,6 +1040,63 @@ export default function DailyGanttChart() {
         setSelectedTimeRange(null);
     };
 
+    // 더블클릭으로 수정 모달 열기
+    const handleBarDoubleClick = useCallback(
+        (record: WorkRecord, e: React.MouseEvent) => {
+            e.stopPropagation();
+            e.preventDefault();
+            // 진행 중인 가상 세션은 수정 불가
+            if (record.id === "virtual-running-record") {
+                message.info("진행 중인 작업은 수정할 수 없습니다.");
+                return;
+            }
+
+            setEditRecord(record);
+            edit_form.setFieldsValue({
+                project_code: record.project_code,
+                work_name: record.work_name,
+                deal_name: record.deal_name,
+                task_name: record.task_name,
+                category_name: record.category_name,
+                note: record.note,
+            });
+            setIsEditModalOpen(true);
+        },
+        [edit_form]
+    );
+
+    // 수정 저장 핸들러
+    const handleEditWork = async () => {
+        if (!edit_record) return;
+
+        try {
+            const values = await edit_form.validateFields();
+
+            updateRecord(edit_record.id, {
+                project_code: values.project_code || "A00_00000",
+                work_name: values.work_name,
+                deal_name: values.deal_name || "",
+                task_name: values.task_name || "",
+                category_name: values.category_name || "",
+                note: values.note || "",
+            });
+
+            message.success("작업이 수정되었습니다.");
+            setIsEditModalOpen(false);
+            setEditRecord(null);
+            edit_form.resetFields();
+        } catch {
+            // validation failed
+        }
+    };
+
+    // 수정 모달 취소
+    const handleEditModalCancel = () => {
+        edit_form.resetFields();
+        setIsEditModalOpen(false);
+        setEditRecord(null);
+    };
+
     // 사용자 정의 옵션 추가
     const handleAddTaskOption = () => {
         if (new_task_input.trim()) {
@@ -1065,7 +1146,9 @@ export default function DailyGanttChart() {
                 {/* 모바일: 수평 스크롤 컨테이너 */}
                 <div className={is_mobile ? "gantt-scroll-container" : ""}>
                     <div
-                        className={`gantt-wrapper ${is_mobile ? "gantt-mobile-scroll" : ""}`}
+                        className={`gantt-wrapper ${
+                            is_mobile ? "gantt-mobile-scroll" : ""
+                        }`}
                         onMouseMove={(e) => {
                             if (resize_state) {
                                 handleResizeMove(e);
@@ -1081,167 +1164,101 @@ export default function DailyGanttChart() {
                             }
                         }}
                         onMouseLeave={handleMouseLeave}
-                        onTouchMove={is_mobile ? (e) => {
-                            // 모바일 터치 드래그 지원
-                            if (!is_dragging || !drag_start_ref.current) return;
-                            const touch = e.touches[0];
-                            const grid = grid_ref.current;
-                            if (!grid) return;
-                            const rect = grid.getBoundingClientRect();
-                            const x_ratio = (touch.clientX - rect.left) / rect.width;
-                            const current_mins = Math.round(
-                                time_range.start +
-                                    x_ratio * total_minutes
-                            );
-                            const { mins: start_mins, available_min, available_max } = drag_start_ref.current;
-                            const clamped_mins = Math.max(
-                                available_min,
-                                Math.min(available_max, current_mins)
-                            );
-                            const [sel_start, sel_end] =
-                                start_mins < clamped_mins
-                                    ? [start_mins, clamped_mins]
-                                    : [clamped_mins, start_mins];
-                            setDragSelection({ start_mins: sel_start, end_mins: sel_end });
-                        } : undefined}
+                        onTouchMove={
+                            is_mobile
+                                ? (e) => {
+                                      // 모바일 터치 드래그 지원
+                                      if (
+                                          !is_dragging ||
+                                          !drag_start_ref.current
+                                      )
+                                          return;
+                                      const touch = e.touches[0];
+                                      const grid = grid_ref.current;
+                                      if (!grid) return;
+                                      const rect = grid.getBoundingClientRect();
+                                      const x_ratio =
+                                          (touch.clientX - rect.left) /
+                                          rect.width;
+                                      const current_mins = Math.round(
+                                          time_range.start +
+                                              x_ratio * total_minutes
+                                      );
+                                      const {
+                                          mins: start_mins,
+                                          available_min,
+                                          available_max,
+                                      } = drag_start_ref.current;
+                                      const clamped_mins = Math.max(
+                                          available_min,
+                                          Math.min(available_max, current_mins)
+                                      );
+                                      const [sel_start, sel_end] =
+                                          start_mins < clamped_mins
+                                              ? [start_mins, clamped_mins]
+                                              : [clamped_mins, start_mins];
+                                      setDragSelection({
+                                          start_mins: sel_start,
+                                          end_mins: sel_end,
+                                      });
+                                  }
+                                : undefined
+                        }
                         onTouchEnd={is_mobile ? handleMouseUp : undefined}
                     >
-                    {grouped_works.length === 0 ? (
-                        <div
-                            className="gantt-empty-container"
-                            ref={grid_ref}
-                            onMouseDown={handleMouseDown}
-                        >
-                            {/* 시간 눈금 */}
-                            <div className="gantt-time-header-empty">
-                                {time_labels.map((label, idx) => (
-                                    <div
-                                        key={label}
-                                        className="gantt-time-label"
-                                        style={{
-                                            left: `${
-                                                (idx /
-                                                    (time_labels.length - 1)) *
-                                                100
-                                            }%`,
-                                        }}
-                                    >
-                                        {label}
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* 그리드 */}
-                            <div className="gantt-grid-empty">
-                                {time_labels.map((label, idx) => (
-                                    <div
-                                        key={label}
-                                        className="gantt-grid-line"
-                                        style={{
-                                            left: `${
-                                                (idx /
-                                                    (time_labels.length - 1)) *
-                                                100
-                                            }%`,
-                                        }}
-                                    />
-                                ))}
-
-                                {/* 점심시간 오버레이 */}
-                                {lunch_overlay_style && (
-                                    <Tooltip title="점심시간 (11:40 ~ 12:40)">
-                                        <div
-                                            className="gantt-lunch-overlay"
-                                            style={lunch_overlay_style}
-                                        />
-                                    </Tooltip>
-                                )}
-                            </div>
-
-                            {/* 선택 영역 */}
-                            {is_dragging && drag_selection && (
-                                <div
-                                    className="gantt-selection"
-                                    style={getSelectionStyle()}
-                                >
-                                    <Text className="gantt-selection-text">
-                                        {minutesToTime(
-                                            drag_selection.start_mins
-                                        )}{" "}
-                                        ~{" "}
-                                        {minutesToTime(drag_selection.end_mins)}
-                                    </Text>
-                                </div>
-                            )}
-
-                            <div className="gantt-empty-hint">
-                                <Empty
-                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                    description={
-                                        <span>
-                                            작업 기록이 없습니다
-                                            <br />
-                                            <Text
-                                                type="secondary"
-                                                style={{ fontSize: 12 }}
-                                            >
-                                                드래그하여 작업 추가
-                                            </Text>
-                                        </span>
-                                    }
-                                />
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="gantt-container">
-                            {/* 시간 눈금 */}
-                            <div className="gantt-time-header">
-                                {time_labels.map((label, idx) => (
-                                    <div
-                                        key={label}
-                                        className="gantt-time-label"
-                                        style={{
-                                            left: `${
-                                                (idx /
-                                                    (time_labels.length - 1)) *
-                                                100
-                                            }%`,
-                                        }}
-                                    >
-                                        {label}
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* 그리드 및 드래그 영역 */}
+                        {grouped_works.length === 0 ? (
                             <div
-                                className="gantt-grid"
+                                className="gantt-empty-container"
                                 ref={grid_ref}
                                 onMouseDown={handleMouseDown}
                             >
-                                {time_labels.map((label, idx) => (
-                                    <div
-                                        key={label}
-                                        className="gantt-grid-line"
-                                        style={{
-                                            left: `${
-                                                (idx /
-                                                    (time_labels.length - 1)) *
-                                                100
-                                            }%`,
-                                        }}
-                                    />
-                                ))}
-
-                                {/* 점심시간 오버레이 */}
-                                {lunch_overlay_style && (
-                                    <Tooltip title="점심시간 (11:40 ~ 12:40)">
+                                {/* 시간 눈금 */}
+                                <div className="gantt-time-header-empty">
+                                    {time_labels.map((label, idx) => (
                                         <div
-                                            className="gantt-lunch-overlay"
-                                            style={lunch_overlay_style}
+                                            key={label}
+                                            className="gantt-time-label"
+                                            style={{
+                                                left: `${
+                                                    (idx /
+                                                        (time_labels.length -
+                                                            1)) *
+                                                    100
+                                                }%`,
+                                            }}
+                                        >
+                                            {label}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* 그리드 */}
+                                <div className="gantt-grid-empty">
+                                    {time_labels.map((label, idx) => (
+                                        <div
+                                            key={label}
+                                            className="gantt-grid-line"
+                                            style={{
+                                                left: `${
+                                                    (idx /
+                                                        (time_labels.length -
+                                                            1)) *
+                                                    100
+                                                }%`,
+                                            }}
                                         />
-                                    </Tooltip>
-                                )}
+                                    ))}
+
+                                    {/* 점심시간 오버레이 */}
+                                    {lunch_overlay_style && (
+                                        <Tooltip title="점심시간 (11:40 ~ 12:40)">
+                                            <div
+                                                className="gantt-lunch-overlay"
+                                                style={lunch_overlay_style}
+                                            />
+                                        </Tooltip>
+                                    )}
+                                </div>
 
                                 {/* 선택 영역 */}
                                 {is_dragging && drag_selection && (
@@ -1261,190 +1278,321 @@ export default function DailyGanttChart() {
                                     </div>
                                 )}
 
-                                {/* 작업별 행 */}
-                                <div className="gantt-bars">
-                                    {grouped_works.map((group, row_idx) => {
-                                        const color = getWorkColor(
-                                            group.record
-                                        );
-                                        return (
+                                <div className="gantt-empty-hint">
+                                    <Empty
+                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                        description={
+                                            <span>
+                                                작업 기록이 없습니다
+                                                <br />
+                                                <Text
+                                                    type="secondary"
+                                                    style={{ fontSize: 12 }}
+                                                >
+                                                    드래그하여 작업 추가
+                                                </Text>
+                                            </span>
+                                        }
+                                    />
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="gantt-container">
+                                {/* 시간 눈금 */}
+                                <div className="gantt-time-header">
+                                    {time_labels.map((label, idx) => (
+                                        <div
+                                            key={label}
+                                            className="gantt-time-label"
+                                            style={{
+                                                left: `${
+                                                    (idx /
+                                                        (time_labels.length -
+                                                            1)) *
+                                                    100
+                                                }%`,
+                                            }}
+                                        >
+                                            {label}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* 그리드 및 드래그 영역 */}
+                                <div
+                                    className="gantt-grid"
+                                    ref={grid_ref}
+                                    onMouseDown={handleMouseDown}
+                                >
+                                    {time_labels.map((label, idx) => (
+                                        <div
+                                            key={label}
+                                            className="gantt-grid-line"
+                                            style={{
+                                                left: `${
+                                                    (idx /
+                                                        (time_labels.length -
+                                                            1)) *
+                                                    100
+                                                }%`,
+                                            }}
+                                        />
+                                    ))}
+
+                                    {/* 점심시간 오버레이 */}
+                                    {lunch_overlay_style && (
+                                        <Tooltip title="점심시간 (11:40 ~ 12:40)">
                                             <div
-                                                key={group.key}
-                                                className="gantt-row"
-                                                style={{ top: row_idx * 40 }}
-                                            >
-                                                {/* 작업명 라벨 */}
+                                                className="gantt-lunch-overlay"
+                                                style={lunch_overlay_style}
+                                            />
+                                        </Tooltip>
+                                    )}
+
+                                    {/* 선택 영역 */}
+                                    {is_dragging && drag_selection && (
+                                        <div
+                                            className="gantt-selection"
+                                            style={getSelectionStyle()}
+                                        >
+                                            <Text className="gantt-selection-text">
+                                                {minutesToTime(
+                                                    drag_selection.start_mins
+                                                )}{" "}
+                                                ~{" "}
+                                                {minutesToTime(
+                                                    drag_selection.end_mins
+                                                )}
+                                            </Text>
+                                        </div>
+                                    )}
+
+                                    {/* 작업별 행 */}
+                                    <div className="gantt-bars">
+                                        {grouped_works.map((group, row_idx) => {
+                                            const color = getWorkColor(
+                                                group.record
+                                            );
+                                            return (
                                                 <div
-                                                    className="gantt-row-label"
+                                                    key={group.key}
+                                                    className="gantt-row"
                                                     style={{
-                                                        borderLeftColor: color,
+                                                        top: row_idx * 40,
                                                     }}
                                                 >
-                                                    <Text
-                                                        ellipsis
+                                                    {/* 작업명 라벨 */}
+                                                    <div
+                                                        className="gantt-row-label"
                                                         style={{
-                                                            fontSize: 11,
-                                                            maxWidth: 80,
+                                                            borderLeftColor:
+                                                                color,
                                                         }}
                                                     >
-                                                        {group.record
-                                                            .deal_name ||
-                                                            group.record
-                                                                .work_name}
-                                                    </Text>
-                                                </div>
+                                                        <Text
+                                                            ellipsis
+                                                            style={{
+                                                                fontSize: 11,
+                                                                maxWidth: 80,
+                                                            }}
+                                                        >
+                                                            {group.record
+                                                                .deal_name ||
+                                                                group.record
+                                                                    .work_name}
+                                                        </Text>
+                                                    </div>
 
-                                                {/* 해당 작업의 모든 세션 바 */}
-                                                <div className="gantt-row-bars">
-                                                    {group.sessions.map(
-                                                        (session, idx) => (
-                                                            <Tooltip
-                                                                key={
-                                                                    session.id +
-                                                                    idx
-                                                                }
-                                                                title={
-                                                                    resize_state?.session_id === session.id ? null : (
-                                                                    <div>
-                                                                        <div>
-                                                                            <strong>
-                                                                                {
-                                                                                    group
-                                                                                        .record
-                                                                                        .work_name
-                                                                                }
-                                                                            </strong>
-                                                                        </div>
-                                                                        {group
-                                                                            .record
-                                                                            .deal_name && (
+                                                    {/* 해당 작업의 모든 세션 바 */}
+                                                    <div className="gantt-row-bars">
+                                                        {group.sessions.map(
+                                                            (session, idx) => (
+                                                                <Tooltip
+                                                                    key={
+                                                                        session.id +
+                                                                        idx
+                                                                    }
+                                                                    title={
+                                                                        resize_state?.session_id ===
+                                                                        session.id ? null : (
                                                                             <div>
-                                                                                {
-                                                                                    group
-                                                                                        .record
-                                                                                        .deal_name
-                                                                                }
+                                                                                <div>
+                                                                                    <strong>
+                                                                                        {
+                                                                                            group
+                                                                                                .record
+                                                                                                .work_name
+                                                                                        }
+                                                                                    </strong>
+                                                                                </div>
+                                                                                {group
+                                                                                    .record
+                                                                                    .deal_name && (
+                                                                                    <div>
+                                                                                        {
+                                                                                            group
+                                                                                                .record
+                                                                                                .deal_name
+                                                                                        }
+                                                                                    </div>
+                                                                                )}
+                                                                                <div>
+                                                                                    {
+                                                                                        session.start_time
+                                                                                    }{" "}
+                                                                                    ~{" "}
+                                                                                    {
+                                                                                        session.end_time
+                                                                                    }
+                                                                                </div>
+                                                                                <div>
+                                                                                    {formatMinutes(
+                                                                                        getSessionMinutes(
+                                                                                            session
+                                                                                        )
+                                                                                    )}
+                                                                                </div>
+                                                                                <div
+                                                                                    style={{
+                                                                                        marginTop: 4,
+                                                                                    }}
+                                                                                >
+                                                                                    총{" "}
+                                                                                    {
+                                                                                        group
+                                                                                            .sessions
+                                                                                            .length
+                                                                                    }
+                                                                                    회,{" "}
+                                                                                    {formatMinutes(
+                                                                                        getTotalDuration(
+                                                                                            group.sessions
+                                                                                        )
+                                                                                    )}
+                                                                                </div>
+                                                                                {session.id !==
+                                                                                    "virtual-running-session" && (
+                                                                                    <div
+                                                                                        style={{
+                                                                                            marginTop: 4,
+                                                                                            fontSize: 11,
+                                                                                            color: "#aaa",
+                                                                                        }}
+                                                                                    >
+                                                                                        💡
+                                                                                        모서리
+                                                                                        드래그로
+                                                                                        시간
+                                                                                        조절
+                                                                                        <br />
+                                                                                        💡
+                                                                                        더블클릭으로
+                                                                                        작업
+                                                                                        수정
+                                                                                    </div>
+                                                                                )}
                                                                             </div>
-                                                                        )}
-                                                                        <div>
-                                                                            {
-                                                                                session.start_time
-                                                                            }{" "}
-                                                                            ~{" "}
-                                                                            {
-                                                                                session.end_time
-                                                                            }
-                                                                        </div>
-                                                                        <div>
-                                                                            {formatMinutes(
-                                                                                getSessionMinutes(
-                                                                                    session
-                                                                                )
-                                                                            )}
-                                                                        </div>
-                                                                        <div
-                                                                            style={{
-                                                                                marginTop: 4,
-                                                                            }}
-                                                                        >
-                                                                            총{" "}
-                                                                            {
-                                                                                group
-                                                                                    .sessions
-                                                                                    .length
-                                                                            }
-                                                                            회,{" "}
-                                                                            {formatMinutes(
-                                                                                getTotalDuration(
-                                                                                    group.sessions
-                                                                                )
-                                                                            )}
-                                                                        </div>
-                                                                        {session.id !== "virtual-running-session" && (
-                                                                            <div style={{ marginTop: 4, fontSize: 11, color: "#aaa" }}>
-                                                                                💡 모서리 드래그로 시간 조절
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                    )
-                                                                }
-                                                            >
-                                                                <div
-                                                                    className={`gantt-bar ${
-                                                                        session.id ===
-                                                                        "virtual-running-session"
-                                                                            ? "gantt-bar-running"
-                                                                            : ""
-                                                                    } ${
-                                                                        resize_state?.session_id === session.id
-                                                                            ? "gantt-bar-resizing"
-                                                                            : ""
-                                                                    }`}
-                                                                    style={
-                                                                        getResizingBarStyle(session, color) ||
-                                                                        getBarStyle(
-                                                                            session,
-                                                                            color,
-                                                                            session.id ===
-                                                                                "virtual-running-session"
                                                                         )
                                                                     }
                                                                 >
-                                                                    {/* 리사이즈 핸들 (레코딩 중이 아닌 경우에만) */}
-                                                                    {session.id !== "virtual-running-session" && (
-                                                                        <>
-                                                                            <div
-                                                                                className="resize-handle resize-handle-left"
-                                                                                onMouseDown={(e) =>
-                                                                                    handleResizeStart(
-                                                                                        e,
-                                                                                        session,
-                                                                                        group.record,
+                                                                    <div
+                                                                        className={`gantt-bar ${
+                                                                            session.id ===
+                                                                            "virtual-running-session"
+                                                                                ? "gantt-bar-running"
+                                                                                : ""
+                                                                        } ${
+                                                                            resize_state?.session_id ===
+                                                                            session.id
+                                                                                ? "gantt-bar-resizing"
+                                                                                : ""
+                                                                        }`}
+                                                                        style={
+                                                                            getResizingBarStyle(
+                                                                                session,
+                                                                                color
+                                                                            ) ||
+                                                                            getBarStyle(
+                                                                                session,
+                                                                                color,
+                                                                                session.id ===
+                                                                                    "virtual-running-session"
+                                                                            )
+                                                                        }
+                                                                        onDoubleClick={(
+                                                                            e
+                                                                        ) =>
+                                                                            handleBarDoubleClick(
+                                                                                group.record,
+                                                                                e
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        {/* 리사이즈 핸들 (레코딩 중이 아닌 경우에만) */}
+                                                                        {session.id !==
+                                                                            "virtual-running-session" && (
+                                                                            <>
+                                                                                <div
+                                                                                    className="resize-handle resize-handle-left"
+                                                                                    onMouseDown={(
+                                                                                        e
+                                                                                    ) =>
+                                                                                        handleResizeStart(
+                                                                                            e,
+                                                                                            session,
+                                                                                            group.record,
+                                                                                            "left"
+                                                                                        )
+                                                                                    }
+                                                                                />
+                                                                                <div
+                                                                                    className="resize-handle resize-handle-right"
+                                                                                    onMouseDown={(
+                                                                                        e
+                                                                                    ) =>
+                                                                                        handleResizeStart(
+                                                                                            e,
+                                                                                            session,
+                                                                                            group.record,
+                                                                                            "right"
+                                                                                        )
+                                                                                    }
+                                                                                />
+                                                                            </>
+                                                                        )}
+                                                                        {/* 리사이즈 중일 때 시간 표시 */}
+                                                                        {resize_state?.session_id ===
+                                                                            session.id && (
+                                                                            <div className="resize-time-indicator">
+                                                                                {minutesToTime(
+                                                                                    resize_state.handle ===
                                                                                         "left"
-                                                                                    )
+                                                                                        ? resize_state.current_value
+                                                                                        : resize_state.original_start
+                                                                                )}
+                                                                                {
+                                                                                    " ~ "
                                                                                 }
-                                                                            />
-                                                                            <div
-                                                                                className="resize-handle resize-handle-right"
-                                                                                onMouseDown={(e) =>
-                                                                                    handleResizeStart(
-                                                                                        e,
-                                                                                        session,
-                                                                                        group.record,
+                                                                                {minutesToTime(
+                                                                                    resize_state.handle ===
                                                                                         "right"
-                                                                                    )
-                                                                                }
-                                                                            />
-                                                                        </>
-                                                                    )}
-                                                                    {/* 리사이즈 중일 때 시간 표시 */}
-                                                                    {resize_state?.session_id === session.id && (
-                                                                        <div className="resize-time-indicator">
-                                                                            {minutesToTime(
-                                                                                resize_state.handle === "left"
-                                                                                    ? resize_state.current_value
-                                                                                    : resize_state.original_start
-                                                                            )}
-                                                                            {" ~ "}
-                                                                            {minutesToTime(
-                                                                                resize_state.handle === "right"
-                                                                                    ? resize_state.current_value
-                                                                                    : resize_state.original_end
-                                                                            )}
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            </Tooltip>
-                                                        )
-                                                    )}
+                                                                                        ? resize_state.current_value
+                                                                                        : resize_state.original_end
+                                                                                )}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </Tooltip>
+                                                            )
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        )}
                     </div>
                 </div>
 
@@ -1788,13 +1936,26 @@ export default function DailyGanttChart() {
                                 allowClear
                                 popupMatchSelectWidth={240}
                                 optionRender={(option) => (
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                        }}
+                                    >
                                         <span>{option.label}</span>
                                         <CloseOutlined
-                                            style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                                            style={{
+                                                fontSize: 10,
+                                                color: "#999",
+                                                cursor: "pointer",
+                                            }}
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                hideAutoCompleteOption("task_option", option.value as string);
+                                                hideAutoCompleteOption(
+                                                    "task_option",
+                                                    option.value as string
+                                                );
                                             }}
                                         />
                                     </div>
@@ -1877,13 +2038,26 @@ export default function DailyGanttChart() {
                                 allowClear
                                 popupMatchSelectWidth={240}
                                 optionRender={(option) => (
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                        }}
+                                    >
                                         <span>{option.label}</span>
                                         <CloseOutlined
-                                            style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                                            style={{
+                                                fontSize: 10,
+                                                color: "#999",
+                                                cursor: "pointer",
+                                            }}
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                hideAutoCompleteOption("category_option", option.value as string);
+                                                hideAutoCompleteOption(
+                                                    "category_option",
+                                                    option.value as string
+                                                );
                                             }}
                                         />
                                     </div>
@@ -1955,6 +2129,129 @@ export default function DailyGanttChart() {
                                         </Space>
                                     </>
                                 )}
+                            />
+                        </Form.Item>
+                    </Space>
+
+                    <Form.Item name="note" label="비고">
+                        <Input.TextArea placeholder="추가 메모" rows={2} />
+                    </Form.Item>
+                </Form>
+            </Modal>
+
+            {/* 작업 수정 모달 */}
+            <Modal
+                title={
+                    <Space>
+                        <span>작업 수정</span>
+                        {edit_record && (
+                            <Text
+                                type="secondary"
+                                style={{ fontWeight: "normal" }}
+                            >
+                                (
+                                {edit_record.deal_name || edit_record.work_name}
+                                )
+                            </Text>
+                        )}
+                    </Space>
+                }
+                open={is_edit_modal_open}
+                onCancel={handleEditModalCancel}
+                footer={[
+                    <Button key="ok" type="primary" onClick={handleEditWork}>
+                        저장 (Ctrl+Shift+Enter)
+                    </Button>,
+                    <Button key="cancel" onClick={handleEditModalCancel}>
+                        취소
+                    </Button>,
+                ]}
+            >
+                <Form
+                    form={edit_form}
+                    layout="vertical"
+                    onKeyDown={(e) => {
+                        if (e.ctrlKey && e.shiftKey && e.key === "Enter") {
+                            e.preventDefault();
+                            handleEditWork();
+                        }
+                    }}
+                >
+                    <Form.Item name="project_code" label="프로젝트 코드">
+                        <AutoComplete
+                            options={project_code_options}
+                            placeholder="예: A25_01846 (미입력 시 A00_00000)"
+                            filterOption={(input, option) =>
+                                (option?.value ?? "")
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase())
+                            }
+                            onSelect={(value: string) => {
+                                const selected = raw_project_code_options.find(
+                                    (opt) => opt.value === value
+                                );
+                                if (selected?.work_name) {
+                                    edit_form.setFieldsValue({
+                                        work_name: selected.work_name,
+                                    });
+                                }
+                            }}
+                        />
+                    </Form.Item>
+
+                    <Form.Item
+                        name="work_name"
+                        label="작업명"
+                        rules={[
+                            { required: true, message: "작업명을 입력하세요" },
+                        ]}
+                    >
+                        <AutoComplete
+                            options={work_name_options}
+                            placeholder="예: 5.6 프레임워크 FE"
+                            filterOption={(input, option) =>
+                                (option?.value ?? "")
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase())
+                            }
+                        />
+                    </Form.Item>
+
+                    <Form.Item name="deal_name" label="거래명 (상세 작업)">
+                        <AutoComplete
+                            options={deal_name_options}
+                            placeholder="예: 5.6 테스트 케이스 확인 및 이슈 처리"
+                            filterOption={(input, option) =>
+                                (option?.value ?? "")
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase())
+                            }
+                        />
+                    </Form.Item>
+
+                    <Space style={{ width: "100%" }} size="middle">
+                        <Form.Item
+                            name="task_name"
+                            label="업무명"
+                            style={{ flex: 1 }}
+                        >
+                            <Select
+                                placeholder="업무 선택"
+                                options={task_options}
+                                allowClear
+                                popupMatchSelectWidth={240}
+                            />
+                        </Form.Item>
+                        <Form.Item
+                            name="category_name"
+                            label="카테고리"
+                            style={{ flex: 1 }}
+                        >
+                            <Select
+                                placeholder="카테고리"
+                                options={category_options}
+                                allowClear
+                                popupMatchSelectWidth={240}
                             />
                         </Form.Item>
                     </Space>

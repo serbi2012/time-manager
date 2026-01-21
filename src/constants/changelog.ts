@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "1.2.0";
+export const CURRENT_VERSION = "1.2.1";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,30 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "1.2.1",
+        date: "2026-01-21",
+        title: "간트차트 더블클릭 수정 ✏️",
+        changes: [
+            {
+                type: "feature",
+                description: "간트차트 바 더블클릭으로 작업 수정 모달 열기",
+            },
+            {
+                type: "improvement",
+                description:
+                    "수정 모달에서 프로젝트 코드, 작업명, 거래명, 업무명, 카테고리, 비고 수정 가능",
+            },
+            {
+                type: "improvement",
+                description: "Ctrl+Shift+Enter 단축키로 빠른 저장",
+            },
+            {
+                type: "docs",
+                description: "사용 설명서에 더블클릭 수정 기능 문서 추가",
+            },
+        ],
+    },
     {
         version: "1.2.0",
         date: "2026-01-21",

@@ -1,0 +1,145 @@
+---
+description: 기능 추가/수정 시 사용 설명서 동기화 규칙
+alwaysApply: false
+---
+
+# 사용 설명서 동기화 규칙
+
+## 개요
+
+이 프로젝트는 `/guide` 경로에 마크다운 기반 사용 설명서를 제공합니다.
+**기능이 추가되거나 수정되면 반드시 해당 문서도 함께 업데이트해야 합니다.**
+
+## 문서 파일 위치
+
+```
+src/docs/
+├── index.ts           # 문서 목차 및 내보내기
+├── getting-started.md # 시작하기
+├── daily-record.md    # 일간 기록
+├── work-preset.md     # 작업 프리셋
+├── weekly-schedule.md # 주간 일정
+├── suggestions.md     # 건의사항
+├── settings.md        # 설정
+└── shortcuts.md       # 단축키 목록
+```
+
+## 문서-기능 매핑
+
+| 기능 영역                   | 관련 문서            | 관련 컴포넌트                                |
+| --------------------------- | -------------------- | -------------------------------------------- |
+| 작업 기록, 타이머, 간트차트 | `daily-record.md`    | `WorkRecordTable.tsx`, `DailyGanttChart.tsx` |
+| 작업 프리셋                 | `work-preset.md`     | `WorkTemplateList.tsx`                       |
+| 주간 일정, 복사 기능        | `weekly-schedule.md` | `WeeklySchedule.tsx`                         |
+| 건의사항 게시판             | `suggestions.md`     | `SuggestionBoard.tsx`                        |
+| 설정, 데이터 관리, 동기화   | `settings.md`        | `SettingsModal.tsx`                          |
+| 키보드 단축키               | `shortcuts.md`       | `useShortcuts.ts`, `useShortcutStore.ts`     |
+| 로그인, 앱 개요             | `getting-started.md` | `App.tsx`, `useAuth.ts`                      |
+
+## 변경 유형별 문서 업데이트
+
+### 1. 새 기능 추가 시
+
+1. 해당 문서 파일에 새 섹션 추가
+2. 필요시 Mermaid 다이어그램으로 프로세스 설명
+3. 관련 문서에 위키 링크 추가: `[링크텍스트](wiki:section-id)`
+4. `DemoComponents.tsx`에 UI 데모 추가 (필요시)
+
+### 2. 기존 기능 수정 시
+
+1. 변경된 동작 설명 업데이트
+2. 스크린샷/다이어그램이 있다면 갱신
+3. 관련 테이블(컬럼 설명 등) 업데이트
+
+### 3. 기능 제거 시
+
+1. 해당 설명 제거 또는 "지원 중단" 표시
+2. 다른 문서의 관련 링크 정리
+
+### 4. 단축키 변경 시
+
+1. `shortcuts.md`의 단축키 테이블 업데이트
+2. 관련 문서의 단축키 언급 부분도 수정
+
+## 문서 작성 가이드
+
+### 마크다운 문법
+
+```markdown
+# 제목 (h1) - 페이지 제목
+
+## 제목 (h2) - 주요 섹션
+
+### 제목 (h3) - 하위 섹션
+
+**굵은 글씨** - 강조
+`코드` - 인라인 코드, 단축키
+
+| 컬럼1 | 컬럼2 |
+| ----- | ----- |
+| 값1   | 값2   |
+
+> 💡 **팁**: 유용한 정보
+
+[링크텍스트](wiki:section-id) - 내부 위키 링크
+```
+
+### Mermaid 다이어그램
+
+프로세스 설명에 Mermaid 사용:
+
+```markdown
+\`\`\`mermaid
+flowchart LR
+A[시작] --> B[처리] --> C[완료]
+\`\`\`
+```
+
+### 데모 컴포넌트 삽입
+
+실제 UI 미리보기 삽입:
+
+```markdown
+:::demo WorkRecordTable:::
+:::demo WorkTemplateList:::
+:::demo DailyGanttChart:::
+```
+
+## 새 문서 추가 시
+
+1. `src/docs/` 폴더에 `.md` 파일 생성
+2. `src/docs/index.ts` 업데이트:
+    - import 추가
+    - `TABLE_OF_CONTENTS` 배열에 항목 추가
+    - `DOCS` 배열에 항목 추가
+
+```typescript
+// index.ts 예시
+import new_doc from "./new-doc.md?raw";
+
+export const TABLE_OF_CONTENTS = [
+    // ... 기존 항목
+    { id: "new-doc", title: "새 문서" },
+];
+
+export const DOCS = [
+    // ... 기존 항목
+    { id: "new-doc", title: "새 문서", content: new_doc },
+];
+```
+
+## 체크리스트
+
+기능 변경 후 다음을 확인하세요:
+
+-   [ ] 관련 문서 내용 업데이트
+-   [ ] 위키 링크가 올바르게 작동하는지 확인
+-   [ ] 데모 컴포넌트가 필요하면 추가/수정
+-   [ ] `changelog.ts`에 변경 내역 추가
+-   [ ] 버전 번호 업데이트 (필요시)
+
+## 주의사항
+
+-   유치한 비유나 과도한 이모지 사용 자제
+-   기술적으로 정확하고 간결하게 작성
+-   실제 UI와 문서 설명이 일치하는지 확인
