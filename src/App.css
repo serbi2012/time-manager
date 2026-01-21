@@ -1123,6 +1123,26 @@
     border-radius: 2px;
 }
 
+.guide-content-highlight {
+    background-color: #ffeaa7;
+    padding: 2px 4px;
+    border-radius: 3px;
+    animation: highlight-pulse 0.8s ease-in-out 3;
+    box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.3);
+}
+
+@keyframes highlight-pulse {
+    0%,
+    100% {
+        background-color: #ffeaa7;
+        box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.3);
+    }
+    50% {
+        background-color: #ffc107;
+        box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.5);
+    }
+}
+
 .guide-book-content {
     padding: 24px;
     overflow-y: auto;
@@ -1683,7 +1703,8 @@
 }
 
 @keyframes demo-pulse {
-    0%, 100% {
+    0%,
+    100% {
         box-shadow: 0 0 0 0 rgba(24, 144, 255, 0.4);
     }
     50% {

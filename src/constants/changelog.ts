@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "1.2.1";
+export const CURRENT_VERSION = "1.2.2";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,22 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "1.2.2",
+        date: "2026-01-21",
+        title: "사용 설명서 검색 개선 🔍",
+        changes: [
+            {
+                type: "improvement",
+                description: "검색 결과 클릭 시 해당 키워드 위치로 자동 스크롤",
+            },
+            {
+                type: "improvement",
+                description:
+                    "검색 키워드 하이라이트 표시 (펄스 애니메이션, 4초 후 자동 해제)",
+            },
+        ],
+    },
     {
         version: "1.2.1",
         date: "2026-01-21",
