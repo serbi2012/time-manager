@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "1.2.0";
+export const CURRENT_VERSION = "1.3.0";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -46,6 +46,21 @@ export const CHANGE_TYPE_CONFIG: Record<ChangeType, { emoji: string; label: stri
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "1.3.0",
+        date: "2026-01-21",
+        title: "게스트 모드 지원 👤",
+        changes: [
+            { type: "feature", description: "게스트 모드 - 로그인 없이 LocalStorage 기반으로 사용 가능" },
+            { type: "feature", description: "비로그인 시에도 데이터 가져오기(Import) 기능 사용 가능" },
+            { type: "improvement", description: "프리셋 드래그앤드롭으로 순서 변경 가능" },
+            { type: "improvement", description: "주간 일정에서 관리업무(A24_05591) 필터링 옵션 추가" },
+            { type: "improvement", description: "간트차트 중복 세션 표시 문제 해결" },
+            { type: "fix", description: "레코딩 중 작업 수정 시 새 작업 생성되는 버그 수정" },
+            { type: "fix", description: "작업 추가 시 간트차트에 즉시 표시되는 버그 수정" },
+            { type: "style", description: "헤더에 게스트 모드 / 클라우드 연결 상태 표시" },
+        ],
+    },
     {
         version: "1.2.0",
         date: "2026-01-20",

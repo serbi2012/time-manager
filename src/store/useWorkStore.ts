@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import dayjs from "dayjs";
 import type {
     WorkRecord,
@@ -268,22 +269,24 @@ export const DEFAULT_CATEGORY_OPTIONS = [
     "기타",
 ];
 
-export const useWorkStore = create<WorkStore>()((set, get) => ({
-    records: [],
-    templates: [],
-    timer: DEFAULT_TIMER,
-    form_data: DEFAULT_FORM_DATA,
-    selected_date: dayjs().format("YYYY-MM-DD"),
-    custom_task_options: [],
-    custom_category_options: [],
-    hidden_autocomplete_options: {
-        work_name: [],
-        task_name: [],
-        deal_name: [],
-        project_code: [],
-        task_option: [],
-        category_option: [],
-    },
+export const useWorkStore = create<WorkStore>()(
+    persist(
+        (set, get) => ({
+            records: [],
+            templates: [],
+            timer: DEFAULT_TIMER,
+            form_data: DEFAULT_FORM_DATA,
+            selected_date: dayjs().format("YYYY-MM-DD"),
+            custom_task_options: [],
+            custom_category_options: [],
+            hidden_autocomplete_options: {
+                work_name: [],
+                task_name: [],
+                deal_name: [],
+                project_code: [],
+                task_option: [],
+                category_option: [],
+            },
 
     startTimer: (template_id?: string) => {
         const { form_data } = get();
@@ -1105,4 +1108,18 @@ export const useWorkStore = create<WorkStore>()((set, get) => ({
             };
         });
     },
-}));
+        }),
+        {
+            name: "work-time-storage", // LocalStorage 키
+            partialize: (state) => ({
+                // 영속화할 상태만 선택 (form_data, selected_date 제외)
+                records: state.records,
+                templates: state.templates,
+                timer: state.timer,
+                custom_task_options: state.custom_task_options,
+                custom_category_options: state.custom_category_options,
+                hidden_autocomplete_options: state.hidden_autocomplete_options,
+            }),
+        }
+    )
+);

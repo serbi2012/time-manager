@@ -462,12 +462,8 @@ function AppLayout() {
         message.success("데이터가 내보내졌습니다");
     };
 
-    // 데이터 가져오기
+    // 데이터 가져오기 (게스트 모드에서도 사용 가능)
     const handleImport = () => {
-        if (!isAuthenticated) {
-            message.warning("로그인 후 데이터를 가져올 수 있습니다");
-            return;
-        }
         file_input_ref.current?.click();
     };
 
@@ -550,7 +546,7 @@ function AppLayout() {
                 />
                 <Space size={is_mobile ? "small" : "middle"}>
                     {/* 동기화 상태 표시 */}
-                    {isAuthenticated && (
+                    {isAuthenticated ? (
                         <span
                             style={{
                                 color: "rgba(255,255,255,0.65)",
@@ -594,6 +590,21 @@ function AppLayout() {
                                 </>
                             )}
                         </span>
+                    ) : (
+                        !auth_loading && (
+                            <span
+                                style={{
+                                    color: "rgba(255,255,255,0.5)",
+                                    fontSize: is_mobile ? 10 : 12,
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 4,
+                                }}
+                            >
+                                <UserOutlined />
+                                {!is_mobile && " 게스트 모드"}
+                            </span>
+                        )
                     )}
 
                     {/* 버전 정보 버튼 (데스크톱 전용) */}

@@ -498,15 +498,9 @@ function DataTab({
                     icon={<UploadOutlined />}
                     onClick={onImport}
                     block
-                    disabled={!isAuthenticated}
                 >
                     데이터 가져오기 (Import)
                 </Button>
-                {!isAuthenticated && (
-                    <Text type="warning" style={{ fontSize: 12 }}>
-                        * 데이터 가져오기는 로그인 후 사용할 수 있습니다
-                    </Text>
-                )}
                 <Text type="secondary" style={{ fontSize: 12 }}>
                     * 가져오기 시 기존 데이터가 덮어씌워집니다
                 </Text>
@@ -518,16 +512,16 @@ function DataTab({
                     style={{ display: "flex", justifyContent: "space-between" }}
                 >
                     <Text>저장 위치</Text>
-                    <Tag color={isAuthenticated ? "green" : "orange"}>
+                    <Tag color={isAuthenticated ? "green" : "blue"}>
                         {isAuthenticated
                             ? "Firebase Cloud"
-                            : "메모리 (로그인 필요)"}
+                            : "LocalStorage (브라우저)"}
                     </Tag>
                 </div>
                 <Text type="secondary" style={{ fontSize: 12 }}>
                     {isAuthenticated
                         ? "데이터가 클라우드에 자동으로 동기화됩니다"
-                        : "로그인하면 데이터가 클라우드에 저장되어 여러 기기에서 사용할 수 있습니다"}
+                        : "데이터가 이 브라우저에 로컬 저장됩니다. 로그인하면 클라우드에 동기화되어 여러 기기에서 사용할 수 있습니다."}
                 </Text>
             </Space>
         </div>
