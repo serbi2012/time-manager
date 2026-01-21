@@ -108,6 +108,16 @@ interface TimeSlot {
     end: number;
 }
 
+// 리사이즈 드래그 상태 타입
+interface ResizeState {
+    session_id: string;
+    record_id: string;
+    handle: "left" | "right";
+    original_start: number;
+    original_end: number;
+    current_value: number;
+}
+
 export default function DailyGanttChart() {
     const { is_mobile } = useResponsive();
 
@@ -119,6 +129,7 @@ export default function DailyGanttChart() {
         getElapsedSeconds,
         addRecord,
         updateRecord,
+        updateSession,
         getAutoCompleteOptions,
         getProjectCodeOptions,
         custom_task_options,
@@ -154,6 +165,9 @@ export default function DailyGanttChart() {
         waiting_for_empty: boolean; // 빈 영역 대기 중 플래그
     } | null>(null);
     const grid_ref = useRef<HTMLDivElement>(null);
+
+    // 리사이즈 상태
+    const [resize_state, setResizeState] = useState<ResizeState | null>(null);
 
     // 모달 상태
     const [is_modal_open, setIsModalOpen] = useState(false);
@@ -323,6 +337,7 @@ export default function DailyGanttChart() {
 
     // 모든 세션의 시간 슬롯 (충돌 감지용) - 시작 시간순 정렬
     // 점심시간도 점유된 슬롯으로 처리
+    // 현재 레코딩 중인 작업도 포함
     const occupied_slots = useMemo((): TimeSlot[] => {
         const slots: TimeSlot[] = [];
 
@@ -337,8 +352,23 @@ export default function DailyGanttChart() {
                 });
             });
         });
+
+        // 현재 레코딩 중인 작업의 시간도 충돌 감지에 포함
+        if (timer.is_running && timer.start_time) {
+            const start_date = dayjs(timer.start_time).format("YYYY-MM-DD");
+            if (start_date === selected_date) {
+                const start_mins = timeToMinutes(
+                    dayjs(timer.start_time).format("HH:mm")
+                );
+                const end_mins = timeToMinutes(dayjs().format("HH:mm"));
+                if (end_mins > start_mins) {
+                    slots.push({ start: start_mins, end: end_mins });
+                }
+            }
+        }
+
         return slots.sort((a, b) => a.start - b.start);
-    }, [grouped_works]);
+    }, [grouped_works, timer.is_running, timer.start_time, selected_date]);
 
     // 특정 시간이 기존 세션 위에 있는지 확인
     const isOnExistingBar = useCallback(
@@ -765,7 +795,124 @@ export default function DailyGanttChart() {
             setDragSelection(null);
             drag_start_ref.current = null;
         }
-    }, [is_dragging]);
+        if (resize_state) {
+            setResizeState(null);
+        }
+    }, [is_dragging, resize_state]);
+
+    // 리사이즈 시작
+    const handleResizeStart = useCallback(
+        (
+            e: React.MouseEvent,
+            session: WorkSession,
+            record: WorkRecord,
+            handle: "left" | "right"
+        ) => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            const start_mins = timeToMinutes(session.start_time);
+            const end_mins = timeToMinutes(session.end_time);
+
+            setResizeState({
+                session_id: session.id,
+                record_id: record.id,
+                handle,
+                original_start: start_mins,
+                original_end: end_mins,
+                current_value: handle === "left" ? start_mins : end_mins,
+            });
+        },
+        []
+    );
+
+    // 리사이즈 중 (마우스 이동)
+    const handleResizeMove = useCallback(
+        (e: React.MouseEvent) => {
+            if (!resize_state) return;
+
+            const mins = xToMinutes(e.clientX);
+            const clamped = Math.max(
+                time_range.start,
+                Math.min(time_range.end, mins)
+            );
+
+            setResizeState((prev) =>
+                prev ? { ...prev, current_value: clamped } : null
+            );
+        },
+        [resize_state, xToMinutes, time_range]
+    );
+
+    // 리사이즈 종료
+    const handleResizeEnd = useCallback(() => {
+        if (!resize_state) return;
+
+        const {
+            session_id,
+            record_id,
+            handle,
+            original_start,
+            original_end,
+            current_value,
+        } = resize_state;
+
+        const new_start = handle === "left" ? current_value : original_start;
+        const new_end = handle === "right" ? current_value : original_end;
+
+        // 유효성 검사 (최소 1분 이상)
+        if (new_end - new_start < 1) {
+            message.warning("최소 1분 이상이어야 합니다.");
+            setResizeState(null);
+            return;
+        }
+
+        // updateSession 호출 (충돌 시 자동 조정됨)
+        const result = updateSession(
+            record_id,
+            session_id,
+            minutesToTime(new_start),
+            minutesToTime(new_end)
+        );
+
+        if (result.adjusted) {
+            message.info(result.message);
+        } else if (!result.success) {
+            message.error(result.message);
+        }
+
+        setResizeState(null);
+    }, [resize_state, updateSession]);
+
+    // 리사이즈 중인 바 스타일 계산
+    const getResizingBarStyle = useCallback(
+        (session: WorkSession, color: string) => {
+            if (!resize_state || resize_state.session_id !== session.id) {
+                return null;
+            }
+
+            const { handle, original_start, original_end, current_value } =
+                resize_state;
+            const start =
+                handle === "left" ? current_value : original_start;
+            const end = handle === "right" ? current_value : original_end;
+
+            // 유효하지 않은 범위면 원래 스타일 반환
+            if (end <= start) return null;
+
+            const left = ((start - time_range.start) / total_minutes) * 100;
+            const width = ((end - start) / total_minutes) * 100;
+
+            return {
+                left: `${left}%`,
+                width: `${Math.max(width, 0.5)}%`,
+                backgroundColor: color,
+                opacity: 0.6,
+                border: "2px dashed white",
+            };
+        },
+        [resize_state, time_range, total_minutes]
+    );
 
     // 작업 추가 핸들러
     const handleAddWork = async () => {
@@ -919,8 +1066,20 @@ export default function DailyGanttChart() {
                 <div className={is_mobile ? "gantt-scroll-container" : ""}>
                     <div
                         className={`gantt-wrapper ${is_mobile ? "gantt-mobile-scroll" : ""}`}
-                        onMouseMove={handleMouseMove}
-                        onMouseUp={handleMouseUp}
+                        onMouseMove={(e) => {
+                            if (resize_state) {
+                                handleResizeMove(e);
+                            } else {
+                                handleMouseMove(e);
+                            }
+                        }}
+                        onMouseUp={() => {
+                            if (resize_state) {
+                                handleResizeEnd();
+                            } else {
+                                handleMouseUp();
+                            }
+                        }}
                         onMouseLeave={handleMouseLeave}
                         onTouchMove={is_mobile ? (e) => {
                             // 모바일 터치 드래그 지원
@@ -1145,6 +1304,7 @@ export default function DailyGanttChart() {
                                                                     idx
                                                                 }
                                                                 title={
+                                                                    resize_state?.session_id === session.id ? null : (
                                                                     <div>
                                                                         <div>
                                                                             <strong>
@@ -1200,7 +1360,13 @@ export default function DailyGanttChart() {
                                                                                 )
                                                                             )}
                                                                         </div>
+                                                                        {session.id !== "virtual-running-session" && (
+                                                                            <div style={{ marginTop: 4, fontSize: 11, color: "#aaa" }}>
+                                                                                💡 모서리 드래그로 시간 조절
+                                                                            </div>
+                                                                        )}
                                                                     </div>
+                                                                    )
                                                                 }
                                                             >
                                                                 <div
@@ -1209,14 +1375,65 @@ export default function DailyGanttChart() {
                                                                         "virtual-running-session"
                                                                             ? "gantt-bar-running"
                                                                             : ""
+                                                                    } ${
+                                                                        resize_state?.session_id === session.id
+                                                                            ? "gantt-bar-resizing"
+                                                                            : ""
                                                                     }`}
-                                                                    style={getBarStyle(
-                                                                        session,
-                                                                        color,
-                                                                        session.id ===
-                                                                            "virtual-running-session"
+                                                                    style={
+                                                                        getResizingBarStyle(session, color) ||
+                                                                        getBarStyle(
+                                                                            session,
+                                                                            color,
+                                                                            session.id ===
+                                                                                "virtual-running-session"
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    {/* 리사이즈 핸들 (레코딩 중이 아닌 경우에만) */}
+                                                                    {session.id !== "virtual-running-session" && (
+                                                                        <>
+                                                                            <div
+                                                                                className="resize-handle resize-handle-left"
+                                                                                onMouseDown={(e) =>
+                                                                                    handleResizeStart(
+                                                                                        e,
+                                                                                        session,
+                                                                                        group.record,
+                                                                                        "left"
+                                                                                    )
+                                                                                }
+                                                                            />
+                                                                            <div
+                                                                                className="resize-handle resize-handle-right"
+                                                                                onMouseDown={(e) =>
+                                                                                    handleResizeStart(
+                                                                                        e,
+                                                                                        session,
+                                                                                        group.record,
+                                                                                        "right"
+                                                                                    )
+                                                                                }
+                                                                            />
+                                                                        </>
                                                                     )}
-                                                                />
+                                                                    {/* 리사이즈 중일 때 시간 표시 */}
+                                                                    {resize_state?.session_id === session.id && (
+                                                                        <div className="resize-time-indicator">
+                                                                            {minutesToTime(
+                                                                                resize_state.handle === "left"
+                                                                                    ? resize_state.current_value
+                                                                                    : resize_state.original_start
+                                                                            )}
+                                                                            {" ~ "}
+                                                                            {minutesToTime(
+                                                                                resize_state.handle === "right"
+                                                                                    ? resize_state.current_value
+                                                                                    : resize_state.original_end
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
                                                             </Tooltip>
                                                         )
                                                     )}
@@ -1420,6 +1637,58 @@ export default function DailyGanttChart() {
                         opacity: 0.85;
                         transform: scaleY(1.2);
                         z-index: 10;
+                    }
+                    
+                    .gantt-bar-resizing {
+                        z-index: 20;
+                        transform: scaleY(1.3);
+                    }
+                    
+                    /* 리사이즈 핸들 */
+                    .resize-handle {
+                        position: absolute;
+                        top: 0;
+                        bottom: 0;
+                        width: 10px;
+                        cursor: ew-resize;
+                        z-index: 10;
+                        opacity: 0;
+                        transition: opacity 0.15s, background 0.15s;
+                    }
+                    
+                    .resize-handle-left {
+                        left: -2px;
+                        border-radius: 4px 0 0 4px;
+                    }
+                    
+                    .resize-handle-right {
+                        right: -2px;
+                        border-radius: 0 4px 4px 0;
+                    }
+                    
+                    .gantt-bar:hover .resize-handle {
+                        opacity: 1;
+                        background: rgba(255, 255, 255, 0.3);
+                    }
+                    
+                    .resize-handle:hover {
+                        background: rgba(255, 255, 255, 0.6) !important;
+                    }
+                    
+                    /* 리사이즈 중 시간 표시 */
+                    .resize-time-indicator {
+                        position: absolute;
+                        top: -24px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        background: rgba(0, 0, 0, 0.8);
+                        color: white;
+                        padding: 2px 8px;
+                        border-radius: 4px;
+                        font-size: 11px;
+                        white-space: nowrap;
+                        z-index: 100;
+                        pointer-events: none;
                     }
                 `}</style>
             </Card>

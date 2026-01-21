@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "1.3.0";
+export const CURRENT_VERSION = "1.4.0";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -46,6 +46,17 @@ export const CHANGE_TYPE_CONFIG: Record<ChangeType, { emoji: string; label: stri
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "1.4.0",
+        date: "2026-01-21",
+        title: "간트차트 리사이즈 기능 📊",
+        changes: [
+            { type: "feature", description: "간트차트 작업 바 리사이즈 - 좌/우 모서리 드래그로 시간 조절 가능" },
+            { type: "improvement", description: "레코딩 중인 작업 시간과 충돌 감지 및 자동 조정" },
+            { type: "improvement", description: "리사이즈 중 실시간 시간 표시" },
+            { type: "style", description: "리사이즈 핸들 호버 효과 및 시각적 피드백" },
+        ],
+    },
     {
         version: "1.3.0",
         date: "2026-01-21",

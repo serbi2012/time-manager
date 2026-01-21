@@ -636,6 +636,32 @@ export const useWorkStore = create<WorkStore>()(
             });
         });
 
+        // 현재 레코딩 중인 작업의 시간도 충돌 감지에 포함
+        const { timer } = get();
+        if (timer.is_running && timer.start_time) {
+            const timer_date = dayjs(timer.start_time).format("YYYY-MM-DD");
+            if (timer_date === target_date) {
+                const timer_start_mins = timeToMinutes(
+                    dayjs(timer.start_time).format("HH:mm")
+                );
+                const timer_end_mins = timeToMinutes(dayjs().format("HH:mm"));
+                if (timer_end_mins > timer_start_mins) {
+                    same_day_sessions.push({
+                        record_id: "virtual-running-record",
+                        session: {
+                            id: "virtual-running-session",
+                            date: timer_date,
+                            start_time: dayjs(timer.start_time).format("HH:mm"),
+                            end_time: dayjs().format("HH:mm"),
+                            duration_minutes: timer_end_mins - timer_start_mins,
+                        },
+                        start_mins: timer_start_mins,
+                        end_mins: timer_end_mins,
+                    });
+                }
+            }
+        }
+
         // 날짜가 변경된 경우: 충돌 검사만 하고 자동 조정 안함
         if (is_date_changed) {
             for (const other of same_day_sessions) {
