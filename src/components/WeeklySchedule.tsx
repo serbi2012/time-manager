@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
     Layout,
     Typography,
@@ -50,10 +50,10 @@ interface WorkGroup {
     work_name: string;
     status: string; // 진행상태
     start_date: string; // 시작일자
-    total_minutes: number; // 전체 기간 누적시간
+    total_minutes: number; // 해당 날짜까지의 누적시간
     deals: {
         deal_name: string;
-        total_minutes: number; // 해당 거래의 전체 기간 누적시간
+        total_minutes: number; // 해당 거래의 해당 날짜까지 누적시간
     }[];
 }
 
@@ -111,27 +111,44 @@ const WeeklySchedule = () => {
         });
     }, [records, selected_week_start]);
 
-    // 전체 기간 누적시간 계산 (work_name 기준)
-    const getTotalMinutesForWork = (work_name: string): number => {
+    // 특정 날짜까지의 누적시간 계산 (work_name 기준)
+    const getTotalMinutesForWork = useCallback((work_name: string, up_to_date: string): number => {
         return records
-            .filter((r) => r.work_name === work_name)
-            .reduce((sum, r) => sum + (r.duration_minutes || 0), 0);
-    };
+            .filter((r) => r.work_name === work_name && !r.is_deleted)
+            .reduce((sum, r) => {
+                // 세션별로 날짜를 확인하여 해당 날짜까지의 시간만 계산
+                const sessions_up_to_date = r.sessions?.filter((s) => {
+                    const session_date = s.date || r.date;
+                    return session_date <= up_to_date;
+                }) || [];
+                
+                return sum + sessions_up_to_date.reduce((s_sum, s) => s_sum + (s.duration_minutes || 0), 0);
+            }, 0);
+    }, [records]);
 
-    // 전체 기간 누적시간 계산 (work_name + deal_name 기준)
-    const getTotalMinutesForDeal = (
+    // 특정 날짜까지의 누적시간 계산 (work_name + deal_name 기준)
+    const getTotalMinutesForDeal = useCallback((
         work_name: string,
-        deal_name: string
+        deal_name: string,
+        up_to_date: string
     ): number => {
         return records
             .filter(
-                (r) => r.work_name === work_name && r.deal_name === deal_name
+                (r) => r.work_name === work_name && r.deal_name === deal_name && !r.is_deleted
             )
-            .reduce((sum, r) => sum + (r.duration_minutes || 0), 0);
-    };
+            .reduce((sum, r) => {
+                // 세션별로 날짜를 확인하여 해당 날짜까지의 시간만 계산
+                const sessions_up_to_date = r.sessions?.filter((s) => {
+                    const session_date = s.date || r.date;
+                    return session_date <= up_to_date;
+                }) || [];
+                
+                return sum + sessions_up_to_date.reduce((s_sum, s) => s_sum + (s.duration_minutes || 0), 0);
+            }, 0);
+    }, [records]);
 
     // 작업의 첫 시작일 찾기
-    const getFirstStartDate = (work_name: string): string => {
+    const getFirstStartDate = useCallback((work_name: string): string => {
         const work_records = records.filter((r) => r.work_name === work_name);
         if (work_records.length === 0) return "";
 
@@ -150,7 +167,7 @@ const WeeklySchedule = () => {
 
         const date = dayjs(earliest_date);
         return `${date.format("M/D")}(${DAY_NAMES[date.day()]})`;
-    };
+    }, [records]);
 
     // 날짜별로 그룹화된 데이터 생성
     const day_groups = useMemo(() => {
@@ -187,7 +204,7 @@ const WeeklySchedule = () => {
                             edited?.status ||
                             (record.is_completed ? "완료" : "진행중"),
                         start_date: getFirstStartDate(record.work_name),
-                        total_minutes: getTotalMinutesForWork(record.work_name),
+                        total_minutes: getTotalMinutesForWork(record.work_name, date),
                         deals: [],
                     });
                 }
@@ -204,7 +221,8 @@ const WeeklySchedule = () => {
                         deal_name: record.deal_name || record.work_name,
                         total_minutes: getTotalMinutesForDeal(
                             record.work_name,
-                            record.deal_name
+                            record.deal_name,
+                            date
                         ),
                     });
                 }
@@ -232,7 +250,7 @@ const WeeklySchedule = () => {
         });
 
         return groups;
-    }, [week_dates, weekly_records, records, editable_data, hide_management_work]);
+    }, [week_dates, weekly_records, editable_data, hide_management_work, getFirstStartDate, getTotalMinutesForWork, getTotalMinutesForDeal]);
 
     // 진행상태 수정
     const handleStatusChange = (work_name: string, value: string) => {
