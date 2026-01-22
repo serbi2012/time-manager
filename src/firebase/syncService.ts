@@ -102,6 +102,7 @@ export async function syncToFirebase(
         timer: state.timer, // 타이머 상태도 저장
         shortcuts: shortcut_state.shortcuts, // 단축키 설정 저장
         hidden_autocomplete_options: state.hidden_autocomplete_options, // 숨김 자동완성 옵션
+        app_theme: state.app_theme, // 앱 테마 색상
     });
 }
 
@@ -156,6 +157,9 @@ export async function syncFromFirebase(user: User): Promise<boolean> {
                     hidden_autocomplete_options:
                         firebase_data.hidden_autocomplete_options,
                 }),
+                ...(firebase_data.app_theme && {
+                    app_theme: firebase_data.app_theme,
+                }),
             });
             last_known_record_count = firebase_records.length;
             last_known_template_count = firebase_templates.length;
@@ -187,6 +191,9 @@ export async function syncFromFirebase(user: User): Promise<boolean> {
             ...(firebase_data.hidden_autocomplete_options && {
                 hidden_autocomplete_options:
                     firebase_data.hidden_autocomplete_options,
+            }),
+            ...(firebase_data.app_theme && {
+                app_theme: firebase_data.app_theme,
             }),
         });
         last_known_record_count = firebase_records.length;
@@ -265,6 +272,9 @@ export function startRealtimeSync(user: User): void {
                     hidden_autocomplete_options:
                         data.hidden_autocomplete_options,
                 }),
+                ...(data.app_theme && {
+                    app_theme: data.app_theme,
+                }),
             });
 
             // 단축키 동기화 (있으면)
@@ -317,6 +327,7 @@ export function syncBeforeUnload(user: User): void {
         custom_task_options: state.custom_task_options,
         custom_category_options: state.custom_category_options,
         hidden_autocomplete_options: state.hidden_autocomplete_options,
+        app_theme: state.app_theme,
         timer: state.timer,
         shortcuts: shortcut_state.shortcuts,
         user_id: user.uid,
@@ -361,6 +372,7 @@ export async function checkPendingSync(user: User): Promise<void> {
                             backup_data.custom_category_options,
                         hidden_autocomplete_options:
                             backup_data.hidden_autocomplete_options,
+                        app_theme: backup_data.app_theme,
                         timer: backup_data.timer,
                         shortcuts: backup_data.shortcuts,
                     });

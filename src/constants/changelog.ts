@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "1.3.1";
+export const CURRENT_VERSION = "1.3.2";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,29 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "1.3.2",
+        date: "2026-01-22",
+        title: "테마 색상 및 단축키 커스터마이징",
+        changes: [
+            {
+                type: "feature",
+                description: "앱 테마 색상 선택 기능 (7가지 색상: 파란색, 초록색, 보라색, 빨간색, 주황색, 청록색, 검정색)",
+            },
+            {
+                type: "feature",
+                description: "단축키 사용자 지정 기능 (설정에서 원하는 키 조합으로 변경 가능)",
+            },
+            {
+                type: "feature",
+                description: "모달 저장/추가 단축키 설정 가능 (기본값 F8)",
+            },
+            {
+                type: "style",
+                description: "테마 색상이 헤더, 버튼, 태그, 시간 표시 등 전체 UI에 적용",
+            },
+        ],
+    },
     {
         version: "1.3.1",
         date: "2026-01-22",

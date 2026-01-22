@@ -77,13 +77,14 @@ describe('SettingsModal', () => {
             expect(screen.queryByText('설정')).not.toBeInTheDocument()
         })
 
-        it('3개의 탭이 표시됨', () => {
+        it('4개의 탭이 표시됨', () => {
             render(
                 <TestWrapper>
                     <SettingsModal {...defaultProps} />
                 </TestWrapper>
             )
 
+            expect(screen.getByText('테마')).toBeInTheDocument()
             expect(screen.getByText('데이터')).toBeInTheDocument()
             expect(screen.getByText('자동완성')).toBeInTheDocument()
             expect(screen.getByText('단축키')).toBeInTheDocument()
@@ -95,6 +96,7 @@ describe('SettingsModal', () => {
     // =====================================================
     describe('데이터 탭', () => {
         it('내보내기 버튼 클릭 시 onExport 호출', async () => {
+            const user = userEvent.setup()
             const on_export = vi.fn()
             render(
                 <TestWrapper>
@@ -102,53 +104,86 @@ describe('SettingsModal', () => {
                 </TestWrapper>
             )
 
+            // 데이터 탭으로 이동
+            await user.click(screen.getByText('데이터'))
+
+            await waitFor(() => {
+                expect(screen.getByText('데이터 내보내기 (Export)')).toBeInTheDocument()
+            })
+
             const export_button = screen.getByText('데이터 내보내기 (Export)')
             fireEvent.click(export_button)
 
             expect(on_export).toHaveBeenCalledTimes(1)
         })
 
-        it('가져오기 버튼이 항상 활성화됨', () => {
+        it('가져오기 버튼이 항상 활성화됨', async () => {
+            const user = userEvent.setup()
             render(
                 <TestWrapper>
                     <SettingsModal {...defaultProps} isAuthenticated={false} />
                 </TestWrapper>
             )
+
+            // 데이터 탭으로 이동
+            await user.click(screen.getByText('데이터'))
+
+            await waitFor(() => {
+                expect(screen.getByText('데이터 가져오기 (Import)')).toBeInTheDocument()
+            })
 
             const import_button = screen.getByText('데이터 가져오기 (Import)')
             expect(import_button.closest('button')).not.toBeDisabled()
         })
 
-        it('가져오기 시 주의 메시지 표시', () => {
+        it('가져오기 시 주의 메시지 표시', async () => {
+            const user = userEvent.setup()
             render(
                 <TestWrapper>
                     <SettingsModal {...defaultProps} isAuthenticated={false} />
                 </TestWrapper>
             )
 
-            expect(
-                screen.getByText(/가져오기 시 기존 데이터가 덮어씌워집니다/)
-            ).toBeInTheDocument()
+            // 데이터 탭으로 이동
+            await user.click(screen.getByText('데이터'))
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText(/가져오기 시 기존 데이터가 덮어씌워집니다/)
+                ).toBeInTheDocument()
+            })
         })
 
-        it('로그인되면 Firebase Cloud 태그 표시', () => {
+        it('로그인되면 Firebase Cloud 태그 표시', async () => {
+            const user = userEvent.setup()
             render(
                 <TestWrapper>
                     <SettingsModal {...defaultProps} isAuthenticated={true} />
                 </TestWrapper>
             )
 
-            expect(screen.getByText('Firebase Cloud')).toBeInTheDocument()
+            // 데이터 탭으로 이동
+            await user.click(screen.getByText('데이터'))
+
+            await waitFor(() => {
+                expect(screen.getByText('Firebase Cloud')).toBeInTheDocument()
+            })
         })
 
-        it('로그인되지 않으면 LocalStorage 태그 표시', () => {
+        it('로그인되지 않으면 LocalStorage 태그 표시', async () => {
+            const user = userEvent.setup()
             render(
                 <TestWrapper>
                     <SettingsModal {...defaultProps} isAuthenticated={false} />
                 </TestWrapper>
             )
 
-            expect(screen.getByText('LocalStorage (브라우저)')).toBeInTheDocument()
+            // 데이터 탭으로 이동
+            await user.click(screen.getByText('데이터'))
+
+            await waitFor(() => {
+                expect(screen.getByText('LocalStorage (브라우저)')).toBeInTheDocument()
+            })
         })
     })
 

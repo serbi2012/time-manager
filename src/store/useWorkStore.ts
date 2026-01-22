@@ -86,6 +86,9 @@ interface WorkStore {
     // 프리셋 추가 시 구분자(postfix) 사용 여부 (기본값: false = 이름 그대로)
     use_postfix_on_preset_add: boolean;
 
+    // 앱 테마 색상 (기본값: blue)
+    app_theme: AppTheme;
+
     // 타이머 액션
     startTimer: (template_id?: string) => void;
     stopTimer: () => WorkRecord | null;
@@ -163,6 +166,9 @@ interface WorkStore {
 
     // 프리셋 추가 시 구분자 사용 설정
     setUsePostfixOnPresetAdd: (value: boolean) => void;
+
+    // 앱 테마 설정
+    setAppTheme: (theme: AppTheme) => void;
 }
 
 const DEFAULT_FORM_DATA: WorkFormData = {
@@ -275,6 +281,63 @@ export const DEFAULT_CATEGORY_OPTIONS = [
     "기타",
 ];
 
+// 앱 테마 색상 타입
+export type AppTheme = "blue" | "green" | "purple" | "red" | "orange" | "teal" | "black";
+
+// 테마별 색상 정의
+export const APP_THEME_COLORS: Record<AppTheme, {
+    primary: string;       // Ant Design colorPrimary
+    gradient: string;      // 헤더 그라데이션
+    gradientDark: string;  // 어두운 그라데이션 (그림자용)
+}> = {
+    blue: {
+        primary: "#1890ff",
+        gradient: "linear-gradient(135deg, #1890ff 0%, #096dd9 100%)",
+        gradientDark: "#096dd9",
+    },
+    green: {
+        primary: "#52c41a",
+        gradient: "linear-gradient(135deg, #52c41a 0%, #389e0d 100%)",
+        gradientDark: "#389e0d",
+    },
+    purple: {
+        primary: "#722ed1",
+        gradient: "linear-gradient(135deg, #722ed1 0%, #531dab 100%)",
+        gradientDark: "#531dab",
+    },
+    red: {
+        primary: "#f5222d",
+        gradient: "linear-gradient(135deg, #f5222d 0%, #cf1322 100%)",
+        gradientDark: "#cf1322",
+    },
+    orange: {
+        primary: "#fa8c16",
+        gradient: "linear-gradient(135deg, #fa8c16 0%, #d46b08 100%)",
+        gradientDark: "#d46b08",
+    },
+    teal: {
+        primary: "#13c2c2",
+        gradient: "linear-gradient(135deg, #13c2c2 0%, #08979c 100%)",
+        gradientDark: "#08979c",
+    },
+    black: {
+        primary: "#434343",
+        gradient: "linear-gradient(135deg, #434343 0%, #1a1a1a 100%)",
+        gradientDark: "#1a1a1a",
+    },
+};
+
+// 테마 라벨
+export const APP_THEME_LABELS: Record<AppTheme, string> = {
+    blue: "파란색 (기본)",
+    green: "초록색",
+    purple: "보라색",
+    red: "빨간색",
+    orange: "주황색",
+    teal: "청록색",
+    black: "검정색",
+};
+
 export const useWorkStore = create<WorkStore>()(
     persist(
         (set, get) => ({
@@ -294,6 +357,7 @@ export const useWorkStore = create<WorkStore>()(
                 category_option: [],
             },
             use_postfix_on_preset_add: false, // 기본값: 이름 그대로 추가
+            app_theme: "blue" as AppTheme, // 기본값: 파란색
 
     startTimer: (template_id?: string) => {
         const { form_data } = get();
@@ -1177,6 +1241,10 @@ export const useWorkStore = create<WorkStore>()(
     setUsePostfixOnPresetAdd: (value) => {
         set({ use_postfix_on_preset_add: value });
     },
+
+    setAppTheme: (theme) => {
+        set({ app_theme: theme });
+    },
         }),
         {
             name: "work-time-storage", // LocalStorage 키
@@ -1189,6 +1257,7 @@ export const useWorkStore = create<WorkStore>()(
                 custom_category_options: state.custom_category_options,
                 hidden_autocomplete_options: state.hidden_autocomplete_options,
                 use_postfix_on_preset_add: state.use_postfix_on_preset_add,
+                app_theme: state.app_theme,
             }),
         }
     )

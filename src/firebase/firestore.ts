@@ -4,6 +4,7 @@ import type { Unsubscribe } from "firebase/firestore";
 import { db } from "./config";
 import type { WorkRecord, WorkTemplate, TimerState } from "../types";
 import type { ShortcutDefinition } from "../store/useShortcutStore";
+import type { AppTheme } from "../store/useWorkStore";
 
 // 숨김 자동완성 옵션 타입
 export interface HiddenAutoCompleteOptions {
@@ -24,6 +25,7 @@ export interface UserData {
     timer?: TimerState; // 타이머 상태 (새로고침 시 복원용)
     shortcuts?: ShortcutDefinition[]; // 단축키 설정
     hidden_autocomplete_options?: HiddenAutoCompleteOptions; // 숨김 자동완성 옵션
+    app_theme?: AppTheme; // 앱 테마 색상
     updated_at: string;
 }
 

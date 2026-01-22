@@ -24,8 +24,10 @@ import {
     DEFAULT_TASK_OPTIONS,
     DEFAULT_CATEGORY_OPTIONS,
 } from "../store/useWorkStore";
+import { useShortcutStore } from "../store/useShortcutStore";
 import type { WorkRecord, WorkSession } from "../types";
 import { useResponsive } from "../hooks/useResponsive";
+import { formatShortcutKeyForPlatform, matchShortcutKey } from "../hooks/useShortcuts";
 
 const { Text } = Typography;
 
@@ -142,6 +144,12 @@ export default function DailyGanttChart() {
         addCustomCategoryOption,
         hideAutoCompleteOption,
     } = useWorkStore();
+
+    // 모달 저장 단축키 설정
+    const modal_submit_shortcut = useShortcutStore((state) => 
+        state.shortcuts.find(s => s.id === 'modal-submit')
+    );
+    const modal_submit_keys = modal_submit_shortcut?.keys || 'F8';
 
     // 성능을 위해 1분마다만 업데이트 (진행 중인 작업 표시용)
     const [gantt_tick, setGanttTick] = useState(0);
@@ -2018,7 +2026,7 @@ export default function DailyGanttChart() {
                 onCancel={handleModalCancel}
                 footer={[
                     <Button key="ok" type="primary" onClick={handleAddWork}>
-                        추가 (Ctrl+Shift+Enter)
+                        추가 ({formatShortcutKeyForPlatform(modal_submit_keys)})
                     </Button>,
                     <Button key="cancel" onClick={handleModalCancel}>
                         취소
@@ -2029,7 +2037,7 @@ export default function DailyGanttChart() {
                     form={form}
                     layout="vertical"
                     onKeyDown={(e) => {
-                        if (e.ctrlKey && e.shiftKey && e.key === "Enter") {
+                        if (matchShortcutKey(e, modal_submit_keys)) {
                             e.preventDefault();
                             handleAddWork();
                         }
@@ -2316,7 +2324,7 @@ export default function DailyGanttChart() {
                 onCancel={handleEditModalCancel}
                 footer={[
                     <Button key="ok" type="primary" onClick={handleEditWork}>
-                        저장 (Ctrl+Shift+Enter)
+                        저장 ({formatShortcutKeyForPlatform(modal_submit_keys)})
                     </Button>,
                     <Button key="cancel" onClick={handleEditModalCancel}>
                         취소
@@ -2327,7 +2335,7 @@ export default function DailyGanttChart() {
                     form={edit_form}
                     layout="vertical"
                     onKeyDown={(e) => {
-                        if (e.ctrlKey && e.shiftKey && e.key === "Enter") {
+                        if (matchShortcutKey(e, modal_submit_keys)) {
                             e.preventDefault();
                             handleEditWork();
                         }

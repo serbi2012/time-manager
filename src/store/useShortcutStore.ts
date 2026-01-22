@@ -119,6 +119,17 @@ export const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     action: 'goWeekly',
   },
   
+  // 일반 - 모달 제출
+  {
+    id: 'modal-submit',
+    name: '모달 저장/추가',
+    description: '작업 추가, 수정, 프리셋 추가 등 모달에서 저장/추가 실행',
+    keys: 'F8',
+    category: 'general',
+    enabled: true,
+    action: 'modalSubmit',
+  },
+  
   // 데이터
   {
     id: 'export-data',
@@ -155,6 +166,9 @@ interface ShortcutStore {
   toggleShortcut: (id: string) => void;
   setShortcutEnabled: (id: string, enabled: boolean) => void;
   
+  // 단축키 키 조합 변경
+  setShortcutKeys: (id: string, keys: string) => { success: boolean; message?: string };
+  
   // 단축키 가져오기
   getShortcut: (id: string) => ShortcutDefinition | undefined;
   getEnabledShortcuts: () => ShortcutDefinition[];
@@ -162,6 +176,9 @@ interface ShortcutStore {
   
   // 단축키 키 조합으로 찾기
   findByKeys: (keys: string) => ShortcutDefinition | undefined;
+  
+  // 중복 검사 (자기 자신 제외)
+  isKeysDuplicate: (keys: string, excludeId?: string) => boolean;
   
   // 초기화
   resetToDefault: () => void;
@@ -180,7 +197,11 @@ const loadShortcutsFromStorage = (): ShortcutDefinition[] => {
       return DEFAULT_SHORTCUTS.map(defaultShortcut => {
         const storedShortcut = parsed.find((s: ShortcutDefinition) => s.id === defaultShortcut.id);
         return storedShortcut 
-          ? { ...defaultShortcut, enabled: storedShortcut.enabled }
+          ? { 
+              ...defaultShortcut, 
+              enabled: storedShortcut.enabled,
+              keys: storedShortcut.keys || defaultShortcut.keys, // 사용자 지정 키 조합 로드
+            }
           : defaultShortcut;
       });
     }
@@ -222,6 +243,32 @@ export const useShortcutStore = create<ShortcutStore>()((set, get) => ({
     });
   },
   
+  setShortcutKeys: (id, keys) => {
+    const state = get();
+    
+    // 중복 검사 (자기 자신 제외)
+    const duplicate = state.shortcuts.find(
+      (s) => s.id !== id && s.keys.toLowerCase() === keys.toLowerCase()
+    );
+    
+    if (duplicate) {
+      return { 
+        success: false, 
+        message: `이미 "${duplicate.name}"에서 사용 중인 단축키입니다` 
+      };
+    }
+    
+    set((state) => {
+      const updated = state.shortcuts.map((s) =>
+        s.id === id ? { ...s, keys } : s
+      );
+      saveShortcutsToStorage(updated);
+      return { shortcuts: updated };
+    });
+    
+    return { success: true };
+  },
+  
   getShortcut: (id) => {
     return get().shortcuts.find((s) => s.id === id);
   },
@@ -236,6 +283,12 @@ export const useShortcutStore = create<ShortcutStore>()((set, get) => ({
   
   findByKeys: (keys) => {
     return get().shortcuts.find((s) => s.enabled && s.keys.toLowerCase() === keys.toLowerCase());
+  },
+  
+  isKeysDuplicate: (keys, excludeId) => {
+    return get().shortcuts.some(
+      (s) => s.id !== excludeId && s.keys.toLowerCase() === keys.toLowerCase()
+    );
   },
   
   resetToDefault: () => {

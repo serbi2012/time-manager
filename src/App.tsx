@@ -50,7 +50,7 @@ import AdminSessionGrid from "./components/AdminSessionGrid";
 import SettingsModal from "./components/SettingsModal";
 import ChangelogModal from "./components/ChangelogModal";
 import { CURRENT_VERSION } from "./constants/changelog";
-import { useWorkStore } from "./store/useWorkStore";
+import { useWorkStore, APP_THEME_COLORS } from "./store/useWorkStore";
 import { useShortcutStore } from "./store/useShortcutStore";
 import { useAuth } from "./firebase/useAuth";
 import { useShortcuts } from "./hooks/useShortcuts";
@@ -71,6 +71,7 @@ const { Title } = Typography;
 function MainPage() {
     const { is_mobile } = useResponsive();
     const [is_preset_drawer_open, setIsPresetDrawerOpen] = useState(false);
+    const app_theme = useWorkStore((state) => state.app_theme);
 
     // 프리셋에서 작업 기록에만 추가 (타이머 없이)
     const handleAddRecordOnly = (template_id: string) => {
@@ -180,6 +181,10 @@ function MainPage() {
                     className="mobile-preset-fab"
                     onClick={() => setIsPresetDrawerOpen(true)}
                     aria-label="프리셋 열기"
+                    style={{
+                        background: APP_THEME_COLORS[app_theme].gradient,
+                        boxShadow: `0 4px 12px ${APP_THEME_COLORS[app_theme].primary}66`,
+                    }}
                 >
                     <AppstoreOutlined />
                 </button>
@@ -368,6 +373,7 @@ function AppLayout() {
         (state) => state.hidden_autocomplete_options
     );
     const shortcuts = useShortcutStore((state) => state.shortcuts);
+    const app_theme = useWorkStore((state) => state.app_theme);
 
     useEffect(() => {
         if (user && isAuthenticated && sync_status === "synced") {
@@ -383,6 +389,7 @@ function AppLayout() {
         custom_category_options,
         hidden_autocomplete_options,
         shortcuts,
+        app_theme,
         user,
         isAuthenticated,
         sync_status,
@@ -574,7 +581,12 @@ function AppLayout() {
     return (
         <Layout className="app-layout">
             {/* 헤더 */}
-            <Header className="app-header">
+            <Header
+                className="app-header"
+                style={{
+                    background: APP_THEME_COLORS[app_theme].gradient,
+                }}
+            >
                 <div className="header-content">
                     <ClockCircleOutlined className="header-icon" />
                     <Title level={4} className="header-title">
@@ -811,12 +823,15 @@ function AppLayout() {
 }
 
 function App() {
-  return (
+    const app_theme = useWorkStore((state) => state.app_theme);
+    const theme_color = APP_THEME_COLORS[app_theme].primary;
+
+    return (
         <ConfigProvider
             theme={{
                 algorithm: theme.defaultAlgorithm,
                 token: {
-                    colorPrimary: "#1890ff",
+                    colorPrimary: theme_color,
                     borderRadius: 8,
                 },
             }}

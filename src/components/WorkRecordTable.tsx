@@ -45,9 +45,12 @@ import {
     useWorkStore,
     DEFAULT_TASK_OPTIONS,
     DEFAULT_CATEGORY_OPTIONS,
+    APP_THEME_COLORS,
 } from "../store/useWorkStore";
+import { useShortcutStore } from "../store/useShortcutStore";
 import type { WorkRecord, WorkSession } from "../types";
 import { useResponsive } from "../hooks/useResponsive";
+import { formatShortcutKeyForPlatform, matchShortcutKey } from "../hooks/useShortcuts";
 
 const { Text } = Typography;
 
@@ -313,6 +316,8 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
     );
     const updateSession = useWorkStore((state) => state.updateSession);
     const deleteSession = useWorkStore((state) => state.deleteSession);
+    const app_theme = useWorkStore((state) => state.app_theme);
+    const theme_color = APP_THEME_COLORS[app_theme].primary;
 
     // 선택 삭제를 위한 상태
     const [selected_session_keys, setSelectedSessionKeys] = useState<React.Key[]>([]);
@@ -511,7 +516,7 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                         key: "duration",
                         width: 100,
                         render: (_: unknown, session: WorkSession) => (
-                            <Tag color="blue">
+                            <Tag color={theme_color}>
                                 {formatDuration(
                                     getSessionDurationMinutes(session)
                                 )}
@@ -549,7 +554,7 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                 <Space split={<span style={{ color: "#d9d9d9" }}>|</span>}>
                     <Text type="secondary">첫 시작: {record.start_time}</Text>
                     <Text type="secondary">마지막 종료: {record.end_time}</Text>
-                    <Text strong style={{ color: "#1890ff" }}>
+                    <Text strong style={{ color: theme_color }}>
                         총{" "}
                         {formatDuration(
                             sessions.reduce(
@@ -602,7 +607,17 @@ export default function WorkRecordTable() {
         getProjectCodeOptions,
         addRecord,
         hideAutoCompleteOption,
+        app_theme,
     } = useWorkStore();
+
+    // 테마 색상
+    const theme_color = APP_THEME_COLORS[app_theme].primary;
+
+    // 모달 저장 단축키 설정
+    const modal_submit_shortcut = useShortcutStore((state) => 
+        state.shortcuts.find(s => s.id === 'modal-submit')
+    );
+    const modal_submit_keys = modal_submit_shortcut?.keys || 'F8';
 
     // 타이머 표시를 위한 리렌더링 트리거
     const [, setTick] = useState(0);
@@ -1092,7 +1107,7 @@ export default function WorkRecordTable() {
                                 strong
                                 style={{
                                     color: is_active
-                                        ? "#1890ff"
+                                        ? theme_color
                                         : is_completed
                                         ? "#8c8c8c"
                                         : undefined,
@@ -1105,7 +1120,7 @@ export default function WorkRecordTable() {
                             </Text>
                             {is_active && (
                                 <Tag
-                                    color="processing"
+                                    color={theme_color}
                                     style={{ marginLeft: 4 }}
                                 >
                                     {formatTimer(getElapsedSeconds())}
@@ -1122,7 +1137,7 @@ export default function WorkRecordTable() {
             key: "work_name",
             width: 120,
             render: (text: string) => (
-                <Tag color="blue" style={{ fontSize: 11 }}>
+                <Tag color={theme_color} style={{ fontSize: 11 }}>
                     {text}
                 </Tag>
             ),
@@ -1161,7 +1176,7 @@ export default function WorkRecordTable() {
                     selected_date
                 );
                 return (
-                    <Text strong style={{ color: "#1890ff" }}>
+                    <Text strong style={{ color: theme_color }}>
                         {date_minutes}분
                     </Text>
                 );
@@ -1275,7 +1290,7 @@ export default function WorkRecordTable() {
                         <span>작업 기록</span>
                         {timer.is_running && timer.active_form_data && (
                             <Tag
-                                color="processing"
+                                color={theme_color}
                                 icon={<ClockCircleOutlined spin />}
                             >
                                 {timer.active_form_data.deal_name ||
@@ -1431,7 +1446,7 @@ export default function WorkRecordTable() {
 
                                         {/* 태그 영역 */}
                                         <div className="mobile-record-card-tags">
-                                            <Tag color="blue" style={{ margin: 0 }}>
+                                            <Tag color={theme_color} style={{ margin: 0 }}>
                                                 {record.work_name}
                                             </Tag>
                                             {record.task_name && (
@@ -1863,7 +1878,7 @@ export default function WorkRecordTable() {
                 }}
                 footer={[
                     <Button key="ok" type="primary" onClick={handleSaveEdit}>
-                        저장 (Ctrl+Shift+Enter)
+                        저장 ({formatShortcutKeyForPlatform(modal_submit_keys)})
                     </Button>,
                     <Button
                         key="cancel"
@@ -1881,7 +1896,7 @@ export default function WorkRecordTable() {
                     form={edit_form}
                     layout="vertical"
                     onKeyDown={(e) => {
-                        if (e.ctrlKey && e.shiftKey && e.key === "Enter") {
+                        if (matchShortcutKey(e, modal_submit_keys)) {
                             e.preventDefault();
                             handleSaveEdit();
                         }
@@ -2181,7 +2196,7 @@ export default function WorkRecordTable() {
                             key: "work_name",
                             width: 120,
                             render: (text: string) => (
-                                <Tag color="blue" style={{ fontSize: 11 }}>
+                                <Tag color={theme_color} style={{ fontSize: 11 }}>
                                     {text}
                                 </Tag>
                             ),
@@ -2191,7 +2206,7 @@ export default function WorkRecordTable() {
                             key: "duration",
                             width: 60,
                             render: (_: unknown, record: WorkRecord) => (
-                                <Text style={{ color: "#1890ff" }}>
+                                <Text style={{ color: theme_color }}>
                                     {getRecordDurationMinutes(record)}분
                                 </Text>
                             ),
@@ -2298,7 +2313,7 @@ export default function WorkRecordTable() {
                             key: "work_name",
                             width: 120,
                             render: (text: string) => (
-                                <Tag color="blue">{text}</Tag>
+                                <Tag color={theme_color}>{text}</Tag>
                             ),
                         },
                         {
@@ -2365,10 +2380,10 @@ export default function WorkRecordTable() {
 
             <style>{`
                 .active-row {
-                    background-color: #e6f7ff !important;
+                    background-color: ${theme_color}15 !important;
                 }
                 .active-row:hover > td {
-                    background-color: #bae7ff !important;
+                    background-color: ${theme_color}25 !important;
                 }
                 
                 /* 확장 아이콘 애니메이션 */
@@ -2386,8 +2401,8 @@ export default function WorkRecordTable() {
                 }
                 
                 .expand-icon:hover {
-                    background: #f0f5ff;
-                    color: #1890ff;
+                    background: ${theme_color}15;
+                    color: ${theme_color};
                     transform: scale(1.1);
                 }
                 
@@ -2396,8 +2411,8 @@ export default function WorkRecordTable() {
                 }
                 
                 .expand-icon.expanded {
-                    color: #1890ff;
-                    background: #e6f7ff;
+                    color: ${theme_color};
+                    background: ${theme_color}15;
                 }
                 
                 .expand-icon.expanded .anticon {
