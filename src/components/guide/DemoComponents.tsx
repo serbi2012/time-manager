@@ -637,6 +637,98 @@ export function DemoEmptyState() {
 }
 
 /**
+ * 설정 패널 (데이터 관리 탭) 데모
+ */
+export function DemoSettingsPanel() {
+    return (
+        <div className="demo-component">
+            <Card size="small" title="데이터 관리">
+                <div style={{ marginBottom: 16 }}>
+                    <Text strong style={{ display: "block", marginBottom: 8 }}>
+                        프리셋 설정
+                    </Text>
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            padding: "8px 12px",
+                            background: "#fafafa",
+                            borderRadius: 4,
+                        }}
+                    >
+                        <div>
+                            <Text>작업 추가 시 구분자(postfix) 사용</Text>
+                            <br />
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                                ON 시: "회의" → "회의_0122_093045_123"
+                            </Text>
+                        </div>
+                        <Tag color="blue">OFF</Tag>
+                    </div>
+                </div>
+
+                <div style={{ marginBottom: 16 }}>
+                    <Text strong style={{ display: "block", marginBottom: 8 }}>
+                        백업 및 복원
+                    </Text>
+                    <Space
+                        direction="vertical"
+                        style={{ width: "100%" }}
+                        size="small"
+                    >
+                        <Button
+                            icon={<CopyOutlined />}
+                            block
+                            disabled
+                            style={{ textAlign: "left" }}
+                        >
+                            데이터 내보내기 (Export)
+                        </Button>
+                        <Button
+                            icon={<PlusOutlined />}
+                            block
+                            disabled
+                            style={{ textAlign: "left" }}
+                        >
+                            데이터 가져오기 (Import)
+                        </Button>
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                            * 가져오기 시 기존 데이터가 덮어씌워집니다
+                        </Text>
+                    </Space>
+                </div>
+
+                <div>
+                    <Text strong style={{ display: "block", marginBottom: 8 }}>
+                        저장소 정보
+                    </Text>
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            padding: "8px 12px",
+                            background: "#fafafa",
+                            borderRadius: 4,
+                        }}
+                    >
+                        <Text>저장 위치</Text>
+                        <Tag color="green">Firebase Cloud</Tag>
+                    </div>
+                    <Text
+                        type="secondary"
+                        style={{ fontSize: 12, marginTop: 4, display: "block" }}
+                    >
+                        데이터가 클라우드에 자동으로 동기화됩니다
+                    </Text>
+                </div>
+            </Card>
+        </div>
+    );
+}
+
+/**
  * 단축키 테이블 데모
  */
 export function DemoShortcutsTable() {
@@ -700,6 +792,7 @@ export const DEMO_COMPONENTS: Record<string, React.ComponentType> = {
     DailyGanttChart: DemoDailyGanttChart,
     EmptyState: DemoEmptyState,
     ShortcutsTable: DemoShortcutsTable,
+    SettingsPanel: DemoSettingsPanel,
 };
 
 /**
