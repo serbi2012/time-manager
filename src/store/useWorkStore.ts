@@ -83,6 +83,9 @@ interface WorkStore {
         category_option: string[];
     };
 
+    // 프리셋 추가 시 구분자(postfix) 사용 여부 (기본값: false = 이름 그대로)
+    use_postfix_on_preset_add: boolean;
+
     // 타이머 액션
     startTimer: (template_id?: string) => void;
     stopTimer: () => WorkRecord | null;
@@ -157,6 +160,9 @@ interface WorkStore {
         field: "work_name" | "task_name" | "deal_name" | "project_code" | "task_option" | "category_option",
         value: string
     ) => void;
+
+    // 프리셋 추가 시 구분자 사용 설정
+    setUsePostfixOnPresetAdd: (value: boolean) => void;
 }
 
 const DEFAULT_FORM_DATA: WorkFormData = {
@@ -287,6 +293,7 @@ export const useWorkStore = create<WorkStore>()(
                 task_option: [],
                 category_option: [],
             },
+            use_postfix_on_preset_add: false, // 기본값: 이름 그대로 추가
 
     startTimer: (template_id?: string) => {
         const { form_data } = get();
@@ -959,6 +966,21 @@ export const useWorkStore = create<WorkStore>()(
 
     // 완료 상태 관리
     markAsCompleted: (id: string) => {
+        const { timer, records } = get();
+        const record = records.find((r) => r.id === id);
+
+        // 현재 타이머가 이 작업과 관련이 있으면 중지
+        if (
+            timer.is_running &&
+            timer.active_form_data &&
+            record &&
+            timer.active_form_data.work_name === record.work_name &&
+            timer.active_form_data.deal_name === record.deal_name
+        ) {
+            // 타이머 중지 (세션 저장)
+            get().stopTimer();
+        }
+
         set((state) => ({
             records: state.records.map((r) =>
                 r.id === id
@@ -1134,6 +1156,10 @@ export const useWorkStore = create<WorkStore>()(
             };
         });
     },
+
+    setUsePostfixOnPresetAdd: (value) => {
+        set({ use_postfix_on_preset_add: value });
+    },
         }),
         {
             name: "work-time-storage", // LocalStorage 키
@@ -1145,6 +1171,7 @@ export const useWorkStore = create<WorkStore>()(
                 custom_task_options: state.custom_task_options,
                 custom_category_options: state.custom_category_options,
                 hidden_autocomplete_options: state.hidden_autocomplete_options,
+                use_postfix_on_preset_add: state.use_postfix_on_preset_add,
             }),
         }
     )

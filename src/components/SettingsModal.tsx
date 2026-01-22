@@ -489,9 +489,35 @@ function DataTab({
     onImport: () => void;
     isAuthenticated: boolean;
 }) {
+    const use_postfix = useWorkStore((state) => state.use_postfix_on_preset_add);
+    const setUsePostfix = useWorkStore(
+        (state) => state.setUsePostfixOnPresetAdd
+    );
+
     return (
         <div>
-            <Divider style={{ marginTop: 0 }}>백업 및 복원</Divider>
+            <Divider style={{ marginTop: 0 }}>프리셋 설정</Divider>
+            <div
+                style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 8,
+                }}
+            >
+                <div>
+                    <Text>작업 추가 시 구분자(postfix) 사용</Text>
+                    <br />
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                        OFF: "시간관리보고서입력" → 그대로
+                        <br />
+                        ON: "시간관리보고서입력" → "시간관리보고서입력_0122_093045_123"
+                    </Text>
+                </div>
+                <Switch checked={use_postfix} onChange={setUsePostfix} />
+            </div>
+
+            <Divider>백업 및 복원</Divider>
             <Space direction="vertical" style={{ width: "100%" }} size="middle">
                 <Button icon={<DownloadOutlined />} onClick={onExport} block>
                     데이터 내보내기 (Export)

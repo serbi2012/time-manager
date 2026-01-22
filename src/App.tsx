@@ -29,6 +29,7 @@ import {
     AppstoreOutlined,
     MessageOutlined,
     BookOutlined,
+    ToolOutlined,
 } from "@ant-design/icons";
 import { useResponsive } from "./hooks/useResponsive";
 import {
@@ -45,6 +46,7 @@ import DailyGanttChart from "./components/DailyGanttChart";
 import WeeklySchedule from "./components/WeeklySchedule";
 import SuggestionBoard from "./components/SuggestionBoard";
 import GuideBook from "./components/GuideBook";
+import AdminSessionGrid from "./components/AdminSessionGrid";
 import SettingsModal from "./components/SettingsModal";
 import ChangelogModal from "./components/ChangelogModal";
 import { CURRENT_VERSION } from "./constants/changelog";
@@ -72,27 +74,53 @@ function MainPage() {
 
     // 프리셋에서 작업 기록에만 추가 (타이머 없이)
     const handleAddRecordOnly = (template_id: string) => {
-        const template = useWorkStore
-            .getState()
-            .templates.find((t) => t.id === template_id);
+        const state = useWorkStore.getState();
+        const template = state.templates.find((t) => t.id === template_id);
         if (!template) return;
 
-        // 유니크 ID 생성
-        const now = new Date();
-        const random_suffix = Math.floor(Math.random() * 1000)
-            .toString()
-            .padStart(3, "0");
-        const unique_id = `${String(now.getMonth() + 1).padStart(
-            2,
-            "0"
-        )}${String(now.getDate()).padStart(2, "0")}_${String(
-            now.getHours()
-        ).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}${String(
-            now.getSeconds()
-        ).padStart(2, "0")}_${random_suffix}`;
-        const unique_deal_name = template.deal_name
-            ? `${template.deal_name}_${unique_id}`
-            : `작업_${unique_id}`;
+        let deal_name = template.deal_name || "작업";
+
+        // 설정에서 postfix 사용 여부 확인
+        if (state.use_postfix_on_preset_add) {
+            const now = new Date();
+            const random_suffix = Math.floor(Math.random() * 1000)
+                .toString()
+                .padStart(3, "0");
+            const unique_id = `${String(now.getMonth() + 1).padStart(
+                2,
+                "0"
+            )}${String(now.getDate()).padStart(2, "0")}_${String(
+                now.getHours()
+            ).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}${String(
+                now.getSeconds()
+            ).padStart(2, "0")}_${random_suffix}`;
+            deal_name = template.deal_name
+                ? `${template.deal_name}_${unique_id}`
+                : `작업_${unique_id}`;
+        } else {
+            // postfix 없이 추가할 때 중복 체크
+            const base_deal_name = deal_name;
+            const existing_records = state.records.filter(
+                (r) =>
+                    !r.is_deleted &&
+                    !r.is_completed &&
+                    r.work_name === template.work_name &&
+                    (r.deal_name === base_deal_name ||
+                        r.deal_name.match(new RegExp(`^${base_deal_name} \\(\\d+\\)$`)))
+            );
+
+            if (existing_records.length > 0) {
+                // 이미 같은 이름의 작업이 있으면 번호 추가
+                let max_num = 1;
+                existing_records.forEach((r) => {
+                    const match = r.deal_name.match(/\((\d+)\)$/);
+                    if (match) {
+                        max_num = Math.max(max_num, parseInt(match[1]));
+                    }
+                });
+                deal_name = `${base_deal_name} (${max_num + 1})`;
+            }
+        }
 
         const today_date = dayjs().format("YYYY-MM-DD");
 
@@ -103,7 +131,7 @@ function MainPage() {
             project_code: template.project_code || "A00_00000",
             work_name: template.work_name,
             task_name: template.task_name,
-            deal_name: unique_deal_name,
+            deal_name: deal_name,
             category_name: template.category_name,
             note: template.note,
             duration_minutes: 0,
@@ -395,7 +423,10 @@ function AppLayout() {
         }
     };
 
-    const menu_items = [
+    const ADMIN_EMAIL = "rlaxo0306@gmail.com";
+    const is_admin = user?.email === ADMIN_EMAIL;
+
+    const menu_items = useMemo(() => [
         {
             key: "/",
             icon: <HomeOutlined />,
@@ -416,7 +447,12 @@ function AppLayout() {
             icon: <BookOutlined />,
             label: "사용 설명서",
         },
-    ];
+        ...(is_admin ? [{
+            key: "/admin",
+            icon: <ToolOutlined />,
+            label: "관리자",
+        }] : []),
+    ], [is_admin]);
 
     // 유저 드롭다운 메뉴
     const user_menu_items = [
@@ -710,6 +746,7 @@ function AppLayout() {
                 <Route path="/weekly" element={<WeeklySchedule />} />
                 <Route path="/suggestions" element={<SuggestionBoard />} />
                 <Route path="/guide" element={<GuideBook />} />
+                <Route path="/admin" element={<AdminSessionGrid />} />
             </Routes>
 
             {/* 설정 모달 */}

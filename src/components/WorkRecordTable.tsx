@@ -314,6 +314,9 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
     const updateSession = useWorkStore((state) => state.updateSession);
     const deleteSession = useWorkStore((state) => state.deleteSession);
 
+    // 선택 삭제를 위한 상태
+    const [selected_session_keys, setSelectedSessionKeys] = useState<React.Key[]>([]);
+
     // 시간 변경 핸들러
     const handleUpdateTime = useCallback(
         (session_id: string, new_start: string, new_end: string) => {
@@ -365,6 +368,18 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
         [record_id, deleteSession]
     );
 
+    // 선택 삭제 함수
+    const handleBulkDeleteSessions = useCallback(() => {
+        if (selected_session_keys.length === 0) return;
+
+        selected_session_keys.forEach((key) => {
+            deleteSession(record_id, key as string);
+        });
+
+        message.success(`${selected_session_keys.length}개 세션이 삭제되었습니다`);
+        setSelectedSessionKeys([]);
+    }, [selected_session_keys, record_id, deleteSession]);
+
     if (!record) {
         return (
             <div style={{ padding: "16px", color: "#999" }}>
@@ -402,6 +417,25 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                 <Text type="secondary" style={{ marginLeft: 8, fontSize: 12 }}>
                     (총 {sessions.length}회 작업)
                 </Text>
+                {selected_session_keys.length > 0 && (
+                    <Popconfirm
+                        title="선택 삭제"
+                        description={`${selected_session_keys.length}개 세션을 삭제하시겠습니까?`}
+                        onConfirm={handleBulkDeleteSessions}
+                        okText="삭제"
+                        cancelText="취소"
+                    >
+                        <Button
+                            type="link"
+                            danger
+                            icon={<DeleteOutlined />}
+                            size="small"
+                            style={{ marginLeft: 16 }}
+                        >
+                            선택 삭제 ({selected_session_keys.length})
+                        </Button>
+                    </Popconfirm>
+                )}
             </div>
 
             <Table
@@ -410,6 +444,10 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                 size="small"
                 pagination={false}
                 style={{ marginTop: 16 }}
+                rowSelection={{
+                    selectedRowKeys: selected_session_keys,
+                    onChange: (keys) => setSelectedSessionKeys(keys),
+                }}
                 columns={[
                     {
                         title: "#",
@@ -802,6 +840,11 @@ export default function WorkRecordTable() {
     // 작업 시작/중지 토글
     const handleToggleRecord = (record: WorkRecord) => {
         const is_active = getActiveRecordId() === record.id;
+
+        // 완료된 작업이면 시작 시 자동으로 완료 취소
+        if (record.is_completed && !is_active) {
+            markAsIncomplete(record.id);
+        }
 
         if (is_active) {
             // 현재 작업 중지
@@ -1439,6 +1482,11 @@ export default function WorkRecordTable() {
                                                     type="primary"
                                                     icon={<PlayCircleOutlined />}
                                                     onClick={() => {
+                                                        // 완료된 작업이면 시작 시 자동으로 완료 취소
+                                                        if (record.is_completed) {
+                                                            markAsIncomplete(record.id);
+                                                        }
+
                                                         if (timer.is_running) {
                                                             // 다른 작업 진행 중이면 전환
                                                             const tpl = templates.find(

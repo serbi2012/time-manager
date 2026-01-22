@@ -60,7 +60,7 @@
 .app-body {
     display: flex;
     height: calc(100vh - 56px);
-    overflow: hidden;
+    overflow: auto;
 }
 
 .app-sider {
@@ -1798,4 +1798,20 @@
     .demo-settings-panel {
         max-width: 100%;
     }
+}
+
+/* ========================================
+   관리자 세션 그리드 스타일
+   ======================================== */
+
+.admin-conflict-row {
+    background: #fff2f0 !important;
+}
+
+.admin-conflict-row td {
+    background: #fff2f0 !important;
+}
+
+.admin-conflict-row:hover td {
+    background: #ffccc7 !important;
 }

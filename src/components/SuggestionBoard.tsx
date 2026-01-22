@@ -704,7 +704,6 @@ export default function SuggestionBoard() {
                     ) : (
                         <Collapse
                             items={collapse_items}
-                            accordion
                             className="suggestion-collapse"
                         />
                     )}

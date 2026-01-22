@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "1.2.2";
+export const CURRENT_VERSION = "1.3.0";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,45 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "1.3.0",
+        date: "2026-01-22",
+        title: "관리자 기능 🔧",
+        changes: [
+            {
+                type: "feature",
+                description: "관리자 전용 세션 그리드 페이지 추가 (/admin)",
+            },
+            {
+                type: "feature",
+                description: "세션 충돌 감지 및 하이라이트 표시",
+            },
+            {
+                type: "feature",
+                description: "작업 이력 선택 삭제 기능 (관리자 세션 그리드, 작업 기록)",
+            },
+            {
+                type: "feature",
+                description: "프리셋 추가 시 중복 이름 자동 번호 부여",
+            },
+            {
+                type: "improvement",
+                description: "완료 시 타이머 자동 중지, 완료된 작업 시작 시 완료 해제",
+            },
+            {
+                type: "improvement",
+                description: "프리셋 작업 추가 시 postfix 사용 여부 설정 옵션 추가",
+            },
+            {
+                type: "improvement",
+                description: "건의사항 글 다중 열기 지원",
+            },
+            {
+                type: "fix",
+                description: "관리자 페이지, 건의사항 페이지 스크롤 버그 수정",
+            },
+        ],
+    },
     {
         version: "1.2.2",
         date: "2026-01-21",
