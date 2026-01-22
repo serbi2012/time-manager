@@ -59,6 +59,10 @@ export const CHANGELOG: ChangelogEntry[] = [
                 description: "앱 테마 색상 선택 기능 (7가지 색상: 파란색, 초록색, 보라색, 빨간색, 주황색, 청록색, 검정색)",
             },
             {
+                type: "improvement",
+                description: "간트차트 0분 세션 경고 표시 제거 (깔끔한 UI)",
+            },
+            {
                 type: "feature",
                 description: "단축키 사용자 지정 기능 (설정에서 원하는 키 조합으로 변경 가능)",
             },

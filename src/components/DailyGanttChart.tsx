@@ -17,7 +17,7 @@ import {
     Popover,
     Popconfirm,
 } from "antd";
-import { PlusOutlined, CloseOutlined, EditOutlined, DeleteOutlined, WarningOutlined } from "@ant-design/icons";
+import { PlusOutlined, CloseOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import {
     useWorkStore,
@@ -649,7 +649,6 @@ export default function DailyGanttChart() {
         // 모든 세션에 최소 너비 보장 (0분 세션도 표시)
         // 최소 5분 너비 또는 1% 중 큰 값
         const min_width_percent = Math.max((5 / total_minutes) * 100, 1);
-        const is_zero_duration = end <= start;
         width = Math.max(width, min_width_percent);
 
         return {
@@ -660,11 +659,6 @@ export default function DailyGanttChart() {
             ...(is_running && {
                 opacity: 0.8,
                 animation: "pulse 2s ease-in-out infinite",
-            }),
-            // 0분 세션은 특별한 스타일 (경고 표시)
-            ...(is_zero_duration && {
-                border: "2px dashed #ff4d4f",
-                backgroundColor: `${color}99`,
             }),
         };
     };
@@ -1469,7 +1463,6 @@ export default function DailyGanttChart() {
                                                     <div className="gantt-row-bars">
                                                         {group.sessions.map(
                                                             (session, idx) => {
-                                                                const is_zero_duration = timeToMinutes(session.end_time) <= timeToMinutes(session.start_time);
                                                                 const is_context_open = context_menu?.session.id === session.id;
                                                                 
                                                                 return (
@@ -1492,11 +1485,6 @@ export default function DailyGanttChart() {
                                                                                 )}
                                                                                 <div style={{ color: "#888", fontSize: 12, marginTop: 4 }}>
                                                                                     {session.start_time} ~ {session.end_time}
-                                                                                    {is_zero_duration && (
-                                                                                        <span style={{ color: "#ff4d4f", marginLeft: 4 }}>
-                                                                                            (0분 세션)
-                                                                                        </span>
-                                                                                    )}
                                                                                 </div>
                                                                             </div>
                                                                             <Space direction="vertical" style={{ width: "100%" }}>
@@ -1564,11 +1552,6 @@ export default function DailyGanttChart() {
                                                                                     {
                                                                                         session.end_time
                                                                                     }
-                                                                                    {is_zero_duration && (
-                                                                                        <span style={{ color: "#ff4d4f" }}>
-                                                                                            {" "}(0분 세션 ⚠️)
-                                                                                        </span>
-                                                                                    )}
                                                                                 </div>
                                                                                 <div>
                                                                                     {formatMinutes(
@@ -1635,10 +1618,6 @@ export default function DailyGanttChart() {
                                                                             session.id
                                                                                 ? "gantt-bar-resizing"
                                                                                 : ""
-                                                                        } ${
-                                                                            is_zero_duration
-                                                                                ? "gantt-bar-zero"
-                                                                                : ""
                                                                         }`}
                                                                         style={
                                                                             getResizingBarStyle(
@@ -1668,19 +1647,6 @@ export default function DailyGanttChart() {
                                                                             });
                                                                         }}
                                                                     >
-                                                                        {/* 0분 세션 경고 아이콘 */}
-                                                                        {is_zero_duration && (
-                                                                            <WarningOutlined 
-                                                                                style={{ 
-                                                                                    color: "#ff4d4f", 
-                                                                                    fontSize: 10,
-                                                                                    position: "absolute",
-                                                                                    left: "50%",
-                                                                                    top: "50%",
-                                                                                    transform: "translate(-50%, -50%)",
-                                                                                }} 
-                                                                            />
-                                                                        )}
                                                                         {/* 리사이즈 핸들 (레코딩 중이 아닌 경우에만) */}
                                                                         {session.id !==
                                                                             "virtual-running-session" && (
