@@ -1815,3 +1815,16 @@
 .admin-conflict-row:hover td {
     background: #ffccc7 !important;
 }
+
+/* 문제 세션 행 스타일 (주황색 계열) */
+.admin-problem-row {
+    background: #fff7e6 !important;
+}
+
+.admin-problem-row td {
+    background: #fff7e6 !important;
+}
+
+.admin-problem-row:hover td {
+    background: #ffd591 !important;
+}

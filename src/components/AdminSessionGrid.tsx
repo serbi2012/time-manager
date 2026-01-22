@@ -13,12 +13,15 @@ import {
     Button,
     Popconfirm,
     message,
+    Segmented,
 } from "antd";
 import {
     WarningOutlined,
     SettingOutlined,
     CalendarOutlined,
     DeleteOutlined,
+    BugOutlined,
+    ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import dayjs from "dayjs";
@@ -29,6 +32,14 @@ import type { WorkRecord, WorkSession } from "../types";
 const { Content } = Layout;
 const { Text, Title } = Typography;
 const { RangePicker } = DatePicker;
+
+// 문제 세션 유형 정의
+type ProblemType = "zero_duration" | "missing_time" | "invalid_time" | "future_time";
+
+interface ProblemInfo {
+    type: ProblemType;
+    description: string;
+}
 
 const ADMIN_EMAIL = "rlaxo0306@gmail.com";
 
@@ -51,6 +62,69 @@ interface ConflictInfo {
 function timeToMinutes(time: string): number {
     const parts = time.split(":").map(Number);
     return (parts[0] || 0) * 60 + (parts[1] || 0);
+}
+
+// 세션의 문제를 감지하는 함수
+function detectSessionProblems(session: WorkSession, record_date: string): ProblemInfo[] {
+    const problems: ProblemInfo[] = [];
+    const session_date = session.date || record_date;
+
+    // 1. 시간 정보 누락
+    if (!session.start_time || !session.end_time) {
+        problems.push({
+            type: "missing_time",
+            description: "시간 정보 누락",
+        });
+        return problems; // 시간이 없으면 다른 검사 불가
+    }
+
+    // 2. 시간 형식 유효성 검사
+    const time_regex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    if (!time_regex.test(session.start_time) || !time_regex.test(session.end_time)) {
+        problems.push({
+            type: "invalid_time",
+            description: "잘못된 시간 형식",
+        });
+    }
+
+    // 3. 0분 세션 감지 (시작 = 종료)
+    const start_mins = timeToMinutes(session.start_time);
+    const end_mins = timeToMinutes(session.end_time);
+    if (start_mins === end_mins) {
+        problems.push({
+            type: "zero_duration",
+            description: `0분 세션 (${session.start_time})`,
+        });
+    }
+
+    // 4. 미래 날짜 세션 감지
+    const today = dayjs().format("YYYY-MM-DD");
+    if (session_date > today) {
+        problems.push({
+            type: "future_time",
+            description: `미래 날짜 세션 (${session_date})`,
+        });
+    }
+
+    return problems;
+}
+
+// 모든 문제 세션을 찾는 함수
+function findProblemSessions(records: WorkRecord[]): Map<string, ProblemInfo[]> {
+    const problem_map = new Map<string, ProblemInfo[]>();
+
+    records
+        .filter((r) => !r.is_deleted)
+        .forEach((record) => {
+            record.sessions.forEach((session) => {
+                const problems = detectSessionProblems(session, record.date);
+                if (problems.length > 0) {
+                    problem_map.set(session.id, problems);
+                }
+            });
+        });
+
+    return problem_map;
 }
 
 function findConflicts(records: WorkRecord[]): ConflictInfo[] {
@@ -110,10 +184,13 @@ function findConflicts(records: WorkRecord[]): ConflictInfo[] {
     return conflicts;
 }
 
+type ViewMode = "all" | "conflicts" | "problems";
+
 function AdminSessionGridContent() {
     const records = useWorkStore((state) => state.records);
     const deleteSession = useWorkStore((state) => state.deleteSession);
 
+    const [view_mode, setViewMode] = useState<ViewMode>("all");
     const [show_conflicts_only, setShowConflictsOnly] = useState(false);
     const [date_range, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
     const [selected_row_keys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -123,7 +200,7 @@ function AdminSessionGridContent() {
             .filter((r) => !r.is_deleted)
             .flatMap((record) =>
                 record.sessions
-                    .filter((s) => s.start_time && s.end_time)
+                    // 문제 세션도 포함하도록 필터 조건 완화
                     .map((session) => ({
                         ...session,
                         key: session.id,
@@ -139,7 +216,7 @@ function AdminSessionGridContent() {
             .sort((a, b) => {
                 const dateCompare = b.date.localeCompare(a.date);
                 if (dateCompare !== 0) return dateCompare;
-                return a.start_time.localeCompare(b.start_time);
+                return (a.start_time || "").localeCompare(b.start_time || "");
             });
     }, [records]);
 
@@ -170,6 +247,13 @@ function AdminSessionGridContent() {
         return pairs;
     }, [conflicts]);
 
+    // 문제 세션 감지
+    const problemSessions = useMemo(() => findProblemSessions(records), [records]);
+
+    const problemSessionIds = useMemo(() => {
+        return new Set(problemSessions.keys());
+    }, [problemSessions]);
+
     // 선택 삭제 함수
     const handleBulkDelete = () => {
         if (selected_row_keys.length === 0) return;
@@ -195,12 +279,15 @@ function AdminSessionGridContent() {
             result = result.filter((s) => s.date >= start && s.date <= end);
         }
 
-        if (show_conflicts_only) {
+        // view_mode에 따른 필터링
+        if (view_mode === "conflicts" || show_conflicts_only) {
             result = result.filter((s) => conflictSessionIds.has(s.id));
+        } else if (view_mode === "problems") {
+            result = result.filter((s) => problemSessionIds.has(s.id));
         }
 
         return result;
-    }, [allSessions, date_range, show_conflicts_only, conflictSessionIds]);
+    }, [allSessions, date_range, view_mode, show_conflicts_only, conflictSessionIds, problemSessionIds]);
 
     const uniqueDates = useMemo(() => {
         const dates = new Set(allSessions.map((s) => s.date));
@@ -300,6 +387,74 @@ function AdminSessionGridContent() {
                 return value === "conflict" ? hasConflict : !hasConflict;
             },
         },
+        {
+            title: "문제",
+            width: 120,
+            align: "center",
+            render: (_, record) => {
+                const problems = problemSessions.get(record.id);
+                if (!problems || problems.length === 0) {
+                    return <Text type="secondary">-</Text>;
+                }
+
+                const tooltipContent = (
+                    <div>
+                        <div style={{ marginBottom: 8, fontWeight: "bold" }}>
+                            <BugOutlined /> 문제 발견:
+                        </div>
+                        {problems.map((p, idx) => (
+                            <div key={idx} style={{ marginBottom: 4 }}>
+                                • {p.description}
+                            </div>
+                        ))}
+                    </div>
+                );
+
+                // 문제 유형에 따른 태그 색상
+                const getTagColor = (type: ProblemType) => {
+                    switch (type) {
+                        case "zero_duration":
+                            return "orange";
+                        case "missing_time":
+                            return "red";
+                        case "invalid_time":
+                            return "magenta";
+                        case "future_time":
+                            return "purple";
+                        default:
+                            return "default";
+                    }
+                };
+
+                return (
+                    <Tooltip title={tooltipContent} placement="left">
+                        <Tag color={getTagColor(problems[0].type)} style={{ cursor: "help" }}>
+                            <ExclamationCircleOutlined /> {problems.length}
+                        </Tag>
+                    </Tooltip>
+                );
+            },
+            filters: [
+                { text: "문제 있음", value: "problem" },
+                { text: "문제 없음", value: "no-problem" },
+                { text: "0분 세션", value: "zero_duration" },
+                { text: "시간 누락", value: "missing_time" },
+            ],
+            onFilter: (value, record) => {
+                const problems = problemSessions.get(record.id);
+                const hasProblem = problems && problems.length > 0;
+                
+                if (value === "problem") return hasProblem ?? false;
+                if (value === "no-problem") return !hasProblem;
+                if (value === "zero_duration") {
+                    return problems?.some((p) => p.type === "zero_duration") ?? false;
+                }
+                if (value === "missing_time") {
+                    return problems?.some((p) => p.type === "missing_time") ?? false;
+                }
+                return false;
+            },
+        },
     ];
 
     const tableProps: TableProps<SessionWithMeta> = {
@@ -318,12 +473,42 @@ function AdminSessionGridContent() {
             selectedRowKeys: selected_row_keys,
             onChange: (keys) => setSelectedRowKeys(keys),
         },
-        rowClassName: (record) =>
-            conflictSessionIds.has(record.id) ? "admin-conflict-row" : "",
-        scroll: { x: 800 },
+        rowClassName: (record) => {
+            if (conflictSessionIds.has(record.id)) return "admin-conflict-row";
+            if (problemSessionIds.has(record.id)) return "admin-problem-row";
+            return "";
+        },
+        scroll: { x: 900 },
     };
 
     const conflictDates = new Set(conflicts.map((c) => c.date));
+
+    // 문제 세션이 있는 날짜들
+    const problemDates = useMemo(() => {
+        const dates = new Set<string>();
+        allSessions.forEach((s) => {
+            if (problemSessionIds.has(s.id)) {
+                dates.add(s.date);
+            }
+        });
+        return dates;
+    }, [allSessions, problemSessionIds]);
+
+    // 문제 유형별 개수
+    const problemStats = useMemo(() => {
+        const stats = {
+            zero_duration: 0,
+            missing_time: 0,
+            invalid_time: 0,
+            future_time: 0,
+        };
+        problemSessions.forEach((problems) => {
+            problems.forEach((p) => {
+                stats[p.type]++;
+            });
+        });
+        return stats;
+    }, [problemSessions]);
 
     return (
         <Layout className="app-body" style={{ padding: 0 }}>
@@ -354,6 +539,34 @@ function AdminSessionGridContent() {
                                     </Button>
                                 </Popconfirm>
                             )}
+                            <Segmented
+                                value={view_mode}
+                                onChange={(value) => {
+                                    setViewMode(value as ViewMode);
+                                    setShowConflictsOnly(false);
+                                }}
+                                options={[
+                                    { label: "전체", value: "all" },
+                                    { 
+                                        label: (
+                                            <Space size={4}>
+                                                <WarningOutlined />
+                                                충돌 ({conflictSessionIds.size})
+                                            </Space>
+                                        ), 
+                                        value: "conflicts" 
+                                    },
+                                    { 
+                                        label: (
+                                            <Space size={4}>
+                                                <BugOutlined />
+                                                문제 ({problemSessionIds.size})
+                                            </Space>
+                                        ), 
+                                        value: "problems" 
+                                    },
+                                ]}
+                            />
                             <Space>
                                 <CalendarOutlined />
                                 <RangePicker
@@ -362,13 +575,6 @@ function AdminSessionGridContent() {
                                     allowClear
                                     placeholder={["시작일", "종료일"]}
                                 />
-                            </Space>
-                            <Space>
-                                <Switch
-                                    checked={show_conflicts_only}
-                                    onChange={setShowConflictsOnly}
-                                />
-                                <Text>충돌만 보기</Text>
                             </Space>
                         </Space>
                     }
@@ -421,7 +627,76 @@ function AdminSessionGridContent() {
                                     {conflictDates.size}일
                                 </Title>
                             </Card>
+                            <Card
+                                size="small"
+                                style={{
+                                    minWidth: 150,
+                                    borderColor:
+                                        problemSessionIds.size > 0
+                                            ? "#fa8c16"
+                                            : undefined,
+                                }}
+                            >
+                                <Text type="secondary">
+                                    <BugOutlined /> 문제 세션
+                                </Text>
+                                <Title
+                                    level={4}
+                                    style={{
+                                        margin: 0,
+                                        color:
+                                            problemSessionIds.size > 0
+                                                ? "#fa8c16"
+                                                : undefined,
+                                    }}
+                                >
+                                    {problemSessionIds.size}개
+                                </Title>
+                            </Card>
                         </div>
+
+                        {/* 문제 세션 상세 통계 */}
+                        {problemSessionIds.size > 0 && (
+                            <Card
+                                size="small"
+                                style={{
+                                    background: "#fff7e6",
+                                    borderColor: "#ffd591",
+                                }}
+                            >
+                                <Space direction="vertical" size="small" style={{ width: "100%" }}>
+                                    <Text strong style={{ color: "#d46b08" }}>
+                                        <BugOutlined /> 문제 유형별 현황
+                                    </Text>
+                                    <Space wrap>
+                                        {problemStats.zero_duration > 0 && (
+                                            <Tag color="orange">
+                                                0분 세션: {problemStats.zero_duration}개
+                                            </Tag>
+                                        )}
+                                        {problemStats.missing_time > 0 && (
+                                            <Tag color="red">
+                                                시간 누락: {problemStats.missing_time}개
+                                            </Tag>
+                                        )}
+                                        {problemStats.invalid_time > 0 && (
+                                            <Tag color="magenta">
+                                                잘못된 형식: {problemStats.invalid_time}개
+                                            </Tag>
+                                        )}
+                                        {problemStats.future_time > 0 && (
+                                            <Tag color="purple">
+                                                미래 날짜: {problemStats.future_time}개
+                                            </Tag>
+                                        )}
+                                    </Space>
+                                    <Text type="secondary" style={{ fontSize: 12 }}>
+                                        문제 발생일: {Array.from(problemDates).sort().slice(0, 5).join(", ")}
+                                        {problemDates.size > 5 && ` 외 ${problemDates.size - 5}일`}
+                                    </Text>
+                                </Space>
+                            </Card>
+                        )}
 
                         {conflicts.length > 0 && (
                             <Card
