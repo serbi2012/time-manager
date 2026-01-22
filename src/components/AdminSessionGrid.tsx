@@ -6,7 +6,6 @@ import {
     Tag,
     Space,
     Typography,
-    Switch,
     DatePicker,
     Empty,
     Tooltip,
@@ -191,7 +190,6 @@ function AdminSessionGridContent() {
     const deleteSession = useWorkStore((state) => state.deleteSession);
 
     const [view_mode, setViewMode] = useState<ViewMode>("all");
-    const [show_conflicts_only, setShowConflictsOnly] = useState(false);
     const [date_range, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
     const [selected_row_keys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
@@ -280,14 +278,14 @@ function AdminSessionGridContent() {
         }
 
         // view_mode에 따른 필터링
-        if (view_mode === "conflicts" || show_conflicts_only) {
+        if (view_mode === "conflicts") {
             result = result.filter((s) => conflictSessionIds.has(s.id));
         } else if (view_mode === "problems") {
             result = result.filter((s) => problemSessionIds.has(s.id));
         }
 
         return result;
-    }, [allSessions, date_range, view_mode, show_conflicts_only, conflictSessionIds, problemSessionIds]);
+    }, [allSessions, date_range, view_mode, conflictSessionIds, problemSessionIds]);
 
     const uniqueDates = useMemo(() => {
         const dates = new Set(allSessions.map((s) => s.date));
@@ -541,10 +539,7 @@ function AdminSessionGridContent() {
                             )}
                             <Segmented
                                 value={view_mode}
-                                onChange={(value) => {
-                                    setViewMode(value as ViewMode);
-                                    setShowConflictsOnly(false);
-                                }}
+                                onChange={(value) => setViewMode(value as ViewMode)}
                                 options={[
                                     { label: "전체", value: "all" },
                                     { 
