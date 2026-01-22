@@ -13,6 +13,8 @@ import {
     Popconfirm,
     message,
     Segmented,
+    TimePicker,
+    Alert,
 } from "antd";
 import {
     WarningOutlined,
@@ -21,6 +23,8 @@ import {
     DeleteOutlined,
     BugOutlined,
     ExclamationCircleOutlined,
+    SearchOutlined,
+    EyeInvisibleOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import dayjs from "dayjs";
@@ -183,7 +187,7 @@ function findConflicts(records: WorkRecord[]): ConflictInfo[] {
     return conflicts;
 }
 
-type ViewMode = "all" | "conflicts" | "problems";
+type ViewMode = "all" | "conflicts" | "problems" | "time_search" | "invisible";
 
 function AdminSessionGridContent() {
     const records = useWorkStore((state) => state.records);
@@ -192,6 +196,10 @@ function AdminSessionGridContent() {
     const [view_mode, setViewMode] = useState<ViewMode>("all");
     const [date_range, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
     const [selected_row_keys, setSelectedRowKeys] = useState<React.Key[]>([]);
+    
+    // 시간 검색 관련 상태
+    const [search_date, setSearchDate] = useState<dayjs.Dayjs | null>(dayjs());
+    const [search_time, setSearchTime] = useState<dayjs.Dayjs | null>(null);
 
     const allSessions = useMemo(() => {
         return records
@@ -252,6 +260,52 @@ function AdminSessionGridContent() {
         return new Set(problemSessions.keys());
     }, [problemSessions]);
 
+    // 간트에서 보이지 않는 세션 (0분 세션, 1분 미만 등)
+    const invisibleSessionIds = useMemo(() => {
+        const ids = new Set<string>();
+        allSessions.forEach((s) => {
+            if (!s.start_time || !s.end_time) {
+                ids.add(s.id);
+                return;
+            }
+            const start_mins = timeToMinutes(s.start_time);
+            const end_mins = timeToMinutes(s.end_time);
+            // 0분 세션 또는 너무 짧은 세션 (1분 이하)
+            if (end_mins - start_mins <= 1) {
+                ids.add(s.id);
+            }
+        });
+        return ids;
+    }, [allSessions]);
+
+    // 특정 시간에 걸쳐있는 세션 찾기
+    const timeSearchResults = useMemo(() => {
+        if (!search_date || !search_time) return new Set<string>();
+        
+        const target_date = search_date.format("YYYY-MM-DD");
+        const target_mins = search_time.hour() * 60 + search_time.minute();
+        
+        const ids = new Set<string>();
+        allSessions.forEach((s) => {
+            if (s.date !== target_date) return;
+            if (!s.start_time || !s.end_time) return;
+            
+            const start_mins = timeToMinutes(s.start_time);
+            const end_mins = timeToMinutes(s.end_time);
+            
+            // 해당 시간이 세션 범위 안에 있는지 확인
+            // 0분 세션의 경우 정확히 일치하는지 확인
+            if (start_mins === end_mins) {
+                if (start_mins === target_mins) {
+                    ids.add(s.id);
+                }
+            } else if (target_mins >= start_mins && target_mins < end_mins) {
+                ids.add(s.id);
+            }
+        });
+        return ids;
+    }, [allSessions, search_date, search_time]);
+
     // 선택 삭제 함수
     const handleBulkDelete = () => {
         if (selected_row_keys.length === 0) return;
@@ -271,10 +325,13 @@ function AdminSessionGridContent() {
     const filteredSessions = useMemo(() => {
         let result = allSessions;
 
-        if (date_range && date_range[0] && date_range[1]) {
-            const start = date_range[0].format("YYYY-MM-DD");
-            const end = date_range[1].format("YYYY-MM-DD");
-            result = result.filter((s) => s.date >= start && s.date <= end);
+        // 시간 검색 모드일 때는 날짜 범위 필터 무시
+        if (view_mode !== "time_search") {
+            if (date_range && date_range[0] && date_range[1]) {
+                const start = date_range[0].format("YYYY-MM-DD");
+                const end = date_range[1].format("YYYY-MM-DD");
+                result = result.filter((s) => s.date >= start && s.date <= end);
+            }
         }
 
         // view_mode에 따른 필터링
@@ -282,10 +339,21 @@ function AdminSessionGridContent() {
             result = result.filter((s) => conflictSessionIds.has(s.id));
         } else if (view_mode === "problems") {
             result = result.filter((s) => problemSessionIds.has(s.id));
+        } else if (view_mode === "invisible") {
+            result = result.filter((s) => invisibleSessionIds.has(s.id));
+        } else if (view_mode === "time_search") {
+            // 시간 검색 모드: 검색 조건이 있을 때만 필터링
+            if (search_date && search_time) {
+                result = result.filter((s) => timeSearchResults.has(s.id));
+            } else if (search_date) {
+                // 날짜만 선택한 경우 해당 날짜의 모든 세션
+                const target_date = search_date.format("YYYY-MM-DD");
+                result = result.filter((s) => s.date === target_date);
+            }
         }
 
         return result;
-    }, [allSessions, date_range, view_mode, conflictSessionIds, problemSessionIds]);
+    }, [allSessions, date_range, view_mode, conflictSessionIds, problemSessionIds, invisibleSessionIds, timeSearchResults, search_date, search_time]);
 
     const uniqueDates = useMemo(() => {
         const dates = new Set(allSessions.map((s) => s.date));
@@ -453,6 +521,32 @@ function AdminSessionGridContent() {
                 return false;
             },
         },
+        {
+            title: "간트",
+            width: 80,
+            align: "center",
+            render: (_, record) => {
+                const is_invisible = invisibleSessionIds.has(record.id);
+                if (is_invisible) {
+                    return (
+                        <Tooltip title="이 세션은 간트차트에서 보이지 않습니다 (0분 또는 1분 이하)">
+                            <Tag color="purple" style={{ cursor: "help" }}>
+                                <EyeInvisibleOutlined /> 미표시
+                            </Tag>
+                        </Tooltip>
+                    );
+                }
+                return <Text type="secondary">표시</Text>;
+            },
+            filters: [
+                { text: "간트 표시", value: "visible" },
+                { text: "간트 미표시", value: "invisible" },
+            ],
+            onFilter: (value, record) => {
+                const is_invisible = invisibleSessionIds.has(record.id);
+                return value === "invisible" ? is_invisible : !is_invisible;
+            },
+        },
     ];
 
     const tableProps: TableProps<SessionWithMeta> = {
@@ -474,6 +568,7 @@ function AdminSessionGridContent() {
         rowClassName: (record) => {
             if (conflictSessionIds.has(record.id)) return "admin-conflict-row";
             if (problemSessionIds.has(record.id)) return "admin-problem-row";
+            if (invisibleSessionIds.has(record.id)) return "admin-invisible-row";
             return "";
         },
         scroll: { x: 900 },
@@ -560,17 +655,37 @@ function AdminSessionGridContent() {
                                         ), 
                                         value: "problems" 
                                     },
+                                    { 
+                                        label: (
+                                            <Space size={4}>
+                                                <EyeInvisibleOutlined />
+                                                간트미표시 ({invisibleSessionIds.size})
+                                            </Space>
+                                        ), 
+                                        value: "invisible" 
+                                    },
+                                    { 
+                                        label: (
+                                            <Space size={4}>
+                                                <SearchOutlined />
+                                                시간검색
+                                            </Space>
+                                        ), 
+                                        value: "time_search" 
+                                    },
                                 ]}
                             />
-                            <Space>
-                                <CalendarOutlined />
-                                <RangePicker
-                                    value={date_range}
-                                    onChange={setDateRange}
-                                    allowClear
-                                    placeholder={["시작일", "종료일"]}
-                                />
-                            </Space>
+                            {view_mode !== "time_search" && (
+                                <Space>
+                                    <CalendarOutlined />
+                                    <RangePicker
+                                        value={date_range}
+                                        onChange={setDateRange}
+                                        allowClear
+                                        placeholder={["시작일", "종료일"]}
+                                    />
+                                </Space>
+                            )}
                         </Space>
                     }
                 >
@@ -579,6 +694,78 @@ function AdminSessionGridContent() {
                         size="middle"
                         style={{ width: "100%", marginBottom: 16 }}
                     >
+                        {/* 시간 검색 UI */}
+                        {view_mode === "time_search" && (
+                            <Card
+                                size="small"
+                                style={{
+                                    background: "#e6f7ff",
+                                    borderColor: "#91d5ff",
+                                }}
+                            >
+                                <Space direction="vertical" size="small" style={{ width: "100%" }}>
+                                    <Text strong style={{ color: "#096dd9" }}>
+                                        <SearchOutlined /> 특정 시간대 검색
+                                    </Text>
+                                    <Text type="secondary" style={{ fontSize: 12 }}>
+                                        특정 날짜와 시간을 입력하면 해당 시간에 걸쳐있는 모든 세션을 찾습니다.
+                                        간트차트에서 보이지 않는 세션도 찾을 수 있습니다.
+                                    </Text>
+                                    <Space wrap>
+                                        <Space>
+                                            <Text>날짜:</Text>
+                                            <DatePicker
+                                                value={search_date}
+                                                onChange={setSearchDate}
+                                                placeholder="날짜 선택"
+                                                allowClear={false}
+                                            />
+                                        </Space>
+                                        <Space>
+                                            <Text>시간:</Text>
+                                            <TimePicker
+                                                value={search_time}
+                                                onChange={setSearchTime}
+                                                format="HH:mm"
+                                                placeholder="시간 선택"
+                                                minuteStep={1}
+                                            />
+                                        </Space>
+                                        {search_time && (
+                                            <Button
+                                                size="small"
+                                                onClick={() => setSearchTime(null)}
+                                            >
+                                                시간 초기화
+                                            </Button>
+                                        )}
+                                    </Space>
+                                    {search_date && search_time && (
+                                        <Alert
+                                            type={timeSearchResults.size > 0 ? "warning" : "success"}
+                                            message={
+                                                timeSearchResults.size > 0
+                                                    ? `${search_date.format("YYYY-MM-DD")} ${search_time.format("HH:mm")}에 ${timeSearchResults.size}개의 세션이 걸쳐있습니다.`
+                                                    : `${search_date.format("YYYY-MM-DD")} ${search_time.format("HH:mm")}에 걸쳐있는 세션이 없습니다.`
+                                            }
+                                            showIcon
+                                            style={{ marginTop: 8 }}
+                                        />
+                                    )}
+                                </Space>
+                            </Card>
+                        )}
+
+                        {/* 간트 미표시 세션 설명 */}
+                        {view_mode === "invisible" && invisibleSessionIds.size > 0 && (
+                            <Alert
+                                type="warning"
+                                message="간트차트에서 보이지 않는 세션"
+                                description="0분 세션이나 1분 이하의 세션은 간트차트에서 너비가 너무 작아 보이지 않습니다. 이 세션들은 충돌을 일으킬 수 있지만 시각적으로 확인이 어렵습니다."
+                                showIcon
+                            />
+                        )}
+
                         <div
                             style={{
                                 display: "flex",
@@ -646,6 +833,32 @@ function AdminSessionGridContent() {
                                     }}
                                 >
                                     {problemSessionIds.size}개
+                                </Title>
+                            </Card>
+                            <Card
+                                size="small"
+                                style={{
+                                    minWidth: 150,
+                                    borderColor:
+                                        invisibleSessionIds.size > 0
+                                            ? "#722ed1"
+                                            : undefined,
+                                }}
+                            >
+                                <Text type="secondary">
+                                    <EyeInvisibleOutlined /> 간트 미표시
+                                </Text>
+                                <Title
+                                    level={4}
+                                    style={{
+                                        margin: 0,
+                                        color:
+                                            invisibleSessionIds.size > 0
+                                                ? "#722ed1"
+                                                : undefined,
+                                    }}
+                                >
+                                    {invisibleSessionIds.size}개
                                 </Title>
                             </Card>
                         </div>

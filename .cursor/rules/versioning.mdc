@@ -141,6 +141,14 @@ export const CHANGELOG: ChangelogEntry[] = [
 | style       | UI/스타일 변경       | 🎨     |
 | docs        | 문서 변경            | 📝     |
 
+### 4. CHANGELOG 제외 대상
+
+다음 항목은 CHANGELOG에 기록하지 않습니다:
+
+-   **관리자 기능** (`/admin` 페이지, `AdminSessionGrid.tsx` 등)
+    -   내부 디버깅/데이터 관리 용도
+    -   일반 사용자에게 노출되지 않는 기능
+
 ---
 
 ## 릴리즈 체크리스트

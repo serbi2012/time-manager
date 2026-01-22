@@ -14,8 +14,10 @@ import {
     Divider,
     Button,
     message,
+    Popover,
+    Popconfirm,
 } from "antd";
-import { PlusOutlined, CloseOutlined } from "@ant-design/icons";
+import { PlusOutlined, CloseOutlined, EditOutlined, DeleteOutlined, WarningOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import {
     useWorkStore,
@@ -130,6 +132,7 @@ export default function DailyGanttChart() {
         addRecord,
         updateRecord,
         updateSession,
+        deleteSession,
         getAutoCompleteOptions,
         getProjectCodeOptions,
         custom_task_options,
@@ -189,6 +192,12 @@ export default function DailyGanttChart() {
     // Input refs for focus management
     const new_task_input_ref = useRef<InputRef>(null);
     const new_category_input_ref = useRef<InputRef>(null);
+
+    // 우클릭 팝오버 상태
+    const [context_menu, setContextMenu] = useState<{
+        session: WorkSession;
+        record: WorkRecord;
+    } | null>(null);
 
     // 거래명 기준으로 세션을 그룹화 (진행 중인 작업 포함)
     // 선택된 날짜의 세션만 표시 (레코드 날짜가 아닌 세션 날짜 기준)
@@ -629,11 +638,11 @@ export default function DailyGanttChart() {
         const left = ((start - time_range.start) / total_minutes) * 100;
         let width = ((end - start) / total_minutes) * 100;
 
-        // 진행 중인 세션은 최소 너비 보장 (1분 이상)
-        const min_width = is_running
-            ? Math.max((1 / total_minutes) * 100, 1)
-            : 0.5;
-        width = Math.max(width, min_width);
+        // 모든 세션에 최소 너비 보장 (0분 세션도 표시)
+        // 최소 5분 너비 또는 1% 중 큰 값
+        const min_width_percent = Math.max((5 / total_minutes) * 100, 1);
+        const is_zero_duration = end <= start;
+        width = Math.max(width, min_width_percent);
 
         return {
             left: `${left}%`,
@@ -643,6 +652,11 @@ export default function DailyGanttChart() {
             ...(is_running && {
                 opacity: 0.8,
                 animation: "pulse 2s ease-in-out infinite",
+            }),
+            // 0분 세션은 특별한 스타일 (경고 표시)
+            ...(is_zero_duration && {
+                border: "2px dashed #ff4d4f",
+                backgroundColor: `${color}99`,
             }),
         };
     };
@@ -1065,6 +1079,46 @@ export default function DailyGanttChart() {
         [edit_form]
     );
 
+    // 우클릭 메뉴에서 수정 클릭
+    const handleContextEdit = useCallback(() => {
+        if (!context_menu) return;
+        
+        const { record } = context_menu;
+        if (record.id === "virtual-running-record") {
+            message.info("진행 중인 작업은 수정할 수 없습니다.");
+            setContextMenu(null);
+            return;
+        }
+
+        setEditRecord(record);
+        edit_form.setFieldsValue({
+            project_code: record.project_code,
+            work_name: record.work_name,
+            deal_name: record.deal_name,
+            task_name: record.task_name,
+            category_name: record.category_name,
+            note: record.note,
+        });
+        setIsEditModalOpen(true);
+        setContextMenu(null);
+    }, [context_menu, edit_form]);
+
+    // 우클릭 메뉴에서 세션 삭제
+    const handleContextDeleteSession = useCallback(() => {
+        if (!context_menu) return;
+        
+        const { session, record } = context_menu;
+        if (session.id === "virtual-running-session") {
+            message.info("진행 중인 세션은 삭제할 수 없습니다.");
+            setContextMenu(null);
+            return;
+        }
+
+        deleteSession(record.id, session.id);
+        message.success("세션이 삭제되었습니다.");
+        setContextMenu(null);
+    }, [context_menu, deleteSession]);
+
     // 수정 저장 핸들러
     const handleEditWork = async () => {
         if (!edit_record) return;
@@ -1406,15 +1460,73 @@ export default function DailyGanttChart() {
                                                     {/* 해당 작업의 모든 세션 바 */}
                                                     <div className="gantt-row-bars">
                                                         {group.sessions.map(
-                                                            (session, idx) => (
-                                                                <Tooltip
-                                                                    key={
-                                                                        session.id +
-                                                                        idx
+                                                            (session, idx) => {
+                                                                const is_zero_duration = timeToMinutes(session.end_time) <= timeToMinutes(session.start_time);
+                                                                const is_context_open = context_menu?.session.id === session.id;
+                                                                
+                                                                return (
+                                                                <Popover
+                                                                    key={session.id + idx}
+                                                                    open={is_context_open}
+                                                                    onOpenChange={(open) => {
+                                                                        if (!open) setContextMenu(null);
+                                                                    }}
+                                                                    trigger="contextMenu"
+                                                                    placement="top"
+                                                                    content={
+                                                                        <div style={{ minWidth: 160 }}>
+                                                                            <div style={{ marginBottom: 8 }}>
+                                                                                <strong>{group.record.work_name}</strong>
+                                                                                {group.record.deal_name && (
+                                                                                    <div style={{ color: "#666", fontSize: 12 }}>
+                                                                                        {group.record.deal_name}
+                                                                                    </div>
+                                                                                )}
+                                                                                <div style={{ color: "#888", fontSize: 12, marginTop: 4 }}>
+                                                                                    {session.start_time} ~ {session.end_time}
+                                                                                    {is_zero_duration && (
+                                                                                        <span style={{ color: "#ff4d4f", marginLeft: 4 }}>
+                                                                                            (0분 세션)
+                                                                                        </span>
+                                                                                    )}
+                                                                                </div>
+                                                                            </div>
+                                                                            <Space direction="vertical" style={{ width: "100%" }}>
+                                                                                <Button
+                                                                                    type="text"
+                                                                                    icon={<EditOutlined />}
+                                                                                    onClick={handleContextEdit}
+                                                                                    style={{ width: "100%", textAlign: "left" }}
+                                                                                    disabled={session.id === "virtual-running-session"}
+                                                                                >
+                                                                                    작업 수정
+                                                                                </Button>
+                                                                                <Popconfirm
+                                                                                    title="세션 삭제"
+                                                                                    description={`이 세션(${session.start_time}~${session.end_time})을 삭제하시겠습니까?`}
+                                                                                    onConfirm={handleContextDeleteSession}
+                                                                                    okText="삭제"
+                                                                                    cancelText="취소"
+                                                                                    okButtonProps={{ danger: true }}
+                                                                                >
+                                                                                    <Button
+                                                                                        type="text"
+                                                                                        danger
+                                                                                        icon={<DeleteOutlined />}
+                                                                                        style={{ width: "100%", textAlign: "left" }}
+                                                                                        disabled={session.id === "virtual-running-session"}
+                                                                                    >
+                                                                                        세션 삭제
+                                                                                    </Button>
+                                                                                </Popconfirm>
+                                                                            </Space>
+                                                                        </div>
                                                                     }
+                                                                >
+                                                                <Tooltip
                                                                     title={
                                                                         resize_state?.session_id ===
-                                                                        session.id ? null : (
+                                                                        session.id || is_context_open ? null : (
                                                                             <div>
                                                                                 <div>
                                                                                     <strong>
@@ -1444,6 +1556,11 @@ export default function DailyGanttChart() {
                                                                                     {
                                                                                         session.end_time
                                                                                     }
+                                                                                    {is_zero_duration && (
+                                                                                        <span style={{ color: "#ff4d4f" }}>
+                                                                                            {" "}(0분 세션 ⚠️)
+                                                                                        </span>
+                                                                                    )}
                                                                                 </div>
                                                                                 <div>
                                                                                     {formatMinutes(
@@ -1489,6 +1606,10 @@ export default function DailyGanttChart() {
                                                                                         더블클릭으로
                                                                                         작업
                                                                                         수정
+                                                                                        <br />
+                                                                                        💡
+                                                                                        우클릭으로
+                                                                                        메뉴
                                                                                     </div>
                                                                                 )}
                                                                             </div>
@@ -1505,6 +1626,10 @@ export default function DailyGanttChart() {
                                                                             resize_state?.session_id ===
                                                                             session.id
                                                                                 ? "gantt-bar-resizing"
+                                                                                : ""
+                                                                        } ${
+                                                                            is_zero_duration
+                                                                                ? "gantt-bar-zero"
                                                                                 : ""
                                                                         }`}
                                                                         style={
@@ -1527,7 +1652,27 @@ export default function DailyGanttChart() {
                                                                                 e
                                                                             )
                                                                         }
+                                                                        onContextMenu={(e) => {
+                                                                            e.preventDefault();
+                                                                            setContextMenu({
+                                                                                session,
+                                                                                record: group.record,
+                                                                            });
+                                                                        }}
                                                                     >
+                                                                        {/* 0분 세션 경고 아이콘 */}
+                                                                        {is_zero_duration && (
+                                                                            <WarningOutlined 
+                                                                                style={{ 
+                                                                                    color: "#ff4d4f", 
+                                                                                    fontSize: 10,
+                                                                                    position: "absolute",
+                                                                                    left: "50%",
+                                                                                    top: "50%",
+                                                                                    transform: "translate(-50%, -50%)",
+                                                                                }} 
+                                                                            />
+                                                                        )}
                                                                         {/* 리사이즈 핸들 (레코딩 중이 아닌 경우에만) */}
                                                                         {session.id !==
                                                                             "virtual-running-session" && (
@@ -1583,7 +1728,9 @@ export default function DailyGanttChart() {
                                                                         )}
                                                                     </div>
                                                                 </Tooltip>
-                                                            )
+                                                                </Popover>
+                                                            );
+                                                            }
                                                         )}
                                                     </div>
                                                 </div>
@@ -1790,6 +1937,15 @@ export default function DailyGanttChart() {
                     .gantt-bar-resizing {
                         z-index: 20;
                         transform: scaleY(1.3);
+                    }
+                    
+                    .gantt-bar-zero {
+                        animation: zeroPulse 1.5s ease-in-out infinite;
+                    }
+                    
+                    @keyframes zeroPulse {
+                        0%, 100% { opacity: 0.6; box-shadow: 0 0 4px #ff4d4f; }
+                        50% { opacity: 1; box-shadow: 0 0 8px #ff4d4f; }
                     }
                     
                     /* 리사이즈 핸들 */

@@ -624,9 +624,14 @@ export const useWorkStore = create<WorkStore>()(
             session: WorkSession;
             start_mins: number;
             end_mins: number;
+            work_name: string;
+            deal_name: string;
         }[] = [];
 
         records.forEach((r) => {
+            // 삭제된 레코드는 충돌 감지에서 제외
+            if (r.is_deleted) return;
+            
             r.sessions?.forEach((s) => {
                 const session_date = s.date || r.date;
                 if (
@@ -638,6 +643,8 @@ export const useWorkStore = create<WorkStore>()(
                         session: s,
                         start_mins: timeToMinutes(s.start_time),
                         end_mins: timeToMinutes(s.end_time),
+                        work_name: r.work_name,
+                        deal_name: r.deal_name,
                     });
                 }
             });
@@ -645,7 +652,7 @@ export const useWorkStore = create<WorkStore>()(
 
         // 현재 레코딩 중인 작업의 시간도 충돌 감지에 포함
         const { timer } = get();
-        if (timer.is_running && timer.start_time) {
+        if (timer.is_running && timer.start_time && timer.active_form_data) {
             const timer_date = dayjs(timer.start_time).format("YYYY-MM-DD");
             if (timer_date === target_date) {
                 const timer_start_mins = timeToMinutes(
@@ -664,10 +671,20 @@ export const useWorkStore = create<WorkStore>()(
                         },
                         start_mins: timer_start_mins,
                         end_mins: timer_end_mins,
+                        work_name: timer.active_form_data.work_name || "진행 중인 작업",
+                        deal_name: timer.active_form_data.deal_name || "",
                     });
                 }
             }
         }
+
+        // 충돌 작업 정보를 포함한 메시지 생성 헬퍼
+        const formatConflictInfo = (other: typeof same_day_sessions[0]) => {
+            const name_part = other.deal_name 
+                ? `"${other.work_name} > ${other.deal_name}"` 
+                : `"${other.work_name}"`;
+            return `${name_part} (${other.session.start_time}~${other.session.end_time})`;
+        };
 
         // 날짜가 변경된 경우: 충돌 검사만 하고 자동 조정 안함
         if (is_date_changed) {
@@ -680,7 +697,7 @@ export const useWorkStore = create<WorkStore>()(
                     return {
                         success: false,
                         adjusted: false,
-                        message: `${target_date}에 다른 작업(${other.session.start_time}~${other.session.end_time})과 시간이 겹칩니다. 시간을 조정하세요.`,
+                        message: `${target_date}에 ${formatConflictInfo(other)} 작업과 시간이 겹칩니다. 시간을 조정하세요.`,
                     };
                 }
             }
@@ -711,7 +728,7 @@ export const useWorkStore = create<WorkStore>()(
                             return {
                                 success: false,
                                 adjusted: false,
-                                message: `다른 작업(${other.session.start_time}~${other.session.end_time})과 시간이 완전히 겹칩니다.`,
+                                message: `${formatConflictInfo(other)} 작업과 시간이 완전히 겹칩니다.`,
                             };
                         }
 
@@ -723,7 +740,7 @@ export const useWorkStore = create<WorkStore>()(
                             return {
                                 success: false,
                                 adjusted: false,
-                                message: `다른 작업(${other.session.start_time}~${other.session.end_time}) 안에 완전히 포함됩니다.`,
+                                message: `${formatConflictInfo(other)} 작업 안에 완전히 포함됩니다.`,
                             };
                         }
 

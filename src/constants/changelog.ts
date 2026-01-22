@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "1.3.0";
+export const CURRENT_VERSION = "1.3.1";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,29 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "1.3.1",
+        date: "2026-01-22",
+        title: "간트차트 개선 및 버그 수정",
+        changes: [
+            {
+                type: "improvement",
+                description: "간트차트에서 0분/1분 이하 세션도 표시 (최소 너비 보장, 경고 표시)",
+            },
+            {
+                type: "feature",
+                description: "간트차트 우클릭 시 팝오버 메뉴 (작업 수정/세션 삭제)",
+            },
+            {
+                type: "improvement",
+                description: "충돌 메시지에 작업명, 거래명 정보 표시",
+            },
+            {
+                type: "fix",
+                description: "삭제된 레코드(휴지통)가 충돌 감지에 포함되던 버그 수정",
+            },
+        ],
+    },
     {
         version: "1.3.0",
         date: "2026-01-22",

@@ -1828,3 +1828,16 @@
 .admin-problem-row:hover td {
     background: #ffd591 !important;
 }
+
+/* 간트 미표시 세션 행 스타일 (보라색 계열) */
+.admin-invisible-row {
+    background: #f9f0ff !important;
+}
+
+.admin-invisible-row td {
+    background: #f9f0ff !important;
+}
+
+.admin-invisible-row:hover td {
+    background: #d3adf7 !important;
+}
