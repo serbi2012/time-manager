@@ -98,6 +98,7 @@ interface WorkStore {
 
     // 타이머 액션
     startTimer: (template_id?: string) => void;
+    startTimerForRecord: (record_id: string) => void; // 기존 레코드에 세션 추가하며 타이머 시작
     stopTimer: () => WorkRecord | null;
     getElapsedSeconds: () => number; // 실시간 경과 시간 계산
     resetTimer: () => void;
@@ -551,6 +552,87 @@ export const useWorkStore = create<WorkStore>()(
             },
         });
         // 타이머 상태도 Firebase에 저장
+        syncSettings({ timer: get().timer }).catch(console.error);
+    },
+
+    startTimerForRecord: (record_id: string) => {
+        const { records, timer } = get();
+        const record = records.find((r) => r.id === record_id);
+        if (!record) return;
+
+        // 현재 타이머가 동작 중이면 먼저 정지
+        if (timer.is_running) {
+            get().stopTimer();
+        }
+
+        const start_time = Date.now();
+        const start_dayjs = dayjs(start_time);
+        const record_date = start_dayjs.format("YYYY-MM-DD");
+        const start_time_str = start_dayjs.format("HH:mm");
+
+        // 진행 중인 세션 생성 (end_time은 빈 문자열)
+        const new_session: WorkSession = {
+            id: crypto.randomUUID(),
+            date: record_date,
+            start_time: start_time_str,
+            end_time: "", // 진행 중 표시
+            duration_minutes: 0,
+        };
+
+        // 기존 레코드에 이미 진행 중인 세션(end_time = "")이 있는지 확인
+        const existing_running_session = (record.sessions || []).find(
+            (s) => s.end_time === ""
+        );
+
+        let active_session_id: string;
+
+        if (existing_running_session) {
+            // 이미 진행 중인 세션이 있으면 해당 세션 사용
+            active_session_id = existing_running_session.id;
+        } else {
+            // 새 세션 추가
+            active_session_id = new_session.id;
+            set((state) => ({
+                records: state.records.map((r) =>
+                    r.id === record_id
+                        ? {
+                              ...r,
+                              sessions: [...(r.sessions || []), new_session],
+                              start_time: r.start_time || start_time_str,
+                          }
+                        : r
+                ),
+            }));
+            // Firebase에 업데이트
+            const updated_record = get().records.find((r) => r.id === record_id);
+            if (updated_record) {
+                syncRecord(updated_record).catch(console.error);
+            }
+        }
+
+        // 레코드의 form_data 구성
+        const record_form_data: WorkFormData = {
+            project_code: record.project_code || "",
+            work_name: record.work_name,
+            task_name: record.task_name,
+            deal_name: record.deal_name,
+            category_name: record.category_name,
+            note: record.note,
+        };
+
+        // 타이머 상태 업데이트
+        set({
+            form_data: record_form_data,
+            timer: {
+                is_running: true,
+                start_time: start_time,
+                active_template_id: null,
+                active_form_data: record_form_data,
+                active_record_id: record_id,
+                active_session_id: active_session_id,
+            },
+        });
+        // 타이머 상태 Firebase에 저장
         syncSettings({ timer: get().timer }).catch(console.error);
     },
 

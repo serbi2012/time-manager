@@ -607,10 +607,8 @@ export default function WorkRecordTable() {
         getDeletedRecords,
         updateRecord,
         timer,
-        startTimer,
+        startTimerForRecord,
         stopTimer,
-        switchTemplate,
-        setFormData,
         updateActiveFormData,
         getElapsedSeconds,
         templates,
@@ -885,40 +883,10 @@ export default function WorkRecordTable() {
         if (is_active) {
             // 현재 작업 중지
             stopTimer();
-        } else if (timer.is_running) {
-            // 다른 작업으로 전환
-            // 매칭되는 템플릿 찾기
-            const template = templates.find(
-                (t) =>
-                    t.work_name === record.work_name &&
-                    t.deal_name === record.deal_name
-            );
-            if (template) {
-                switchTemplate(template.id);
-            } else {
-                // 템플릿 없으면 직접 form_data 설정 후 전환
-                stopTimer();
-                setFormData({
-                    project_code: record.project_code || "",
-                    work_name: record.work_name,
-                    task_name: record.task_name,
-                    deal_name: record.deal_name,
-                    category_name: record.category_name,
-                    note: record.note,
-                });
-                startTimer();
-            }
         } else {
-            // 새로 시작
-            setFormData({
-                project_code: record.project_code || "",
-                work_name: record.work_name,
-                task_name: record.task_name,
-                deal_name: record.deal_name,
-                category_name: record.category_name,
-                note: record.note,
-            });
-            startTimer();
+            // 기존 레코드에 직접 세션 추가하며 타이머 시작
+            // (타이머가 실행 중이면 내부적으로 먼저 정지 후 시작)
+            startTimerForRecord(record.id);
         }
     };
 
@@ -1558,39 +1526,8 @@ export default function WorkRecordTable() {
                                                         if (record.is_completed) {
                                                             markAsIncomplete(record.id);
                                                         }
-
-                                                        if (timer.is_running) {
-                                                            // 다른 작업 진행 중이면 전환
-                                                            const tpl = templates.find(
-                                                                (t) =>
-                                                                    t.work_name === record.work_name &&
-                                                                    t.deal_name === record.deal_name
-                                                            );
-                                                            if (tpl) {
-                                                                switchTemplate(tpl.id);
-                                                            } else {
-                                                                setFormData({
-                                                                    project_code: record.project_code,
-                                                                    work_name: record.work_name,
-                                                                    task_name: record.task_name,
-                                                                    deal_name: record.deal_name,
-                                                                    category_name: record.category_name,
-                                                                    note: record.note || "",
-                                                                });
-                                                                stopTimer();
-                                                                startTimer();
-                                                            }
-                                                        } else {
-                                                            setFormData({
-                                                                project_code: record.project_code,
-                                                                work_name: record.work_name,
-                                                                task_name: record.task_name,
-                                                                deal_name: record.deal_name,
-                                                                category_name: record.category_name,
-                                                                note: record.note || "",
-                                                            });
-                                                            startTimer();
-                                                        }
+                                                        // 기존 레코드에 직접 세션 추가하며 타이머 시작
+                                                        startTimerForRecord(record.id);
                                                     }}
                                                 >
                                                     시작

@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.1";
+export const CURRENT_VERSION = "2.0.2";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,18 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.2",
+        date: "2026-01-23",
+        title: "작업 기록 시작 버그 수정",
+        changes: [
+            {
+                type: "fix",
+                description:
+                    "모바일에서 작업 기록 '시작' 버튼 클릭 시 빈 작업이 생성되던 버그 수정",
+            },
+        ],
+    },
     {
         version: "2.0.1",
         date: "2026-01-23",

@@ -186,6 +186,104 @@ describe('useWorkStore', () => {
             expect(state.timer.start_time).toBeNull()
             expect(state.form_data.work_name).toBe('')
         })
+
+        it('startTimerForRecord는 기존 레코드에 세션을 추가하며 타이머 시작', () => {
+            // 기존 레코드 생성
+            const existing_record = createTestRecord({
+                id: 'existing-record',
+                work_name: '기존 작업',
+                deal_name: '기존 거래',
+            })
+            useWorkStore.setState({ records: [existing_record] })
+
+            // 기존 레코드에서 타이머 시작
+            useWorkStore.getState().startTimerForRecord('existing-record')
+
+            const state = useWorkStore.getState()
+            expect(state.timer.is_running).toBe(true)
+            expect(state.timer.active_record_id).toBe('existing-record')
+            expect(state.records[0].sessions).toHaveLength(2) // 기존 1개 + 새로 추가된 1개
+            // form_data도 해당 레코드의 데이터로 설정됨
+            expect(state.form_data.work_name).toBe('기존 작업')
+            expect(state.form_data.deal_name).toBe('기존 거래')
+        })
+
+        it('startTimerForRecord는 타이머 실행 중이면 먼저 정지 후 시작', () => {
+            // 첫 번째 레코드
+            const record1 = createTestRecord({
+                id: 'record-1',
+                work_name: '작업1',
+                deal_name: '거래1',
+            })
+            // 두 번째 레코드
+            const record2 = createTestRecord({
+                id: 'record-2',
+                work_name: '작업2',
+                deal_name: '거래2',
+                sessions: [
+                    {
+                        id: 'session-2',
+                        date: '2026-01-19',
+                        start_time: '11:00',
+                        end_time: '12:00',
+                        duration_minutes: 60,
+                    },
+                ],
+            })
+            useWorkStore.setState({ records: [record1, record2] })
+
+            // record1에서 타이머 시작
+            useWorkStore.getState().startTimerForRecord('record-1')
+            vi.advanceTimersByTime(10 * 60 * 1000) // 10분 경과
+
+            // record2에서 타이머 시작 (record1은 자동으로 정지되어야 함)
+            useWorkStore.getState().startTimerForRecord('record-2')
+
+            const state = useWorkStore.getState()
+            expect(state.timer.is_running).toBe(true)
+            expect(state.timer.active_record_id).toBe('record-2')
+            // record1의 세션이 완료됨 (end_time이 설정됨)
+            const record1_state = state.records.find((r) => r.id === 'record-1')
+            expect(record1_state?.sessions).toHaveLength(2)
+            expect(record1_state?.sessions[1].end_time).not.toBe('')
+        })
+
+        it('startTimerForRecord는 존재하지 않는 레코드 ID면 아무것도 하지 않음', () => {
+            const existing_record = createTestRecord()
+            useWorkStore.setState({ records: [existing_record] })
+
+            // 존재하지 않는 ID로 시작 시도
+            useWorkStore.getState().startTimerForRecord('non-existent-id')
+
+            const state = useWorkStore.getState()
+            expect(state.timer.is_running).toBe(false)
+            expect(state.records[0].sessions).toHaveLength(1) // 변화 없음
+        })
+
+        it('startTimerForRecord는 이미 진행 중인 세션이 있으면 새 세션을 추가하지 않음', () => {
+            // 진행 중인 세션이 있는 레코드
+            const record_with_running_session = createTestRecord({
+                id: 'running-record',
+                sessions: [
+                    {
+                        id: 'running-session',
+                        date: '2026-01-19',
+                        start_time: '09:00',
+                        end_time: '', // 진행 중
+                        duration_minutes: 0,
+                    },
+                ],
+            })
+            useWorkStore.setState({ records: [record_with_running_session] })
+
+            // 같은 레코드에서 타이머 시작 시도
+            useWorkStore.getState().startTimerForRecord('running-record')
+
+            const state = useWorkStore.getState()
+            expect(state.timer.is_running).toBe(true)
+            expect(state.timer.active_session_id).toBe('running-session') // 기존 세션 사용
+            expect(state.records[0].sessions).toHaveLength(1) // 새 세션 추가 안됨
+        })
     })
 
     // =====================================================
