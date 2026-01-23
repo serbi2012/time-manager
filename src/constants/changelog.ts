@@ -69,6 +69,11 @@ export const CHANGELOG: ChangelogEntry[] = [
                 description:
                     "충돌 구간에 빨간색 오버레이 표시 및 '조정이 필요합니다' 안내 툴팁",
             },
+            {
+                type: "fix",
+                description:
+                    "타이머 중단 시 세션이 중복 생성되는 버그 수정 (다중 탭 동기화 환경)",
+            },
         ],
     },
     {

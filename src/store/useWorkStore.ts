@@ -464,10 +464,36 @@ export const useWorkStore = create<WorkStore>()(
         );
 
         let active_record_id: string;
+        let active_session_id: string;
 
         if (existing_record) {
-            // 기존 레코드에 세션 추가
+            // 기존 레코드에 이미 진행 중인 세션(end_time = "")이 있는지 확인
+            const existing_running_session = (
+                existing_record.sessions || []
+            ).find((s) => s.end_time === "");
+
+            if (existing_running_session) {
+                // 이미 진행 중인 세션이 있으면 새 세션을 추가하지 않고 기존 세션 사용
+                active_record_id = existing_record.id;
+                active_session_id = existing_running_session.id;
+
+                // 타이머 상태만 업데이트 (세션은 추가하지 않음)
+                set({
+                    timer: {
+                        is_running: true,
+                        start_time: start_time, // 현재 타이머 시작 시간
+                        active_template_id: template_id || null,
+                        active_form_data: { ...form_data },
+                        active_record_id: active_record_id,
+                        active_session_id: active_session_id,
+                    },
+                });
+                return;
+            }
+
+            // 진행 중인 세션이 없으면 새 세션 추가
             active_record_id = existing_record.id;
+            active_session_id = new_session.id;
             set((state) => ({
                 records: state.records.map((r) =>
                     r.id === existing_record.id
@@ -482,6 +508,7 @@ export const useWorkStore = create<WorkStore>()(
         } else {
             // 새 레코드 생성
             active_record_id = crypto.randomUUID();
+            active_session_id = new_session.id;
             const new_record: WorkRecord = {
                 id: active_record_id,
                 ...form_data,
@@ -506,7 +533,7 @@ export const useWorkStore = create<WorkStore>()(
                 active_template_id: template_id || null,
                 active_form_data: { ...form_data },
                 active_record_id: active_record_id,
-                active_session_id: new_session.id,
+                active_session_id: active_session_id,
             },
         });
     },
