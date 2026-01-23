@@ -609,6 +609,50 @@ describe('useWorkStore', () => {
             expect(state.timer.active_form_data?.note).toBe('메모 추가')
             expect(state.form_data.note).toBe('메모 추가')
         })
+
+        it('updateTimerStartTime으로 타이머 시작 시간 변경', () => {
+            const store = useWorkStore.getState()
+            store.setFormData({ work_name: 'test', deal_name: 'test' })
+            store.startTimer()
+
+            const original_start_time = useWorkStore.getState().timer.start_time
+            expect(original_start_time).not.toBeNull()
+
+            // 30분 전으로 시작 시간 변경
+            const new_start_time = original_start_time! - 30 * 60 * 1000
+            useWorkStore.getState().updateTimerStartTime(new_start_time)
+
+            const state = useWorkStore.getState()
+            expect(state.timer.start_time).toBe(new_start_time)
+        })
+
+        it('updateTimerStartTime은 타이머가 실행 중이 아니면 무시', () => {
+            const store = useWorkStore.getState()
+            // 타이머 시작 안 함
+            expect(store.timer.is_running).toBe(false)
+
+            const new_start_time = Date.now() - 30 * 60 * 1000
+            useWorkStore.getState().updateTimerStartTime(new_start_time)
+
+            // 여전히 null
+            expect(useWorkStore.getState().timer.start_time).toBeNull()
+        })
+
+        it('updateTimerStartTime은 미래 시간으로 설정 불가', () => {
+            const store = useWorkStore.getState()
+            store.setFormData({ work_name: 'test', deal_name: 'test' })
+            store.startTimer()
+
+            const original_start_time = useWorkStore.getState().timer.start_time
+            expect(original_start_time).not.toBeNull()
+
+            // 미래 시간으로 설정 시도
+            const future_time = Date.now() + 30 * 60 * 1000
+            useWorkStore.getState().updateTimerStartTime(future_time)
+
+            // 원래 시간 유지
+            expect(useWorkStore.getState().timer.start_time).toBe(original_start_time)
+        })
     })
 
     // =====================================================

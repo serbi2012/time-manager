@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "1.3.4";
+export const CURRENT_VERSION = "1.3.5";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -50,17 +50,31 @@ export const CHANGE_TYPE_CONFIG: Record<
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
     {
+        version: "1.3.5",
+        date: "2026-01-23",
+        title: "녹화 중 시작 시간 조절",
+        changes: [
+            {
+                type: "feature",
+                description:
+                    "간트차트에서 녹화 중인 작업의 시작 시간을 드래그로 앞당길 수 있음",
+            },
+        ],
+    },
+    {
         version: "1.3.4",
         date: "2026-01-23",
         title: "동기화 안정성 개선",
         changes: [
             {
                 type: "fix",
-                description: "다중 탭/기기 사용 시 중복 레코드 생성 문제 해결 (자동 병합)",
+                description:
+                    "다중 탭/기기 사용 시 중복 레코드 생성 문제 해결 (자동 병합)",
             },
             {
                 type: "improvement",
-                description: "앱 시작 및 실시간 동기화 시 중복 레코드 자동 감지 및 병합",
+                description:
+                    "앱 시작 및 실시간 동기화 시 중복 레코드 자동 감지 및 병합",
             },
             {
                 type: "improvement",
@@ -75,7 +89,8 @@ export const CHANGELOG: ChangelogEntry[] = [
         changes: [
             {
                 type: "improvement",
-                description: "주간일정 복사 시 일별 누적시간 계산 (해당 날짜까지의 누적시간 표시)",
+                description:
+                    "주간일정 복사 시 일별 누적시간 계산 (해당 날짜까지의 누적시간 표시)",
             },
         ],
     },
@@ -86,7 +101,8 @@ export const CHANGELOG: ChangelogEntry[] = [
         changes: [
             {
                 type: "feature",
-                description: "앱 테마 색상 선택 기능 (7가지 색상: 파란색, 초록색, 보라색, 빨간색, 주황색, 청록색, 검정색)",
+                description:
+                    "앱 테마 색상 선택 기능 (7가지 색상: 파란색, 초록색, 보라색, 빨간색, 주황색, 청록색, 검정색)",
             },
             {
                 type: "improvement",
@@ -94,7 +110,8 @@ export const CHANGELOG: ChangelogEntry[] = [
             },
             {
                 type: "feature",
-                description: "단축키 사용자 지정 기능 (설정에서 원하는 키 조합으로 변경 가능)",
+                description:
+                    "단축키 사용자 지정 기능 (설정에서 원하는 키 조합으로 변경 가능)",
             },
             {
                 type: "feature",
@@ -102,7 +119,8 @@ export const CHANGELOG: ChangelogEntry[] = [
             },
             {
                 type: "style",
-                description: "테마 색상이 헤더, 버튼, 태그, 시간 표시 등 전체 UI에 적용",
+                description:
+                    "테마 색상이 헤더, 버튼, 태그, 시간 표시 등 전체 UI에 적용",
             },
         ],
     },
@@ -113,11 +131,13 @@ export const CHANGELOG: ChangelogEntry[] = [
         changes: [
             {
                 type: "improvement",
-                description: "간트차트에서 0분/1분 이하 세션도 표시 (최소 너비 보장, 경고 표시)",
+                description:
+                    "간트차트에서 0분/1분 이하 세션도 표시 (최소 너비 보장, 경고 표시)",
             },
             {
                 type: "feature",
-                description: "간트차트 우클릭 시 팝오버 메뉴 (작업 수정/세션 삭제)",
+                description:
+                    "간트차트 우클릭 시 팝오버 메뉴 (작업 수정/세션 삭제)",
             },
             {
                 type: "improvement",
@@ -125,7 +145,8 @@ export const CHANGELOG: ChangelogEntry[] = [
             },
             {
                 type: "fix",
-                description: "삭제된 레코드(휴지통)가 충돌 감지에 포함되던 버그 수정",
+                description:
+                    "삭제된 레코드(휴지통)가 충돌 감지에 포함되던 버그 수정",
             },
         ],
     },
@@ -144,7 +165,8 @@ export const CHANGELOG: ChangelogEntry[] = [
             },
             {
                 type: "feature",
-                description: "작업 이력 선택 삭제 기능 (관리자 세션 그리드, 작업 기록)",
+                description:
+                    "작업 이력 선택 삭제 기능 (관리자 세션 그리드, 작업 기록)",
             },
             {
                 type: "feature",
@@ -152,11 +174,13 @@ export const CHANGELOG: ChangelogEntry[] = [
             },
             {
                 type: "improvement",
-                description: "완료 시 타이머 자동 중지, 완료된 작업 시작 시 완료 해제",
+                description:
+                    "완료 시 타이머 자동 중지, 완료된 작업 시작 시 완료 해제",
             },
             {
                 type: "improvement",
-                description: "프리셋 작업 추가 시 postfix 사용 여부 설정 옵션 추가",
+                description:
+                    "프리셋 작업 추가 시 postfix 사용 여부 설정 옵션 추가",
             },
             {
                 type: "improvement",

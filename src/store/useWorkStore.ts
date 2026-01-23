@@ -96,6 +96,7 @@ interface WorkStore {
     resetTimer: () => void;
     switchTemplate: (template_id: string) => void;
     updateActiveFormData: (data: Partial<WorkFormData>) => void; // 타이머 실행 중 form_data 업데이트
+    updateTimerStartTime: (new_start_time: number) => void; // 타이머 시작 시간 변경 (간트차트 리사이즈용)
 
     // 폼 액션
     setFormData: (data: Partial<WorkFormData>) => void;
@@ -630,6 +631,22 @@ export const useWorkStore = create<WorkStore>()(
                     : null,
             },
             form_data: { ...state.form_data, ...data },
+        }));
+    },
+
+    // 타이머 시작 시간 변경 (간트차트에서 진행 중인 작업의 시작 시간을 앞당길 때)
+    updateTimerStartTime: (new_start_time) => {
+        const { timer } = get();
+        if (!timer.is_running || !timer.start_time) return;
+
+        // 새 시작 시간은 현재 시간보다 미래일 수 없음
+        if (new_start_time > Date.now()) return;
+
+        set((state) => ({
+            timer: {
+                ...state.timer,
+                start_time: new_start_time,
+            },
         }));
     },
 

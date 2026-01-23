@@ -143,6 +143,7 @@ export default function DailyGanttChart() {
         addCustomTaskOption,
         addCustomCategoryOption,
         hideAutoCompleteOption,
+        updateTimerStartTime,
     } = useWorkStore();
 
     // 모달 저장 단축키 설정
@@ -908,6 +909,22 @@ export default function DailyGanttChart() {
             return;
         }
 
+        // 진행 중인 작업의 시작 시간 조절
+        if (session_id === "virtual-running-session") {
+            // 분 단위를 타임스탬프로 변환 (오늘 날짜 기준)
+            const today = dayjs(selected_date);
+            const new_start_timestamp = today
+                .hour(Math.floor(new_start / 60))
+                .minute(new_start % 60)
+                .second(0)
+                .millisecond(0)
+                .valueOf();
+            
+            updateTimerStartTime(new_start_timestamp);
+            setResizeState(null);
+            return;
+        }
+
         // updateSession 호출 (충돌 시 자동 조정됨)
         const result = updateSession(
             record_id,
@@ -923,7 +940,7 @@ export default function DailyGanttChart() {
         }
 
         setResizeState(null);
-    }, [resize_state, updateSession]);
+    }, [resize_state, updateSession, selected_date, updateTimerStartTime]);
 
     // 리사이즈 중인 바 스타일 계산
     const getResizingBarStyle = useCallback(
@@ -1647,37 +1664,35 @@ export default function DailyGanttChart() {
                                                                             });
                                                                         }}
                                                                     >
-                                                                        {/* 리사이즈 핸들 (레코딩 중이 아닌 경우에만) */}
+                                                                        {/* 리사이즈 핸들 - 왼쪽(시작 시간): 항상 표시, 오른쪽(종료 시간): 레코딩 중이 아닌 경우에만 */}
+                                                                        <div
+                                                                            className="resize-handle resize-handle-left"
+                                                                            onMouseDown={(
+                                                                                e
+                                                                            ) =>
+                                                                                handleResizeStart(
+                                                                                    e,
+                                                                                    session,
+                                                                                    group.record,
+                                                                                    "left"
+                                                                                )
+                                                                            }
+                                                                        />
                                                                         {session.id !==
                                                                             "virtual-running-session" && (
-                                                                            <>
-                                                                                <div
-                                                                                    className="resize-handle resize-handle-left"
-                                                                                    onMouseDown={(
-                                                                                        e
-                                                                                    ) =>
-                                                                                        handleResizeStart(
-                                                                                            e,
-                                                                                            session,
-                                                                                            group.record,
-                                                                                            "left"
-                                                                                        )
-                                                                                    }
-                                                                                />
-                                                                                <div
-                                                                                    className="resize-handle resize-handle-right"
-                                                                                    onMouseDown={(
-                                                                                        e
-                                                                                    ) =>
-                                                                                        handleResizeStart(
-                                                                                            e,
-                                                                                            session,
-                                                                                            group.record,
-                                                                                            "right"
-                                                                                        )
-                                                                                    }
-                                                                                />
-                                                                            </>
+                                                                            <div
+                                                                                className="resize-handle resize-handle-right"
+                                                                                onMouseDown={(
+                                                                                    e
+                                                                                ) =>
+                                                                                    handleResizeStart(
+                                                                                        e,
+                                                                                        session,
+                                                                                        group.record,
+                                                                                        "right"
+                                                                                    )
+                                                                                }
+                                                                            />
                                                                         )}
                                                                         {/* 리사이즈 중일 때 시간 표시 */}
                                                                         {resize_state?.session_id ===
