@@ -21,7 +21,6 @@ export type {
     TimerState,
     SuggestionStatus,
     SuggestionReply,
-    SuggestionImage,
     SuggestionPost,
     ShortcutCategory,
     ShortcutDefinition,

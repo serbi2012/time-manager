@@ -24,15 +24,6 @@ export interface SuggestionReply {
 }
 
 /**
- * 건의사항 첨부 이미지
- */
-export interface SuggestionImage {
-    id: string;
-    url: string;
-    name: string;
-}
-
-/**
  * 건의사항 게시글
  */
 export interface SuggestionPost {
@@ -46,5 +37,4 @@ export interface SuggestionPost {
     status: SuggestionStatus;
     resolved_version?: string;    // 해결된 버전
     admin_comment?: string;       // 관리자 코멘트
-    images?: SuggestionImage[];   // 첨부 이미지
 }

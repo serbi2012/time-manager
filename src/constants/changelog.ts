@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.4";
+export const CURRENT_VERSION = "2.0.3";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,23 +49,6 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
-    {
-        version: "2.0.4",
-        date: "2026-01-23",
-        title: "건의사항 이미지 첨부 기능",
-        changes: [
-            {
-                type: "feature",
-                description:
-                    "건의사항 작성/수정 시 이미지 첨부 가능 (최대 5개, 각 5MB)",
-            },
-            {
-                type: "improvement",
-                description:
-                    "태블릿 화면(768~1024px)에서 메인 콘텐츠가 먼저 표시되도록 개선",
-            },
-        ],
-    },
     {
         version: "2.0.3",
         date: "2026-01-23",
