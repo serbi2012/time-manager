@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "1.3.6";
+export const CURRENT_VERSION = "1.3.7";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,28 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "1.3.7",
+        date: "2026-01-23",
+        title: "간트차트 시간 충돌 표시",
+        changes: [
+            {
+                type: "feature",
+                description:
+                    "간트차트에서 시간대가 겹치는 작업 자동 감지 및 시각적 표시",
+            },
+            {
+                type: "style",
+                description:
+                    "충돌 세션에 빨간색 테두리 및 깜빡임 효과, 경고 아이콘 표시",
+            },
+            {
+                type: "improvement",
+                description:
+                    "충돌 구간에 빨간색 오버레이 표시 및 '조정이 필요합니다' 안내 툴팁",
+            },
+        ],
+    },
     {
         version: "1.3.6",
         date: "2026-01-23",

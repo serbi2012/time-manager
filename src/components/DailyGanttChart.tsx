@@ -307,6 +307,64 @@ export default function DailyGanttChart() {
         return slots.sort((a, b) => a.start - b.start);
     }, [grouped_works]);
 
+    // 충돌 감지: 모든 세션 쌍을 비교하여 시간이 겹치는 세션 찾기
+    const conflict_info = useMemo(() => {
+        const conflicting_sessions = new Set<string>(); // 충돌이 있는 세션 ID 집합
+        const conflict_ranges: {
+            start: number;
+            end: number;
+            session_ids: string[];
+        }[] = []; // 충돌 구간 정보
+
+        // 모든 세션 목록 수집 (점심시간 제외, 세션 ID 포함)
+        const all_sessions: {
+            id: string;
+            start: number;
+            end: number;
+            record_id: string;
+        }[] = [];
+        grouped_works.forEach((group) => {
+            group.sessions.forEach((session) => {
+                all_sessions.push({
+                    id: session.id,
+                    start: timeToMinutes(session.start_time),
+                    end: timeToMinutes(session.end_time),
+                    record_id: group.record.id,
+                });
+            });
+        });
+
+        // 모든 세션 쌍 비교
+        for (let i = 0; i < all_sessions.length; i++) {
+            for (let j = i + 1; j < all_sessions.length; j++) {
+                const a = all_sessions[i];
+                const b = all_sessions[j];
+
+                // 시간 겹침 확인: 두 구간이 겹치려면 한쪽의 시작이 다른 쪽의 종료보다 앞이어야 함
+                const overlap_start = Math.max(a.start, b.start);
+                const overlap_end = Math.min(a.end, b.end);
+
+                if (overlap_start < overlap_end) {
+                    // 충돌 발생!
+                    conflicting_sessions.add(a.id);
+                    conflicting_sessions.add(b.id);
+
+                    // 충돌 구간 저장
+                    conflict_ranges.push({
+                        start: overlap_start,
+                        end: overlap_end,
+                        session_ids: [a.id, b.id],
+                    });
+                }
+            }
+        }
+
+        return {
+            conflicting_sessions,
+            conflict_ranges,
+        };
+    }, [grouped_works]);
+
     // 특정 시간이 기존 세션 위에 있는지 확인
     const isOnExistingBar = useCallback(
         (mins: number): boolean => {
@@ -1333,6 +1391,70 @@ export default function DailyGanttChart() {
                                         </Tooltip>
                                     )}
 
+                                    {/* 충돌 구간 오버레이 */}
+                                    {conflict_info.conflict_ranges.map(
+                                        (range, idx) => {
+                                            const left_percent =
+                                                ((range.start -
+                                                    time_range.start) /
+                                                    total_minutes) *
+                                                100;
+                                            const width_percent =
+                                                ((range.end - range.start) /
+                                                    total_minutes) *
+                                                100;
+                                            return (
+                                                <Tooltip
+                                                    key={`conflict-${idx}`}
+                                                    title={
+                                                        <div>
+                                                            <div
+                                                                style={{
+                                                                    fontWeight:
+                                                                        "bold",
+                                                                    color: "#ff4d4f",
+                                                                }}
+                                                            >
+                                                                ⚠️ 시간 충돌
+                                                                감지
+                                                            </div>
+                                                            <div>
+                                                                {minutesToTime(
+                                                                    range.start
+                                                                )}{" "}
+                                                                ~{" "}
+                                                                {minutesToTime(
+                                                                    range.end
+                                                                )}
+                                                            </div>
+                                                            <div
+                                                                style={{
+                                                                    marginTop: 4,
+                                                                    fontSize: 11,
+                                                                }}
+                                                            >
+                                                                조정이
+                                                                필요합니다
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                >
+                                                    <div
+                                                        className="gantt-conflict-overlay"
+                                                        style={{
+                                                            left: `${left_percent}%`,
+                                                            width: `${width_percent}%`,
+                                                        }}
+                                                    >
+                                                        <span className="gantt-conflict-label">
+                                                            충돌
+                                                        </span>
+                                                    </div>
+                                                </Tooltip>
+                                            );
+                                        }
+                                    )}
+
                                     {/* 선택 영역 */}
                                     {is_dragging && drag_selection && (
                                         <div
@@ -1569,6 +1691,42 @@ export default function DailyGanttChart() {
                                                                                                 )
                                                                                             )}
                                                                                         </div>
+                                                                                        {conflict_info.conflicting_sessions.has(
+                                                                                            session.id
+                                                                                        ) && (
+                                                                                            <div
+                                                                                                style={{
+                                                                                                    marginTop: 4,
+                                                                                                    padding:
+                                                                                                        "4px 8px",
+                                                                                                    background:
+                                                                                                        "rgba(255, 77, 79, 0.15)",
+                                                                                                    borderRadius: 4,
+                                                                                                    border: "1px solid #ff4d4f",
+                                                                                                    color: "#ff4d4f",
+                                                                                                    fontWeight:
+                                                                                                        "bold",
+                                                                                                }}
+                                                                                            >
+                                                                                                ⚠️
+                                                                                                다른
+                                                                                                작업과
+                                                                                                시간이
+                                                                                                충돌합니다
+                                                                                                <br />
+                                                                                                <span
+                                                                                                    style={{
+                                                                                                        fontWeight:
+                                                                                                            "normal",
+                                                                                                        fontSize: 11,
+                                                                                                    }}
+                                                                                                >
+                                                                                                    시간
+                                                                                                    조정이
+                                                                                                    필요합니다
+                                                                                                </span>
+                                                                                            </div>
+                                                                                        )}
                                                                                         <div
                                                                                             style={{
                                                                                                 marginTop: 4,
@@ -1626,6 +1784,12 @@ export default function DailyGanttChart() {
                                                                                     resize_state?.session_id ===
                                                                                     session.id
                                                                                         ? "gantt-bar-resizing"
+                                                                                        : ""
+                                                                                } ${
+                                                                                    conflict_info.conflicting_sessions.has(
+                                                                                        session.id
+                                                                                    )
+                                                                                        ? "gantt-bar-conflict"
                                                                                         : ""
                                                                                 }`}
                                                                                 style={
@@ -1922,6 +2086,64 @@ export default function DailyGanttChart() {
                     .gantt-bar-resizing {
                         z-index: 20;
                         transform: scaleY(1.3);
+                    }
+                    
+                    /* 충돌 세션 스타일 */
+                    .gantt-bar-conflict {
+                        animation: conflictPulse 1.2s ease-in-out infinite;
+                        border: 2px solid #ff4d4f;
+                        box-shadow: 0 0 8px rgba(255, 77, 79, 0.6);
+                    }
+                    
+                    .gantt-bar-conflict::before {
+                        content: '⚠';
+                        position: absolute;
+                        top: -12px;
+                        right: -4px;
+                        font-size: 14px;
+                        z-index: 30;
+                        text-shadow: 0 0 4px white, 0 0 4px white;
+                    }
+                    
+                    @keyframes conflictPulse {
+                        0%, 100% { 
+                            box-shadow: 0 0 6px rgba(255, 77, 79, 0.5);
+                        }
+                        50% { 
+                            box-shadow: 0 0 12px rgba(255, 77, 79, 0.8);
+                        }
+                    }
+                    
+                    /* 충돌 오버레이 */
+                    .gantt-conflict-overlay {
+                        position: absolute;
+                        top: 0;
+                        bottom: 0;
+                        background: repeating-linear-gradient(
+                            -45deg,
+                            rgba(255, 77, 79, 0.15),
+                            rgba(255, 77, 79, 0.15) 4px,
+                            rgba(255, 77, 79, 0.30) 4px,
+                            rgba(255, 77, 79, 0.30) 8px
+                        );
+                        border: 2px dashed #ff4d4f;
+                        border-radius: 4px;
+                        z-index: 5;
+                        pointer-events: none;
+                    }
+                    
+                    .gantt-conflict-label {
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: #ff4d4f;
+                        color: white;
+                        padding: 2px 8px;
+                        border-radius: 4px;
+                        font-size: 10px;
+                        white-space: nowrap;
+                        font-weight: bold;
                     }
                     
                     .gantt-bar-zero {
