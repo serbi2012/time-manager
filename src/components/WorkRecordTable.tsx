@@ -38,6 +38,7 @@ import {
     UndoOutlined,
     CloseOutlined,
     MoreOutlined,
+    SearchOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
@@ -629,6 +630,8 @@ export default function WorkRecordTable() {
     const [is_edit_modal_open, setIsEditModalOpen] = useState(false);
     const [is_completed_modal_open, setIsCompletedModalOpen] = useState(false);
     const [is_deleted_modal_open, setIsDeletedModalOpen] = useState(false);
+    const [completed_search_text, setCompletedSearchText] = useState("");
+    const [deleted_search_text, setDeletedSearchText] = useState("");
     const [editing_record, setEditingRecord] = useState<WorkRecord | null>(
         null
     );
@@ -1013,6 +1016,42 @@ export default function WorkRecordTable() {
     const deleted_records = useMemo(() => {
         return getDeletedRecords();
     }, [records, getDeletedRecords]);
+
+    // 검색어로 필터링된 완료된 작업 목록
+    const filtered_completed_records = useMemo(() => {
+        if (!completed_search_text.trim()) {
+            return completed_records;
+        }
+        const search_lower = completed_search_text.toLowerCase().trim();
+        return completed_records.filter((record) => {
+            const deal_name = (record.deal_name || "").toLowerCase();
+            const work_name = (record.work_name || "").toLowerCase();
+            const project_code = (record.project_code || "").toLowerCase();
+            return (
+                deal_name.includes(search_lower) ||
+                work_name.includes(search_lower) ||
+                project_code.includes(search_lower)
+            );
+        });
+    }, [completed_records, completed_search_text]);
+
+    // 검색어로 필터링된 삭제된 작업 목록
+    const filtered_deleted_records = useMemo(() => {
+        if (!deleted_search_text.trim()) {
+            return deleted_records;
+        }
+        const search_lower = deleted_search_text.toLowerCase().trim();
+        return deleted_records.filter((record) => {
+            const deal_name = (record.deal_name || "").toLowerCase();
+            const work_name = (record.work_name || "").toLowerCase();
+            const project_code = (record.project_code || "").toLowerCase();
+            return (
+                deal_name.includes(search_lower) ||
+                work_name.includes(search_lower) ||
+                project_code.includes(search_lower)
+            );
+        });
+    }, [deleted_records, deleted_search_text]);
 
     // 프로젝트 코드 자동완성 옵션 (삭제 버튼 포함)
     const project_code_options = useMemo(() => {
@@ -2164,19 +2203,33 @@ export default function WorkRecordTable() {
                     </Space>
                 }
                 open={is_completed_modal_open}
-                onCancel={() => setIsCompletedModalOpen(false)}
+                onCancel={() => {
+                    setIsCompletedModalOpen(false);
+                    setCompletedSearchText("");
+                }}
                 footer={[
                     <Button
                         key="close"
-                        onClick={() => setIsCompletedModalOpen(false)}
+                        onClick={() => {
+                            setIsCompletedModalOpen(false);
+                            setCompletedSearchText("");
+                        }}
                     >
                         닫기
                     </Button>,
                 ]}
                 width={800}
             >
+                <Input
+                    placeholder="거래명, 작업명, 프로젝트 코드로 검색"
+                    prefix={<SearchOutlined style={{ color: "#999" }} />}
+                    value={completed_search_text}
+                    onChange={(e) => setCompletedSearchText(e.target.value)}
+                    allowClear
+                    style={{ marginBottom: 16 }}
+                />
                 <Table
-                    dataSource={completed_records}
+                    dataSource={filtered_completed_records}
                     rowKey="id"
                     pagination={{ pageSize: 10 }}
                     size="small"
@@ -2281,19 +2334,33 @@ export default function WorkRecordTable() {
                     </Space>
                 }
                 open={is_deleted_modal_open}
-                onCancel={() => setIsDeletedModalOpen(false)}
+                onCancel={() => {
+                    setIsDeletedModalOpen(false);
+                    setDeletedSearchText("");
+                }}
                 footer={[
                     <Button
                         key="close"
-                        onClick={() => setIsDeletedModalOpen(false)}
+                        onClick={() => {
+                            setIsDeletedModalOpen(false);
+                            setDeletedSearchText("");
+                        }}
                     >
                         닫기
                     </Button>,
                 ]}
                 width={800}
             >
+                <Input
+                    placeholder="거래명, 작업명, 프로젝트 코드로 검색"
+                    prefix={<SearchOutlined style={{ color: "#999" }} />}
+                    value={deleted_search_text}
+                    onChange={(e) => setDeletedSearchText(e.target.value)}
+                    allowClear
+                    style={{ marginBottom: 16 }}
+                />
                 <Table
-                    dataSource={deleted_records}
+                    dataSource={filtered_deleted_records}
                     rowKey="id"
                     size="small"
                     pagination={{ pageSize: 10 }}

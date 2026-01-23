@@ -38,6 +38,7 @@ import {
     Route,
     useNavigate,
     useLocation,
+    Link,
 } from "react-router-dom";
 import dayjs from "dayjs";
 import WorkRecordTable from "./components/WorkRecordTable";
@@ -62,6 +63,7 @@ import {
     syncImmediately,
     syncBeforeUnload,
     checkPendingSync,
+    autoMergeDuplicateRecords,
 } from "./firebase/syncService";
 import "./App.css";
 
@@ -92,9 +94,10 @@ function MainPage() {
                 "0"
             )}${String(now.getDate()).padStart(2, "0")}_${String(
                 now.getHours()
-            ).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}${String(
-                now.getSeconds()
-            ).padStart(2, "0")}_${random_suffix}`;
+            ).padStart(2, "0")}${String(now.getMinutes()).padStart(
+                2,
+                "0"
+            )}${String(now.getSeconds()).padStart(2, "0")}_${random_suffix}`;
             deal_name = template.deal_name
                 ? `${template.deal_name}_${unique_id}`
                 : `작업_${unique_id}`;
@@ -107,7 +110,9 @@ function MainPage() {
                     !r.is_completed &&
                     r.work_name === template.work_name &&
                     (r.deal_name === base_deal_name ||
-                        r.deal_name.match(new RegExp(`^${base_deal_name} \\(\\d+\\)$`)))
+                        r.deal_name.match(
+                            new RegExp(`^${base_deal_name} \\(\\d+\\)$`)
+                        ))
             );
 
             if (existing_records.length > 0) {
@@ -157,9 +162,7 @@ function MainPage() {
         <Layout className="app-body">
             {/* 좌측 사이드바: 작업 프리셋 (데스크톱 전용) */}
             <Sider width={300} className="app-sider" theme="light">
-                <WorkTemplateList
-                    onAddRecordOnly={handleAddRecordOnly}
-                />
+                <WorkTemplateList onAddRecordOnly={handleAddRecordOnly} />
             </Sider>
 
             {/* 메인 컨텐츠 */}
@@ -202,9 +205,7 @@ function MainPage() {
                     wrapper: { maxHeight: "70vh" },
                 }}
             >
-                <WorkTemplateList
-                    onAddRecordOnly={handleAddRecordOnly}
-                />
+                <WorkTemplateList onAddRecordOnly={handleAddRecordOnly} />
             </Drawer>
         </Layout>
     );
@@ -324,6 +325,14 @@ function AppLayout() {
             checkPendingSync(user)
                 .then(() => syncFromFirebase(user))
                 .then(() => {
+                    // 동기화 후 중복 레코드 자동 병합
+                    const merge_result = autoMergeDuplicateRecords();
+                    if (merge_result.merged_count > 0) {
+                        message.info(
+                            `중복 레코드 ${merge_result.deleted_count}개가 자동으로 병합되었습니다`
+                        );
+                    }
+
                     setSyncStatus("synced");
                     setInitialLoadDone(true);
                     startRealtimeSync(user);
@@ -433,33 +442,63 @@ function AppLayout() {
     const ADMIN_EMAIL = "rlaxo0306@gmail.com";
     const is_admin = user?.email === ADMIN_EMAIL;
 
-    const menu_items = useMemo(() => [
-        {
-            key: "/",
-            icon: <HomeOutlined />,
-            label: "일간 기록",
-        },
-        {
-            key: "/weekly",
-            icon: <CalendarOutlined />,
-            label: "주간 일정",
-        },
-        {
-            key: "/suggestions",
-            icon: <MessageOutlined />,
-            label: "건의사항",
-        },
-        {
-            key: "/guide",
-            icon: <BookOutlined />,
-            label: "사용 설명서",
-        },
-        ...(is_admin ? [{
-            key: "/admin",
-            icon: <ToolOutlined />,
-            label: "관리자",
-        }] : []),
-    ], [is_admin]);
+    // 메뉴 링크 스타일 (기본 a 태그 스타일 제거)
+    const menu_link_style = { color: "inherit", textDecoration: "none" };
+
+    const menu_items = useMemo(
+        () => [
+            {
+                key: "/",
+                icon: <HomeOutlined />,
+                label: (
+                    <Link to="/" style={menu_link_style}>
+                        일간 기록
+                    </Link>
+                ),
+            },
+            {
+                key: "/weekly",
+                icon: <CalendarOutlined />,
+                label: (
+                    <Link to="/weekly" style={menu_link_style}>
+                        주간 일정
+                    </Link>
+                ),
+            },
+            {
+                key: "/suggestions",
+                icon: <MessageOutlined />,
+                label: (
+                    <Link to="/suggestions" style={menu_link_style}>
+                        건의사항
+                    </Link>
+                ),
+            },
+            {
+                key: "/guide",
+                icon: <BookOutlined />,
+                label: (
+                    <Link to="/guide" style={menu_link_style}>
+                        사용 설명서
+                    </Link>
+                ),
+            },
+            ...(is_admin
+                ? [
+                      {
+                          key: "/admin",
+                          icon: <ToolOutlined />,
+                          label: (
+                              <Link to="/admin" style={menu_link_style}>
+                                  관리자
+                              </Link>
+                          ),
+                      },
+                  ]
+                : []),
+        ],
+        [is_admin]
+    );
 
     // 유저 드롭다운 메뉴
     const user_menu_items = [
@@ -597,7 +636,6 @@ function AppLayout() {
                     mode="horizontal"
                     selectedKeys={[location.pathname]}
                     items={menu_items}
-                    onClick={({ key }) => navigate(key)}
                     style={{
                         flex: 1,
                         marginLeft: 24,
@@ -691,7 +729,10 @@ function AppLayout() {
                         type="text"
                         icon={<SettingOutlined />}
                         onClick={() => setIsSettingsOpen(true)}
-                        style={{ color: "white", fontSize: is_mobile ? 20 : 18 }}
+                        style={{
+                            color: "white",
+                            fontSize: is_mobile ? 20 : 18,
+                        }}
                     />
 
                     {/* 로그인/유저 정보 */}
@@ -709,7 +750,9 @@ function AppLayout() {
                                     size="small"
                                 />
                                 {!is_mobile && (
-                                    <span style={{ color: "white", fontSize: 13 }}>
+                                    <span
+                                        style={{ color: "white", fontSize: 13 }}
+                                    >
                                         {user.displayName || user.email}
                                     </span>
                                 )}
@@ -748,7 +791,9 @@ function AppLayout() {
                 >
                     <Spin size="large" />
                     <span style={{ color: "#666" }}>
-                        {auth_loading ? "로그인 확인 중..." : "데이터를 불러오는 중..."}
+                        {auth_loading
+                            ? "로그인 확인 중..."
+                            : "데이터를 불러오는 중..."}
                     </span>
                 </div>
             )}
@@ -789,28 +834,36 @@ function AppLayout() {
             {is_mobile && (
                 <nav className="mobile-bottom-nav">
                     <button
-                        className={`mobile-nav-item ${location.pathname === "/" ? "active" : ""}`}
+                        className={`mobile-nav-item ${
+                            location.pathname === "/" ? "active" : ""
+                        }`}
                         onClick={() => navigate("/")}
                     >
                         <HomeOutlined />
                         <span>일간</span>
                     </button>
                     <button
-                        className={`mobile-nav-item ${location.pathname === "/weekly" ? "active" : ""}`}
+                        className={`mobile-nav-item ${
+                            location.pathname === "/weekly" ? "active" : ""
+                        }`}
                         onClick={() => navigate("/weekly")}
                     >
                         <CalendarOutlined />
                         <span>주간</span>
                     </button>
                     <button
-                        className={`mobile-nav-item ${location.pathname === "/suggestions" ? "active" : ""}`}
+                        className={`mobile-nav-item ${
+                            location.pathname === "/suggestions" ? "active" : ""
+                        }`}
                         onClick={() => navigate("/suggestions")}
                     >
                         <MessageOutlined />
                         <span>건의</span>
                     </button>
                     <button
-                        className={`mobile-nav-item ${location.pathname === "/guide" ? "active" : ""}`}
+                        className={`mobile-nav-item ${
+                            location.pathname === "/guide" ? "active" : ""
+                        }`}
                         onClick={() => navigate("/guide")}
                     >
                         <BookOutlined />

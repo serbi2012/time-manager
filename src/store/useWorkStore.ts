@@ -190,29 +190,105 @@ const DEFAULT_TIMER: TimerState = {
     active_form_data: null,
 };
 
-// 같은 작업 기록 찾기 (미완료 작업 우선, 그 다음 같은 날짜)
+// 같은 작업 기록 찾기 (미완료 작업 우선, 중복 발견 시 자동 병합)
+// set_fn: 중복 병합 시 상태 업데이트용 함수
 const findExistingRecord = (
     records: WorkRecord[],
     date: string,
     work_name: string,
-    deal_name: string
+    deal_name: string,
+    set_fn?: (updater: (state: { records: WorkRecord[] }) => { records: WorkRecord[] }) => void
 ): WorkRecord | undefined => {
-    // 1. 먼저 미완료 작업 중에서 같은 작업 찾기 (날짜 무관)
-    const incomplete_match = records.find(
+    // 1. 미완료 작업 중에서 같은 work_name + deal_name 찾기 (날짜 무관)
+    const incomplete_matches = records.filter(
         (r) =>
+            !r.is_deleted &&
             !r.is_completed &&
             r.work_name === work_name &&
             r.deal_name === deal_name
     );
-    if (incomplete_match) return incomplete_match;
+
+    // 미완료 매칭이 있으면
+    if (incomplete_matches.length > 0) {
+        // 중복이 2개 이상이면 자동 병합
+        if (incomplete_matches.length >= 2 && set_fn) {
+            console.log(
+                `[AutoMerge] "${work_name} > ${deal_name}" 중복 ${incomplete_matches.length}개 발견, 자동 병합`
+            );
+            const merged = mergeRecords(incomplete_matches);
+            set_fn((state) => {
+                let updated = state.records.map((r) =>
+                    r.id === merged.base_record.id ? merged.base_record : r
+                );
+                updated = updated.filter((r) => !merged.deleted_ids.includes(r.id));
+                return { records: updated };
+            });
+            return merged.base_record;
+        }
+        return incomplete_matches[0];
+    }
 
     // 2. 없으면 같은 날짜의 작업 찾기
-    return records.find(
+    const date_match = records.find(
         (r) =>
+            !r.is_deleted &&
             r.date === date &&
             r.work_name === work_name &&
             r.deal_name === deal_name
     );
+    return date_match;
+};
+
+// 여러 레코드를 하나로 병합 (내부 헬퍼)
+const mergeRecords = (
+    records_to_merge: WorkRecord[]
+): { base_record: WorkRecord; deleted_ids: string[] } => {
+    const sorted = [...records_to_merge].sort((a, b) => {
+        const date_cmp = a.date.localeCompare(b.date);
+        if (date_cmp !== 0) return date_cmp;
+        return (a.start_time || "").localeCompare(b.start_time || "");
+    });
+
+    const base = sorted[0];
+    const others = sorted.slice(1);
+
+    // 모든 세션 수집 (중복 ID 제거)
+    const all_sessions: WorkSession[] = [...(base.sessions || [])];
+    const session_ids = new Set(all_sessions.map((s) => s.id));
+
+    others.forEach((r) => {
+        (r.sessions || []).forEach((s) => {
+            if (!session_ids.has(s.id)) {
+                all_sessions.push(s);
+                session_ids.add(s.id);
+            }
+        });
+    });
+
+    // 세션 정렬
+    all_sessions.sort((a, b) => {
+        const date_a = a.date || base.date;
+        const date_b = b.date || base.date;
+        const date_cmp = date_a.localeCompare(date_b);
+        if (date_cmp !== 0) return date_cmp;
+        return (a.start_time || "").localeCompare(b.start_time || "");
+    });
+
+    const total = all_sessions.reduce((sum, s) => sum + getSessionMinutes(s), 0);
+    const first = all_sessions[0];
+    const last = all_sessions[all_sessions.length - 1];
+
+    return {
+        base_record: {
+            ...base,
+            sessions: all_sessions,
+            duration_minutes: Math.max(1, total),
+            start_time: first?.start_time || base.start_time,
+            end_time: last?.end_time || base.end_time,
+            date: first?.date || base.date,
+        },
+        deleted_ids: others.map((r) => r.id),
+    };
 };
 
 // 새 세션 생성 (분 단위로 반올림, 점심시간 제외)
@@ -383,12 +459,13 @@ export const useWorkStore = create<WorkStore>()(
         // 새 세션 생성
         const new_session = createSession(timer.start_time, end_time);
 
-        // 같은 날짜에 같은 작업이 있는지 확인
+        // 같은 날짜에 같은 작업이 있는지 확인 (중복 있으면 자동 병합)
         const existing_record = findExistingRecord(
             records,
             record_date,
             active_form.work_name,
-            active_form.deal_name
+            active_form.deal_name,
+            set // 중복 병합용 set 함수 전달
         );
 
         if (existing_record) {
@@ -458,12 +535,13 @@ export const useWorkStore = create<WorkStore>()(
             // 새 세션 생성
             const new_session = createSession(timer.start_time, end_time);
 
-            // 같은 날짜에 같은 작업이 있는지 확인
+            // 같은 날짜에 같은 작업이 있는지 확인 (중복 있으면 자동 병합)
             const existing_record = findExistingRecord(
                 records,
                 record_date,
                 active_form.work_name,
-                active_form.deal_name
+                active_form.deal_name,
+                set // 중복 병합용 set 함수 전달
             );
 
             if (existing_record) {

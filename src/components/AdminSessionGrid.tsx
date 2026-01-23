@@ -15,6 +15,10 @@ import {
     Segmented,
     TimePicker,
     Alert,
+    Modal,
+    Tabs,
+    Descriptions,
+    Badge,
 } from "antd";
 import {
     WarningOutlined,
@@ -25,6 +29,10 @@ import {
     ExclamationCircleOutlined,
     SearchOutlined,
     EyeInvisibleOutlined,
+    CopyOutlined,
+    MergeCellsOutlined,
+    FileTextOutlined,
+    DatabaseOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import dayjs from "dayjs";
@@ -37,7 +45,11 @@ const { Text, Title } = Typography;
 const { RangePicker } = DatePicker;
 
 // 문제 세션 유형 정의
-type ProblemType = "zero_duration" | "missing_time" | "invalid_time" | "future_time";
+type ProblemType =
+    | "zero_duration"
+    | "missing_time"
+    | "invalid_time"
+    | "future_time";
 
 interface ProblemInfo {
     type: ProblemType;
@@ -68,7 +80,10 @@ function timeToMinutes(time: string): number {
 }
 
 // 세션의 문제를 감지하는 함수
-function detectSessionProblems(session: WorkSession, record_date: string): ProblemInfo[] {
+function detectSessionProblems(
+    session: WorkSession,
+    record_date: string
+): ProblemInfo[] {
     const problems: ProblemInfo[] = [];
     const session_date = session.date || record_date;
 
@@ -83,7 +98,10 @@ function detectSessionProblems(session: WorkSession, record_date: string): Probl
 
     // 2. 시간 형식 유효성 검사
     const time_regex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-    if (!time_regex.test(session.start_time) || !time_regex.test(session.end_time)) {
+    if (
+        !time_regex.test(session.start_time) ||
+        !time_regex.test(session.end_time)
+    ) {
         problems.push({
             type: "invalid_time",
             description: "잘못된 시간 형식",
@@ -113,7 +131,9 @@ function detectSessionProblems(session: WorkSession, record_date: string): Probl
 }
 
 // 모든 문제 세션을 찾는 함수
-function findProblemSessions(records: WorkRecord[]): Map<string, ProblemInfo[]> {
+function findProblemSessions(
+    records: WorkRecord[]
+): Map<string, ProblemInfo[]> {
     const problem_map = new Map<string, ProblemInfo[]>();
 
     records
@@ -187,19 +207,97 @@ function findConflicts(records: WorkRecord[]): ConflictInfo[] {
     return conflicts;
 }
 
+// 중복 의심 레코드 그룹 타입
+interface DuplicateGroup {
+    key: string; // work_name + deal_name 조합
+    work_name: string;
+    deal_name: string;
+    records: WorkRecord[];
+    total_sessions: number;
+    total_duration: number;
+    date_range: string;
+}
+
+// 중복 의심 레코드 찾기 (같은 work_name + deal_name 조합)
+function findDuplicateRecords(records: WorkRecord[]): DuplicateGroup[] {
+    const group_map = new Map<string, WorkRecord[]>();
+
+    records
+        .filter((r) => !r.is_deleted)
+        .forEach((record) => {
+            const key = `${record.work_name}||${record.deal_name}`;
+            if (!group_map.has(key)) {
+                group_map.set(key, []);
+            }
+            group_map.get(key)!.push(record);
+        });
+
+    const duplicates: DuplicateGroup[] = [];
+
+    group_map.forEach((group_records, key) => {
+        // 2개 이상인 것만 중복 의심
+        if (group_records.length >= 2) {
+            const sorted_records = [...group_records].sort((a, b) =>
+                a.date.localeCompare(b.date)
+            );
+            const dates = sorted_records.map((r) => r.date);
+            const unique_dates = [...new Set(dates)];
+
+            duplicates.push({
+                key,
+                work_name: group_records[0].work_name,
+                deal_name: group_records[0].deal_name,
+                records: sorted_records,
+                total_sessions: group_records.reduce(
+                    (sum, r) => sum + (r.sessions?.length || 0),
+                    0
+                ),
+                total_duration: group_records.reduce(
+                    (sum, r) => sum + r.duration_minutes,
+                    0
+                ),
+                date_range:
+                    unique_dates.length === 1
+                        ? unique_dates[0]
+                        : `${unique_dates[0]} ~ ${
+                              unique_dates[unique_dates.length - 1]
+                          }`,
+            });
+        }
+    });
+
+    return duplicates.sort((a, b) => b.records.length - a.records.length);
+}
+
 type ViewMode = "all" | "conflicts" | "problems" | "time_search" | "invisible";
+type AdminTab = "sessions" | "records";
 
 function AdminSessionGridContent() {
     const records = useWorkStore((state) => state.records);
     const deleteSession = useWorkStore((state) => state.deleteSession);
+    const updateRecord = useWorkStore((state) => state.updateRecord);
+    const deleteRecord = useWorkStore((state) => state.deleteRecord);
 
+    const [admin_tab, setAdminTab] = useState<AdminTab>("sessions");
     const [view_mode, setViewMode] = useState<ViewMode>("all");
-    const [date_range, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+    const [date_range, setDateRange] = useState<
+        [dayjs.Dayjs | null, dayjs.Dayjs | null] | null
+    >(null);
     const [selected_row_keys, setSelectedRowKeys] = useState<React.Key[]>([]);
-    
+
     // 시간 검색 관련 상태
     const [search_date, setSearchDate] = useState<dayjs.Dayjs | null>(dayjs());
     const [search_time, setSearchTime] = useState<dayjs.Dayjs | null>(null);
+
+    // 레코드 분석 관련 상태
+    const [selected_record_keys, setSelectedRecordKeys] = useState<React.Key[]>(
+        []
+    );
+    const [detail_modal_record, setDetailModalRecord] =
+        useState<WorkRecord | null>(null);
+    const [merge_modal_open, setMergeModalOpen] = useState(false);
+    const [merge_target_group, setMergeTargetGroup] =
+        useState<DuplicateGroup | null>(null);
 
     const allSessions = useMemo(() => {
         return records
@@ -254,7 +352,10 @@ function AdminSessionGridContent() {
     }, [conflicts]);
 
     // 문제 세션 감지
-    const problemSessions = useMemo(() => findProblemSessions(records), [records]);
+    const problemSessions = useMemo(
+        () => findProblemSessions(records),
+        [records]
+    );
 
     const problemSessionIds = useMemo(() => {
         return new Set(problemSessions.keys());
@@ -281,18 +382,18 @@ function AdminSessionGridContent() {
     // 특정 시간에 걸쳐있는 세션 찾기
     const timeSearchResults = useMemo(() => {
         if (!search_date || !search_time) return new Set<string>();
-        
+
         const target_date = search_date.format("YYYY-MM-DD");
         const target_mins = search_time.hour() * 60 + search_time.minute();
-        
+
         const ids = new Set<string>();
         allSessions.forEach((s) => {
             if (s.date !== target_date) return;
             if (!s.start_time || !s.end_time) return;
-            
+
             const start_mins = timeToMinutes(s.start_time);
             const end_mins = timeToMinutes(s.end_time);
-            
+
             // 해당 시간이 세션 범위 안에 있는지 확인
             // 0분 세션의 경우 정확히 일치하는지 확인
             if (start_mins === end_mins) {
@@ -305,6 +406,105 @@ function AdminSessionGridContent() {
         });
         return ids;
     }, [allSessions, search_date, search_time]);
+
+    // 중복 의심 레코드 그룹
+    const duplicateGroups = useMemo(
+        () => findDuplicateRecords(records),
+        [records]
+    );
+
+    // 전체 레코드 목록 (삭제되지 않은 것만)
+    const allRecords = useMemo(() => {
+        return records
+            .filter((r) => !r.is_deleted)
+            .sort((a, b) => {
+                const date_cmp = b.date.localeCompare(a.date);
+                if (date_cmp !== 0) return date_cmp;
+                return (b.start_time || "").localeCompare(a.start_time || "");
+            });
+    }, [records]);
+
+    // 레코드 데이터를 클립보드에 복사
+    const handleCopyRecordData = (record_ids: React.Key[]) => {
+        const selected_records = records.filter((r) =>
+            record_ids.includes(r.id)
+        );
+        const json_data = JSON.stringify(selected_records, null, 2);
+        navigator.clipboard.writeText(json_data);
+        message.success(
+            `${selected_records.length}개 레코드 데이터가 클립보드에 복사되었습니다`
+        );
+    };
+
+    // 레코드 병합 실행
+    const handleMergeRecords = () => {
+        if (!merge_target_group || merge_target_group.records.length < 2)
+            return;
+
+        const sorted_records = [...merge_target_group.records].sort((a, b) => {
+            // 날짜와 시작 시간으로 정렬
+            const date_cmp = a.date.localeCompare(b.date);
+            if (date_cmp !== 0) return date_cmp;
+            return (a.start_time || "").localeCompare(b.start_time || "");
+        });
+
+        // 첫 번째 레코드를 기준으로 병합
+        const base_record = sorted_records[0];
+        const other_records = sorted_records.slice(1);
+
+        // 모든 세션 수집 (중복 제거)
+        const all_sessions: WorkSession[] = [...(base_record.sessions || [])];
+        const session_ids = new Set(all_sessions.map((s) => s.id));
+
+        other_records.forEach((r) => {
+            (r.sessions || []).forEach((s) => {
+                if (!session_ids.has(s.id)) {
+                    all_sessions.push(s);
+                    session_ids.add(s.id);
+                }
+            });
+        });
+
+        // 세션 정렬 (날짜, 시작 시간 순)
+        all_sessions.sort((a, b) => {
+            const date_a = a.date || base_record.date;
+            const date_b = b.date || base_record.date;
+            const date_cmp = date_a.localeCompare(date_b);
+            if (date_cmp !== 0) return date_cmp;
+            return (a.start_time || "").localeCompare(b.start_time || "");
+        });
+
+        // 총 시간 계산
+        const total_duration = all_sessions.reduce(
+            (sum, s) => sum + (s.duration_minutes || 0),
+            0
+        );
+
+        // 시작/종료 시간 업데이트
+        const first_session = all_sessions[0];
+        const last_session = all_sessions[all_sessions.length - 1];
+
+        // 기준 레코드 업데이트
+        updateRecord(base_record.id, {
+            sessions: all_sessions,
+            duration_minutes: total_duration,
+            start_time: first_session?.start_time || base_record.start_time,
+            end_time: last_session?.end_time || base_record.end_time,
+            // 가장 이른 날짜로 설정
+            date: all_sessions[0]?.date || base_record.date,
+        });
+
+        // 나머지 레코드 삭제
+        other_records.forEach((r) => {
+            deleteRecord(r.id);
+        });
+
+        message.success(
+            `${merge_target_group.records.length}개 레코드가 1개로 병합되었습니다 (세션 ${all_sessions.length}개, 총 ${total_duration}분)`
+        );
+        setMergeModalOpen(false);
+        setMergeTargetGroup(null);
+    };
 
     // 선택 삭제 함수
     const handleBulkDelete = () => {
@@ -353,7 +553,17 @@ function AdminSessionGridContent() {
         }
 
         return result;
-    }, [allSessions, date_range, view_mode, conflictSessionIds, problemSessionIds, invisibleSessionIds, timeSearchResults, search_date, search_time]);
+    }, [
+        allSessions,
+        date_range,
+        view_mode,
+        conflictSessionIds,
+        problemSessionIds,
+        invisibleSessionIds,
+        timeSearchResults,
+        search_date,
+        search_time,
+    ]);
 
     const uniqueDates = useMemo(() => {
         const dates = new Set(allSessions.map((s) => s.date));
@@ -494,7 +704,10 @@ function AdminSessionGridContent() {
 
                 return (
                     <Tooltip title={tooltipContent} placement="left">
-                        <Tag color={getTagColor(problems[0].type)} style={{ cursor: "help" }}>
+                        <Tag
+                            color={getTagColor(problems[0].type)}
+                            style={{ cursor: "help" }}
+                        >
                             <ExclamationCircleOutlined /> {problems.length}
                         </Tag>
                     </Tooltip>
@@ -509,14 +722,20 @@ function AdminSessionGridContent() {
             onFilter: (value, record) => {
                 const problems = problemSessions.get(record.id);
                 const hasProblem = problems && problems.length > 0;
-                
+
                 if (value === "problem") return hasProblem ?? false;
                 if (value === "no-problem") return !hasProblem;
                 if (value === "zero_duration") {
-                    return problems?.some((p) => p.type === "zero_duration") ?? false;
+                    return (
+                        problems?.some((p) => p.type === "zero_duration") ??
+                        false
+                    );
                 }
                 if (value === "missing_time") {
-                    return problems?.some((p) => p.type === "missing_time") ?? false;
+                    return (
+                        problems?.some((p) => p.type === "missing_time") ??
+                        false
+                    );
                 }
                 return false;
             },
@@ -568,7 +787,8 @@ function AdminSessionGridContent() {
         rowClassName: (record) => {
             if (conflictSessionIds.has(record.id)) return "admin-conflict-row";
             if (problemSessionIds.has(record.id)) return "admin-problem-row";
-            if (invisibleSessionIds.has(record.id)) return "admin-invisible-row";
+            if (invisibleSessionIds.has(record.id))
+                return "admin-invisible-row";
             return "";
         },
         scroll: { x: 900 },
@@ -603,6 +823,181 @@ function AdminSessionGridContent() {
         return stats;
     }, [problemSessions]);
 
+    // 레코드 테이블 컬럼
+    const recordColumns: ColumnsType<WorkRecord> = [
+        {
+            title: "날짜",
+            dataIndex: "date",
+            width: 110,
+            sorter: (a, b) => a.date.localeCompare(b.date),
+        },
+        {
+            title: "작업명",
+            dataIndex: "work_name",
+            ellipsis: true,
+            width: 200,
+        },
+        {
+            title: "거래명",
+            dataIndex: "deal_name",
+            ellipsis: true,
+        },
+        {
+            title: "프로젝트",
+            dataIndex: "project_code",
+            width: 120,
+        },
+        {
+            title: "업무명",
+            dataIndex: "task_name",
+            width: 80,
+        },
+        {
+            title: "카테고리",
+            dataIndex: "category_name",
+            width: 90,
+        },
+        {
+            title: "세션",
+            width: 70,
+            align: "center",
+            render: (_, record) => (
+                <Badge
+                    count={record.sessions?.length || 0}
+                    showZero
+                    color="#1890ff"
+                />
+            ),
+        },
+        {
+            title: "소요시간",
+            dataIndex: "duration_minutes",
+            width: 90,
+            align: "right",
+            render: (mins: number) => `${mins}분`,
+            sorter: (a, b) => a.duration_minutes - b.duration_minutes,
+        },
+        {
+            title: "시간",
+            width: 120,
+            render: (_, record) => (
+                <Text style={{ fontFamily: "monospace", fontSize: 12 }}>
+                    {record.start_time || "-"} ~ {record.end_time || "-"}
+                </Text>
+            ),
+        },
+        {
+            title: "상태",
+            width: 100,
+            render: (_, record) => (
+                <Space size={4}>
+                    {record.is_completed && <Tag color="green">완료</Tag>}
+                    {!record.sessions?.length && (
+                        <Tag color="orange">세션없음</Tag>
+                    )}
+                </Space>
+            ),
+        },
+        {
+            title: "액션",
+            width: 100,
+            fixed: "right",
+            render: (_, record) => (
+                <Space size={4}>
+                    <Tooltip title="상세 데이터 보기">
+                        <Button
+                            type="text"
+                            size="small"
+                            icon={<FileTextOutlined />}
+                            onClick={() => setDetailModalRecord(record)}
+                        />
+                    </Tooltip>
+                    <Tooltip title="데이터 복사">
+                        <Button
+                            type="text"
+                            size="small"
+                            icon={<CopyOutlined />}
+                            onClick={() => handleCopyRecordData([record.id])}
+                        />
+                    </Tooltip>
+                </Space>
+            ),
+        },
+    ];
+
+    // 중복 그룹 테이블 컬럼
+    const duplicateGroupColumns: ColumnsType<DuplicateGroup> = [
+        {
+            title: "작업명",
+            dataIndex: "work_name",
+            ellipsis: true,
+        },
+        {
+            title: "거래명",
+            dataIndex: "deal_name",
+            ellipsis: true,
+        },
+        {
+            title: "레코드 수",
+            width: 100,
+            align: "center",
+            render: (_, group) => (
+                <Tag color="red">{group.records.length}개</Tag>
+            ),
+            sorter: (a, b) => a.records.length - b.records.length,
+        },
+        {
+            title: "총 세션",
+            dataIndex: "total_sessions",
+            width: 90,
+            align: "center",
+        },
+        {
+            title: "총 시간",
+            dataIndex: "total_duration",
+            width: 90,
+            align: "right",
+            render: (mins: number) => `${mins}분`,
+        },
+        {
+            title: "날짜 범위",
+            dataIndex: "date_range",
+            width: 180,
+        },
+        {
+            title: "액션",
+            width: 160,
+            fixed: "right",
+            render: (_, group) => (
+                <Space size={4}>
+                    <Tooltip title="그룹 데이터 복사">
+                        <Button
+                            type="text"
+                            size="small"
+                            icon={<CopyOutlined />}
+                            onClick={() =>
+                                handleCopyRecordData(
+                                    group.records.map((r) => r.id)
+                                )
+                            }
+                        />
+                    </Tooltip>
+                    <Button
+                        type="primary"
+                        size="small"
+                        icon={<MergeCellsOutlined />}
+                        onClick={() => {
+                            setMergeTargetGroup(group);
+                            setMergeModalOpen(true);
+                        }}
+                    >
+                        병합
+                    </Button>
+                </Space>
+            ),
+        },
+    ];
+
     return (
         <Layout className="app-body" style={{ padding: 0 }}>
             <Content style={{ padding: 24 }}>
@@ -610,349 +1005,1007 @@ function AdminSessionGridContent() {
                     title={
                         <Space>
                             <SettingOutlined />
-                            <span>관리자 - 전체 세션 그리드</span>
+                            <span>관리자 패널</span>
                             <Tag color="purple">관리자</Tag>
                         </Space>
                     }
-                    extra={
-                        <Space size="middle" wrap>
-                            {selected_row_keys.length > 0 && (
-                                <Popconfirm
-                                    title="선택 삭제"
-                                    description={`${selected_row_keys.length}개 세션을 삭제하시겠습니까?`}
-                                    onConfirm={handleBulkDelete}
-                                    okText="삭제"
-                                    cancelText="취소"
-                                >
-                                    <Button
-                                        icon={<DeleteOutlined />}
-                                        danger
-                                    >
-                                        선택 삭제 ({selected_row_keys.length})
-                                    </Button>
-                                </Popconfirm>
-                            )}
-                            <Segmented
-                                value={view_mode}
-                                onChange={(value) => setViewMode(value as ViewMode)}
-                                options={[
-                                    { label: "전체", value: "all" },
-                                    { 
-                                        label: (
-                                            <Space size={4}>
-                                                <WarningOutlined />
-                                                충돌 ({conflictSessionIds.size})
-                                            </Space>
-                                        ), 
-                                        value: "conflicts" 
-                                    },
-                                    { 
-                                        label: (
-                                            <Space size={4}>
-                                                <BugOutlined />
-                                                문제 ({problemSessionIds.size})
-                                            </Space>
-                                        ), 
-                                        value: "problems" 
-                                    },
-                                    { 
-                                        label: (
-                                            <Space size={4}>
-                                                <EyeInvisibleOutlined />
-                                                간트미표시 ({invisibleSessionIds.size})
-                                            </Space>
-                                        ), 
-                                        value: "invisible" 
-                                    },
-                                    { 
-                                        label: (
-                                            <Space size={4}>
-                                                <SearchOutlined />
-                                                시간검색
-                                            </Space>
-                                        ), 
-                                        value: "time_search" 
-                                    },
-                                ]}
-                            />
-                            {view_mode !== "time_search" && (
-                                <Space>
-                                    <CalendarOutlined />
-                                    <RangePicker
-                                        value={date_range}
-                                        onChange={setDateRange}
-                                        allowClear
-                                        placeholder={["시작일", "종료일"]}
-                                    />
-                                </Space>
-                            )}
-                        </Space>
-                    }
                 >
-                    <Space
-                        direction="vertical"
-                        size="middle"
-                        style={{ width: "100%", marginBottom: 16 }}
-                    >
-                        {/* 시간 검색 UI */}
-                        {view_mode === "time_search" && (
-                            <Card
-                                size="small"
-                                style={{
-                                    background: "#e6f7ff",
-                                    borderColor: "#91d5ff",
-                                }}
-                            >
-                                <Space direction="vertical" size="small" style={{ width: "100%" }}>
-                                    <Text strong style={{ color: "#096dd9" }}>
-                                        <SearchOutlined /> 특정 시간대 검색
-                                    </Text>
-                                    <Text type="secondary" style={{ fontSize: 12 }}>
-                                        특정 날짜와 시간을 입력하면 해당 시간에 걸쳐있는 모든 세션을 찾습니다.
-                                        간트차트에서 보이지 않는 세션도 찾을 수 있습니다.
-                                    </Text>
-                                    <Space wrap>
-                                        <Space>
-                                            <Text>날짜:</Text>
-                                            <DatePicker
-                                                value={search_date}
-                                                onChange={setSearchDate}
-                                                placeholder="날짜 선택"
-                                                allowClear={false}
-                                            />
-                                        </Space>
-                                        <Space>
-                                            <Text>시간:</Text>
-                                            <TimePicker
-                                                value={search_time}
-                                                onChange={setSearchTime}
-                                                format="HH:mm"
-                                                placeholder="시간 선택"
-                                                minuteStep={1}
-                                            />
-                                        </Space>
-                                        {search_time && (
-                                            <Button
+                    <Tabs
+                        activeKey={admin_tab}
+                        onChange={(key) => setAdminTab(key as AdminTab)}
+                        items={[
+                            {
+                                key: "sessions",
+                                label: (
+                                    <Space>
+                                        <CalendarOutlined />
+                                        세션 분석
+                                    </Space>
+                                ),
+                            },
+                            {
+                                key: "records",
+                                label: (
+                                    <Space>
+                                        <DatabaseOutlined />
+                                        레코드 분석
+                                        {duplicateGroups.length > 0 && (
+                                            <Badge
+                                                count={duplicateGroups.length}
                                                 size="small"
-                                                onClick={() => setSearchTime(null)}
-                                            >
-                                                시간 초기화
-                                            </Button>
+                                            />
                                         )}
                                     </Space>
-                                    {search_date && search_time && (
+                                ),
+                            },
+                        ]}
+                    />
+
+                    {/* 세션 분석 탭 */}
+                    {admin_tab === "sessions" && (
+                        <Space
+                            direction="vertical"
+                            size="middle"
+                            style={{ width: "100%" }}
+                        >
+                            <Space size="middle" wrap>
+                                {selected_row_keys.length > 0 && (
+                                    <Popconfirm
+                                        title="선택 삭제"
+                                        description={`${selected_row_keys.length}개 세션을 삭제하시겠습니까?`}
+                                        onConfirm={handleBulkDelete}
+                                        okText="삭제"
+                                        cancelText="취소"
+                                    >
+                                        <Button
+                                            icon={<DeleteOutlined />}
+                                            danger
+                                        >
+                                            선택 삭제 (
+                                            {selected_row_keys.length})
+                                        </Button>
+                                    </Popconfirm>
+                                )}
+                                <Segmented
+                                    value={view_mode}
+                                    onChange={(value) =>
+                                        setViewMode(value as ViewMode)
+                                    }
+                                    options={[
+                                        { label: "전체", value: "all" },
+                                        {
+                                            label: (
+                                                <Space size={4}>
+                                                    <WarningOutlined />
+                                                    충돌 (
+                                                    {conflictSessionIds.size})
+                                                </Space>
+                                            ),
+                                            value: "conflicts",
+                                        },
+                                        {
+                                            label: (
+                                                <Space size={4}>
+                                                    <BugOutlined />
+                                                    문제 (
+                                                    {problemSessionIds.size})
+                                                </Space>
+                                            ),
+                                            value: "problems",
+                                        },
+                                        {
+                                            label: (
+                                                <Space size={4}>
+                                                    <EyeInvisibleOutlined />
+                                                    간트미표시 (
+                                                    {invisibleSessionIds.size})
+                                                </Space>
+                                            ),
+                                            value: "invisible",
+                                        },
+                                        {
+                                            label: (
+                                                <Space size={4}>
+                                                    <SearchOutlined />
+                                                    시간검색
+                                                </Space>
+                                            ),
+                                            value: "time_search",
+                                        },
+                                    ]}
+                                />
+                                {view_mode !== "time_search" && (
+                                    <Space>
+                                        <CalendarOutlined />
+                                        <RangePicker
+                                            value={date_range}
+                                            onChange={setDateRange}
+                                            allowClear
+                                            placeholder={["시작일", "종료일"]}
+                                        />
+                                    </Space>
+                                )}
+                            </Space>
+                            <Space
+                                direction="vertical"
+                                size="middle"
+                                style={{ width: "100%", marginBottom: 16 }}
+                            >
+                                {/* 시간 검색 UI */}
+                                {view_mode === "time_search" && (
+                                    <Card
+                                        size="small"
+                                        style={{
+                                            background: "#e6f7ff",
+                                            borderColor: "#91d5ff",
+                                        }}
+                                    >
+                                        <Space
+                                            direction="vertical"
+                                            size="small"
+                                            style={{ width: "100%" }}
+                                        >
+                                            <Text
+                                                strong
+                                                style={{ color: "#096dd9" }}
+                                            >
+                                                <SearchOutlined /> 특정 시간대
+                                                검색
+                                            </Text>
+                                            <Text
+                                                type="secondary"
+                                                style={{ fontSize: 12 }}
+                                            >
+                                                특정 날짜와 시간을 입력하면 해당
+                                                시간에 걸쳐있는 모든 세션을
+                                                찾습니다. 간트차트에서 보이지
+                                                않는 세션도 찾을 수 있습니다.
+                                            </Text>
+                                            <Space wrap>
+                                                <Space>
+                                                    <Text>날짜:</Text>
+                                                    <DatePicker
+                                                        value={search_date}
+                                                        onChange={setSearchDate}
+                                                        placeholder="날짜 선택"
+                                                        allowClear={false}
+                                                    />
+                                                </Space>
+                                                <Space>
+                                                    <Text>시간:</Text>
+                                                    <TimePicker
+                                                        value={search_time}
+                                                        onChange={setSearchTime}
+                                                        format="HH:mm"
+                                                        placeholder="시간 선택"
+                                                        minuteStep={1}
+                                                    />
+                                                </Space>
+                                                {search_time && (
+                                                    <Button
+                                                        size="small"
+                                                        onClick={() =>
+                                                            setSearchTime(null)
+                                                        }
+                                                    >
+                                                        시간 초기화
+                                                    </Button>
+                                                )}
+                                            </Space>
+                                            {search_date && search_time && (
+                                                <Alert
+                                                    type={
+                                                        timeSearchResults.size >
+                                                        0
+                                                            ? "warning"
+                                                            : "success"
+                                                    }
+                                                    message={
+                                                        timeSearchResults.size >
+                                                        0
+                                                            ? `${search_date.format(
+                                                                  "YYYY-MM-DD"
+                                                              )} ${search_time.format(
+                                                                  "HH:mm"
+                                                              )}에 ${
+                                                                  timeSearchResults.size
+                                                              }개의 세션이 걸쳐있습니다.`
+                                                            : `${search_date.format(
+                                                                  "YYYY-MM-DD"
+                                                              )} ${search_time.format(
+                                                                  "HH:mm"
+                                                              )}에 걸쳐있는 세션이 없습니다.`
+                                                    }
+                                                    showIcon
+                                                    style={{ marginTop: 8 }}
+                                                />
+                                            )}
+                                        </Space>
+                                    </Card>
+                                )}
+
+                                {/* 간트 미표시 세션 설명 */}
+                                {view_mode === "invisible" &&
+                                    invisibleSessionIds.size > 0 && (
                                         <Alert
-                                            type={timeSearchResults.size > 0 ? "warning" : "success"}
-                                            message={
-                                                timeSearchResults.size > 0
-                                                    ? `${search_date.format("YYYY-MM-DD")} ${search_time.format("HH:mm")}에 ${timeSearchResults.size}개의 세션이 걸쳐있습니다.`
-                                                    : `${search_date.format("YYYY-MM-DD")} ${search_time.format("HH:mm")}에 걸쳐있는 세션이 없습니다.`
-                                            }
+                                            type="warning"
+                                            message="간트차트에서 보이지 않는 세션"
+                                            description="0분 세션이나 1분 이하의 세션은 간트차트에서 너비가 너무 작아 보이지 않습니다. 이 세션들은 충돌을 일으킬 수 있지만 시각적으로 확인이 어렵습니다."
                                             showIcon
-                                            style={{ marginTop: 8 }}
                                         />
                                     )}
-                                </Space>
-                            </Card>
-                        )}
 
-                        {/* 간트 미표시 세션 설명 */}
-                        {view_mode === "invisible" && invisibleSessionIds.size > 0 && (
-                            <Alert
-                                type="warning"
-                                message="간트차트에서 보이지 않는 세션"
-                                description="0분 세션이나 1분 이하의 세션은 간트차트에서 너비가 너무 작아 보이지 않습니다. 이 세션들은 충돌을 일으킬 수 있지만 시각적으로 확인이 어렵습니다."
-                                showIcon
-                            />
-                        )}
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        gap: 16,
+                                        flexWrap: "wrap",
+                                    }}
+                                >
+                                    <Card
+                                        size="small"
+                                        style={{ minWidth: 150 }}
+                                    >
+                                        <Text type="secondary">전체 세션</Text>
+                                        <Title level={4} style={{ margin: 0 }}>
+                                            {allSessions.length}개
+                                        </Title>
+                                    </Card>
+                                    <Card
+                                        size="small"
+                                        style={{
+                                            minWidth: 150,
+                                            borderColor:
+                                                conflicts.length > 0
+                                                    ? "#ff4d4f"
+                                                    : undefined,
+                                        }}
+                                    >
+                                        <Text type="secondary">충돌 세션</Text>
+                                        <Title
+                                            level={4}
+                                            style={{
+                                                margin: 0,
+                                                color:
+                                                    conflicts.length > 0
+                                                        ? "#ff4d4f"
+                                                        : undefined,
+                                            }}
+                                        >
+                                            {conflictSessionIds.size}개
+                                        </Title>
+                                    </Card>
+                                    <Card
+                                        size="small"
+                                        style={{ minWidth: 150 }}
+                                    >
+                                        <Text type="secondary">
+                                            충돌 발생일
+                                        </Text>
+                                        <Title level={4} style={{ margin: 0 }}>
+                                            {conflictDates.size}일
+                                        </Title>
+                                    </Card>
+                                    <Card
+                                        size="small"
+                                        style={{
+                                            minWidth: 150,
+                                            borderColor:
+                                                problemSessionIds.size > 0
+                                                    ? "#fa8c16"
+                                                    : undefined,
+                                        }}
+                                    >
+                                        <Text type="secondary">
+                                            <BugOutlined /> 문제 세션
+                                        </Text>
+                                        <Title
+                                            level={4}
+                                            style={{
+                                                margin: 0,
+                                                color:
+                                                    problemSessionIds.size > 0
+                                                        ? "#fa8c16"
+                                                        : undefined,
+                                            }}
+                                        >
+                                            {problemSessionIds.size}개
+                                        </Title>
+                                    </Card>
+                                    <Card
+                                        size="small"
+                                        style={{
+                                            minWidth: 150,
+                                            borderColor:
+                                                invisibleSessionIds.size > 0
+                                                    ? "#722ed1"
+                                                    : undefined,
+                                        }}
+                                    >
+                                        <Text type="secondary">
+                                            <EyeInvisibleOutlined /> 간트 미표시
+                                        </Text>
+                                        <Title
+                                            level={4}
+                                            style={{
+                                                margin: 0,
+                                                color:
+                                                    invisibleSessionIds.size > 0
+                                                        ? "#722ed1"
+                                                        : undefined,
+                                            }}
+                                        >
+                                            {invisibleSessionIds.size}개
+                                        </Title>
+                                    </Card>
+                                </div>
 
-                        <div
-                            style={{
-                                display: "flex",
-                                gap: 16,
-                                flexWrap: "wrap",
-                            }}
+                                {/* 문제 세션 상세 통계 */}
+                                {problemSessionIds.size > 0 && (
+                                    <Card
+                                        size="small"
+                                        style={{
+                                            background: "#fff7e6",
+                                            borderColor: "#ffd591",
+                                        }}
+                                    >
+                                        <Space
+                                            direction="vertical"
+                                            size="small"
+                                            style={{ width: "100%" }}
+                                        >
+                                            <Text
+                                                strong
+                                                style={{ color: "#d46b08" }}
+                                            >
+                                                <BugOutlined /> 문제 유형별 현황
+                                            </Text>
+                                            <Space wrap>
+                                                {problemStats.zero_duration >
+                                                    0 && (
+                                                    <Tag color="orange">
+                                                        0분 세션:{" "}
+                                                        {
+                                                            problemStats.zero_duration
+                                                        }
+                                                        개
+                                                    </Tag>
+                                                )}
+                                                {problemStats.missing_time >
+                                                    0 && (
+                                                    <Tag color="red">
+                                                        시간 누락:{" "}
+                                                        {
+                                                            problemStats.missing_time
+                                                        }
+                                                        개
+                                                    </Tag>
+                                                )}
+                                                {problemStats.invalid_time >
+                                                    0 && (
+                                                    <Tag color="magenta">
+                                                        잘못된 형식:{" "}
+                                                        {
+                                                            problemStats.invalid_time
+                                                        }
+                                                        개
+                                                    </Tag>
+                                                )}
+                                                {problemStats.future_time >
+                                                    0 && (
+                                                    <Tag color="purple">
+                                                        미래 날짜:{" "}
+                                                        {
+                                                            problemStats.future_time
+                                                        }
+                                                        개
+                                                    </Tag>
+                                                )}
+                                            </Space>
+                                            <Text
+                                                type="secondary"
+                                                style={{ fontSize: 12 }}
+                                            >
+                                                문제 발생일:{" "}
+                                                {Array.from(problemDates)
+                                                    .sort()
+                                                    .slice(0, 5)
+                                                    .join(", ")}
+                                                {problemDates.size > 5 &&
+                                                    ` 외 ${
+                                                        problemDates.size - 5
+                                                    }일`}
+                                            </Text>
+                                        </Space>
+                                    </Card>
+                                )}
+
+                                {conflicts.length > 0 && (
+                                    <Card
+                                        size="small"
+                                        style={{
+                                            background: "#fff2f0",
+                                            borderColor: "#ffccc7",
+                                        }}
+                                    >
+                                        <Space
+                                            direction="vertical"
+                                            size="small"
+                                        >
+                                            <Text
+                                                strong
+                                                style={{ color: "#cf1322" }}
+                                            >
+                                                <WarningOutlined /> 충돌 발생
+                                                날짜
+                                            </Text>
+                                            <Space wrap>
+                                                {Array.from(conflictDates)
+                                                    .sort()
+                                                    .map((date) => {
+                                                        const count =
+                                                            conflicts.filter(
+                                                                (c) =>
+                                                                    c.date ===
+                                                                    date
+                                                            ).length;
+                                                        return (
+                                                            <Tag
+                                                                key={date}
+                                                                color="red"
+                                                                style={{
+                                                                    cursor: "pointer",
+                                                                }}
+                                                                onClick={() => {
+                                                                    const d =
+                                                                        dayjs(
+                                                                            date
+                                                                        );
+                                                                    setDateRange(
+                                                                        [d, d]
+                                                                    );
+                                                                }}
+                                                            >
+                                                                {date} ({count}
+                                                                건)
+                                                            </Tag>
+                                                        );
+                                                    })}
+                                            </Space>
+                                        </Space>
+                                    </Card>
+                                )}
+                            </Space>
+
+                            <Table {...tableProps} />
+                        </Space>
+                    )}
+
+                    {/* 레코드 분석 탭 */}
+                    {admin_tab === "records" && (
+                        <Space
+                            direction="vertical"
+                            size="middle"
+                            style={{ width: "100%" }}
                         >
-                            <Card size="small" style={{ minWidth: 150 }}>
-                                <Text type="secondary">전체 세션</Text>
-                                <Title level={4} style={{ margin: 0 }}>
-                                    {allSessions.length}개
-                                </Title>
-                            </Card>
-                            <Card
-                                size="small"
+                            {/* 통계 카드 */}
+                            <div
                                 style={{
-                                    minWidth: 150,
-                                    borderColor:
-                                        conflicts.length > 0
-                                            ? "#ff4d4f"
-                                            : undefined,
+                                    display: "flex",
+                                    gap: 16,
+                                    flexWrap: "wrap",
                                 }}
                             >
-                                <Text type="secondary">충돌 세션</Text>
-                                <Title
-                                    level={4}
+                                <Card size="small" style={{ minWidth: 150 }}>
+                                    <Text type="secondary">전체 레코드</Text>
+                                    <Title level={4} style={{ margin: 0 }}>
+                                        {allRecords.length}개
+                                    </Title>
+                                </Card>
+                                <Card
+                                    size="small"
                                     style={{
-                                        margin: 0,
-                                        color:
-                                            conflicts.length > 0
+                                        minWidth: 150,
+                                        borderColor:
+                                            duplicateGroups.length > 0
                                                 ? "#ff4d4f"
                                                 : undefined,
                                     }}
                                 >
-                                    {conflictSessionIds.size}개
-                                </Title>
-                            </Card>
-                            <Card size="small" style={{ minWidth: 150 }}>
-                                <Text type="secondary">충돌 발생일</Text>
-                                <Title level={4} style={{ margin: 0 }}>
-                                    {conflictDates.size}일
-                                </Title>
-                            </Card>
-                            <Card
-                                size="small"
-                                style={{
-                                    minWidth: 150,
-                                    borderColor:
-                                        problemSessionIds.size > 0
-                                            ? "#fa8c16"
-                                            : undefined,
-                                }}
-                            >
-                                <Text type="secondary">
-                                    <BugOutlined /> 문제 세션
-                                </Text>
-                                <Title
-                                    level={4}
-                                    style={{
-                                        margin: 0,
-                                        color:
-                                            problemSessionIds.size > 0
-                                                ? "#fa8c16"
-                                                : undefined,
-                                    }}
-                                >
-                                    {problemSessionIds.size}개
-                                </Title>
-                            </Card>
-                            <Card
-                                size="small"
-                                style={{
-                                    minWidth: 150,
-                                    borderColor:
-                                        invisibleSessionIds.size > 0
-                                            ? "#722ed1"
-                                            : undefined,
-                                }}
-                            >
-                                <Text type="secondary">
-                                    <EyeInvisibleOutlined /> 간트 미표시
-                                </Text>
-                                <Title
-                                    level={4}
-                                    style={{
-                                        margin: 0,
-                                        color:
-                                            invisibleSessionIds.size > 0
-                                                ? "#722ed1"
-                                                : undefined,
-                                    }}
-                                >
-                                    {invisibleSessionIds.size}개
-                                </Title>
-                            </Card>
-                        </div>
-
-                        {/* 문제 세션 상세 통계 */}
-                        {problemSessionIds.size > 0 && (
-                            <Card
-                                size="small"
-                                style={{
-                                    background: "#fff7e6",
-                                    borderColor: "#ffd591",
-                                }}
-                            >
-                                <Space direction="vertical" size="small" style={{ width: "100%" }}>
-                                    <Text strong style={{ color: "#d46b08" }}>
-                                        <BugOutlined /> 문제 유형별 현황
+                                    <Text type="secondary">중복 의심 그룹</Text>
+                                    <Title
+                                        level={4}
+                                        style={{
+                                            margin: 0,
+                                            color:
+                                                duplicateGroups.length > 0
+                                                    ? "#ff4d4f"
+                                                    : undefined,
+                                        }}
+                                    >
+                                        {duplicateGroups.length}개
+                                    </Title>
+                                </Card>
+                                <Card size="small" style={{ minWidth: 150 }}>
+                                    <Text type="secondary">
+                                        중복 의심 레코드
                                     </Text>
-                                    <Space wrap>
-                                        {problemStats.zero_duration > 0 && (
-                                            <Tag color="orange">
-                                                0분 세션: {problemStats.zero_duration}개
-                                            </Tag>
+                                    <Title level={4} style={{ margin: 0 }}>
+                                        {duplicateGroups.reduce(
+                                            (sum, g) => sum + g.records.length,
+                                            0
                                         )}
-                                        {problemStats.missing_time > 0 && (
+                                        개
+                                    </Title>
+                                </Card>
+                            </div>
+
+                            {/* 중복 의심 그룹 */}
+                            {duplicateGroups.length > 0 && (
+                                <Card
+                                    size="small"
+                                    title={
+                                        <Space>
+                                            <WarningOutlined
+                                                style={{ color: "#ff4d4f" }}
+                                            />
+                                            <span>중복 의심 레코드 그룹</span>
                                             <Tag color="red">
-                                                시간 누락: {problemStats.missing_time}개
+                                                {duplicateGroups.length}개 그룹
                                             </Tag>
-                                        )}
-                                        {problemStats.invalid_time > 0 && (
-                                            <Tag color="magenta">
-                                                잘못된 형식: {problemStats.invalid_time}개
-                                            </Tag>
-                                        )}
-                                        {problemStats.future_time > 0 && (
-                                            <Tag color="purple">
-                                                미래 날짜: {problemStats.future_time}개
-                                            </Tag>
-                                        )}
-                                    </Space>
-                                    <Text type="secondary" style={{ fontSize: 12 }}>
-                                        문제 발생일: {Array.from(problemDates).sort().slice(0, 5).join(", ")}
-                                        {problemDates.size > 5 && ` 외 ${problemDates.size - 5}일`}
-                                    </Text>
-                                </Space>
-                            </Card>
-                        )}
+                                        </Space>
+                                    }
+                                    style={{ borderColor: "#ffccc7" }}
+                                >
+                                    <Alert
+                                        type="warning"
+                                        message="같은 작업명 + 거래명 조합을 가진 레코드들입니다. 병합이 필요한지 확인하세요."
+                                        showIcon
+                                        style={{ marginBottom: 16 }}
+                                    />
+                                    <Table
+                                        columns={duplicateGroupColumns}
+                                        dataSource={duplicateGroups}
+                                        rowKey="key"
+                                        size="small"
+                                        pagination={false}
+                                        expandable={{
+                                            expandedRowRender: (group) => (
+                                                <Table
+                                                    columns={recordColumns.filter(
+                                                        (c) =>
+                                                            c.title !== "액션"
+                                                    )}
+                                                    dataSource={group.records}
+                                                    rowKey="id"
+                                                    size="small"
+                                                    pagination={false}
+                                                />
+                                            ),
+                                        }}
+                                        scroll={{ x: 900 }}
+                                    />
+                                </Card>
+                            )}
 
-                        {conflicts.length > 0 && (
+                            {/* 전체 레코드 목록 */}
                             <Card
                                 size="small"
-                                style={{
-                                    background: "#fff2f0",
-                                    borderColor: "#ffccc7",
-                                }}
-                            >
-                                <Space direction="vertical" size="small">
-                                    <Text strong style={{ color: "#cf1322" }}>
-                                        <WarningOutlined /> 충돌 발생 날짜
-                                    </Text>
-                                    <Space wrap>
-                                        {Array.from(conflictDates)
-                                            .sort()
-                                            .map((date) => {
-                                                const count = conflicts.filter(
-                                                    (c) => c.date === date
-                                                ).length;
-                                                return (
-                                                    <Tag
-                                                        key={date}
-                                                        color="red"
-                                                        style={{
-                                                            cursor: "pointer",
-                                                        }}
-                                                        onClick={() => {
-                                                            const d =
-                                                                dayjs(date);
-                                                            setDateRange([
-                                                                d,
-                                                                d,
-                                                            ]);
-                                                        }}
-                                                    >
-                                                        {date} ({count}건)
-                                                    </Tag>
-                                                );
-                                            })}
+                                title={
+                                    <Space>
+                                        <DatabaseOutlined />
+                                        <span>전체 레코드</span>
                                     </Space>
-                                </Space>
+                                }
+                                extra={
+                                    <Space>
+                                        {selected_record_keys.length > 0 && (
+                                            <>
+                                                <Button
+                                                    icon={<CopyOutlined />}
+                                                    onClick={() =>
+                                                        handleCopyRecordData(
+                                                            selected_record_keys
+                                                        )
+                                                    }
+                                                >
+                                                    선택 데이터 복사 (
+                                                    {
+                                                        selected_record_keys.length
+                                                    }
+                                                    )
+                                                </Button>
+                                                <Popconfirm
+                                                    title="선택 삭제"
+                                                    description={`${selected_record_keys.length}개 레코드를 삭제하시겠습니까?`}
+                                                    onConfirm={() => {
+                                                        selected_record_keys.forEach(
+                                                            (id) => {
+                                                                deleteRecord(
+                                                                    id as string
+                                                                );
+                                                            }
+                                                        );
+                                                        message.success(
+                                                            `${selected_record_keys.length}개 레코드가 삭제되었습니다`
+                                                        );
+                                                        setSelectedRecordKeys(
+                                                            []
+                                                        );
+                                                    }}
+                                                    okText="삭제"
+                                                    cancelText="취소"
+                                                >
+                                                    <Button
+                                                        icon={
+                                                            <DeleteOutlined />
+                                                        }
+                                                        danger
+                                                    >
+                                                        선택 삭제
+                                                    </Button>
+                                                </Popconfirm>
+                                            </>
+                                        )}
+                                    </Space>
+                                }
+                            >
+                                <Table
+                                    columns={recordColumns}
+                                    dataSource={allRecords}
+                                    rowKey="id"
+                                    size="small"
+                                    pagination={{
+                                        pageSize: 50,
+                                        showSizeChanger: true,
+                                        pageSizeOptions: ["20", "50", "100"],
+                                        showTotal: (total, range) =>
+                                            `${range[0]}-${range[1]} / 총 ${total}개`,
+                                    }}
+                                    rowSelection={{
+                                        selectedRowKeys: selected_record_keys,
+                                        onChange: setSelectedRecordKeys,
+                                    }}
+                                    scroll={{ x: 1200 }}
+                                />
                             </Card>
-                        )}
-                    </Space>
-
-                    <Table {...tableProps} />
+                        </Space>
+                    )}
                 </Card>
+
+                {/* 레코드 상세 정보 모달 */}
+                <Modal
+                    title={
+                        <Space>
+                            <FileTextOutlined />
+                            <span>레코드 상세 데이터</span>
+                        </Space>
+                    }
+                    open={!!detail_modal_record}
+                    onCancel={() => setDetailModalRecord(null)}
+                    width={800}
+                    footer={[
+                        <Button
+                            key="copy"
+                            icon={<CopyOutlined />}
+                            onClick={() => {
+                                if (detail_modal_record) {
+                                    handleCopyRecordData([
+                                        detail_modal_record.id,
+                                    ]);
+                                }
+                            }}
+                        >
+                            JSON 복사
+                        </Button>,
+                        <Button
+                            key="close"
+                            onClick={() => setDetailModalRecord(null)}
+                        >
+                            닫기
+                        </Button>,
+                    ]}
+                >
+                    {detail_modal_record && (
+                        <Space
+                            direction="vertical"
+                            size="middle"
+                            style={{ width: "100%" }}
+                        >
+                            <Descriptions
+                                bordered
+                                size="small"
+                                column={2}
+                                title="기본 정보"
+                            >
+                                <Descriptions.Item label="ID" span={2}>
+                                    <Text
+                                        copyable
+                                        code
+                                        style={{ fontSize: 11 }}
+                                    >
+                                        {detail_modal_record.id}
+                                    </Text>
+                                </Descriptions.Item>
+                                <Descriptions.Item label="날짜">
+                                    {detail_modal_record.date}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="프로젝트 코드">
+                                    {detail_modal_record.project_code}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="작업명" span={2}>
+                                    {detail_modal_record.work_name}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="거래명" span={2}>
+                                    {detail_modal_record.deal_name}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="업무명">
+                                    {detail_modal_record.task_name}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="카테고리">
+                                    {detail_modal_record.category_name}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="소요시간">
+                                    {detail_modal_record.duration_minutes}분
+                                </Descriptions.Item>
+                                <Descriptions.Item label="시간">
+                                    {detail_modal_record.start_time || "-"} ~{" "}
+                                    {detail_modal_record.end_time || "-"}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="완료 여부">
+                                    {detail_modal_record.is_completed ? (
+                                        <Tag color="green">완료</Tag>
+                                    ) : (
+                                        <Tag>미완료</Tag>
+                                    )}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="세션 수">
+                                    {detail_modal_record.sessions?.length || 0}
+                                    개
+                                </Descriptions.Item>
+                                {detail_modal_record.note && (
+                                    <Descriptions.Item label="비고" span={2}>
+                                        {detail_modal_record.note}
+                                    </Descriptions.Item>
+                                )}
+                            </Descriptions>
+
+                            {/* 세션 목록 */}
+                            {detail_modal_record.sessions &&
+                                detail_modal_record.sessions.length > 0 && (
+                                    <Card size="small" title="세션 이력">
+                                        <Table
+                                            columns={[
+                                                {
+                                                    title: "#",
+                                                    width: 50,
+                                                    render: (_, __, idx) =>
+                                                        idx + 1,
+                                                },
+                                                {
+                                                    title: "날짜",
+                                                    dataIndex: "date",
+                                                    width: 110,
+                                                    render: (date) =>
+                                                        date ||
+                                                        detail_modal_record.date,
+                                                },
+                                                {
+                                                    title: "시작",
+                                                    dataIndex: "start_time",
+                                                    width: 80,
+                                                },
+                                                {
+                                                    title: "종료",
+                                                    dataIndex: "end_time",
+                                                    width: 80,
+                                                },
+                                                {
+                                                    title: "소요시간",
+                                                    dataIndex:
+                                                        "duration_minutes",
+                                                    width: 90,
+                                                    render: (mins: number) =>
+                                                        `${mins}분`,
+                                                },
+                                                {
+                                                    title: "ID",
+                                                    dataIndex: "id",
+                                                    ellipsis: true,
+                                                    render: (id: string) => (
+                                                        <Text
+                                                            copyable
+                                                            code
+                                                            style={{
+                                                                fontSize: 10,
+                                                            }}
+                                                        >
+                                                            {id}
+                                                        </Text>
+                                                    ),
+                                                },
+                                            ]}
+                                            dataSource={
+                                                detail_modal_record.sessions
+                                            }
+                                            rowKey="id"
+                                            size="small"
+                                            pagination={false}
+                                        />
+                                    </Card>
+                                )}
+
+                            {/* Raw JSON */}
+                            <Card size="small" title="Raw JSON">
+                                <pre
+                                    style={{
+                                        background: "#f5f5f5",
+                                        padding: 12,
+                                        borderRadius: 4,
+                                        fontSize: 11,
+                                        maxHeight: 300,
+                                        overflow: "auto",
+                                        margin: 0,
+                                    }}
+                                >
+                                    {JSON.stringify(
+                                        detail_modal_record,
+                                        null,
+                                        2
+                                    )}
+                                </pre>
+                            </Card>
+                        </Space>
+                    )}
+                </Modal>
+
+                {/* 레코드 병합 확인 모달 */}
+                <Modal
+                    title={
+                        <Space>
+                            <MergeCellsOutlined />
+                            <span>레코드 병합 확인</span>
+                        </Space>
+                    }
+                    open={merge_modal_open}
+                    onCancel={() => {
+                        setMergeModalOpen(false);
+                        setMergeTargetGroup(null);
+                    }}
+                    onOk={handleMergeRecords}
+                    okText="병합 실행"
+                    okButtonProps={{ danger: true }}
+                    cancelText="취소"
+                    width={900}
+                >
+                    {merge_target_group && (
+                        <Space
+                            direction="vertical"
+                            size="middle"
+                            style={{ width: "100%" }}
+                        >
+                            <Alert
+                                type="warning"
+                                message="주의: 병합은 되돌릴 수 없습니다!"
+                                description={
+                                    <>
+                                        <p>
+                                            <strong>
+                                                {
+                                                    merge_target_group.records
+                                                        .length
+                                                }
+                                                개
+                                            </strong>{" "}
+                                            레코드가 <strong>1개</strong>로
+                                            병합됩니다.
+                                        </p>
+                                        <p>
+                                            첫 번째 레코드를 기준으로 모든
+                                            세션이 합쳐지고, 나머지 레코드는
+                                            삭제됩니다.
+                                        </p>
+                                    </>
+                                }
+                                showIcon
+                            />
+
+                            <Descriptions bordered size="small" column={2}>
+                                <Descriptions.Item label="작업명" span={2}>
+                                    {merge_target_group.work_name}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="거래명" span={2}>
+                                    {merge_target_group.deal_name}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="병합 대상 레코드">
+                                    {merge_target_group.records.length}개
+                                </Descriptions.Item>
+                                <Descriptions.Item label="총 세션 수">
+                                    {merge_target_group.total_sessions}개
+                                </Descriptions.Item>
+                                <Descriptions.Item label="총 소요시간">
+                                    {merge_target_group.total_duration}분
+                                </Descriptions.Item>
+                                <Descriptions.Item label="날짜 범위">
+                                    {merge_target_group.date_range}
+                                </Descriptions.Item>
+                            </Descriptions>
+
+                            <Card size="small" title="병합될 레코드 목록">
+                                <Table
+                                    columns={[
+                                        {
+                                            title: "#",
+                                            width: 50,
+                                            render: (_, __, idx) => (
+                                                <Tag
+                                                    color={
+                                                        idx === 0
+                                                            ? "green"
+                                                            : "default"
+                                                    }
+                                                >
+                                                    {idx === 0
+                                                        ? "기준"
+                                                        : idx + 1}
+                                                </Tag>
+                                            ),
+                                        },
+                                        {
+                                            title: "날짜",
+                                            dataIndex: "date",
+                                            width: 110,
+                                        },
+                                        {
+                                            title: "프로젝트",
+                                            dataIndex: "project_code",
+                                            width: 120,
+                                        },
+                                        {
+                                            title: "세션",
+                                            width: 70,
+                                            render: (_, record) =>
+                                                `${
+                                                    record.sessions?.length || 0
+                                                }개`,
+                                        },
+                                        {
+                                            title: "소요시간",
+                                            dataIndex: "duration_minutes",
+                                            width: 90,
+                                            render: (mins: number) =>
+                                                `${mins}분`,
+                                        },
+                                        {
+                                            title: "시간",
+                                            width: 130,
+                                            render: (_, record) =>
+                                                `${
+                                                    record.start_time || "-"
+                                                } ~ ${record.end_time || "-"}`,
+                                        },
+                                        {
+                                            title: "상태",
+                                            width: 80,
+                                            render: (_, record) =>
+                                                record.is_completed ? (
+                                                    <Tag color="green">
+                                                        완료
+                                                    </Tag>
+                                                ) : (
+                                                    <Tag>미완료</Tag>
+                                                ),
+                                        },
+                                    ]}
+                                    dataSource={merge_target_group.records}
+                                    rowKey="id"
+                                    size="small"
+                                    pagination={false}
+                                />
+                            </Card>
+                        </Space>
+                    )}
+                </Modal>
             </Content>
         </Layout>
     );

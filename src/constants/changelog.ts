@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "1.3.3";
+export const CURRENT_VERSION = "1.3.4";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,25 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "1.3.4",
+        date: "2026-01-23",
+        title: "동기화 안정성 개선",
+        changes: [
+            {
+                type: "fix",
+                description: "다중 탭/기기 사용 시 중복 레코드 생성 문제 해결 (자동 병합)",
+            },
+            {
+                type: "improvement",
+                description: "앱 시작 및 실시간 동기화 시 중복 레코드 자동 감지 및 병합",
+            },
+            {
+                type: "improvement",
+                description: "상단 메뉴에서 마우스 휠 버튼으로 새 탭 열기 지원",
+            },
+        ],
+    },
     {
         version: "1.3.3",
         date: "2026-01-22",

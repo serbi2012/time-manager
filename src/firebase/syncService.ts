@@ -9,6 +9,7 @@ import {
 import type { UserData } from "./firestore";
 import { useWorkStore } from "../store/useWorkStore";
 import { useShortcutStore, DEFAULT_SHORTCUTS } from "../store/useShortcutStore";
+import type { WorkRecord, WorkSession } from "../types";
 
 let unsubscribe_fn: (() => void) | null = null;
 
@@ -295,6 +296,16 @@ export function startRealtimeSync(user: User): void {
             // 카운트 업데이트
             last_known_record_count = firebase_records.length;
             last_known_template_count = firebase_templates.length;
+
+            // 실시간 동기화 후 중복 레코드 자동 병합
+            const merge_result = autoMergeDuplicateRecords();
+            if (merge_result.merged_count > 0) {
+                console.log(
+                    `[RealtimeSync] 중복 레코드 자동 병합: ${merge_result.merged_count}개 그룹, ${merge_result.deleted_count}개 제거`
+                );
+                // 병합 결과를 Firebase에 저장 (로컬 변경 표시 후)
+                markLocalChange();
+            }
         }
     });
 }
@@ -388,4 +399,217 @@ export async function checkPendingSync(user: User): Promise<void> {
         console.error("[Sync] 백업 복구 실패:", e);
         localStorage.removeItem("time_manager_pending_sync");
     }
+}
+
+// ============================================
+// 중복 레코드 자동 병합 기능
+// ============================================
+
+interface DuplicateGroup {
+    key: string;
+    work_name: string;
+    deal_name: string;
+    records: WorkRecord[];
+}
+
+// 중복 레코드 그룹 찾기 (같은 work_name + deal_name, 미완료 상태)
+function findDuplicateGroups(records: WorkRecord[]): DuplicateGroup[] {
+    const group_map = new Map<string, WorkRecord[]>();
+
+    records
+        .filter((r) => !r.is_deleted && !r.is_completed)
+        .forEach((record) => {
+            const key = `${record.work_name}||${record.deal_name}`;
+            if (!group_map.has(key)) {
+                group_map.set(key, []);
+            }
+            group_map.get(key)!.push(record);
+        });
+
+    const duplicates: DuplicateGroup[] = [];
+    group_map.forEach((group_records, key) => {
+        if (group_records.length >= 2) {
+            duplicates.push({
+                key,
+                work_name: group_records[0].work_name,
+                deal_name: group_records[0].deal_name,
+                records: group_records.sort((a, b) =>
+                    a.date.localeCompare(b.date)
+                ),
+            });
+        }
+    });
+
+    return duplicates;
+}
+
+// 세션의 duration 계산 (기존 데이터 호환)
+function getSessionMinutes(session: WorkSession): number {
+    if (session.duration_minutes !== undefined) {
+        return session.duration_minutes;
+    }
+    const legacy = session as unknown as { duration_seconds?: number };
+    if (legacy.duration_seconds !== undefined) {
+        return Math.ceil(legacy.duration_seconds / 60);
+    }
+    return 0;
+}
+
+// 레코드 그룹을 하나로 병합
+function mergeRecordGroup(group: DuplicateGroup): {
+    merged_record: WorkRecord;
+    deleted_ids: string[];
+} {
+    const sorted_records = [...group.records].sort((a, b) => {
+        const date_cmp = a.date.localeCompare(b.date);
+        if (date_cmp !== 0) return date_cmp;
+        return (a.start_time || "").localeCompare(b.start_time || "");
+    });
+
+    const base_record = sorted_records[0];
+    const other_records = sorted_records.slice(1);
+
+    // 모든 세션 수집 (중복 ID 제거)
+    const all_sessions: WorkSession[] = [...(base_record.sessions || [])];
+    const session_ids = new Set(all_sessions.map((s) => s.id));
+
+    other_records.forEach((r) => {
+        (r.sessions || []).forEach((s) => {
+            if (!session_ids.has(s.id)) {
+                all_sessions.push(s);
+                session_ids.add(s.id);
+            }
+        });
+    });
+
+    // 세션 정렬 (날짜, 시작 시간 순)
+    all_sessions.sort((a, b) => {
+        const date_a = a.date || base_record.date;
+        const date_b = b.date || base_record.date;
+        const date_cmp = date_a.localeCompare(date_b);
+        if (date_cmp !== 0) return date_cmp;
+        return (a.start_time || "").localeCompare(b.start_time || "");
+    });
+
+    // 총 시간 계산
+    const total_duration = all_sessions.reduce(
+        (sum, s) => sum + getSessionMinutes(s),
+        0
+    );
+
+    // 시작/종료 시간 결정
+    const first_session = all_sessions[0];
+    const last_session = all_sessions[all_sessions.length - 1];
+
+    const merged_record: WorkRecord = {
+        ...base_record,
+        sessions: all_sessions,
+        duration_minutes: Math.max(1, total_duration),
+        start_time: first_session?.start_time || base_record.start_time,
+        end_time: last_session?.end_time || base_record.end_time,
+        date: first_session?.date || base_record.date,
+    };
+
+    return {
+        merged_record,
+        deleted_ids: other_records.map((r) => r.id),
+    };
+}
+
+// 중복 레코드 자동 병합 실행
+export function autoMergeDuplicateRecords(): {
+    merged_count: number;
+    deleted_count: number;
+} {
+    const state = useWorkStore.getState();
+    const duplicate_groups = findDuplicateGroups(state.records);
+
+    if (duplicate_groups.length === 0) {
+        return { merged_count: 0, deleted_count: 0 };
+    }
+
+    let merged_count = 0;
+    let deleted_count = 0;
+    let updated_records = [...state.records];
+
+    duplicate_groups.forEach((group) => {
+        const { merged_record, deleted_ids } = mergeRecordGroup(group);
+
+        // 병합된 레코드로 업데이트
+        updated_records = updated_records.map((r) =>
+            r.id === merged_record.id ? merged_record : r
+        );
+
+        // 삭제할 레코드 제거
+        updated_records = updated_records.filter(
+            (r) => !deleted_ids.includes(r.id)
+        );
+
+        merged_count++;
+        deleted_count += deleted_ids.length;
+
+        console.log(
+            `[AutoMerge] "${group.work_name} > ${group.deal_name}" ${group.records.length}개 → 1개로 병합 (세션 ${merged_record.sessions.length}개)`
+        );
+    });
+
+    // 상태 업데이트
+    useWorkStore.setState({ records: updated_records });
+
+    console.log(
+        `[AutoMerge] 총 ${merged_count}개 그룹 병합, ${deleted_count}개 중복 레코드 제거`
+    );
+
+    return { merged_count, deleted_count };
+}
+
+// 특정 work_name + deal_name에 대해 기존 레코드 찾기 (중복 있으면 병합 후 반환)
+export function findOrMergeExistingRecord(
+    work_name: string,
+    deal_name: string
+): WorkRecord | undefined {
+    const state = useWorkStore.getState();
+
+    // 같은 work_name + deal_name을 가진 미완료 레코드 찾기
+    const matching_records = state.records.filter(
+        (r) =>
+            !r.is_deleted &&
+            !r.is_completed &&
+            r.work_name === work_name &&
+            r.deal_name === deal_name
+    );
+
+    if (matching_records.length === 0) {
+        return undefined;
+    }
+
+    if (matching_records.length === 1) {
+        return matching_records[0];
+    }
+
+    // 2개 이상이면 병합
+    console.log(
+        `[AutoMerge] "${work_name} > ${deal_name}" 중복 ${matching_records.length}개 발견, 자동 병합`
+    );
+
+    const group: DuplicateGroup = {
+        key: `${work_name}||${deal_name}`,
+        work_name,
+        deal_name,
+        records: matching_records,
+    };
+
+    const { merged_record, deleted_ids } = mergeRecordGroup(group);
+
+    // 상태 업데이트
+    let updated_records = state.records.map((r) =>
+        r.id === merged_record.id ? merged_record : r
+    );
+    updated_records = updated_records.filter(
+        (r) => !deleted_ids.includes(r.id)
+    );
+
+    useWorkStore.setState({ records: updated_records });
+
+    return merged_record;
 }
