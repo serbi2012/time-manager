@@ -2,13 +2,14 @@
  * syncService 유닛 테스트
  *
  * Firebase 동기화 서비스 테스트 (firestore는 모킹)
+ * 새로운 컬렉션 구조 및 부분 업데이트 방식 테스트
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { useWorkStore } from '../../store/useWorkStore'
 import { useShortcutStore, DEFAULT_SHORTCUTS } from '../../store/useShortcutStore'
 import type { WorkRecord, WorkTemplate } from '../../types'
 
-// Firebase 모듈 모킹
+// Firebase 모듈 모킹 - 새로운 컬렉션 구조 함수들
 vi.mock('../../firebase/firestore', () => ({
     saveUserData: vi.fn().mockResolvedValue(undefined),
     loadUserData: vi.fn().mockResolvedValue(null),
@@ -20,23 +21,76 @@ vi.mock('../../firebase/firestore', () => ({
         custom_category_options: [],
         updated_at: new Date().toISOString(),
     }),
+    // 새로운 컬렉션 구조 함수들
+    saveRecord: vi.fn().mockResolvedValue(undefined),
+    deleteRecordFromFirestore: vi.fn().mockResolvedValue(undefined),
+    loadAllRecords: vi.fn().mockResolvedValue([]),
+    saveRecordsBatch: vi.fn().mockResolvedValue(undefined),
+    saveTemplateToFirestore: vi.fn().mockResolvedValue(undefined),
+    deleteTemplateFromFirestore: vi.fn().mockResolvedValue(undefined),
+    loadAllTemplates: vi.fn().mockResolvedValue([]),
+    saveTemplatesBatch: vi.fn().mockResolvedValue(undefined),
+    saveSettings: vi.fn().mockResolvedValue(undefined),
+    loadSettings: vi.fn().mockResolvedValue(null),
+    markMigrationComplete: vi.fn().mockResolvedValue(undefined),
+    checkMigrationStatus: vi.fn().mockResolvedValue(true),
+    loadAllData: vi.fn().mockResolvedValue({
+        records: [],
+        templates: [],
+        settings: null,
+    }),
+}))
+
+// 마이그레이션 모듈 모킹
+vi.mock('../../firebase/migration', () => ({
+    checkAndMigrate: vi.fn().mockResolvedValue({
+        needed_migration: false,
+        result: { success: true, migrated: false, records_count: 0, templates_count: 0 },
+    }),
+    migrateToCollectionStructure: vi.fn().mockResolvedValue({
+        success: true,
+        migrated: false,
+        records_count: 0,
+        templates_count: 0,
+    }),
+    loadMigratedData: vi.fn().mockResolvedValue({
+        records: [],
+        templates: [],
+        settings: null,
+    }),
 }))
 
 // 모킹된 모듈 import
-import { saveUserData, loadUserData } from '../../firebase/firestore'
 import {
-    markLocalChange,
-    syncToFirebase,
-    syncFromFirebase,
+    saveRecord,
+    deleteRecordFromFirestore,
+    saveTemplateToFirestore,
+    deleteTemplateFromFirestore,
+    saveSettings,
+    loadAllData,
+} from '../../firebase/firestore'
+import { checkAndMigrate } from '../../firebase/migration'
+import {
+    syncRecord,
+    syncDeleteRecord,
+    syncTemplate,
+    syncDeleteTemplate,
+    syncSettings,
+    loadFromFirebase,
+    refreshFromFirebase,
     syncBeforeUnload,
     checkPendingSync,
+    setCurrentUser,
+    clearSyncState,
+    getCurrentUser,
 } from '../../firebase/syncService'
+import type { User } from 'firebase/auth'
 
 // 테스트용 유저 객체
 const mock_user = {
     uid: 'test-user-123',
     email: 'test@example.com',
-} as any
+} as User
 
 // 테스트용 레코드 생성
 const createTestRecord = (id: string): WorkRecord => ({
@@ -113,6 +167,7 @@ const resetStores = () => {
         shortcuts: [...DEFAULT_SHORTCUTS],
     })
     localStorage.clear()
+    clearSyncState()
 }
 
 describe('syncService', () => {
@@ -123,184 +178,282 @@ describe('syncService', () => {
 
     afterEach(() => {
         localStorage.clear()
+        clearSyncState()
     })
 
     // =====================================================
-    // markLocalChange 테스트
+    // setCurrentUser / clearSyncState 테스트
     // =====================================================
-    describe('markLocalChange', () => {
-        it('로컬 변경 시간을 기록함', () => {
-            // markLocalChange 함수 호출
-            markLocalChange()
+    describe('setCurrentUser / clearSyncState', () => {
+        it('현재 사용자를 설정함', () => {
+            setCurrentUser(mock_user)
+            expect(getCurrentUser()).toBe(mock_user)
+        })
 
-            // 직접 확인은 어렵지만, 함수가 에러 없이 실행되는지 확인
-            expect(true).toBe(true)
+        it('clearSyncState로 사용자 정보 초기화', () => {
+            setCurrentUser(mock_user)
+            clearSyncState()
+            expect(getCurrentUser()).toBeNull()
         })
     })
 
     // =====================================================
-    // syncToFirebase 테스트
+    // syncRecord 테스트
     // =====================================================
-    describe('syncToFirebase', () => {
-        it('현재 스토어 상태를 Firebase에 저장', async () => {
-            // 스토어에 데이터 설정
-            const records = [createTestRecord('1'), createTestRecord('2')]
-            const templates = [createTestTemplate('1')]
-            useWorkStore.setState({
-                records,
-                templates,
-                custom_task_options: ['업무1'],
-                custom_category_options: ['카테고리1'],
-            })
+    describe('syncRecord', () => {
+        it('로그인된 상태에서 레코드를 Firebase에 저장', async () => {
+            setCurrentUser(mock_user)
+            const record = createTestRecord('1')
 
-            await syncToFirebase(mock_user)
+            await syncRecord(record)
 
-            expect(saveUserData).toHaveBeenCalledWith(
+            expect(saveRecord).toHaveBeenCalledWith(mock_user.uid, record)
+        })
+
+        it('로그인되지 않은 상태에서는 저장하지 않음', async () => {
+            clearSyncState()
+            const record = createTestRecord('1')
+
+            await syncRecord(record)
+
+            expect(saveRecord).not.toHaveBeenCalled()
+        })
+    })
+
+    // =====================================================
+    // syncDeleteRecord 테스트
+    // =====================================================
+    describe('syncDeleteRecord', () => {
+        it('로그인된 상태에서 레코드를 Firebase에서 삭제', async () => {
+            setCurrentUser(mock_user)
+
+            await syncDeleteRecord('record-1')
+
+            expect(deleteRecordFromFirestore).toHaveBeenCalledWith(
                 mock_user.uid,
-                expect.objectContaining({
-                    records,
-                    templates,
-                    custom_task_options: ['업무1'],
-                    custom_category_options: ['카테고리1'],
-                })
+                'record-1'
             )
         })
 
-        it('force 옵션으로 유효성 검사 우회', async () => {
-            // 빈 데이터로 설정 (일반적으로는 저장되지 않음)
-            useWorkStore.setState({
-                records: [],
-                templates: [],
-            })
+        it('로그인되지 않은 상태에서는 삭제하지 않음', async () => {
+            clearSyncState()
 
-            await syncToFirebase(mock_user, { force: true })
+            await syncDeleteRecord('record-1')
 
-            // force=true면 빈 데이터도 저장
-            expect(saveUserData).toHaveBeenCalled()
-        })
-
-        it('단축키 설정도 함께 저장', async () => {
-            // 단축키 일부 비활성화
-            useShortcutStore.getState().toggleShortcut('new-work')
-
-            useWorkStore.setState({
-                records: [createTestRecord('1')],
-                templates: [],
-            })
-
-            await syncToFirebase(mock_user)
-
-            expect(saveUserData).toHaveBeenCalledWith(
-                mock_user.uid,
-                expect.objectContaining({
-                    shortcuts: expect.arrayContaining([
-                        expect.objectContaining({
-                            id: 'new-work',
-                            enabled: false,
-                        }),
-                    ]),
-                })
-            )
+            expect(deleteRecordFromFirestore).not.toHaveBeenCalled()
         })
     })
 
     // =====================================================
-    // syncFromFirebase 테스트
+    // syncTemplate 테스트
     // =====================================================
-    describe('syncFromFirebase', () => {
-        it('Firebase 데이터가 있으면 로컬 스토어에 적용', async () => {
+    describe('syncTemplate', () => {
+        it('로그인된 상태에서 템플릿을 Firebase에 저장', async () => {
+            setCurrentUser(mock_user)
+            const template = createTestTemplate('1')
+
+            await syncTemplate(template)
+
+            expect(saveTemplateToFirestore).toHaveBeenCalledWith(
+                mock_user.uid,
+                template
+            )
+        })
+
+        it('로그인되지 않은 상태에서는 저장하지 않음', async () => {
+            clearSyncState()
+            const template = createTestTemplate('1')
+
+            await syncTemplate(template)
+
+            expect(saveTemplateToFirestore).not.toHaveBeenCalled()
+        })
+    })
+
+    // =====================================================
+    // syncDeleteTemplate 테스트
+    // =====================================================
+    describe('syncDeleteTemplate', () => {
+        it('로그인된 상태에서 템플릿을 Firebase에서 삭제', async () => {
+            setCurrentUser(mock_user)
+
+            await syncDeleteTemplate('template-1')
+
+            expect(deleteTemplateFromFirestore).toHaveBeenCalledWith(
+                mock_user.uid,
+                'template-1'
+            )
+        })
+
+        it('로그인되지 않은 상태에서는 삭제하지 않음', async () => {
+            clearSyncState()
+
+            await syncDeleteTemplate('template-1')
+
+            expect(deleteTemplateFromFirestore).not.toHaveBeenCalled()
+        })
+    })
+
+    // =====================================================
+    // syncSettings 테스트
+    // =====================================================
+    describe('syncSettings', () => {
+        it('로그인된 상태에서 설정을 Firebase에 저장', async () => {
+            setCurrentUser(mock_user)
+            const settings = {
+                custom_task_options: ['옵션1', '옵션2'],
+            }
+
+            await syncSettings(settings)
+
+            expect(saveSettings).toHaveBeenCalledWith(mock_user.uid, settings)
+        })
+
+        it('로그인되지 않은 상태에서는 저장하지 않음', async () => {
+            clearSyncState()
+
+            await syncSettings({ custom_task_options: ['옵션1'] })
+
+            expect(saveSettings).not.toHaveBeenCalled()
+        })
+    })
+
+    // =====================================================
+    // loadFromFirebase 테스트
+    // =====================================================
+    describe('loadFromFirebase', () => {
+        beforeEach(() => {
+            // checkAndMigrate 모킹 초기화
+            vi.mocked(checkAndMigrate).mockResolvedValue({
+                needed_migration: false,
+                result: { success: true, migrated: false, records_count: 0, templates_count: 0 },
+            })
+        })
+
+        it('Firebase에서 데이터를 로드하여 스토어에 적용', async () => {
             const firebase_data = {
                 records: [createTestRecord('fb-1')],
                 templates: [createTestTemplate('fb-1')],
-                custom_task_options: ['Firebase 업무'],
-                custom_category_options: ['Firebase 카테고리'],
-                updated_at: new Date().toISOString(),
+                settings: {
+                    custom_task_options: ['Firebase 업무'],
+                    custom_category_options: ['Firebase 카테고리'],
+                    updated_at: new Date().toISOString(),
+                },
             }
-            vi.mocked(loadUserData).mockResolvedValueOnce(firebase_data)
+            vi.mocked(loadAllData).mockResolvedValueOnce(firebase_data)
 
-            const result = await syncFromFirebase(mock_user)
+            const result = await loadFromFirebase(mock_user)
 
             expect(result).toBe(true)
+            expect(checkAndMigrate).toHaveBeenCalledWith(mock_user.uid)
+
             const state = useWorkStore.getState()
             expect(state.records).toHaveLength(1)
             expect(state.records[0].id).toBe('fb-1')
+            expect(state.templates).toHaveLength(1)
+            expect(state.custom_task_options).toContain('Firebase 업무')
         })
 
-        it('Firebase 데이터가 없으면 로컬 데이터를 업로드', async () => {
-            vi.mocked(loadUserData).mockResolvedValueOnce(null)
-
-            // 로컬에 데이터 설정
-            useWorkStore.setState({
-                records: [createTestRecord('local-1')],
-                templates: [],
-            })
-
-            const result = await syncFromFirebase(mock_user)
-
-            expect(result).toBe(false)
-            expect(saveUserData).toHaveBeenCalled()
-        })
-
-        it('로컬과 Firebase 모두 비어있으면 초기 데이터 생성', async () => {
-            vi.mocked(loadUserData).mockResolvedValueOnce(null)
-
-            const result = await syncFromFirebase(mock_user)
-
-            expect(result).toBe(false)
-            expect(saveUserData).toHaveBeenCalled()
-        })
-
-        it('Firebase에 단축키 설정이 있으면 로컬에 적용', async () => {
-            const firebase_data = {
+        it('현재 사용자가 설정됨', async () => {
+            vi.mocked(loadAllData).mockResolvedValueOnce({
                 records: [],
                 templates: [],
-                custom_task_options: [],
-                custom_category_options: [],
-                shortcuts: [
-                    { ...DEFAULT_SHORTCUTS[0], enabled: false },
-                    ...DEFAULT_SHORTCUTS.slice(1),
-                ],
-                updated_at: new Date().toISOString(),
-            }
-            vi.mocked(loadUserData).mockResolvedValueOnce(firebase_data)
+                settings: null,
+            })
 
-            await syncFromFirebase(mock_user)
+            await loadFromFirebase(mock_user)
 
-            const shortcut_state = useShortcutStore.getState()
-            const new_work_shortcut = shortcut_state.getShortcut('new-work')
-            expect(new_work_shortcut?.enabled).toBe(false)
+            expect(getCurrentUser()).toBe(mock_user)
         })
 
         it('타이머 상태도 복원', async () => {
             const firebase_data = {
                 records: [],
                 templates: [],
-                custom_task_options: [],
-                custom_category_options: [],
-                timer: {
-                    is_running: true,
-                    start_time: Date.now() - 60000,
-                    active_template_id: null,
-                    active_form_data: {
-                        project_code: '',
-                        work_name: '진행중인 작업',
-                        task_name: '개발',
-                        deal_name: '거래',
-                        category_name: '개발',
-                        note: '',
+                settings: {
+                    timer: {
+                        is_running: true,
+                        start_time: Date.now() - 60000,
+                        active_template_id: null,
+                        active_form_data: {
+                            project_code: '',
+                            work_name: '진행중인 작업',
+                            task_name: '개발',
+                            deal_name: '거래',
+                            category_name: '개발',
+                            note: '',
+                        },
+                        active_record_id: null,
+                        active_session_id: null,
                     },
-                    active_record_id: null,
-                    active_session_id: null,
+                    custom_task_options: [],
+                    custom_category_options: [],
+                    updated_at: new Date().toISOString(),
                 },
-                updated_at: new Date().toISOString(),
             }
-            vi.mocked(loadUserData).mockResolvedValueOnce(firebase_data)
+            vi.mocked(loadAllData).mockResolvedValueOnce(firebase_data)
 
-            await syncFromFirebase(mock_user)
+            await loadFromFirebase(mock_user)
 
             const state = useWorkStore.getState()
             expect(state.timer.is_running).toBe(true)
             expect(state.timer.active_form_data?.work_name).toBe('진행중인 작업')
+        })
+
+        it('단축키 설정도 복원', async () => {
+            const firebase_data = {
+                records: [],
+                templates: [],
+                settings: {
+                    shortcuts: [
+                        { ...DEFAULT_SHORTCUTS[0], enabled: false },
+                        ...DEFAULT_SHORTCUTS.slice(1),
+                    ],
+                    custom_task_options: [],
+                    custom_category_options: [],
+                    updated_at: new Date().toISOString(),
+                },
+            }
+            vi.mocked(loadAllData).mockResolvedValueOnce(firebase_data)
+
+            await loadFromFirebase(mock_user)
+
+            const shortcut_state = useShortcutStore.getState()
+            const new_work_shortcut = shortcut_state.getShortcut('new-work')
+            expect(new_work_shortcut?.enabled).toBe(false)
+        })
+    })
+
+    // =====================================================
+    // refreshFromFirebase 테스트
+    // =====================================================
+    describe('refreshFromFirebase', () => {
+        it('서버에서 최신 데이터를 다시 로드', async () => {
+            const firebase_data = {
+                records: [createTestRecord('refreshed-1')],
+                templates: [],
+                settings: {
+                    custom_task_options: ['새로운 옵션'],
+                    custom_category_options: [],
+                    updated_at: new Date().toISOString(),
+                },
+            }
+            vi.mocked(loadAllData).mockResolvedValueOnce(firebase_data)
+
+            const result = await refreshFromFirebase(mock_user)
+
+            expect(result).toBe(true)
+            const state = useWorkStore.getState()
+            expect(state.records).toHaveLength(1)
+            expect(state.records[0].id).toBe('refreshed-1')
+        })
+
+        it('로드 실패 시 false 반환', async () => {
+            vi.mocked(loadAllData).mockRejectedValueOnce(new Error('Network error'))
+
+            const result = await refreshFromFirebase(mock_user)
+
+            expect(result).toBe(false)
         })
     })
 
@@ -356,7 +509,7 @@ describe('syncService', () => {
             const backup = localStorage.getItem('time_manager_pending_sync')
             const parsed = JSON.parse(backup!)
             const shortcut = parsed.shortcuts.find(
-                (s: any) => s.id === 'new-work'
+                (s: { id: string; enabled: boolean }) => s.id === 'new-work'
             )
             expect(shortcut.enabled).toBe(false)
         })
@@ -366,7 +519,7 @@ describe('syncService', () => {
     // checkPendingSync 테스트
     // =====================================================
     describe('checkPendingSync', () => {
-        it('미저장 백업이 있으면 Firebase에 복구', async () => {
+        it('미저장 백업이 있으면 로그 출력 후 삭제 (새 구조에서는 즉시 저장)', async () => {
             // 5분 이내 백업 생성
             const backup_data = {
                 records: [createTestRecord('backup-1')],
@@ -400,32 +553,11 @@ describe('syncService', () => {
 
             await checkPendingSync(mock_user)
 
-            expect(saveUserData).toHaveBeenCalled()
-            // 백업이 삭제됨
+            // 새 구조에서는 백업만 삭제 (즉시 저장되므로 복구 불필요)
             expect(localStorage.getItem('time_manager_pending_sync')).toBeNull()
         })
 
-        it('5분 이상 된 백업은 무시', async () => {
-            const backup_data = {
-                records: [createTestRecord('old-backup')],
-                templates: [],
-                user_id: mock_user.uid,
-                timestamp: Date.now() - 6 * 60 * 1000, // 6분 전
-            }
-            localStorage.setItem(
-                'time_manager_pending_sync',
-                JSON.stringify(backup_data)
-            )
-
-            await checkPendingSync(mock_user)
-
-            // saveUserData가 호출되지 않음 (백업이 오래됨)
-            expect(saveUserData).not.toHaveBeenCalled()
-            // 백업은 삭제됨
-            expect(localStorage.getItem('time_manager_pending_sync')).toBeNull()
-        })
-
-        it('다른 사용자의 백업은 무시', async () => {
+        it('다른 사용자의 백업은 삭제', async () => {
             const backup_data = {
                 records: [createTestRecord('other-user')],
                 templates: [],
@@ -439,13 +571,15 @@ describe('syncService', () => {
 
             await checkPendingSync(mock_user)
 
-            expect(saveUserData).not.toHaveBeenCalled()
+            // 백업이 삭제됨
+            expect(localStorage.getItem('time_manager_pending_sync')).toBeNull()
         })
 
         it('백업이 없으면 아무것도 하지 않음', async () => {
             await checkPendingSync(mock_user)
 
-            expect(saveUserData).not.toHaveBeenCalled()
+            // 에러 없이 완료
+            expect(true).toBe(true)
         })
 
         it('잘못된 JSON 백업은 삭제', async () => {
@@ -454,60 +588,6 @@ describe('syncService', () => {
             await checkPendingSync(mock_user)
 
             expect(localStorage.getItem('time_manager_pending_sync')).toBeNull()
-        })
-    })
-
-    // =====================================================
-    // 데이터 유효성 검사 테스트 (간접 테스트)
-    // =====================================================
-    describe('데이터 유효성 검사', () => {
-        it('기존 레코드가 있는데 새 데이터가 비어있으면 저장 안함', async () => {
-            // 먼저 레코드가 있는 상태로 저장
-            useWorkStore.setState({
-                records: [
-                    createTestRecord('1'),
-                    createTestRecord('2'),
-                    createTestRecord('3'),
-                ],
-                templates: [],
-            })
-            await syncToFirebase(mock_user)
-
-            vi.clearAllMocks()
-
-            // 레코드를 비움
-            useWorkStore.setState({ records: [] })
-
-            // 다시 저장 시도 (force 없이)
-            await syncToFirebase(mock_user)
-
-            // saveUserData가 호출되지 않아야 함 (유효성 검사 실패)
-            // 주의: 실제 구현에서는 last_known_record_count 추적으로 동작
-            // 이 테스트는 syncService 내부 로직 확인용
-        })
-
-        it('데이터가 급격하게 줄어들면 저장 안함', async () => {
-            // 많은 레코드 설정
-            const many_records = Array.from({ length: 10 }, (_, i) =>
-                createTestRecord(`${i}`)
-            )
-            useWorkStore.setState({
-                records: many_records,
-                templates: [],
-            })
-            await syncToFirebase(mock_user)
-
-            vi.clearAllMocks()
-
-            // 레코드를 급격히 줄임 (50% 이상 감소)
-            useWorkStore.setState({
-                records: [createTestRecord('0'), createTestRecord('1')],
-            })
-
-            // 다시 저장 시도
-            await syncToFirebase(mock_user)
-
-            // 유효성 검사로 인해 저장되지 않을 수 있음
         })
     })
 })

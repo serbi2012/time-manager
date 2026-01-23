@@ -33,6 +33,8 @@ import {
     MergeCellsOutlined,
     FileTextOutlined,
     DatabaseOutlined,
+    PlayCircleOutlined,
+    ClockCircleOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import dayjs from "dayjs";
@@ -269,7 +271,13 @@ function findDuplicateRecords(records: WorkRecord[]): DuplicateGroup[] {
     return duplicates.sort((a, b) => b.records.length - a.records.length);
 }
 
-type ViewMode = "all" | "conflicts" | "problems" | "time_search" | "invisible";
+type ViewMode =
+    | "all"
+    | "conflicts"
+    | "problems"
+    | "time_search"
+    | "invisible"
+    | "running";
 type AdminTab = "sessions" | "records";
 
 function AdminSessionGridContent() {
@@ -378,6 +386,34 @@ function AdminSessionGridContent() {
         });
         return ids;
     }, [allSessions]);
+
+    // 진행 중인 세션 (end_time === "" 인 세션)
+    const runningSessions = useMemo(() => {
+        return allSessions.filter((s) => s.end_time === "");
+    }, [allSessions]);
+
+    const runningSessionIds = useMemo(() => {
+        return new Set(runningSessions.map((s) => s.id));
+    }, [runningSessions]);
+
+    // 중복 진행 중 세션 (같은 record_id에 2개 이상의 진행 중 세션)
+    const duplicateRunningSessions = useMemo(() => {
+        const by_record = new Map<string, typeof runningSessions>();
+        runningSessions.forEach((s) => {
+            if (!by_record.has(s.record_id)) {
+                by_record.set(s.record_id, []);
+            }
+            by_record.get(s.record_id)!.push(s);
+        });
+        return Array.from(by_record.entries())
+            .filter(([, sessions]) => sessions.length >= 2)
+            .map(([record_id, sessions]) => ({
+                record_id,
+                work_name: sessions[0].work_name,
+                deal_name: sessions[0].deal_name,
+                sessions,
+            }));
+    }, [runningSessions]);
 
     // 특정 시간에 걸쳐있는 세션 찾기
     const timeSearchResults = useMemo(() => {
@@ -541,6 +577,8 @@ function AdminSessionGridContent() {
             result = result.filter((s) => problemSessionIds.has(s.id));
         } else if (view_mode === "invisible") {
             result = result.filter((s) => invisibleSessionIds.has(s.id));
+        } else if (view_mode === "running") {
+            result = result.filter((s) => runningSessionIds.has(s.id));
         } else if (view_mode === "time_search") {
             // 시간 검색 모드: 검색 조건이 있을 때만 필터링
             if (search_date && search_time) {
@@ -560,6 +598,7 @@ function AdminSessionGridContent() {
         conflictSessionIds,
         problemSessionIds,
         invisibleSessionIds,
+        runningSessionIds,
         timeSearchResults,
         search_date,
         search_time,
@@ -587,12 +626,32 @@ function AdminSessionGridContent() {
         },
         {
             title: "시간",
-            width: 130,
-            render: (_, record) => (
-                <Text style={{ whiteSpace: "nowrap", fontFamily: "monospace" }}>
-                    {record.start_time} ~ {record.end_time}
-                </Text>
-            ),
+            width: 150,
+            render: (_, record) =>
+                record.end_time === "" ? (
+                    <Space size={4}>
+                        <Text
+                            style={{
+                                whiteSpace: "nowrap",
+                                fontFamily: "monospace",
+                            }}
+                        >
+                            {record.start_time} ~
+                        </Text>
+                        <Tag color="green" icon={<PlayCircleOutlined />}>
+                            진행중
+                        </Tag>
+                    </Space>
+                ) : (
+                    <Text
+                        style={{
+                            whiteSpace: "nowrap",
+                            fontFamily: "monospace",
+                        }}
+                    >
+                        {record.start_time} ~ {record.end_time}
+                    </Text>
+                ),
             sorter: (a, b) => a.start_time.localeCompare(b.start_time),
         },
         {
@@ -1076,6 +1135,16 @@ function AdminSessionGridContent() {
                                         {
                                             label: (
                                                 <Space size={4}>
+                                                    <PlayCircleOutlined />
+                                                    진행중 (
+                                                    {runningSessionIds.size})
+                                                </Space>
+                                            ),
+                                            value: "running",
+                                        },
+                                        {
+                                            label: (
+                                                <Space size={4}>
                                                     <WarningOutlined />
                                                     충돌 (
                                                     {conflictSessionIds.size})
@@ -1338,7 +1407,149 @@ function AdminSessionGridContent() {
                                             {invisibleSessionIds.size}개
                                         </Title>
                                     </Card>
+                                    <Card
+                                        size="small"
+                                        style={{
+                                            minWidth: 150,
+                                            borderColor:
+                                                runningSessionIds.size > 0
+                                                    ? "#52c41a"
+                                                    : undefined,
+                                        }}
+                                    >
+                                        <Text type="secondary">
+                                            <PlayCircleOutlined /> 진행 중
+                                        </Text>
+                                        <Title
+                                            level={4}
+                                            style={{
+                                                margin: 0,
+                                                color:
+                                                    runningSessionIds.size > 0
+                                                        ? "#52c41a"
+                                                        : undefined,
+                                            }}
+                                        >
+                                            {runningSessionIds.size}개
+                                        </Title>
+                                    </Card>
                                 </div>
+
+                                {/* 진행 중 세션 상세 정보 */}
+                                {view_mode === "running" &&
+                                    runningSessionIds.size > 0 && (
+                                        <Card
+                                            size="small"
+                                            style={{
+                                                background: "#f6ffed",
+                                                borderColor: "#b7eb8f",
+                                            }}
+                                        >
+                                            <Space
+                                                direction="vertical"
+                                                size="small"
+                                                style={{ width: "100%" }}
+                                            >
+                                                <Text
+                                                    strong
+                                                    style={{ color: "#389e0d" }}
+                                                >
+                                                    <PlayCircleOutlined /> 진행
+                                                    중 세션 현황
+                                                </Text>
+                                                <Text
+                                                    type="secondary"
+                                                    style={{ fontSize: 12 }}
+                                                >
+                                                    종료 시간이
+                                                    비어있는(end_time === "")
+                                                    세션입니다. 타이머가 실행
+                                                    중이거나 비정상 종료된
+                                                    세션일 수 있습니다.
+                                                </Text>
+                                                {duplicateRunningSessions.length >
+                                                    0 && (
+                                                    <Alert
+                                                        type="error"
+                                                        showIcon
+                                                        message={
+                                                            <span>
+                                                                <ExclamationCircleOutlined />{" "}
+                                                                중복 진행 중
+                                                                세션 발견:{" "}
+                                                                {
+                                                                    duplicateRunningSessions.length
+                                                                }
+                                                                개 레코드
+                                                            </span>
+                                                        }
+                                                        description={
+                                                            <Space
+                                                                direction="vertical"
+                                                                size="small"
+                                                            >
+                                                                {duplicateRunningSessions.map(
+                                                                    (dup) => (
+                                                                        <Text
+                                                                            key={
+                                                                                dup.record_id
+                                                                            }
+                                                                            style={{
+                                                                                fontSize: 12,
+                                                                            }}
+                                                                        >
+                                                                            <WarningOutlined
+                                                                                style={{
+                                                                                    color: "#ff4d4f",
+                                                                                }}
+                                                                            />{" "}
+                                                                            "
+                                                                            {
+                                                                                dup.work_name
+                                                                            }{" "}
+                                                                            &gt;{" "}
+                                                                            {
+                                                                                dup.deal_name
+                                                                            }
+                                                                            " -{" "}
+                                                                            {
+                                                                                dup
+                                                                                    .sessions
+                                                                                    .length
+                                                                            }
+                                                                            개의
+                                                                            진행
+                                                                            중
+                                                                            세션
+                                                                        </Text>
+                                                                    )
+                                                                )}
+                                                            </Space>
+                                                        }
+                                                    />
+                                                )}
+                                                <Space wrap>
+                                                    {runningSessions.map(
+                                                        (s) => (
+                                                            <Tag
+                                                                key={s.id}
+                                                                color="green"
+                                                                icon={
+                                                                    <ClockCircleOutlined />
+                                                                }
+                                                            >
+                                                                {s.work_name}{" "}
+                                                                &gt;{" "}
+                                                                {s.deal_name} (
+                                                                {s.date}{" "}
+                                                                {s.start_time}~)
+                                                            </Tag>
+                                                        )
+                                                    )}
+                                                </Space>
+                                            </Space>
+                                        </Card>
+                                    )}
 
                                 {/* 문제 세션 상세 통계 */}
                                 {problemSessionIds.size > 0 && (

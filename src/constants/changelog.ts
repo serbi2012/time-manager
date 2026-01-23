@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "1.3.8";
+export const CURRENT_VERSION = "2.0.0";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,38 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.0",
+        date: "2026-01-23",
+        title: "동기화 시스템 전면 개편",
+        changes: [
+            {
+                type: "breaking",
+                description:
+                    "Firestore 데이터 구조 변경 - 서브컬렉션 기반으로 전환 (보안 규칙 업데이트 필요)",
+            },
+            {
+                type: "feature",
+                description:
+                    "기존 사용자 자동 마이그레이션 - 앱 시작 시 새 구조로 자동 변환",
+            },
+            {
+                type: "improvement",
+                description:
+                    "부분 업데이트 방식 도입 - 변경된 데이터만 저장하여 동기화 안정성 대폭 개선",
+            },
+            {
+                type: "improvement",
+                description:
+                    "실시간 동기화 제거 - 수동 새로고침 방식으로 변경하여 다중 기기 충돌 방지",
+            },
+            {
+                type: "fix",
+                description:
+                    "진행 중 세션 중복 생성 문제 해결 - 부분 업데이트로 데이터 덮어쓰기 방지",
+            },
+        ],
+    },
     {
         version: "1.3.8",
         date: "2026-01-23",

@@ -8,6 +8,13 @@ import type {
     WorkTemplate,
     WorkSession,
 } from "../types";
+import {
+    syncRecord,
+    syncDeleteRecord,
+    syncTemplate,
+    syncDeleteTemplate,
+    syncSettings,
+} from "../firebase/syncService";
 
 // 점심시간 상수 (11:40 ~ 12:40)
 const LUNCH_START_MINUTES = 11 * 60 + 40; // 700분 (11:40)
@@ -505,6 +512,11 @@ export const useWorkStore = create<WorkStore>()(
                         : r
                 ),
             }));
+            // Firebase에 업데이트
+            const updated_record = get().records.find((r) => r.id === existing_record.id);
+            if (updated_record) {
+                syncRecord(updated_record).catch(console.error);
+            }
         } else {
             // 새 레코드 생성
             active_record_id = crypto.randomUUID();
@@ -523,6 +535,8 @@ export const useWorkStore = create<WorkStore>()(
             set((state) => ({
                 records: [...state.records, new_record],
             }));
+            // Firebase에 저장
+            syncRecord(new_record).catch(console.error);
         }
 
         // 타이머 상태 업데이트
@@ -536,6 +550,8 @@ export const useWorkStore = create<WorkStore>()(
                 active_session_id: active_session_id,
             },
         });
+        // 타이머 상태도 Firebase에 저장
+        syncSettings({ timer: get().timer }).catch(console.error);
     },
 
     stopTimer: () => {
@@ -585,6 +601,13 @@ export const useWorkStore = create<WorkStore>()(
                     form_data: DEFAULT_FORM_DATA,
                 }));
 
+                // Firebase에 업데이트
+                const updated_record = get().records.find((r) => r.id === existing_record.id);
+                if (updated_record) {
+                    syncRecord(updated_record).catch(console.error);
+                }
+                syncSettings({ timer: DEFAULT_TIMER }).catch(console.error);
+
                 return { ...existing_record, duration_minutes: total_minutes };
             } else {
                 const new_record: WorkRecord = {
@@ -604,6 +627,10 @@ export const useWorkStore = create<WorkStore>()(
                     timer: DEFAULT_TIMER,
                     form_data: DEFAULT_FORM_DATA,
                 }));
+
+                // Firebase에 저장
+                syncRecord(new_record).catch(console.error);
+                syncSettings({ timer: DEFAULT_TIMER }).catch(console.error);
 
                 return new_record;
             }
@@ -660,6 +687,13 @@ export const useWorkStore = create<WorkStore>()(
             form_data: DEFAULT_FORM_DATA,
         }));
 
+        // Firebase에 업데이트
+        const final_record = get().records.find((r) => r.id === active_record_id);
+        if (final_record) {
+            syncRecord(final_record).catch(console.error);
+        }
+        syncSettings({ timer: DEFAULT_TIMER }).catch(console.error);
+
         return { ...record, duration_minutes: total_minutes };
     },
 
@@ -712,6 +746,12 @@ export const useWorkStore = create<WorkStore>()(
                                 : r
                         ),
                     }));
+
+                    // Firebase에 업데이트
+                    const updated_record = get().records.find((r) => r.id === active_record_id);
+                    if (updated_record) {
+                        syncRecord(updated_record).catch(console.error);
+                    }
                 }
             } else {
                 // 이전 버전 호환: active_record_id/session_id가 없는 경우
@@ -748,6 +788,12 @@ export const useWorkStore = create<WorkStore>()(
                                 : r
                         ),
                     }));
+
+                    // Firebase에 업데이트
+                    const updated_record = get().records.find((r) => r.id === existing_record.id);
+                    if (updated_record) {
+                        syncRecord(updated_record).catch(console.error);
+                    }
                 } else {
                     const new_record: WorkRecord = {
                         id: crypto.randomUUID(),
@@ -765,6 +811,9 @@ export const useWorkStore = create<WorkStore>()(
                     set((state) => ({
                         records: [...state.records, new_record],
                     }));
+
+                    // Firebase에 저장
+                    syncRecord(new_record).catch(console.error);
                 }
             }
         }
@@ -821,6 +870,11 @@ export const useWorkStore = create<WorkStore>()(
                         : r
                 ),
             }));
+            // Firebase에 업데이트
+            const updated_record = get().records.find((r) => r.id === existing_record.id);
+            if (updated_record) {
+                syncRecord(updated_record).catch(console.error);
+            }
         } else {
             active_record_id = crypto.randomUUID();
             const new_record: WorkRecord = {
@@ -837,6 +891,8 @@ export const useWorkStore = create<WorkStore>()(
             set((state) => ({
                 records: [...state.records, new_record],
             }));
+            // Firebase에 저장
+            syncRecord(new_record).catch(console.error);
         }
 
         set({
@@ -849,6 +905,8 @@ export const useWorkStore = create<WorkStore>()(
                 active_session_id: new_session.id,
             },
         });
+        // 타이머 상태 Firebase에 저장
+        syncSettings({ timer: get().timer }).catch(console.error);
     },
 
     // 경과 시간을 실시간으로 계산 (저장하지 않음)
@@ -874,6 +932,8 @@ export const useWorkStore = create<WorkStore>()(
                     set((state) => ({
                         records: state.records.filter((r) => r.id !== timer.active_record_id),
                     }));
+                    // Firebase에서 삭제
+                    syncDeleteRecord(timer.active_record_id).catch(console.error);
                 } else {
                     // 남은 세션으로 레코드 업데이트
                     const total_minutes = calculateTotalMinutes(remaining_sessions);
@@ -888,11 +948,18 @@ export const useWorkStore = create<WorkStore>()(
                                 : r
                         ),
                     }));
+                    // Firebase에 업데이트
+                    const updated_record = get().records.find((r) => r.id === timer.active_record_id);
+                    if (updated_record) {
+                        syncRecord(updated_record).catch(console.error);
+                    }
                 }
             }
         }
 
         set({ timer: DEFAULT_TIMER, form_data: DEFAULT_FORM_DATA });
+        // 타이머 상태 Firebase에 저장
+        syncSettings({ timer: DEFAULT_TIMER }).catch(console.error);
     },
 
     // 타이머 실행 중 active_form_data 업데이트
@@ -952,8 +1019,17 @@ export const useWorkStore = create<WorkStore>()(
                             : r
                     ),
                 }));
+
+                // Firebase에 업데이트
+                const updated_record = get().records.find((r) => r.id === timer.active_record_id);
+                if (updated_record) {
+                    syncRecord(updated_record).catch(console.error);
+                }
             }
         }
+
+        // 타이머 상태 Firebase에 저장
+        syncSettings({ timer: get().timer }).catch(console.error);
     },
 
     setFormData: (data) => {
@@ -970,12 +1046,16 @@ export const useWorkStore = create<WorkStore>()(
         set((state) => ({
             records: [...state.records, record],
         }));
+        // Firebase에 저장
+        syncRecord(record).catch(console.error);
     },
 
     deleteRecord: (id) => {
         set((state) => ({
             records: state.records.filter((r) => r.id !== id),
         }));
+        // Firebase에서 삭제
+        syncDeleteRecord(id).catch(console.error);
     },
 
     // 휴지통으로 이동 (soft delete)
@@ -991,6 +1071,11 @@ export const useWorkStore = create<WorkStore>()(
                     : r
             ),
         }));
+        // Firebase에 업데이트
+        const record = get().records.find((r) => r.id === id);
+        if (record) {
+            syncRecord(record).catch(console.error);
+        }
     },
 
     // 휴지통에서 복원
@@ -1002,6 +1087,11 @@ export const useWorkStore = create<WorkStore>()(
                     : r
             ),
         }));
+        // Firebase에 업데이트
+        const record = get().records.find((r) => r.id === id);
+        if (record) {
+            syncRecord(record).catch(console.error);
+        }
     },
 
     // 완전 삭제
@@ -1009,6 +1099,8 @@ export const useWorkStore = create<WorkStore>()(
         set((state) => ({
             records: state.records.filter((r) => r.id !== id),
         }));
+        // Firebase에서 삭제
+        syncDeleteRecord(id).catch(console.error);
     },
 
     // 삭제된 작업 목록
@@ -1022,6 +1114,11 @@ export const useWorkStore = create<WorkStore>()(
                 r.id === id ? { ...r, ...record } : r
             ),
         }));
+        // Firebase에 업데이트
+        const updated_record = get().records.find((r) => r.id === id);
+        if (updated_record) {
+            syncRecord(updated_record).catch(console.error);
+        }
     },
 
     // 세션 수정 (시간 충돌 방지 포함)
@@ -1294,6 +1391,12 @@ export const useWorkStore = create<WorkStore>()(
             ),
         }));
 
+        // Firebase에 업데이트
+        const updated_record = get().records.find((r) => r.id === record_id);
+        if (updated_record) {
+            syncRecord(updated_record).catch(console.error);
+        }
+
         return {
             success: true,
             adjusted: was_adjusted,
@@ -1318,6 +1421,8 @@ export const useWorkStore = create<WorkStore>()(
             set((state) => ({
                 records: state.records.filter((r) => r.id !== record_id),
             }));
+            // Firebase에서 삭제
+            syncDeleteRecord(record_id).catch(console.error);
             return;
         }
 
@@ -1351,6 +1456,11 @@ export const useWorkStore = create<WorkStore>()(
                     : r
             ),
         }));
+        // Firebase에 업데이트
+        const updated_record = get().records.find((r) => r.id === record_id);
+        if (updated_record) {
+            syncRecord(updated_record).catch(console.error);
+        }
     },
 
     // 템플릿 관리
@@ -1363,6 +1473,8 @@ export const useWorkStore = create<WorkStore>()(
         set((state) => ({
             templates: [...state.templates, new_template],
         }));
+        // Firebase에 저장
+        syncTemplate(new_template).catch(console.error);
         return new_template;
     },
 
@@ -1370,6 +1482,8 @@ export const useWorkStore = create<WorkStore>()(
         set((state) => ({
             templates: state.templates.filter((t) => t.id !== id),
         }));
+        // Firebase에서 삭제
+        syncDeleteTemplate(id).catch(console.error);
     },
 
     updateTemplate: (id, template) => {
@@ -1378,6 +1492,11 @@ export const useWorkStore = create<WorkStore>()(
                 t.id === id ? { ...t, ...template } : t
             ),
         }));
+        // Firebase에 업데이트
+        const updated_template = get().templates.find((t) => t.id === id);
+        if (updated_template) {
+            syncTemplate(updated_template).catch(console.error);
+        }
     },
 
     reorderTemplates: (active_id, over_id) => {
@@ -1391,6 +1510,11 @@ export const useWorkStore = create<WorkStore>()(
             new_templates.splice(new_index, 0, removed);
 
             return { templates: new_templates };
+        });
+        // 순서 변경된 템플릿들 Firebase에 저장
+        const { templates } = get();
+        templates.forEach((t) => {
+            syncTemplate(t).catch(console.error);
         });
     },
 
@@ -1474,6 +1598,11 @@ export const useWorkStore = create<WorkStore>()(
                     : r
             ),
         }));
+        // Firebase에 업데이트
+        const updated_record = get().records.find((r) => r.id === id);
+        if (updated_record) {
+            syncRecord(updated_record).catch(console.error);
+        }
     },
 
     markAsIncomplete: (id: string) => {
@@ -1484,6 +1613,11 @@ export const useWorkStore = create<WorkStore>()(
                     : r
             ),
         }));
+        // Firebase에 업데이트
+        const updated_record = get().records.find((r) => r.id === id);
+        if (updated_record) {
+            syncRecord(updated_record).catch(console.error);
+        }
     },
 
     // 자동완성 옵션 생성 (숨김 목록 필터링)
@@ -1581,6 +1715,9 @@ export const useWorkStore = create<WorkStore>()(
                 ? state.custom_task_options
                 : [...state.custom_task_options, trimmed],
         }));
+        // Firebase에 설정 저장
+        const { custom_task_options } = get();
+        syncSettings({ custom_task_options }).catch(console.error);
     },
 
     addCustomCategoryOption: (option) => {
@@ -1593,6 +1730,9 @@ export const useWorkStore = create<WorkStore>()(
                 ? state.custom_category_options
                 : [...state.custom_category_options, trimmed],
         }));
+        // Firebase에 설정 저장
+        const { custom_category_options } = get();
+        syncSettings({ custom_category_options }).catch(console.error);
     },
 
     removeCustomTaskOption: (option) => {
@@ -1601,6 +1741,9 @@ export const useWorkStore = create<WorkStore>()(
                 (o) => o !== option
             ),
         }));
+        // Firebase에 설정 저장
+        const { custom_task_options } = get();
+        syncSettings({ custom_task_options }).catch(console.error);
     },
 
     removeCustomCategoryOption: (option) => {
@@ -1609,6 +1752,9 @@ export const useWorkStore = create<WorkStore>()(
                 (o) => o !== option
             ),
         }));
+        // Firebase에 설정 저장
+        const { custom_category_options } = get();
+        syncSettings({ custom_category_options }).catch(console.error);
     },
 
     // 자동완성 옵션 숨김 처리
@@ -1624,6 +1770,9 @@ export const useWorkStore = create<WorkStore>()(
                 },
             };
         });
+        // Firebase에 설정 저장
+        const { hidden_autocomplete_options } = get();
+        syncSettings({ hidden_autocomplete_options }).catch(console.error);
     },
 
     // 자동완성 옵션 숨김 해제
@@ -1637,6 +1786,9 @@ export const useWorkStore = create<WorkStore>()(
                 },
             };
         });
+        // Firebase에 설정 저장
+        const { hidden_autocomplete_options } = get();
+        syncSettings({ hidden_autocomplete_options }).catch(console.error);
     },
 
     setUsePostfixOnPresetAdd: (value) => {
@@ -1645,6 +1797,8 @@ export const useWorkStore = create<WorkStore>()(
 
     setAppTheme: (theme) => {
         set({ app_theme: theme });
+        // Firebase에 설정 저장
+        syncSettings({ app_theme: theme }).catch(console.error);
     },
         }),
         {

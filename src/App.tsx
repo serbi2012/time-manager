@@ -52,18 +52,18 @@ import SettingsModal from "./components/SettingsModal";
 import ChangelogModal from "./components/ChangelogModal";
 import { CURRENT_VERSION } from "./constants/changelog";
 import { useWorkStore, APP_THEME_COLORS } from "./store/useWorkStore";
-import { useShortcutStore } from "./store/useShortcutStore";
 import { useAuth } from "./firebase/useAuth";
 import { useShortcuts } from "./hooks/useShortcuts";
 import {
-    syncToFirebase,
-    syncFromFirebase,
-    startRealtimeSync,
-    stopRealtimeSync,
-    syncImmediately,
+    loadFromFirebase,
+    refreshFromFirebase,
     syncBeforeUnload,
     checkPendingSync,
     autoMergeDuplicateRecords,
+    clearSyncState,
+    syncRecord,
+    syncTemplate,
+    syncSettings,
 } from "./firebase/syncService";
 import "./App.css";
 
@@ -323,20 +323,23 @@ function AppLayout() {
 
             // 먼저 미저장 백업이 있는지 확인 후 동기화
             checkPendingSync(user)
-                .then(() => syncFromFirebase(user))
-                .then(() => {
-                    // 동기화 후 중복 레코드 자동 병합
-                    const merge_result = autoMergeDuplicateRecords();
-                    if (merge_result.merged_count > 0) {
-                        message.info(
-                            `중복 레코드 ${merge_result.deleted_count}개가 자동으로 병합되었습니다`
-                        );
+                .then(() => loadFromFirebase(user))
+                .then((success) => {
+                    if (success) {
+                        // 동기화 후 중복 레코드 자동 병합
+                        const merge_result = autoMergeDuplicateRecords();
+                        if (merge_result.merged_count > 0) {
+                            message.info(
+                                `중복 레코드 ${merge_result.deleted_count}개가 자동으로 병합되었습니다`
+                            );
+                        }
+                        setSyncStatus("synced");
+                        showSyncCheckAnimation();
+                    } else {
+                        setSyncStatus("error");
+                        message.error("데이터 로드에 실패했습니다");
                     }
-
-                    setSyncStatus("synced");
                     setInitialLoadDone(true);
-                    startRealtimeSync(user);
-                    showSyncCheckAnimation();
                 })
                 .catch(() => {
                     setSyncStatus("error");
@@ -344,14 +347,10 @@ function AppLayout() {
                     message.error("데이터 동기화에 실패했습니다");
                 });
         } else {
-            stopRealtimeSync();
+            clearSyncState();
             setSyncStatus("idle");
             setInitialLoadDone(true); // 비로그인 상태도 로딩 완료
         }
-
-        return () => {
-            stopRealtimeSync();
-        };
     }, [user, showSyncCheckAnimation]);
 
     // 브라우저 종료/새로고침 시 데이터 백업
@@ -369,52 +368,24 @@ function AppLayout() {
         };
     }, [user, isAuthenticated]);
 
-    // 데이터 변경 시 Firebase에 자동 저장
-    const records = useWorkStore((state) => state.records);
-    const templates = useWorkStore((state) => state.templates);
-    const custom_task_options = useWorkStore(
-        (state) => state.custom_task_options
-    );
-    const custom_category_options = useWorkStore(
-        (state) => state.custom_category_options
-    );
-    const hidden_autocomplete_options = useWorkStore(
-        (state) => state.hidden_autocomplete_options
-    );
-    const shortcuts = useShortcutStore((state) => state.shortcuts);
+    // 앱 테마 (헤더 색상용)
     const app_theme = useWorkStore((state) => state.app_theme);
 
-    useEffect(() => {
-        if (user && isAuthenticated && sync_status === "synced") {
-            // 데이터 변경 시 즉시 저장 후 체크 애니메이션 표시
-            syncImmediately(user).then(() => {
-                showSyncCheckAnimation();
-            });
-        }
-    }, [
-        records,
-        templates,
-        custom_task_options,
-        custom_category_options,
-        hidden_autocomplete_options,
-        shortcuts,
-        app_theme,
-        user,
-        isAuthenticated,
-        sync_status,
-        showSyncCheckAnimation,
-    ]);
-
-    // 수동 동기화
+    // 수동 새로고침 (서버에서 데이터 다시 로드)
     const handleManualSync = async () => {
         if (!user) return;
 
         setIsSyncing(true);
         try {
-            await syncToFirebase(user);
-            message.success("동기화 완료");
+            const success = await refreshFromFirebase(user);
+            if (success) {
+                message.success("서버에서 데이터를 새로고침했습니다");
+                showSyncCheckAnimation();
+            } else {
+                message.error("새로고침 실패");
+            }
         } catch {
-            message.error("동기화 실패");
+            message.error("새로고침 실패");
         } finally {
             setIsSyncing(false);
         }
@@ -503,9 +474,9 @@ function AppLayout() {
     // 유저 드롭다운 메뉴
     const user_menu_items = [
         {
-            key: "sync",
+            key: "refresh",
             icon: <SyncOutlined spin={is_syncing} />,
-            label: "수동 동기화",
+            label: "서버에서 새로고침",
             onClick: handleManualSync,
         },
         {
@@ -584,18 +555,40 @@ function AppLayout() {
                     return;
                 }
 
+                const records = data.records || [];
+                const templates = data.templates || [];
+
                 // Store에 직접 데이터 설정
                 useWorkStore.setState({
-                    records: data.records || [],
-                    templates: data.templates || [],
+                    records,
+                    templates,
                     custom_task_options: data.custom_task_options || [],
                     custom_category_options: data.custom_category_options || [],
                 });
 
-                // Firebase에 동기화 (import 시 강제 저장)
+                // Firebase에 개별적으로 동기화 (import 시)
                 if (user && isAuthenticated) {
                     try {
-                        await syncToFirebase(user, { force: true });
+                        // 레코드 개별 저장
+                        await Promise.all(
+                            records.map(
+                                (record: import("./types").WorkRecord) =>
+                                    syncRecord(record)
+                            )
+                        );
+                        // 템플릿 개별 저장
+                        await Promise.all(
+                            templates.map(
+                                (template: import("./types").WorkTemplate) =>
+                                    syncTemplate(template)
+                            )
+                        );
+                        // 설정 저장
+                        await syncSettings({
+                            custom_task_options: data.custom_task_options || [],
+                            custom_category_options:
+                                data.custom_category_options || [],
+                        });
                         message.success(
                             "데이터를 가져오고 클라우드에 동기화했습니다"
                         );
