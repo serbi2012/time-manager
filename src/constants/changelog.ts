@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.2";
+export const CURRENT_VERSION = "2.0.3";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,18 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.3",
+        date: "2026-01-23",
+        title: "녹화 중 시간 조절 자동 조정",
+        changes: [
+            {
+                type: "fix",
+                description:
+                    "녹화 중인 세션의 시작 시간 조절 시 다른 세션과 충돌하면 자동 조정됨",
+            },
+        ],
+    },
     {
         version: "2.0.2",
         date: "2026-01-23",

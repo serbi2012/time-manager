@@ -884,7 +884,12 @@ export default function DailyGanttChart() {
                 .millisecond(0)
                 .valueOf();
 
-            updateTimerStartTime(new_start_timestamp);
+            const result = updateTimerStartTime(new_start_timestamp);
+            if (result.adjusted) {
+                message.info(result.message);
+            } else if (!result.success) {
+                message.error(result.message);
+            }
             setResizeState(null);
             return;
         }

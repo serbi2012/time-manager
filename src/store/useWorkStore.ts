@@ -104,7 +104,7 @@ interface WorkStore {
     resetTimer: () => void;
     switchTemplate: (template_id: string) => void;
     updateActiveFormData: (data: Partial<WorkFormData>) => void; // 타이머 실행 중 form_data 업데이트
-    updateTimerStartTime: (new_start_time: number) => void; // 타이머 시작 시간 변경 (간트차트 리사이즈용)
+    updateTimerStartTime: (new_start_time: number) => { success: boolean; adjusted: boolean; message?: string; adjusted_start_time?: number }; // 타이머 시작 시간 변경 (간트차트 리사이즈용)
 
     // 폼 액션
     setFormData: (data: Partial<WorkFormData>) => void;
@@ -1060,18 +1060,151 @@ export const useWorkStore = create<WorkStore>()(
     // 타이머 시작 시간 변경 (간트차트에서 진행 중인 작업의 시작 시간을 앞당길 때)
     updateTimerStartTime: (new_start_time) => {
         const { timer, records } = get();
-        if (!timer.is_running || !timer.start_time) return;
+        if (!timer.is_running || !timer.start_time) {
+            return { success: false, adjusted: false, message: "타이머가 실행 중이 아닙니다." };
+        }
 
         // 새 시작 시간은 현재 시간보다 미래일 수 없음
-        if (new_start_time > Date.now()) return;
+        if (new_start_time > Date.now()) {
+            return { success: false, adjusted: false, message: "시작 시간은 현재 시간보다 미래일 수 없습니다." };
+        }
 
-        const new_start_time_str = dayjs(new_start_time).format("HH:mm");
+        const new_start_dayjs = dayjs(new_start_time);
+        const timer_date = new_start_dayjs.format("YYYY-MM-DD");
+        const new_start_mins = new_start_dayjs.hour() * 60 + new_start_dayjs.minute();
+        const current_end_mins = dayjs().hour() * 60 + dayjs().minute();
+
+        // 시간 문자열을 분으로 변환 (HH:mm -> 분)
+        const timeStrToMinutes = (time: string): number => {
+            const parts = time.split(":").map(Number);
+            const h = parts[0] || 0;
+            const m = parts[1] || 0;
+            return h * 60 + m;
+        };
+
+        // 같은 날짜의 다른 세션 수집 (현재 진행 중인 세션 제외)
+        const same_day_sessions: {
+            record_id: string;
+            session_id: string;
+            start_mins: number;
+            end_mins: number;
+            work_name: string;
+            deal_name: string;
+        }[] = [];
+
+        records.forEach((r) => {
+            if (r.is_deleted) return;
+            r.sessions?.forEach((s) => {
+                const session_date = s.date || r.date;
+                // 현재 진행 중인 세션은 제외
+                if (
+                    session_date === timer_date &&
+                    !(r.id === timer.active_record_id && s.id === timer.active_session_id)
+                ) {
+                    // end_time이 없는 세션(다른 진행 중인 세션)은 현재 시간까지로 처리
+                    const end_mins = s.end_time ? timeStrToMinutes(s.end_time) : current_end_mins;
+                    same_day_sessions.push({
+                        record_id: r.id,
+                        session_id: s.id,
+                        start_mins: timeStrToMinutes(s.start_time),
+                        end_mins,
+                        work_name: r.work_name,
+                        deal_name: r.deal_name,
+                    });
+                }
+            });
+        });
+
+        // 충돌 검사 및 자동 조정
+        let was_adjusted = false;
+        let adjusted_start_mins = new_start_mins;
+
+        // 충돌 작업 정보를 포함한 메시지 생성 헬퍼
+        const formatConflictInfo = (other: typeof same_day_sessions[0]) => {
+            const name_part = other.deal_name 
+                ? `"${other.work_name} > ${other.deal_name}"` 
+                : `"${other.work_name}"`;
+            const end_time_str = `${Math.floor(other.end_mins / 60).toString().padStart(2, "0")}:${(other.end_mins % 60).toString().padStart(2, "0")}`;
+            const start_time_str = `${Math.floor(other.start_mins / 60).toString().padStart(2, "0")}:${(other.start_mins % 60).toString().padStart(2, "0")}`;
+            return `${name_part} (${start_time_str}~${end_time_str})`;
+        };
+
+        // 충돌이 있는 동안 반복적으로 조정 (최대 10회)
+        for (let iteration = 0; iteration < 10; iteration++) {
+            let has_conflict = false;
+
+            for (const other of same_day_sessions) {
+                // 진행 중인 세션의 범위: [adjusted_start_mins, current_end_mins]
+                const overlaps = !(
+                    current_end_mins <= other.start_mins ||
+                    adjusted_start_mins >= other.end_mins
+                );
+
+                if (overlaps) {
+                    has_conflict = true;
+
+                    // 진행 중인 세션이 기존 세션을 완전히 포함하는 경우
+                    if (
+                        adjusted_start_mins <= other.start_mins &&
+                        current_end_mins >= other.end_mins
+                    ) {
+                        return {
+                            success: false,
+                            adjusted: false,
+                            message: `${formatConflictInfo(other)} 작업과 시간이 완전히 겹칩니다.`,
+                        };
+                    }
+
+                    // 기존 세션이 진행 중인 세션을 완전히 포함하는 경우
+                    if (
+                        other.start_mins <= adjusted_start_mins &&
+                        other.end_mins >= current_end_mins
+                    ) {
+                        return {
+                            success: false,
+                            adjusted: false,
+                            message: `${formatConflictInfo(other)} 작업 안에 완전히 포함됩니다.`,
+                        };
+                    }
+
+                    // 시작 시간이 기존 세션 안에 있는 경우 → 시작 시간을 기존 세션 종료 시간으로 조정
+                    if (
+                        adjusted_start_mins >= other.start_mins &&
+                        adjusted_start_mins < other.end_mins
+                    ) {
+                        adjusted_start_mins = other.end_mins;
+                        was_adjusted = true;
+                    }
+                }
+            }
+
+            if (!has_conflict) break;
+        }
+
+        // 조정 후 유효성 검사
+        if (adjusted_start_mins >= current_end_mins) {
+            return {
+                success: false,
+                adjusted: false,
+                message: "충돌을 피할 수 없습니다. 다른 시간을 선택하세요.",
+            };
+        }
+
+        // 조정된 시작 시간 타임스탬프 계산
+        const adjusted_start_time = dayjs(new_start_time)
+            .hour(Math.floor(adjusted_start_mins / 60))
+            .minute(adjusted_start_mins % 60)
+            .second(0)
+            .millisecond(0)
+            .valueOf();
+
+        const adjusted_start_time_str = `${Math.floor(adjusted_start_mins / 60).toString().padStart(2, "0")}:${(adjusted_start_mins % 60).toString().padStart(2, "0")}`;
 
         // 타이머 상태 업데이트
         set((state) => ({
             timer: {
                 ...state.timer,
-                start_time: new_start_time,
+                start_time: adjusted_start_time,
             },
         }));
 
@@ -1081,7 +1214,7 @@ export const useWorkStore = create<WorkStore>()(
             if (record) {
                 const updated_sessions = record.sessions.map((s) =>
                     s.id === timer.active_session_id
-                        ? { ...s, start_time: new_start_time_str }
+                        ? { ...s, start_time: adjusted_start_time_str }
                         : s
                 );
 
@@ -1112,6 +1245,13 @@ export const useWorkStore = create<WorkStore>()(
 
         // 타이머 상태 Firebase에 저장
         syncSettings({ timer: get().timer }).catch(console.error);
+
+        return {
+            success: true,
+            adjusted: was_adjusted,
+            message: was_adjusted ? "시간 충돌로 인해 자동 조정되었습니다." : undefined,
+            adjusted_start_time: was_adjusted ? adjusted_start_time : undefined,
+        };
     },
 
     setFormData: (data) => {
