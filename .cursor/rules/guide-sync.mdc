@@ -26,15 +26,15 @@ src/docs/
 
 ## 문서-기능 매핑
 
-| 기능 영역                   | 관련 문서            | 관련 컴포넌트                                |
-| --------------------------- | -------------------- | -------------------------------------------- |
-| 작업 기록, 타이머, 간트차트 | `daily-record.md`    | `WorkRecordTable.tsx`, `DailyGanttChart.tsx` |
-| 작업 프리셋                 | `work-preset.md`     | `WorkTemplateList.tsx`                       |
-| 주간 일정, 복사 기능        | `weekly-schedule.md` | `WeeklySchedule.tsx`                         |
-| 건의사항 게시판             | `suggestions.md`     | `SuggestionBoard.tsx`                        |
-| 설정, 데이터 관리, 동기화   | `settings.md`        | `SettingsModal.tsx`                          |
-| 키보드 단축키               | `shortcuts.md`       | `useShortcuts.ts`, `useShortcutStore.ts`     |
-| 로그인, 앱 개요             | `getting-started.md` | `App.tsx`, `useAuth.ts`                      |
+| 기능 영역                   | 관련 문서            | 관련 컴포넌트/모듈                                                     |
+| --------------------------- | -------------------- | ---------------------------------------------------------------------- |
+| 작업 기록, 타이머, 간트차트 | `daily-record.md`    | `components/WorkRecordTable.tsx`, `features/gantt-chart/`              |
+| 작업 프리셋                 | `work-preset.md`     | `components/WorkTemplateList.tsx`, `features/work-template/`           |
+| 주간 일정, 복사 기능        | `weekly-schedule.md` | `components/WeeklySchedule.tsx`, `features/weekly-schedule/`           |
+| 건의사항 게시판             | `suggestions.md`     | `components/SuggestionBoard.tsx`                                       |
+| 설정, 데이터 관리, 동기화   | `settings.md`        | `components/SettingsModal.tsx`, `features/settings/ui/tabs/`           |
+| 키보드 단축키               | `shortcuts.md`       | `hooks/useShortcuts.ts`, `store/useShortcutStore.ts`                   |
+| 로그인, 앱 개요             | `getting-started.md` | `app/App.tsx`, `app/layouts/`, `firebase/useAuth.ts`                   |
 
 ## 변경 유형별 문서 업데이트
 

@@ -18,11 +18,14 @@ src/components/guide/DemoComponents.tsx
 
 ## 동기화 대상 컴포넌트
 
-| 실제 컴포넌트          | 데모 컴포넌트          |
-| ---------------------- | ---------------------- |
-| `WorkRecordTable.tsx`  | `DemoWorkRecordTable`  |
-| `WorkTemplateList.tsx` | `DemoWorkTemplateList` |
-| `DailyGanttChart.tsx`  | `DemoDailyGanttChart`  |
+| 실제 컴포넌트                           | 데모 컴포넌트          |
+| --------------------------------------- | ---------------------- |
+| `components/WorkRecordTable.tsx`        | `DemoWorkRecordTable`  |
+| `components/WorkTemplateList.tsx`       | `DemoWorkTemplateList` |
+| `components/DailyGanttChart.tsx`        | `DemoDailyGanttChart`  |
+
+> **Note**: `features/` 폴더의 UI 컴포넌트들은 기존 컴포넌트에서 분리된 것으로, 
+> 데모는 기존 통합 컴포넌트 기준으로 유지합니다.
 
 ## 변경 시 체크리스트
 

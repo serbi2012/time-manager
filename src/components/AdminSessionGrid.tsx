@@ -41,6 +41,7 @@ import dayjs from "dayjs";
 import { useWorkStore } from "../store/useWorkStore";
 import { useAuth } from "../firebase/useAuth";
 import type { WorkRecord, WorkSession } from "../types";
+import { timeToMinutes } from "../shared/lib/time";
 
 const { Content } = Layout;
 const { Text, Title } = Typography;
@@ -74,11 +75,6 @@ interface ConflictInfo {
     session1: SessionWithMeta;
     session2: SessionWithMeta;
     overlap_minutes: number;
-}
-
-function timeToMinutes(time: string): number {
-    const parts = time.split(":").map(Number);
-    return (parts[0] || 0) * 60 + (parts[1] || 0);
 }
 
 // 세션의 문제를 감지하는 함수

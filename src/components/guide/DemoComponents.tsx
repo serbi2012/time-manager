@@ -786,6 +786,7 @@ export function DemoShortcutsTable() {
 // 데모 컴포넌트 레지스트리
 // ============================================
 
+// eslint-disable-next-line react-refresh/only-export-components -- 데모 레지스트리
 export const DEMO_COMPONENTS: Record<string, React.ComponentType> = {
     WorkRecordTable: DemoWorkRecordTable,
     WorkTemplateList: DemoWorkTemplateList,

@@ -45,13 +45,14 @@ pnpm build
 
 **테스트 파일 위치:**
 
-| 대상                  | 테스트 파일                           |
-| --------------------- | ------------------------------------- |
-| 스토어 (useWorkStore) | `src/test/store/useWorkStore.test.ts` |
-| 컴포넌트              | `src/test/components/*.test.ts(x)`    |
-| 유틸리티 함수         | `src/test/utils/*.test.ts`            |
-| Firebase 관련         | `src/test/firebase/*.test.ts`         |
-| 훅                    | `src/test/hooks/*.test.ts`            |
+| 대상                        | 테스트 파일                                  |
+| --------------------------- | -------------------------------------------- |
+| 공유 라이브러리 (순수 함수) | `src/test/unit/shared/lib/**/*.test.ts`      |
+| 기능별 순수 함수            | `src/test/unit/features/*/lib/*.test.ts`     |
+| 기능별 UI 컴포넌트          | `src/test/component/features/*/*.test.tsx`   |
+| 기존 컴포넌트               | `src/test/components/*.test.tsx`             |
+| 스토어 (useWorkStore)       | `src/test/store/useWorkStore.test.ts`        |
+| 테스트 헬퍼                 | `src/test/helpers/mock_factory.ts`           |
 
 **테스트 작성 후:**
 

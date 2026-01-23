@@ -20,9 +20,7 @@ alwaysApply: false
 -   **주간 일정**: 주간 작업 조회 및 복사 형식 제공, 관리업무 필터
 -   **게스트 모드**: 로그인 없이 LocalStorage 기반으로 데이터 저장/사용 가능
 -   **클라우드 동기화**: Firebase를 통한 실시간 데이터 동기화 (로그인 시)
--   **다중 탭/기기 동기화**: Firebase Realtime Sync로 여러 브라우저/기기 간 상태 동기화
--   **단축키 지원**: 다양한 키보드 단축키로 빠른 조작
--   **자동완성 옵션 관리**: 설정에서 자동완성 항목 숨김/표시 관리
+-   **반응형 UI**: 데스크탑/모바일 완전 분리된 UI 제공
 
 ---
 
@@ -48,676 +46,300 @@ alwaysApply: false
 ### UI Components
 
 -   **Ant Design 6** - UI 컴포넌트 라이브러리
--   **@ant-design/icons** - 아이콘
-
-### Drag & Drop
-
--   **@dnd-kit/core** - 드래그앤드롭 코어
--   **@dnd-kit/sortable** - 정렬 가능한 리스트
-
-### Routing
-
--   **React Router DOM 7** - 클라이언트 사이드 라우팅
-
-### Date/Time
-
--   **dayjs** - 날짜/시간 처리
 
 ### Testing
 
 -   **Vitest** - 테스트 프레임워크
 -   **@testing-library/react** - React 테스트 유틸리티
--   **happy-dom** - DOM 시뮬레이션
-
-### Deployment
-
--   **Vercel** - 자동 배포 (GitHub 연동)
--   **GitHub** - 소스 코드 저장소
 
 ---
 
-## 프로젝트 구조
+## 프로젝트 구조 (Feature-Slice Design)
 
 ```
 src/
-├── App.tsx                    # 메인 앱 컴포넌트, 라우팅 설정, Firebase 동기화
-├── App.css                    # 전역 스타일
-├── main.tsx                   # 앱 진입점
-├── index.css                  # 기본 CSS
-├── components/
-│   ├── WorkRecordTable.tsx    # 작업 기록 테이블 (메인) ~2168줄
-│   ├── WorkTemplateList.tsx   # 작업 프리셋 목록 ~872줄
-│   ├── DailyGanttChart.tsx    # 일간 간트차트 ~1671줄
-│   ├── WeeklySchedule.tsx     # 주간 일정 페이지 ~551줄
-│   └── SettingsModal.tsx      # 설정 모달 ~600줄
-├── constants/
-│   └── changelog.ts           # 변경 이력
-├── firebase/
-│   ├── config.ts              # Firebase 초기화 설정
-│   ├── firestore.ts           # Firestore CRUD 함수
-│   ├── syncService.ts         # 동기화 서비스 (로컬 ↔ Firebase)
-│   └── useAuth.ts             # 인증 훅 (Google 로그인)
-├── hooks/
-│   └── useShortcuts.ts        # 단축키 훅
-├── store/
-│   ├── useWorkStore.ts        # 작업 관련 Zustand 상태 관리
-│   └── useShortcutStore.ts    # 단축키 설정 Zustand 상태 관리
-├── types/
-│   └── index.ts               # TypeScript 타입 정의
-├── utils/
-│   ├── shortcut_events.ts     # 단축키 이벤트 유틸
-│   └── time_utils.ts          # 시간 관련 유틸
-└── test/                      # 테스트 파일들
-    ├── setup.ts
-    ├── components/
-    ├── firebase/
-    ├── hooks/
-    ├── store/
-    └── utils/
+├── app/                              # 앱 진입점 및 설정
+│   ├── App.tsx                       # 루트 컴포넌트 (Provider + Router)
+│   ├── providers/                    # 전역 Provider
+│   │   └── ThemeProvider.tsx         # Ant Design 테마 설정
+│   └── layouts/                      # 플랫폼별 레이아웃
+│       ├── DesktopLayout.tsx         # 데스크탑 전용 레이아웃
+│       └── MobileLayout.tsx          # 모바일 전용 레이아웃
+│
+├── pages/                            # 페이지 컴포넌트
+│   ├── DailyPage/                    # 일간 페이지
+│   │   ├── index.tsx                 # 플랫폼 스위칭
+│   │   ├── DesktopDailyPage.tsx      # 데스크탑 일간 페이지
+│   │   └── MobileDailyPage.tsx       # 모바일 일간 페이지
+│   └── WeeklyPage.tsx                # 주간 페이지
+│
+├── widgets/                          # 조합 위젯 (레이아웃 블록)
+│   ├── Header/                       # 헤더 위젯
+│   │   ├── DesktopHeader.tsx         # 데스크탑 헤더
+│   │   ├── MobileHeader.tsx          # 모바일 헤더
+│   │   ├── HeaderContent.tsx         # 공통 로고/타이틀
+│   │   └── UserMenu.tsx              # 사용자 메뉴
+│   │
+│   ├── Navigation/                   # 네비게이션 위젯
+│   │   ├── DesktopSidebar.tsx        # 데스크탑 사이드바
+│   │   ├── MobileBottomNav.tsx       # 모바일 하단 네비게이션
+│   │   └── MobilePresetDrawer.tsx    # 모바일 프리셋 드로어
+│   │
+│   └── SyncStatus/                   # 동기화 상태 위젯
+│       └── SyncIndicator.tsx         # 동기화 인디케이터
+│
+├── features/                         # 기능별 모듈 (핵심!)
+│   ├── timer/                        # 타이머 기능
+│   │   └── model/types.ts            # TimerSlice 타입
+│   │
+│   ├── work-record/                  # 작업 기록 기능
+│   │   ├── model/types.ts            # RecordSlice 타입
+│   │   ├── lib/                      # 순수 함수
+│   │   │   ├── conflict_detector.ts  # 시간 충돌 감지
+│   │   │   ├── record_merger.ts      # 레코드 병합
+│   │   │   └── duration_calculator.ts # 시간 계산
+│   │   └── ui/                       # UI 컴포넌트
+│   │       ├── SessionEditor/        # 세션 편집
+│   │       ├── RecordTable/          # 레코드 테이블 헤더/액션
+│   │       ├── CompletedRecords/     # 완료/휴지통 모달
+│   │       └── MobileRecordCard/     # 모바일 레코드 카드
+│   │
+│   ├── work-template/                # 작업 프리셋 기능
+│   │   ├── model/types.ts            # TemplateSlice 타입
+│   │   └── ui/                       # UI 컴포넌트
+│   │       ├── TemplateCard.tsx      # 템플릿 카드
+│   │       └── ColorPicker.tsx       # 색상 선택기
+│   │
+│   ├── gantt-chart/                  # 간트 차트 기능
+│   │   ├── lib/                      # 순수 함수
+│   │   │   ├── slot_calculator.ts    # 슬롯 계산
+│   │   │   └── drag_handler.ts       # 드래그 핸들러
+│   │   └── ui/                       # UI 컴포넌트
+│   │       ├── GanttChart/           # 간트 차트 구성요소
+│   │       └── ResizeHandle/         # 리사이즈 핸들
+│   │
+│   ├── weekly-schedule/              # 주간 일정 기능
+│   │   ├── lib/copy_formatter.ts     # 복사 포맷터
+│   │   └── ui/                       # UI 컴포넌트
+│   │       ├── DayColumn.tsx         # 요일 컬럼
+│   │       └── CopyFormatSelector.tsx # 복사 형식 선택
+│   │
+│   ├── settings/                     # 설정 기능
+│   │   ├── model/types.ts            # 설정 관련 타입
+│   │   └── ui/tabs/                  # 설정 탭 컴포넌트
+│   │       ├── DataTab.tsx           # 데이터 관리
+│   │       ├── ThemeTab.tsx          # 테마 설정
+│   │       ├── ShortcutsTab.tsx      # 단축키 설정
+│   │       └── AutoCompleteTab.tsx   # 자동완성 설정
+│   │
+│   ├── admin/                        # 관리자 기능
+│   │   ├── lib/                      # 순수 함수
+│   │   │   ├── problem_detector.ts   # 문제 세션 감지
+│   │   │   └── conflict_finder.ts    # 충돌 탐지
+│   │   └── ui/                       # UI 컴포넌트
+│   │       ├── AdminDashboard/       # 관리자 대시보드
+│   │       ├── SessionsTab/          # 세션 탭 (충돌/문제)
+│   │       └── RecordsTab/           # 레코드 탭 (중복)
+│   │
+│   └── sync/                         # 동기화 기능
+│       └── hooks/useSyncStatus.ts    # 동기화 상태 훅
+│
+├── shared/                           # 공유 리소스
+│   ├── lib/                          # 순수 유틸리티
+│   │   ├── time/                     # 시간 관련
+│   │   │   ├── calculators.ts        # timeToMinutes, minutesToTime
+│   │   │   ├── formatters.ts         # formatDuration, formatTimer
+│   │   │   └── validators.ts         # isValidTimeFormat
+│   │   ├── lunch/                    # 점심시간 계산
+│   │   │   └── lunch_calculator.ts
+│   │   └── session/                  # 세션 유틸
+│   │       └── session_utils.ts
+│   │
+│   ├── types/                        # 공유 타입 정의
+│   │   ├── domain.ts                 # WorkRecord, WorkSession, WorkTemplate
+│   │   ├── timer.ts                  # TimerState
+│   │   ├── shortcut.ts               # ShortcutDefinition
+│   │   └── suggestion.ts             # 건의사항 타입
+│   │
+│   ├── config/                       # 상수 및 설정
+│   │   ├── constants.ts              # DEFAULT_TASK_OPTIONS 등
+│   │   └── theme.ts                  # AppTheme, APP_THEME_COLORS
+│   │
+│   ├── ui/                           # 공유 UI 컴포넌트
+│   │   ├── TimeInput.tsx
+│   │   ├── DateInput.tsx
+│   │   ├── CategoryTag.tsx
+│   │   ├── DurationDisplay.tsx
+│   │   └── TimerDisplay.tsx
+│   │
+│   └── hooks/                        # 공유 훅
+│       └── useResponsive.ts          # 반응형 감지
+│
+├── components/                       # 기존 컴포넌트 (마이그레이션 대상)
+├── store/                            # Zustand 스토어
+├── firebase/                         # Firebase 연동
+│
+└── test/                             # 테스트
+    ├── unit/                         # 순수 함수 유닛 테스트
+    │   ├── shared/lib/               # 공유 라이브러리 테스트
+    │   └── features/*/lib/           # 기능별 lib 테스트
+    ├── component/                    # UI 컴포넌트 테스트
+    │   └── features/*/               # 기능별 컴포넌트 테스트
+    ├── components/                   # 기존 컴포넌트 테스트
+    └── helpers/                      # 테스트 헬퍼
+        └── mock_factory.ts           # 목 데이터 팩토리
 ```
 
 ---
 
 ## 데이터 구조 (Types)
 
-### WorkSession
+타입 정의는 `shared/types/`에서 참조:
 
-개별 작업 세션 (시작/정지 한 번의 기록)
+### WorkSession
 
 ```typescript
 interface WorkSession {
-    id: string; // 고유 ID (UUID)
-    date: string; // 날짜 (YYYY-MM-DD)
-    start_time: string; // 시작 시간 (HH:mm)
-    end_time: string; // 종료 시간 (HH:mm)
-    duration_minutes: number; // 소요 시간(분)
+    id: string;
+    date: string; // YYYY-MM-DD
+    start_time: string; // HH:mm
+    end_time: string; // HH:mm (빈 문자열이면 진행 중)
+    duration_minutes: number;
 }
 ```
 
 ### WorkRecord
 
-작업 기록 (여러 세션을 포함)
-
 ```typescript
 interface WorkRecord {
-    id: string; // 고유 ID (UUID)
-    project_code: string; // 프로젝트 코드 (예: A25_01846, 기본값: A00_00000)
-    work_name: string; // 작업명 (예: 5.6 프레임워크 FE)
-    task_name: string; // 업무명 (예: 개발, 작업, 분석)
-    deal_name: string; // 거래명/상세작업 (예: 5.6 테스트 케이스 확인)
-    category_name: string; // 카테고리명 (예: 개발, 문서작업, 회의)
-    duration_minutes: number; // 총 시간(분)
-    note: string; // 비고
-    start_time: string; // 첫 시작 시간 (HH:mm)
-    end_time: string; // 마지막 종료 시간 (HH:mm)
-    date: string; // 날짜 (YYYY-MM-DD)
-    sessions: WorkSession[]; // 세션 이력
-    is_completed: boolean; // 완료 여부
-    completed_at?: string; // 완료 시각 (ISO string)
-    is_deleted?: boolean; // 삭제 여부 (휴지통)
-    deleted_at?: string; // 삭제 시각 (ISO string)
+    id: string;
+    project_code: string;
+    work_name: string;
+    task_name: string;
+    deal_name: string;
+    category_name: string;
+    duration_minutes: number;
+    note: string;
+    start_time: string;
+    end_time: string;
+    date: string;
+    sessions: WorkSession[];
+    is_completed: boolean;
+    completed_at?: string;
+    is_deleted?: boolean;
+    deleted_at?: string;
 }
 ```
 
 ### WorkTemplate
 
-작업 프리셋/템플릿
-
 ```typescript
 interface WorkTemplate {
-    id: string; // 고유 ID (UUID)
-    project_code: string; // 프로젝트 코드
-    work_name: string; // 작업명
-    task_name: string; // 업무명
-    deal_name: string; // 거래명
-    category_name: string; // 카테고리명
-    note: string; // 비고
-    color: string; // 구분용 색상 (HEX)
-    created_at: string; // 생성 시각 (ISO string)
-}
-```
-
-### TimerState
-
-타이머 상태 (Firebase에 저장되어 새로고침/탭 간 동기화)
-
-```typescript
-interface TimerState {
-    is_running: boolean; // 실행 중 여부
-    start_time: number | null; // 시작 시각 (timestamp)
-    active_template_id: string | null; // 현재 진행 중인 템플릿 ID
-    active_form_data: WorkFormData | null; // 진행 중인 작업 정보
-}
-```
-
-### WorkFormData
-
-작업 입력 폼 데이터
-
-```typescript
-interface WorkFormData {
+    id: string;
     project_code: string;
     work_name: string;
     task_name: string;
     deal_name: string;
     category_name: string;
     note: string;
+    color: string;
+    created_at: string;
 }
 ```
 
-### ShortcutDefinition
-
-단축키 정의
+### TimerState
 
 ```typescript
-interface ShortcutDefinition {
-    id: string; // 고유 ID
-    name: string; // 단축키 이름
-    description: string; // 설명
-    keys: string; // 키 조합 (예: "Alt+N", "Ctrl+Shift+S")
-    category: "general" | "timer" | "navigation" | "data";
-    enabled: boolean; // 활성화 여부
-    action: string; // 액션 식별자
-}
-```
-
-### HiddenAutoCompleteOptions
-
-숨김 처리된 자동완성 옵션
-
-```typescript
-interface HiddenAutoCompleteOptions {
-    work_name: string[];
-    task_name: string[];
-    deal_name: string[];
-    project_code: string[];
-    task_option: string[]; // 업무명 Select 옵션
-    category_option: string[]; // 카테고리명 Select 옵션
+interface TimerState {
+    is_running: boolean;
+    start_time: number | null;
+    active_template_id: string | null;
+    active_form_data: WorkFormData | null;
+    active_record_id: string | null;
+    active_session_id: string | null;
 }
 ```
 
 ---
 
-## Zustand Store (useWorkStore)
+## 아키텍처 원칙
 
-### 상태 (State)
+### 1. 모바일/데스크탑 완전 분리
 
-```typescript
-{
-  records: WorkRecord[];           // 모든 작업 기록
-  templates: WorkTemplate[];       // 모든 작업 프리셋
-  timer: TimerState;              // 타이머 상태
-  form_data: WorkFormData;        // 현재 폼 데이터
-  selected_date: string;          // 선택된 날짜 (YYYY-MM-DD)
-  custom_task_options: string[];  // 사용자 정의 업무명 옵션
-  custom_category_options: string[]; // 사용자 정의 카테고리명 옵션
-  hidden_autocomplete_options: {  // 숨김 자동완성 옵션
-    work_name: string[];
-    task_name: string[];
-    deal_name: string[];
-    project_code: string[];
-    task_option: string[];
-    category_option: string[];
-  };
-}
+```
+App.tsx
+  ├── DesktopLayout (is_mobile === false)
+  │     ├── DesktopHeader
+  │     ├── DesktopSidebar
+  │     └── DesktopDailyPage
+  │
+  └── MobileLayout (is_mobile === true)
+        ├── MobileHeader
+        ├── MobileDailyPage
+        └── MobileBottomNav
 ```
 
-### 주요 액션 (Actions)
+-   **핵심**: 모바일 변경이 데스크탑에 영향을 주지 않음
+-   플랫폼별 독립적인 컴포넌트 트리
 
-#### 타이머
+### 2. 순수 함수 우선
 
--   `startTimer(template_id?)`: 타이머 시작
--   `stopTimer()`: 타이머 정지 및 세션 저장
--   `switchTemplate(template_id)`: 현재 작업 저장 후 새 작업으로 전환
--   `getElapsedSeconds()`: 현재 경과 시간(초) 계산
--   `resetTimer()`: 타이머 초기화
--   `updateActiveFormData(data)`: 타이머 실행 중 작업 정보 업데이트
+-   모든 계산 로직은 `lib/` 폴더에 순수 함수로 분리
+-   부수 효과(Firebase, Store 업데이트)는 `model/` 또는 `api/`에서만
 
-#### 레코드
+### 3. 단방향 의존성
 
--   `addRecord(record)`: 작업 기록 추가
--   `updateRecord(id, data)`: 작업 기록 수정
--   `deleteRecord(id)`: 작업 기록 삭제 (완전 삭제)
--   `softDeleteRecord(id)`: 휴지통으로 이동
--   `restoreRecord(id)`: 휴지통에서 복원
--   `permanentlyDeleteRecord(id)`: 완전 삭제
--   `getDeletedRecords()`: 삭제된 작업 목록
--   `markAsCompleted(id)`: 작업 완료 처리
--   `markAsIncomplete(id)`: 완료 취소
-
-#### 세션
-
--   `updateSession(record_id, session_id, start, end, date?)`: 세션 시간/날짜 수정 (충돌 자동 조정)
--   `deleteSession(record_id, session_id)`: 세션 삭제
-
-#### 템플릿
-
--   `addTemplate(template)`: 프리셋 추가
--   `updateTemplate(id, data)`: 프리셋 수정
--   `deleteTemplate(id)`: 프리셋 삭제
--   `reorderTemplates(active_id, over_id)`: 프리셋 순서 변경
--   `applyTemplate(template_id)`: 폼에 템플릿 적용
-
-#### 필터링
-
--   `getFilteredRecords()`: 선택 날짜의 레코드 조회
--   `getIncompleteRecords()`: 미완료 작업 조회 (과거 미완료 포함)
--   `getCompletedRecords()`: 완료된 작업 조회
-
-#### 자동완성
-
--   `getAutoCompleteOptions(field)`: 필드별 자동완성 옵션
--   `getProjectCodeOptions()`: 프로젝트 코드 자동완성 (work_name 포함)
--   `addCustomTaskOption(option)`: 사용자 정의 업무명 추가
--   `addCustomCategoryOption(option)`: 사용자 정의 카테고리명 추가
--   `removeCustomTaskOption(option)`: 사용자 정의 업무명 제거
--   `removeCustomCategoryOption(option)`: 사용자 정의 카테고리명 제거
--   `hideAutoCompleteOption(field, value)`: 자동완성 옵션 숨김
--   `showAutoCompleteOption(field, value)`: 자동완성 옵션 표시
--   `isAutoCompleteOptionHidden(field, value)`: 숨김 여부 확인
-
-### 기본 옵션 값
-
-```typescript
-// 업무명 기본 옵션
-DEFAULT_TASK_OPTIONS = ["개발", "작업", "분석", "설계", "테스트", "기타"];
-
-// 카테고리명 기본 옵션
-DEFAULT_CATEGORY_OPTIONS = [
-    "개발",
-    "문서작업",
-    "회의",
-    "환경세팅",
-    "코드리뷰",
-    "테스트",
-    "기타",
-];
-
-// 템플릿 색상 팔레트
-TEMPLATE_COLORS = [
-    "#1890ff",
-    "#52c41a",
-    "#faad14",
-    "#f5222d",
-    "#722ed1",
-    "#13c2c2",
-    "#eb2f96",
-    "#fa8c16",
-    "#a0d911",
-    "#2f54eb",
-];
-
-// 프로젝트 코드 기본값
-DEFAULT_PROJECT_CODE = "A00_00000";
-
-// 점심시간 (11:40 ~ 12:40) - 작업 시간에서 자동 제외
-LUNCH_START_MINUTES = 700; // 11:40
-LUNCH_END_MINUTES = 760; // 12:40
 ```
+pages → widgets → features → shared
+         ↓
+      features 간 직접 import 금지 (shared를 통해서만)
+```
+
+### 4. Public API (index.ts)
+
+-   각 feature는 `index.ts`를 통해서만 export
+-   내부 구현 숨김
+
+### 5. Co-location
+
+-   관련 파일(컴포넌트, 테스트)은 같은 폴더에
 
 ---
 
-## Zustand Store (useShortcutStore)
+## 주요 공유 함수
 
-### 상태 (State)
+### 시간 유틸 (shared/lib/time)
 
 ```typescript
-{
-  shortcuts: ShortcutDefinition[];  // 모든 단축키 정의
-}
+// 계산
+timeToMinutes("09:30"); // 570
+minutesToTime(570); // "09:30"
+
+// 포맷팅
+formatDuration(90); // "1시간 30분"
+formatTimer(3661); // "01:01"
+
+// 검증
+isValidTimeFormat("09:30"); // true
+isStartBeforeEnd("09:00", "10:00"); // true
 ```
 
-### 주요 액션 (Actions)
-
--   `toggleShortcut(id)`: 단축키 활성화/비활성화 토글
--   `setShortcutEnabled(id, enabled)`: 단축키 활성화 상태 설정
--   `getShortcut(id)`: ID로 단축키 조회
--   `getEnabledShortcuts()`: 활성화된 단축키 목록
--   `getShortcutsByCategory(category)`: 카테고리별 단축키 목록
--   `findByKeys(keys)`: 키 조합으로 단축키 찾기
--   `resetToDefault()`: 기본값으로 초기화
--   `setShortcuts(shortcuts)`: Firebase 동기화용 전체 설정
-
-### 기본 단축키
-
-| 단축키        | 액션               | 카테고리   |
-| ------------- | ------------------ | ---------- |
-| Alt+N         | 새 작업 추가       | 일반       |
-| Alt+P         | 새 프리셋 추가     | 일반       |
-| Alt+,         | 설정 열기          | 일반       |
-| Alt+/         | 단축키 도움말      | 일반       |
-| Alt+S         | 타이머 시작/중지   | 타이머     |
-| Alt+R         | 타이머 초기화      | 타이머     |
-| Alt+T         | 오늘로 이동        | 네비게이션 |
-| Alt+Left      | 이전 날짜          | 네비게이션 |
-| Alt+Right     | 다음 날짜          | 네비게이션 |
-| Alt+1         | 일간 기록 페이지   | 네비게이션 |
-| Alt+2         | 주간 일정 페이지   | 네비게이션 |
-| Alt+E         | 데이터 내보내기    | 데이터     |
-| Alt+Shift+S   | 수동 동기화        | 데이터     |
-
----
-
-## Firebase 동기화
-
-### 데이터 구조 (Firestore)
-
-```
-users/{user_id}
-├── records: WorkRecord[]
-├── templates: WorkTemplate[]
-├── custom_task_options: string[]
-├── custom_category_options: string[]
-├── timer: TimerState
-├── shortcuts: ShortcutDefinition[]
-├── hidden_autocomplete_options: HiddenAutoCompleteOptions
-└── updated_at: string (ISO)
-```
-
-### 동기화 서비스 (syncService.ts)
-
--   `syncToFirebase(user, options?)`: 로컬 → Firebase 저장
--   `syncFromFirebase(user)`: Firebase → 로컬 로드
--   `startRealtimeSync(user)`: 실시간 동기화 시작 (onSnapshot)
--   `stopRealtimeSync()`: 실시간 동기화 중지
--   `syncImmediately(user)`: 즉시 동기화
--   `syncBeforeUnload(user)`: 브라우저 종료 전 로컬 백업
--   `checkPendingSync(user)`: 미완료 동기화 복원
--   `markLocalChange()`: 로컬 변경 표시 (덮어쓰기 방지)
-
-### 동기화 특징
-
--   **즉시 저장**: 모든 변경은 즉시 Firebase에 저장
--   **실시간 동기화**: onSnapshot으로 다른 탭/기기와 실시간 동기화
--   **충돌 방지**: 로컬 변경 후 3초간 Firebase 업데이트 무시
--   **데이터 검증**: 급격한 데이터 감소 시 저장 취소
--   **로컬 백업**: beforeunload 시 localStorage에 백업
-
----
-
-## 컴포넌트 상세
-
-### App.tsx (~663줄)
-
--   React Router 설정 (BrowserRouter)
--   라우트: `/` (일간 기록), `/weekly` (주간 일정)
--   상단 헤더 메뉴 (일간 기록 / 주간 일정)
--   ConfigProvider로 Ant Design 테마 설정
--   **Firebase 인증**: Google 로그인/로그아웃
--   **동기화 관리**: 데이터 변경 시 자동 저장, 실시간 동기화
--   **로딩 오버레이**: 초기 데이터 로드 중 스피너 표시
--   **동기화 완료 애니메이션**: 우측 상단 초록 체크 표시
-
-### WorkRecordTable.tsx (~2168줄)
-
-메인 작업 기록 테이블 컴포넌트
-
-**주요 기능:**
-
--   작업 기록 테이블 표시
--   실시간 타이머 표시 (1초마다 업데이트)
--   작업 시작/정지/전환 버튼
--   새 작업 추가 모달
--   작업 수정 모달 (레코딩 중 작업도 수정 가능)
--   완료된 작업 모달
--   세션 이력 확장 (expandedRowRender)
--   세션 시간/날짜 수정 (충돌 시 자동 조정)
--   클립보드 복사 기능
--   날짜 필터
-
-**확장 가능 Row (SessionEditTable):**
-
--   개별 세션 시간/날짜 수정
--   세션 삭제
--   시간 충돌 감지 및 자동 조정
-
-**표시 컬럼:**
-
-1. 타이머 액션 (시작/정지 버튼)
-2. 거래명 (볼드, 타이머 표시)
-3. 작업명 (파란색 태그)
-4. 업무명 (청록색 태그)
-5. 카테고리 (색상 태그)
-6. 소요 시간
-7. 시작/종료 시간
-8. 액션 (수정/삭제/완료)
-
-### WorkTemplateList.tsx (~872줄)
-
-작업 프리셋 목록 컴포넌트
-
-**주요 기능:**
-
--   프리셋 카드 목록 표시
--   프리셋 추가/수정/삭제
--   **드래그앤드롭으로 순서 변경** (@dnd-kit 사용)
--   색상 선택기
--   사용자 정의 업무명/카테고리명 추가
--   자동완성 옵션 숨김 (Select 옵션에서 X 버튼)
-
-**카드 레이아웃:**
-
--   상단: 작업명 태그 (색상)
--   중앙: 거래명 (제목)
--   하단: 업무명 · 카테고리
--   호버 시: 수정/삭제 버튼 표시
--   드래그 핸들 아이콘
-
-### DailyGanttChart.tsx (~1671줄)
-
-일간 간트차트 컴포넌트
-
-**주요 기능:**
-
--   선택 날짜의 작업을 간트차트로 시각화
--   거래명(deal_name) 기준으로 그룹화
--   실시간 진행 중인 작업 표시 (1분마다 업데이트)
--   **중복 세션 필터링**: 같은 시작 시간의 세션 자동 필터링 (동기화 충돌 방지)
--   드래그로 시간 범위 선택 → 작업 추가
--   충돌 방지 (기존 세션과 겹치지 않도록 자동 조정)
--   마우스 오버 시 상세 정보 툴팁
-
-**드래그 앤 드롭:**
-
--   빈 영역에서 드래그 시작
--   기존 세션과 겹치지 않도록 자동 클램핑
--   최소 5분 이상 선택 시 작업 추가 모달 오픈
--   같은 work_name + deal_name 있으면 기존 레코드에 세션 추가
-
-**간트 바 스타일:**
-
--   진행 중: 파란색 그림자 + 펄스 애니메이션
--   완료: 일반 색상
--   최소 너비 보장 (짧은 세션도 표시)
-
-### WeeklySchedule.tsx (~551줄)
-
-주간 일정 페이지 컴포넌트
-
-**주요 기능:**
-
--   주간 선택기 (DatePicker, 이전/다음 주 버튼)
--   날짜별 작업 그룹화
--   진행상태 수정 (Input)
--   복사 형식 미리보기
--   클립보드 복사
--   **관리업무 필터**: [A24_05591] 관리업무 숨기기 옵션
-
-**복사 형식:**
-
-```
-1/14 (수)
-[A00_00000] 작업명 (진행상태: 진행중, 시작일자: 1/14(수), 누적시간: 02:30)
-> 거래명 (누적시간: 01:30)
-> 거래명2 (누적시간: 01:00)
-```
-
-**데이터 그룹화:**
-
--   날짜별 → 작업별 → 거래별 그룹화
--   전체 기간 누적시간 계산
--   작업의 첫 시작일 자동 계산
-
-### SettingsModal.tsx (~600줄)
-
-설정 모달 컴포넌트
-
-**탭 구성:**
-
-1. **데이터 관리**: 데이터 내보내기/가져오기, 수동 동기화
-2. **단축키**: 키보드 단축키 활성화/비활성화 설정
-3. **자동완성**: 자동완성 항목 관리 (숨김/표시)
-
----
-
-## 라우팅
-
-| 경로      | 컴포넌트       | 설명                                     |
-| --------- | -------------- | ---------------------------------------- |
-| `/`       | MainPage       | 일간 기록 (사이드바 + 간트차트 + 테이블) |
-| `/weekly` | WeeklySchedule | 주간 일정 조회 및 복사                   |
-
----
-
-## 레이아웃 구조
-
-### 일간 기록 페이지 (/)
-
-```
-┌─────────────────────────────────────────────────────┐
-│ Header (업무 시간 관리 | 일간 기록 | 주간 일정)     │
-│ [☁️ 동기화 상태] [사용자 아바타 ▾]                  │
-├───────────────┬─────────────────────────────────────┤
-│  Sider        │  Content                            │
-│  (300px)      │                                     │
-│               │  ┌───────────────────────────────┐  │
-│  작업 프리셋   │  │ DailyGanttChart               │  │
-│  목록         │  └───────────────────────────────┘  │
-│               │                                     │
-│  [≡] 프리셋1  │  ┌───────────────────────────────┐  │
-│  [≡] 프리셋2  │  │ WorkRecordTable               │  │
-│  - ...        │  │                               │  │
-│               │  │ (작업 기록 테이블)            │  │
-│  [+ 추가]     │  └───────────────────────────────┘  │
-└───────────────┴─────────────────────────────────────┘
-```
-
-### 주간 일정 페이지 (/weekly)
-
-```
-┌─────────────────────────────────────────────────────┐
-│ Header (업무 시간 관리 | 일간 기록 | 주간 일정)     │
-├─────────────────────────────────────────────────────┤
-│ Content                                             │
-│ ┌─────────────────────────────────────────────────┐ │
-│ │ 주간 일정  [<] 2026년 1월 2주차 [>] [이번주]    │ │
-│ │ [○ 전체 ○ 관리업무 제외]              [복사]   │ │
-│ ├─────────────────────────────────────────────────┤ │
-│ │ 1/14 (수)                                       │ │
-│ │ [A00_00000] 작업명 (진행상태: 진행중, ...)      │ │
-│ │ > 거래명 (누적시간: 01:30)                     │ │
-│ ├─────────────────────────────────────────────────┤ │
-│ │ 복사 미리보기                                   │ │
-│ │ ┌─────────────────────────────────────────────┐ │ │
-│ │ │ 1/14 (수)                                   │ │ │
-│ │ │ [A00_00000] 작업명 ...                      │ │ │
-│ │ └─────────────────────────────────────────────┘ │ │
-│ └─────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────┘
-```
-
----
-
-## 핵심 로직
-
-### 타이머 동기화
+### 점심시간 (shared/lib/lunch)
 
 ```typescript
-// 타이머 상태는 Firebase에 저장
-// 새로고침/탭 전환 시에도 타이머 상태 유지
-getElapsedSeconds(): number {
-  if (!timer.is_running || !timer.start_time) return 0;
-  return Math.floor((Date.now() - timer.start_time) / 1000);
-}
-
-// Firebase onSnapshot으로 실시간 동기화
-startRealtimeSync(user) {
-  subscribeToUserData(user.uid, (data) => {
-    // 로컬 변경 직후면 무시 (충돌 방지)
-    if (Date.now() - last_local_change_time < SYNC_IGNORE_DURATION) return;
-    // 상태 업데이트
-  });
-}
+// 11:40 ~ 12:40 점심시간 제외
+calculateDurationExcludingLunch(660, 780); // 60분 (11:00~13:00에서 점심 제외)
+isInLunchTime(720); // true (12:00)
 ```
 
-### 간트차트 중복 세션 필터링
+### 세션 유틸 (shared/lib/session)
 
 ```typescript
-// 타이머가 실행 중일 때, 같은 시작 시간의 세션 필터링
-// (다른 탭에서 동기화된 데이터와 로컬 가상 세션 충돌 방지)
-if (timer_key && timer_date === selected_date && key === timer_key) {
-    date_sessions = date_sessions.filter((s) => {
-        const s_start = timeToMinutes(s.start_time);
-        return Math.abs(s_start - timer_start_min) > 1; // 1분 이상 차이나면 유지
-    });
-}
+getSessionMinutes(session); // 세션 소요 시간
+calculateTotalMinutes(sessions); // 세션 목록 총 시간
+createSession(startTs, endTs); // 새 세션 생성
+sortSessionsByTime(sessions); // 시간순 정렬
 ```
-
-### 작업 기록 병합
-
-같은 날짜 + 같은 work_name + 같은 deal_name이면 새 세션을 기존 레코드에 추가:
-
-```typescript
-const existing_record = findExistingRecord(records, date, work_name, deal_name);
-if (existing_record) {
-    existing_record.sessions.push(new_session);
-    existing_record.duration_minutes = calculateTotalMinutes(sessions);
-} else {
-    // 새 레코드 생성
-}
-```
-
-### 점심시간 자동 제외
-
-```typescript
-// 11:40 ~ 12:40 점심시간은 작업 시간에서 자동 제외
-calculateDurationExcludingLunch(start_mins, end_mins): number {
-  // 점심시간과 겹치는 부분 계산 후 제외
-}
-```
-
-### 세션 시간 충돌 감지 및 자동 조정
-
-```typescript
-updateSession(record_id, session_id, new_start, new_end, new_date?) {
-  // 같은 날짜의 다른 세션들과 시간 충돌 체크
-  // 충돌 시 자동으로 시작/종료 시간 조정
-  // 날짜 변경 시에는 알림만 (자동 조정 X)
-}
-```
-
----
-
-## 스타일 가이드
-
-### 색상
-
--   Primary: `#1890ff` (Ant Design 기본 파란색)
--   Success: `#52c41a` (녹색)
--   Warning: `#faad14` (노란색)
--   Danger: `#f5222d` (빨간색)
--   Background: `#f5f7fa` (연한 회색)
-
-### 컴포넌트 스타일
-
--   Border Radius: 8px (기본), 12px (카드)
--   Box Shadow: `0 2px 8px rgba(0, 0, 0, 0.06)`
--   Header Gradient: `linear-gradient(135deg, #1890ff 0%, #096dd9 100%)`
-
-### 동기화 상태 표시
-
--   동기화 완료: 우측 상단 초록 체크 애니메이션
--   클라우드 연결: 헤더에 클라우드 아이콘
 
 ---
 
@@ -726,9 +348,9 @@ updateSession(record_id, session_id, new_start, new_end, new_date?) {
 ### 파일
 
 -   컴포넌트: `PascalCase.tsx` (예: `WorkRecordTable.tsx`)
--   훅: `camelCase.ts` (예: `useWorkStore.ts`, `useAuth.ts`)
--   유틸리티: `snake_case.ts` (예: `shortcut_events.ts`)
--   타입: `index.ts` (폴더별 집합)
+-   훅: `camelCase.ts` (예: `useWorkStore.ts`)
+-   유틸리티: `snake_case.ts` (예: `time_utils.ts`)
+-   타입: `domain.ts`, `timer.ts` (폴더별 집합)
 
 ### 코드
 
@@ -739,75 +361,41 @@ updateSession(record_id, session_id, new_start, new_end, new_date?) {
 
 ---
 
-## 배포
-
-### GitHub Repository
-
--   URL: https://github.com/serbi2012/time-manager
--   Branch: `master`
-
-### Vercel
-
--   자동 배포: `git push` 시 자동 빌드/배포
--   Build Command: `tsc -b && vite build`
--   Output Directory: `dist`
-
----
-
 ## 개발 명령어
 
 ```bash
-# 개발 서버 실행
-pnpm dev
-
-# 프로덕션 빌드
-pnpm build
-
-# 빌드 미리보기
-pnpm preview
-
-# 린트
-pnpm lint
-
-# 테스트 실행
-pnpm test
-
-# 테스트 (단일 실행)
-pnpm test:run
-
-# 테스트 커버리지
-pnpm test:coverage
-
-# 타입 체크
-npx tsc --noEmit
+pnpm dev           # 개발 서버
+pnpm build         # 프로덕션 빌드
+pnpm test          # 테스트 (watch)
+pnpm test:run      # 테스트 (단일 실행)
+pnpm lint          # 린트
 ```
 
 ---
 
-## 알려진 제한사항
+## 테스트 구조
 
-1. **Node.js 버전**: Vite 7은 Node.js 20.19+ 또는 22.12+ 필요
-2. **시간 단위**: 분 단위로만 처리 (초는 무시)
-3. **브라우저 호환**: 최신 브라우저 필요 (crypto.randomUUID 사용)
-4. **게스트 모드 제한**: 로그인 없이 사용 시 데이터가 해당 브라우저에만 저장됨
-5. **오프라인 미지원**: 클라우드 동기화는 온라인 상태에서만 가능
+```
+test/
+├── unit/                         # 순수 함수 유닛 테스트
+│   ├── shared/lib/
+│   │   ├── time/                 # 시간 유틸 테스트
+│   │   └── lunch/                # 점심시간 계산 테스트
+│   └── features/
+│       ├── work-record/lib/      # 레코드 병합, 충돌 감지
+│       ├── gantt-chart/lib/      # 슬롯 계산
+│       ├── admin/lib/            # 문제 감지, 충돌 탐지
+│       └── weekly-schedule/lib/  # 복사 포매터
+│
+├── component/                    # UI 컴포넌트 테스트
+│   └── features/
+│       ├── settings/             # 설정 탭 테스트
+│       └── work-template/        # 템플릿 UI 테스트
+│
+├── components/                   # 기존 컴포넌트 통합 테스트
+│
+└── helpers/                      # 테스트 유틸리티
+    └── mock_factory.ts           # createMockRecord, createMockSession 등
+```
 
----
-
-## 데이터 저장 방식
-
-### 게스트 모드 (비로그인)
-- **저장소**: LocalStorage (`work-time-storage` 키)
-- **특징**: 
-  - 로그인 없이 즉시 사용 가능
-  - 데이터가 브라우저에 로컬 저장
-  - 브라우저/기기 간 동기화 불가
-  - 브라우저 데이터 삭제 시 데이터 손실
-
-### 로그인 모드
-- **저장소**: Firebase Firestore + LocalStorage (백업)
-- **특징**:
-  - Google 로그인 필요
-  - 클라우드에 실시간 동기화
-  - 여러 브라우저/기기에서 동일 데이터 접근
-  - 게스트 모드의 기존 데이터가 있으면 자동 마이그레이션
+**테스트 현황**: 27개 파일, 504개 테스트 통과

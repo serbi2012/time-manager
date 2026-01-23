@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- Firebase SDK 모킹 */
 /**
  * firestore 유틸리티 테스트
  *

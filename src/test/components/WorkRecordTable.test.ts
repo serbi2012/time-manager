@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- 레거시 타입 테스트 */
 /**
  * WorkRecordTable 컴포넌트 유틸리티 함수 테스트
  *

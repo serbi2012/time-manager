@@ -6,6 +6,7 @@ import {
     useRef,
     isValidElement,
     cloneElement,
+    startTransition,
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Layout, Menu, Typography, Card, Input, List, Empty, Tag } from "antd";
@@ -93,10 +94,13 @@ function GuideBook() {
     const [search_results, setSearchResults] = useState<SearchResult[]>([]);
     const [highlight_keyword, setHighlightKeyword] = useState<string>("");
 
+    // URL 해시가 변경되면 해당 섹션으로 이동
     useEffect(() => {
         const hash = location.hash.replace("#", "");
         if (hash && DOCS.some((d) => d.id === hash)) {
-            setCurrentSection(hash);
+            startTransition(() => {
+                setCurrentSection(hash);
+            });
         }
     }, [location.hash]);
 

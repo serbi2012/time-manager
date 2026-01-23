@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.0";
+export const CURRENT_VERSION = "2.0.1";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,33 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.1",
+        date: "2026-01-23",
+        title: "아키텍처 개선 및 모바일/데스크탑 분리",
+        changes: [
+            {
+                type: "improvement",
+                description:
+                    "Feature-Slice Design(FSD) 아키텍처 전면 도입 - 확장성 및 유지보수성 향상",
+            },
+            {
+                type: "improvement",
+                description:
+                    "모바일/데스크탑 UI 완전 분리 - 플랫폼별 독립적인 레이아웃 및 페이지",
+            },
+            {
+                type: "improvement",
+                description:
+                    "테스트 커버리지 확장 - 504개 테스트 케이스로 안정성 강화",
+            },
+            {
+                type: "docs",
+                description:
+                    "프로젝트 문서 업데이트 - README 및 MDC 규칙 파일 갱신",
+            },
+        ],
+    },
     {
         version: "2.0.0",
         date: "2026-01-23",

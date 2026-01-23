@@ -159,7 +159,8 @@ export const CHANGELOG: ChangelogEntry[] = [
 
 ```bash
 # 1. 테스트 실행 (필수 - 가장 먼저!)
-pnpm test
+pnpm test:run                    # 전체 테스트
+pnpm test:run src/test/unit      # 유닛 테스트만
 
 # 2. 린트 검사
 pnpm lint
@@ -168,11 +169,13 @@ pnpm lint
 pnpm build
 ```
 
--   [ ] **모든 테스트 통과** (`pnpm test`) ← 필수! 실패 시 수정 후 진행
+-   [ ] **모든 테스트 통과** (`pnpm test:run`) ← 필수! 실패 시 수정 후 진행
 -   [ ] 린트 에러 없음 (`pnpm lint`)
 -   [ ] 빌드 성공 (`pnpm build`)
 -   [ ] CHANGELOG 업데이트 완료
 -   [ ] package.json 버전 업데이트
+
+> **현재 테스트 현황**: 27개 파일, 504개 테스트
 
 ### 테스트 실패 시 대응
 
