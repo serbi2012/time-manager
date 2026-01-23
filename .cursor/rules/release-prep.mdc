@@ -45,14 +45,14 @@ pnpm build
 
 **테스트 파일 위치:**
 
-| 대상                        | 테스트 파일                                  |
-| --------------------------- | -------------------------------------------- |
-| 공유 라이브러리 (순수 함수) | `src/test/unit/shared/lib/**/*.test.ts`      |
-| 기능별 순수 함수            | `src/test/unit/features/*/lib/*.test.ts`     |
-| 기능별 UI 컴포넌트          | `src/test/component/features/*/*.test.tsx`   |
-| 기존 컴포넌트               | `src/test/components/*.test.tsx`             |
-| 스토어 (useWorkStore)       | `src/test/store/useWorkStore.test.ts`        |
-| 테스트 헬퍼                 | `src/test/helpers/mock_factory.ts`           |
+| 대상                        | 테스트 파일                                |
+| --------------------------- | ------------------------------------------ |
+| 공유 라이브러리 (순수 함수) | `src/test/unit/shared/lib/**/*.test.ts`    |
+| 기능별 순수 함수            | `src/test/unit/features/*/lib/*.test.ts`   |
+| 기능별 UI 컴포넌트          | `src/test/component/features/*/*.test.tsx` |
+| 기존 컴포넌트               | `src/test/components/*.test.tsx`           |
+| 스토어 (useWorkStore)       | `src/test/store/useWorkStore.test.ts`      |
+| 테스트 헬퍼                 | `src/test/helpers/mock_factory.ts`         |
 
 **테스트 작성 후:**
 
@@ -118,7 +118,11 @@ export const CHANGELOG: ChangelogEntry[] = [
 
 **CHANGELOG 제외 대상:**
 
--   관리자 기능 (`/admin`, `AdminSessionGrid.tsx` 등) - 내부 디버깅/관리 용도이므로 CHANGELOG에 기록하지 않음
+-   **관리자 기능**: `/admin`, `AdminSessionGrid.tsx` 등 (내부 디버깅/관리 용도)
+-   **개발적인 내용**: 아키텍처, 테스트, 내부 구조 변경, 기술 용어 등
+    -   예: FSD 아키텍처 도입, 테스트 커버리지, Firestore 스키마 변경, Service Worker, 훅 이름
+
+> **원칙**: 일반 사용자 관점에서 의미 있는 변경만 기록. "어떻게 구현했는지"가 아닌 "무엇이 달라졌는지" 기술.
 
 ### 6단계: 문서 및 데모 동기화 확인
 

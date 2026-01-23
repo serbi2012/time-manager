@@ -52,59 +52,34 @@ export const CHANGELOG: ChangelogEntry[] = [
     {
         version: "2.0.1",
         date: "2026-01-23",
-        title: "아키텍처 개선 및 모바일/데스크탑 분리",
+        title: "모바일/데스크탑 UI 분리",
         changes: [
             {
                 type: "improvement",
                 description:
-                    "Feature-Slice Design(FSD) 아키텍처 전면 도입 - 확장성 및 유지보수성 향상",
-            },
-            {
-                type: "improvement",
-                description:
-                    "모바일/데스크탑 UI 완전 분리 - 플랫폼별 독립적인 레이아웃 및 페이지",
-            },
-            {
-                type: "improvement",
-                description:
-                    "테스트 커버리지 확장 - 504개 테스트 케이스로 안정성 강화",
-            },
-            {
-                type: "docs",
-                description:
-                    "프로젝트 문서 업데이트 - README 및 MDC 규칙 파일 갱신",
+                    "모바일/데스크탑 UI 완전 분리 - 플랫폼별 최적화된 화면 제공",
             },
         ],
     },
     {
         version: "2.0.0",
         date: "2026-01-23",
-        title: "동기화 시스템 전면 개편",
+        title: "동기화 안정성 개선",
         changes: [
             {
-                type: "breaking",
+                type: "improvement",
                 description:
-                    "Firestore 데이터 구조 변경 - 서브컬렉션 기반으로 전환 (보안 규칙 업데이트 필요)",
-            },
-            {
-                type: "feature",
-                description:
-                    "기존 사용자 자동 마이그레이션 - 앱 시작 시 새 구조로 자동 변환",
+                    "동기화 안정성 대폭 개선 - 변경된 데이터만 저장",
             },
             {
                 type: "improvement",
                 description:
-                    "부분 업데이트 방식 도입 - 변경된 데이터만 저장하여 동기화 안정성 대폭 개선",
-            },
-            {
-                type: "improvement",
-                description:
-                    "실시간 동기화 제거 - 수동 새로고침 방식으로 변경하여 다중 기기 충돌 방지",
+                    "수동 새로고침 방식으로 변경 - 다중 기기 충돌 방지",
             },
             {
                 type: "fix",
                 description:
-                    "진행 중 세션 중복 생성 문제 해결 - 부분 업데이트로 데이터 덮어쓰기 방지",
+                    "진행 중 세션 중복 생성 문제 해결",
             },
         ],
     },
@@ -268,24 +243,15 @@ export const CHANGELOG: ChangelogEntry[] = [
     {
         version: "1.3.0",
         date: "2026-01-22",
-        title: "관리자 기능 🔧",
+        title: "편의 기능 개선 🔧",
         changes: [
             {
                 type: "feature",
-                description: "관리자 전용 세션 그리드 페이지 추가 (/admin)",
-            },
-            {
-                type: "feature",
-                description: "세션 충돌 감지 및 하이라이트 표시",
-            },
-            {
-                type: "feature",
-                description:
-                    "작업 이력 선택 삭제 기능 (관리자 세션 그리드, 작업 기록)",
-            },
-            {
-                type: "feature",
                 description: "프리셋 추가 시 중복 이름 자동 번호 부여",
+            },
+            {
+                type: "feature",
+                description: "작업 이력 선택 삭제 기능",
             },
             {
                 type: "improvement",
@@ -303,7 +269,7 @@ export const CHANGELOG: ChangelogEntry[] = [
             },
             {
                 type: "fix",
-                description: "관리자 페이지, 건의사항 페이지 스크롤 버그 수정",
+                description: "건의사항 페이지 스크롤 버그 수정",
             },
         ],
     },
@@ -358,24 +324,16 @@ export const CHANGELOG: ChangelogEntry[] = [
             },
             {
                 type: "feature",
-                description: "마크다운 기반 위키 스타일 문서 시스템",
-            },
-            {
-                type: "feature",
                 description: "문서 내 검색 기능",
             },
             {
                 type: "feature",
-                description: "문서 간 위키 링크 (wiki:section-id) 지원",
+                description: "문서 간 링크로 쉬운 탐색",
             },
             {
                 type: "feature",
                 description:
-                    "실제 UI 미리보기 데모 컴포넌트 (작업 테이블, 프리셋 목록 등)",
-            },
-            {
-                type: "feature",
-                description: "Mermaid 다이어그램으로 프로세스 시각화",
+                    "실제 UI 미리보기로 기능 이해 도움",
             },
             {
                 type: "docs",
@@ -400,16 +358,16 @@ export const CHANGELOG: ChangelogEntry[] = [
             {
                 type: "feature",
                 description:
-                    "건의사항 상태 관리 (대기/검토중/진행중/완료/반려) - 관리자 전용",
+                    "건의사항 상태 확인 (대기/검토중/진행중/완료/반려)",
             },
             {
                 type: "feature",
-                description: "게시글 수정/삭제 기능 (본인 글 또는 관리자)",
+                description: "게시글 수정/삭제 기능 (본인 글)",
             },
             {
                 type: "feature",
                 description:
-                    "비로그인 사용자도 자신의 게시글 수정/삭제 가능 (로컬 ID 기반)",
+                    "비로그인 사용자도 자신의 게시글 수정/삭제 가능",
             },
             {
                 type: "improvement",
@@ -419,7 +377,7 @@ export const CHANGELOG: ChangelogEntry[] = [
             {
                 type: "improvement",
                 description:
-                    "Popconfirm(삭제 확인 등)에서 엔터키로 바로 확인 가능",
+                    "삭제 확인에서 엔터키로 바로 확인 가능",
             },
         ],
     },
@@ -505,11 +463,7 @@ export const CHANGELOG: ChangelogEntry[] = [
                 type: "feature",
                 description: "앱 아이콘 및 스플래시 스크린 추가",
             },
-            {
-                type: "improvement",
-                description: "Service Worker를 통한 리소스 캐싱",
-            },
-            { type: "style", description: "앱 테마 컬러 및 메타 태그 최적화" },
+            { type: "style", description: "앱 테마 컬러 최적화" },
         ],
     },
     {
@@ -521,7 +475,7 @@ export const CHANGELOG: ChangelogEntry[] = [
             { type: "feature", description: "모바일 하단 네비게이션 바 추가" },
             {
                 type: "feature",
-                description: "모바일 프리셋 플로팅 버튼 (FAB) 추가",
+                description: "모바일 프리셋 플로팅 버튼 추가",
             },
             { type: "feature", description: "모바일 작업 기록 카드 뷰 추가" },
             {
@@ -537,10 +491,6 @@ export const CHANGELOG: ChangelogEntry[] = [
                 description: "모바일 카드 여백 및 터치 영역 최적화",
             },
             { type: "improvement", description: "모바일 헤더 레이아웃 개선" },
-            {
-                type: "style",
-                description: "useResponsive 훅으로 반응형 상태 관리",
-            },
         ],
     },
     {
