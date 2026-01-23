@@ -86,6 +86,8 @@ const resetStores = () => {
             start_time: null,
             active_template_id: null,
             active_form_data: null,
+            active_record_id: null,
+            active_session_id: null,
         },
         form_data: {
             project_code: '',
@@ -287,6 +289,8 @@ describe('syncService', () => {
                         category_name: '개발',
                         note: '',
                     },
+                    active_record_id: null,
+                    active_session_id: null,
                 },
                 updated_at: new Date().toISOString(),
             }
@@ -332,6 +336,8 @@ describe('syncService', () => {
                     start_time: Date.now(),
                     active_template_id: null,
                     active_form_data: null,
+                    active_record_id: null,
+                    active_session_id: null,
                 },
             })
 
@@ -380,6 +386,8 @@ describe('syncService', () => {
                     start_time: null,
                     active_template_id: null,
                     active_form_data: null,
+                    active_record_id: null,
+                    active_session_id: null,
                 },
                 shortcuts: DEFAULT_SHORTCUTS,
                 user_id: mock_user.uid,

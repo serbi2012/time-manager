@@ -32,6 +32,8 @@ export interface TimerState {
   start_time: number | null;       // 시작 시각 (timestamp, persist됨)
   active_template_id: string | null; // 현재 진행 중인 템플릿 ID
   active_form_data: WorkFormData | null; // 진행 중인 작업 정보 (persist됨)
+  active_record_id: string | null; // 현재 진행 중인 레코드 ID
+  active_session_id: string | null; // 현재 진행 중인 세션 ID
 }
 
 export interface WorkFormData {

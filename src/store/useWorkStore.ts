@@ -189,6 +189,8 @@ const DEFAULT_TIMER: TimerState = {
     start_time: null,
     active_template_id: null,
     active_form_data: null,
+    active_record_id: null,
+    active_session_id: null,
 };
 
 // 같은 작업 기록 찾기 (미완료 작업 우선, 중복 발견 시 자동 병합)
@@ -437,13 +439,74 @@ export const useWorkStore = create<WorkStore>()(
             app_theme: "blue" as AppTheme, // 기본값: 파란색
 
     startTimer: (template_id?: string) => {
-        const { form_data } = get();
+        const { form_data, records } = get();
+        const start_time = Date.now();
+        const start_dayjs = dayjs(start_time);
+        const record_date = start_dayjs.format("YYYY-MM-DD");
+        const start_time_str = start_dayjs.format("HH:mm");
+
+        // 진행 중인 세션 생성 (end_time은 빈 문자열)
+        const new_session: WorkSession = {
+            id: crypto.randomUUID(),
+            date: record_date,
+            start_time: start_time_str,
+            end_time: "", // 진행 중 표시
+            duration_minutes: 0,
+        };
+
+        // 같은 작업 기록 찾기 (미완료 작업 우선)
+        const existing_record = findExistingRecord(
+            records,
+            record_date,
+            form_data.work_name,
+            form_data.deal_name,
+            set
+        );
+
+        let active_record_id: string;
+
+        if (existing_record) {
+            // 기존 레코드에 세션 추가
+            active_record_id = existing_record.id;
+            set((state) => ({
+                records: state.records.map((r) =>
+                    r.id === existing_record.id
+                        ? {
+                              ...r,
+                              sessions: [...(r.sessions || []), new_session],
+                              start_time: r.start_time || start_time_str,
+                          }
+                        : r
+                ),
+            }));
+        } else {
+            // 새 레코드 생성
+            active_record_id = crypto.randomUUID();
+            const new_record: WorkRecord = {
+                id: active_record_id,
+                ...form_data,
+                project_code: form_data.project_code || DEFAULT_PROJECT_CODE,
+                duration_minutes: 0,
+                start_time: start_time_str,
+                end_time: "",
+                date: record_date,
+                sessions: [new_session],
+                is_completed: false,
+            };
+            set((state) => ({
+                records: [...state.records, new_record],
+            }));
+        }
+
+        // 타이머 상태 업데이트
         set({
             timer: {
                 is_running: true,
-                start_time: Date.now(),
+                start_time: start_time,
                 active_template_id: template_id || null,
-                active_form_data: { ...form_data }, // 진행 중인 작업 정보 저장
+                active_form_data: { ...form_data },
+                active_record_id: active_record_id,
+                active_session_id: new_session.id,
             },
         });
     },
@@ -453,107 +516,30 @@ export const useWorkStore = create<WorkStore>()(
         if (!timer.is_running || !timer.start_time || !timer.active_form_data)
             return null;
 
-        const active_form = timer.active_form_data;
-        const end_time = Date.now();
-        const record_date = dayjs(timer.start_time).format("YYYY-MM-DD");
-
-        // 새 세션 생성
-        const new_session = createSession(timer.start_time, end_time);
-
-        // 같은 날짜에 같은 작업이 있는지 확인 (중복 있으면 자동 병합)
-        const existing_record = findExistingRecord(
-            records,
-            record_date,
-            active_form.work_name,
-            active_form.deal_name,
-            set // 중복 병합용 set 함수 전달
-        );
-
-        if (existing_record) {
-            // 기존 기록에 세션 추가 및 시간 합산
-            const updated_sessions = [
-                ...(existing_record.sessions || []),
-                new_session,
-            ];
-            const total_minutes = calculateTotalMinutes(updated_sessions);
-
-            // start_time이 비어있으면 첫 세션의 시작 시간으로 설정
-            const new_start_time = existing_record.start_time || new_session.start_time;
-
-            set((state) => ({
-                records: state.records.map((r) =>
-                    r.id === existing_record.id
-                        ? {
-                              ...r,
-                              duration_minutes: total_minutes,
-                              start_time: new_start_time,
-                              end_time: new_session.end_time,
-                              sessions: updated_sessions,
-                          }
-                        : r
-                ),
-                timer: DEFAULT_TIMER,
-                form_data: DEFAULT_FORM_DATA,
-            }));
-
-            return { ...existing_record, duration_minutes: total_minutes };
-        } else {
-            // 새 기록 생성
-            const new_record: WorkRecord = {
-                id: crypto.randomUUID(),
-                ...active_form,
-                project_code: active_form.project_code || DEFAULT_PROJECT_CODE,
-                duration_minutes: calculateTotalMinutes([new_session]),
-                start_time: new_session.start_time,
-                end_time: new_session.end_time,
-                date: record_date,
-                sessions: [new_session],
-                is_completed: false,
-            };
-
-            set((state) => ({
-                records: [...state.records, new_record],
-                timer: DEFAULT_TIMER,
-                form_data: DEFAULT_FORM_DATA,
-            }));
-
-            return new_record;
-        }
-    },
-
-    // 작업 전환: 현재 작업 저장 후 새 작업 시작
-    switchTemplate: (template_id: string) => {
-        const { timer, templates, records } = get();
-        const template = templates.find((t) => t.id === template_id);
-        if (!template) return;
-
-        // 현재 진행 중인 작업이 있으면 저장
-        if (timer.is_running && timer.start_time && timer.active_form_data) {
+        // 진행 중인 세션의 레코드와 세션 ID 확인
+        const { active_record_id, active_session_id } = timer;
+        if (!active_record_id || !active_session_id) {
+            // 이전 버전 호환: active_record_id/session_id가 없는 경우 (이미 실행 중이던 타이머)
+            // 기존 방식대로 처리
             const active_form = timer.active_form_data;
             const end_time = Date.now();
             const record_date = dayjs(timer.start_time).format("YYYY-MM-DD");
-
-            // 새 세션 생성
             const new_session = createSession(timer.start_time, end_time);
 
-            // 같은 날짜에 같은 작업이 있는지 확인 (중복 있으면 자동 병합)
             const existing_record = findExistingRecord(
                 records,
                 record_date,
                 active_form.work_name,
                 active_form.deal_name,
-                set // 중복 병합용 set 함수 전달
+                set
             );
 
             if (existing_record) {
-                // 기존 기록에 세션 추가 및 시간 합산
                 const updated_sessions = [
                     ...(existing_record.sessions || []),
                     new_session,
                 ];
                 const total_minutes = calculateTotalMinutes(updated_sessions);
-
-                // start_time이 비어있으면 첫 세션의 시작 시간으로 설정
                 const new_start_time = existing_record.start_time || new_session.start_time;
 
                 set((state) => ({
@@ -568,14 +554,16 @@ export const useWorkStore = create<WorkStore>()(
                               }
                             : r
                     ),
+                    timer: DEFAULT_TIMER,
+                    form_data: DEFAULT_FORM_DATA,
                 }));
+
+                return { ...existing_record, duration_minutes: total_minutes };
             } else {
-                // 새 기록 생성
                 const new_record: WorkRecord = {
                     id: crypto.randomUUID(),
                     ...active_form,
-                    project_code:
-                        active_form.project_code || DEFAULT_PROJECT_CODE,
+                    project_code: active_form.project_code || DEFAULT_PROJECT_CODE,
                     duration_minutes: calculateTotalMinutes([new_session]),
                     start_time: new_session.start_time,
                     end_time: new_session.end_time,
@@ -586,11 +574,175 @@ export const useWorkStore = create<WorkStore>()(
 
                 set((state) => ({
                     records: [...state.records, new_record],
+                    timer: DEFAULT_TIMER,
+                    form_data: DEFAULT_FORM_DATA,
                 }));
+
+                return new_record;
             }
         }
 
-        // 새 템플릿으로 타이머 시작
+        // 새로운 방식: 이미 추가된 세션의 end_time 업데이트
+        const end_time = Date.now();
+        const end_dayjs = dayjs(end_time);
+        const end_time_str = end_dayjs.format("HH:mm");
+
+        const record = records.find((r) => r.id === active_record_id);
+        if (!record) {
+            set({ timer: DEFAULT_TIMER, form_data: DEFAULT_FORM_DATA });
+            return null;
+        }
+
+        // 세션의 종료 시간 및 소요 시간 계산
+        const start_dayjs = dayjs(timer.start_time);
+        const start_minutes = start_dayjs.hour() * 60 + start_dayjs.minute();
+        const end_minutes = end_dayjs.hour() * 60 + end_dayjs.minute();
+        const duration_minutes = Math.max(
+            1,
+            calculateDurationExcludingLunch(start_minutes, end_minutes)
+        );
+
+        // 세션 업데이트
+        const updated_sessions = record.sessions.map((s) =>
+            s.id === active_session_id
+                ? { ...s, end_time: end_time_str, duration_minutes }
+                : s
+        );
+
+        // 레코드 총 시간 재계산
+        const total_minutes = calculateTotalMinutes(updated_sessions);
+
+        // 마지막 종료 시간 결정
+        const last_session = updated_sessions
+            .filter((s) => s.end_time !== "")
+            .sort((a, b) => a.end_time.localeCompare(b.end_time))
+            .pop();
+
+        set((state) => ({
+            records: state.records.map((r) =>
+                r.id === active_record_id
+                    ? {
+                          ...r,
+                          sessions: updated_sessions,
+                          duration_minutes: total_minutes,
+                          end_time: last_session?.end_time || end_time_str,
+                      }
+                    : r
+            ),
+            timer: DEFAULT_TIMER,
+            form_data: DEFAULT_FORM_DATA,
+        }));
+
+        return { ...record, duration_minutes: total_minutes };
+    },
+
+    // 작업 전환: 현재 작업 저장 후 새 작업 시작
+    switchTemplate: (template_id: string) => {
+        const { timer, templates, records } = get();
+        const template = templates.find((t) => t.id === template_id);
+        if (!template) return;
+
+        // 현재 진행 중인 작업이 있으면 세션 종료
+        if (timer.is_running && timer.start_time && timer.active_form_data) {
+            const { active_record_id, active_session_id } = timer;
+            const end_time = Date.now();
+            const end_dayjs = dayjs(end_time);
+            const end_time_str = end_dayjs.format("HH:mm");
+
+            if (active_record_id && active_session_id) {
+                // 새로운 방식: 이미 추가된 세션의 end_time 업데이트
+                const record = records.find((r) => r.id === active_record_id);
+                if (record) {
+                    const start_dayjs = dayjs(timer.start_time);
+                    const start_minutes = start_dayjs.hour() * 60 + start_dayjs.minute();
+                    const end_minutes = end_dayjs.hour() * 60 + end_dayjs.minute();
+                    const duration_minutes = Math.max(
+                        1,
+                        calculateDurationExcludingLunch(start_minutes, end_minutes)
+                    );
+
+                    const updated_sessions = record.sessions.map((s) =>
+                        s.id === active_session_id
+                            ? { ...s, end_time: end_time_str, duration_minutes }
+                            : s
+                    );
+
+                    const total_minutes = calculateTotalMinutes(updated_sessions);
+                    const last_session = updated_sessions
+                        .filter((s) => s.end_time !== "")
+                        .sort((a, b) => a.end_time.localeCompare(b.end_time))
+                        .pop();
+
+                    set((state) => ({
+                        records: state.records.map((r) =>
+                            r.id === active_record_id
+                                ? {
+                                      ...r,
+                                      sessions: updated_sessions,
+                                      duration_minutes: total_minutes,
+                                      end_time: last_session?.end_time || end_time_str,
+                                  }
+                                : r
+                        ),
+                    }));
+                }
+            } else {
+                // 이전 버전 호환: active_record_id/session_id가 없는 경우
+                const active_form = timer.active_form_data;
+                const record_date = dayjs(timer.start_time).format("YYYY-MM-DD");
+                const new_session = createSession(timer.start_time, end_time);
+
+                const existing_record = findExistingRecord(
+                    records,
+                    record_date,
+                    active_form.work_name,
+                    active_form.deal_name,
+                    set
+                );
+
+                if (existing_record) {
+                    const updated_sessions = [
+                        ...(existing_record.sessions || []),
+                        new_session,
+                    ];
+                    const total_minutes = calculateTotalMinutes(updated_sessions);
+                    const new_start_time = existing_record.start_time || new_session.start_time;
+
+                    set((state) => ({
+                        records: state.records.map((r) =>
+                            r.id === existing_record.id
+                                ? {
+                                      ...r,
+                                      duration_minutes: total_minutes,
+                                      start_time: new_start_time,
+                                      end_time: new_session.end_time,
+                                      sessions: updated_sessions,
+                                  }
+                                : r
+                        ),
+                    }));
+                } else {
+                    const new_record: WorkRecord = {
+                        id: crypto.randomUUID(),
+                        ...active_form,
+                        project_code:
+                            active_form.project_code || DEFAULT_PROJECT_CODE,
+                        duration_minutes: calculateTotalMinutes([new_session]),
+                        start_time: new_session.start_time,
+                        end_time: new_session.end_time,
+                        date: record_date,
+                        sessions: [new_session],
+                        is_completed: false,
+                    };
+
+                    set((state) => ({
+                        records: [...state.records, new_record],
+                    }));
+                }
+            }
+        }
+
+        // 새 템플릿으로 타이머 시작 (records에도 세션 추가)
         const new_form_data: WorkFormData = {
             project_code: template.project_code || DEFAULT_PROJECT_CODE,
             work_name: template.work_name,
@@ -599,13 +751,75 @@ export const useWorkStore = create<WorkStore>()(
             category_name: template.category_name,
             note: template.note,
         };
+
+        // 폼 데이터 먼저 설정
+        set({ form_data: new_form_data });
+
+        // 새 작업 시작 (startTimer와 유사한 로직)
+        const start_time = Date.now();
+        const start_dayjs = dayjs(start_time);
+        const record_date = start_dayjs.format("YYYY-MM-DD");
+        const start_time_str = start_dayjs.format("HH:mm");
+
+        const new_session: WorkSession = {
+            id: crypto.randomUUID(),
+            date: record_date,
+            start_time: start_time_str,
+            end_time: "",
+            duration_minutes: 0,
+        };
+
+        // 최신 records 가져오기 (이전 세션 종료 후 상태)
+        const current_records = get().records;
+        const existing_record = findExistingRecord(
+            current_records,
+            record_date,
+            new_form_data.work_name,
+            new_form_data.deal_name,
+            set
+        );
+
+        let active_record_id: string;
+
+        if (existing_record) {
+            active_record_id = existing_record.id;
+            set((state) => ({
+                records: state.records.map((r) =>
+                    r.id === existing_record.id
+                        ? {
+                              ...r,
+                              sessions: [...(r.sessions || []), new_session],
+                              start_time: r.start_time || start_time_str,
+                          }
+                        : r
+                ),
+            }));
+        } else {
+            active_record_id = crypto.randomUUID();
+            const new_record: WorkRecord = {
+                id: active_record_id,
+                ...new_form_data,
+                project_code: new_form_data.project_code || DEFAULT_PROJECT_CODE,
+                duration_minutes: 0,
+                start_time: start_time_str,
+                end_time: "",
+                date: record_date,
+                sessions: [new_session],
+                is_completed: false,
+            };
+            set((state) => ({
+                records: [...state.records, new_record],
+            }));
+        }
+
         set({
-            form_data: new_form_data,
             timer: {
                 is_running: true,
-                start_time: Date.now(),
+                start_time: start_time,
                 active_template_id: template_id,
                 active_form_data: new_form_data,
+                active_record_id: active_record_id,
+                active_session_id: new_session.id,
             },
         });
     },
@@ -618,6 +832,39 @@ export const useWorkStore = create<WorkStore>()(
     },
 
     resetTimer: () => {
+        const { timer, records } = get();
+
+        // 진행 중인 세션이 있으면 삭제
+        if (timer.is_running && timer.active_record_id && timer.active_session_id) {
+            const record = records.find((r) => r.id === timer.active_record_id);
+            if (record) {
+                const remaining_sessions = record.sessions.filter(
+                    (s) => s.id !== timer.active_session_id
+                );
+
+                if (remaining_sessions.length === 0) {
+                    // 세션이 모두 삭제되면 레코드도 삭제
+                    set((state) => ({
+                        records: state.records.filter((r) => r.id !== timer.active_record_id),
+                    }));
+                } else {
+                    // 남은 세션으로 레코드 업데이트
+                    const total_minutes = calculateTotalMinutes(remaining_sessions);
+                    set((state) => ({
+                        records: state.records.map((r) =>
+                            r.id === timer.active_record_id
+                                ? {
+                                      ...r,
+                                      sessions: remaining_sessions,
+                                      duration_minutes: total_minutes,
+                                  }
+                                : r
+                        ),
+                    }));
+                }
+            }
+        }
+
         set({ timer: DEFAULT_TIMER, form_data: DEFAULT_FORM_DATA });
     },
 
@@ -636,18 +883,50 @@ export const useWorkStore = create<WorkStore>()(
 
     // 타이머 시작 시간 변경 (간트차트에서 진행 중인 작업의 시작 시간을 앞당길 때)
     updateTimerStartTime: (new_start_time) => {
-        const { timer } = get();
+        const { timer, records } = get();
         if (!timer.is_running || !timer.start_time) return;
 
         // 새 시작 시간은 현재 시간보다 미래일 수 없음
         if (new_start_time > Date.now()) return;
 
+        const new_start_time_str = dayjs(new_start_time).format("HH:mm");
+
+        // 타이머 상태 업데이트
         set((state) => ({
             timer: {
                 ...state.timer,
                 start_time: new_start_time,
             },
         }));
+
+        // 진행 중인 세션의 start_time도 업데이트
+        if (timer.active_record_id && timer.active_session_id) {
+            const record = records.find((r) => r.id === timer.active_record_id);
+            if (record) {
+                const updated_sessions = record.sessions.map((s) =>
+                    s.id === timer.active_session_id
+                        ? { ...s, start_time: new_start_time_str }
+                        : s
+                );
+
+                // 첫 세션이면 레코드의 start_time도 업데이트
+                const first_session = updated_sessions.sort((a, b) =>
+                    a.start_time.localeCompare(b.start_time)
+                )[0];
+
+                set((state) => ({
+                    records: state.records.map((r) =>
+                        r.id === timer.active_record_id
+                            ? {
+                                  ...r,
+                                  sessions: updated_sessions,
+                                  start_time: first_session?.start_time || r.start_time,
+                              }
+                            : r
+                    ),
+                }));
+            }
+        }
     },
 
     setFormData: (data) => {

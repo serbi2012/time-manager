@@ -17,7 +17,12 @@ import {
     Popover,
     Popconfirm,
 } from "antd";
-import { PlusOutlined, CloseOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+    PlusOutlined,
+    CloseOutlined,
+    EditOutlined,
+    DeleteOutlined,
+} from "@ant-design/icons";
 import dayjs from "dayjs";
 import {
     useWorkStore,
@@ -27,7 +32,10 @@ import {
 import { useShortcutStore } from "../store/useShortcutStore";
 import type { WorkRecord, WorkSession } from "../types";
 import { useResponsive } from "../hooks/useResponsive";
-import { formatShortcutKeyForPlatform, matchShortcutKey } from "../hooks/useShortcuts";
+import {
+    formatShortcutKeyForPlatform,
+    matchShortcutKey,
+} from "../hooks/useShortcuts";
 
 const { Text } = Typography;
 
@@ -130,7 +138,6 @@ export default function DailyGanttChart() {
         selected_date,
         templates,
         timer,
-        getElapsedSeconds,
         addRecord,
         updateRecord,
         updateSession,
@@ -147,10 +154,10 @@ export default function DailyGanttChart() {
     } = useWorkStore();
 
     // 모달 저장 단축키 설정
-    const modal_submit_shortcut = useShortcutStore((state) => 
-        state.shortcuts.find(s => s.id === 'modal-submit')
+    const modal_submit_shortcut = useShortcutStore((state) =>
+        state.shortcuts.find((s) => s.id === "modal-submit")
     );
-    const modal_submit_keys = modal_submit_shortcut?.keys || 'F8';
+    const modal_submit_keys = modal_submit_shortcut?.keys || "F8";
 
     // 성능을 위해 1분마다만 업데이트 (진행 중인 작업 표시용)
     const [gantt_tick, setGanttTick] = useState(0);
@@ -210,23 +217,10 @@ export default function DailyGanttChart() {
 
     // 거래명 기준으로 세션을 그룹화 (진행 중인 작업 포함)
     // 선택된 날짜의 세션만 표시 (레코드 날짜가 아닌 세션 날짜 기준)
+    // end_time이 빈 세션은 현재 시간으로 표시
     const grouped_works = useMemo(() => {
         const groups: Map<string, GroupedWork> = new Map();
-
-        // 타이머 관련 정보 미리 계산 (중복 세션 필터링용)
-        let timer_key: string | null = null;
-        let timer_start_min = 0;
-        let timer_date: string | null = null;
-
-        if (timer.is_running && timer.active_form_data && timer.start_time) {
-            timer_key =
-                timer.active_form_data.deal_name ||
-                timer.active_form_data.work_name;
-            timer_date = dayjs(timer.start_time).format("YYYY-MM-DD");
-            timer_start_min = timeToMinutes(
-                dayjs(timer.start_time).format("HH:mm")
-            );
-        }
+        const current_time_str = dayjs().format("HH:mm");
 
         records.forEach((record) => {
             // 삭제된 레코드는 제외
@@ -254,104 +248,34 @@ export default function DailyGanttChart() {
             if (all_sessions.length === 0) return;
 
             // 선택된 날짜의 세션만 필터링
-            let date_sessions = all_sessions.filter(
+            const date_sessions = all_sessions.filter(
                 (s) => (s.date || record.date) === selected_date
             );
 
             // 해당 날짜에 세션이 없으면 스킵
             if (date_sessions.length === 0) return;
 
+            // end_time이 빈 세션(진행 중)은 현재 시간으로 표시
+            const displayed_sessions = date_sessions.map((s) =>
+                s.end_time === "" ? { ...s, end_time: current_time_str } : s
+            );
+
             const key = record.deal_name || record.work_name;
-
-            // 타이머가 실행 중이고, 이 레코드가 현재 타이머 작업과 같으면
-            // 시작 시간이 같은(중복) 세션만 필터링 (1분 이내 차이)
-            if (
-                timer_key &&
-                timer_date === selected_date &&
-                key === timer_key
-            ) {
-                date_sessions = date_sessions.filter((s) => {
-                    const s_start = timeToMinutes(s.start_time);
-                    // 시작 시간이 1분 이상 차이나는 세션만 유지
-                    return Math.abs(s_start - timer_start_min) > 1;
-                });
-            }
-
-            // 필터링 후 세션이 없으면 스킵 (타이머 가상 세션으로 대체됨)
-            if (date_sessions.length === 0) return;
 
             if (groups.has(key)) {
                 const group = groups.get(key)!;
-                group.sessions.push(...date_sessions);
+                group.sessions.push(...displayed_sessions);
             } else {
                 groups.set(key, {
                     key,
                     record,
-                    sessions: [...date_sessions],
-                    first_start: timeToMinutes(date_sessions[0].start_time),
+                    sessions: [...displayed_sessions],
+                    first_start: timeToMinutes(
+                        displayed_sessions[0].start_time
+                    ),
                 });
             }
         });
-
-        // 현재 진행 중인 작업이 있고, 오늘 날짜인 경우 가상 세션 추가
-        // (겹치는 세션은 위 records.forEach에서 이미 필터링됨)
-        if (timer.is_running && timer.active_form_data && timer.start_time) {
-            const start_date = dayjs(timer.start_time).format("YYYY-MM-DD");
-
-            // 오늘 날짜의 작업인 경우에만 표시
-            if (start_date === selected_date) {
-                const elapsed_seconds = getElapsedSeconds();
-                const elapsed_minutes = Math.floor(elapsed_seconds / 60);
-                const start_time_str = dayjs(timer.start_time).format("HH:mm");
-                const end_time_str = dayjs().format("HH:mm");
-
-                const key =
-                    timer.active_form_data.deal_name ||
-                    timer.active_form_data.work_name;
-
-                // 가상 세션 생성
-                const virtual_session: WorkSession = {
-                    id: "virtual-running-session",
-                    date: selected_date,
-                    start_time: start_time_str,
-                    end_time: end_time_str,
-                    duration_minutes: elapsed_minutes,
-                };
-
-                const existing_group = groups.get(key);
-
-                if (existing_group) {
-                    // 기존 그룹에 가상 세션 추가 (겹치는 세션은 이미 필터링됨)
-                    existing_group.sessions.push(virtual_session);
-                } else {
-                    // 새 그룹 생성 (가상 레코드)
-                    const virtual_record: WorkRecord = {
-                        id: "virtual-running-record",
-                        project_code:
-                            timer.active_form_data.project_code || "A00_00000",
-                        work_name: timer.active_form_data.work_name,
-                        task_name: timer.active_form_data.task_name || "",
-                        deal_name: timer.active_form_data.deal_name || "",
-                        category_name:
-                            timer.active_form_data.category_name || "",
-                        note: timer.active_form_data.note || "",
-                        duration_minutes: elapsed_minutes,
-                        start_time: start_time_str,
-                        end_time: end_time_str,
-                        date: selected_date,
-                        sessions: [virtual_session],
-                        is_completed: false,
-                    };
-
-                    groups.set(key, {
-                        key,
-                        record: virtual_record,
-                        sessions: [virtual_session],
-                        first_start: timeToMinutes(start_time_str),
-                    });
-                }
-            }
-        }
 
         return Array.from(groups.values()).sort(
             (a, b) => a.first_start - b.first_start
@@ -359,16 +283,12 @@ export default function DailyGanttChart() {
     }, [
         records,
         selected_date,
-        timer.is_running,
-        timer.active_form_data,
-        timer.start_time,
-        gantt_tick,
-        getElapsedSeconds,
+        gantt_tick, // 실시간 업데이트를 위해 gantt_tick 유지
     ]);
 
     // 모든 세션의 시간 슬롯 (충돌 감지용) - 시작 시간순 정렬
     // 점심시간도 점유된 슬롯으로 처리
-    // 현재 레코딩 중인 작업도 포함
+    // 진행 중인 세션(end_time이 빈)도 이미 grouped_works에 포함되어 있음
     const occupied_slots = useMemo((): TimeSlot[] => {
         const slots: TimeSlot[] = [];
 
@@ -384,22 +304,8 @@ export default function DailyGanttChart() {
             });
         });
 
-        // 현재 레코딩 중인 작업의 시간도 충돌 감지에 포함
-        if (timer.is_running && timer.start_time) {
-            const start_date = dayjs(timer.start_time).format("YYYY-MM-DD");
-            if (start_date === selected_date) {
-                const start_mins = timeToMinutes(
-                    dayjs(timer.start_time).format("HH:mm")
-                );
-                const end_mins = timeToMinutes(dayjs().format("HH:mm"));
-                if (end_mins > start_mins) {
-                    slots.push({ start: start_mins, end: end_mins });
-                }
-            }
-        }
-
         return slots.sort((a, b) => a.start - b.start);
-    }, [grouped_works, timer.is_running, timer.start_time, selected_date]);
+    }, [grouped_works]);
 
     // 특정 시간이 기존 세션 위에 있는지 확인
     const isOnExistingBar = useCallback(
@@ -909,8 +815,8 @@ export default function DailyGanttChart() {
             return;
         }
 
-        // 진행 중인 작업의 시작 시간 조절
-        if (session_id === "virtual-running-session") {
+        // 진행 중인 작업의 시작 시간 조절 (end_time이 빈 세션)
+        if (session_id === timer.active_session_id && handle === "left") {
             // 분 단위를 타임스탬프로 변환 (오늘 날짜 기준)
             const today = dayjs(selected_date);
             const new_start_timestamp = today
@@ -919,8 +825,15 @@ export default function DailyGanttChart() {
                 .second(0)
                 .millisecond(0)
                 .valueOf();
-            
+
             updateTimerStartTime(new_start_timestamp);
+            setResizeState(null);
+            return;
+        }
+
+        // 진행 중인 세션의 오른쪽 핸들(종료시간)은 조절 불가
+        if (session_id === timer.active_session_id && handle === "right") {
+            message.info("진행 중인 세션의 종료 시간은 수정할 수 없습니다.");
             setResizeState(null);
             return;
         }
@@ -940,7 +853,13 @@ export default function DailyGanttChart() {
         }
 
         setResizeState(null);
-    }, [resize_state, updateSession, selected_date, updateTimerStartTime]);
+    }, [
+        resize_state,
+        updateSession,
+        selected_date,
+        updateTimerStartTime,
+        timer.active_session_id,
+    ]);
 
     // 리사이즈 중인 바 스타일 계산
     const getResizingBarStyle = useCallback(
@@ -1078,11 +997,7 @@ export default function DailyGanttChart() {
         (record: WorkRecord, e: React.MouseEvent) => {
             e.stopPropagation();
             e.preventDefault();
-            // 진행 중인 가상 세션은 수정 불가
-            if (record.id === "virtual-running-record") {
-                message.info("진행 중인 작업은 수정할 수 없습니다.");
-                return;
-            }
+            // 진행 중인 작업도 수정 가능 (종료 시간 제외)
 
             setEditRecord(record);
             edit_form.setFieldsValue({
@@ -1101,13 +1016,9 @@ export default function DailyGanttChart() {
     // 우클릭 메뉴에서 수정 클릭
     const handleContextEdit = useCallback(() => {
         if (!context_menu) return;
-        
+
         const { record } = context_menu;
-        if (record.id === "virtual-running-record") {
-            message.info("진행 중인 작업은 수정할 수 없습니다.");
-            setContextMenu(null);
-            return;
-        }
+        // 진행 중인 작업도 수정 가능 (종료 시간 제외)
 
         setEditRecord(record);
         edit_form.setFieldsValue({
@@ -1125,9 +1036,9 @@ export default function DailyGanttChart() {
     // 우클릭 메뉴에서 세션 삭제
     const handleContextDeleteSession = useCallback(() => {
         if (!context_menu) return;
-        
+
         const { session, record } = context_menu;
-        if (session.id === "virtual-running-session") {
+        if (session.id === timer.active_session_id) {
             message.info("진행 중인 세션은 삭제할 수 없습니다.");
             setContextMenu(null);
             return;
@@ -1136,7 +1047,7 @@ export default function DailyGanttChart() {
         deleteSession(record.id, session.id);
         message.success("세션이 삭제되었습니다.");
         setContextMenu(null);
-    }, [context_menu, deleteSession]);
+    }, [context_menu, deleteSession, timer.active_session_id]);
 
     // 수정 저장 핸들러
     const handleEditWork = async () => {
@@ -1480,68 +1391,44 @@ export default function DailyGanttChart() {
                                                     <div className="gantt-row-bars">
                                                         {group.sessions.map(
                                                             (session, idx) => {
-                                                                const is_context_open = context_menu?.session.id === session.id;
-                                                                
+                                                                const is_context_open =
+                                                                    context_menu
+                                                                        ?.session
+                                                                        .id ===
+                                                                    session.id;
+
                                                                 return (
-                                                                <Popover
-                                                                    key={session.id + idx}
-                                                                    open={is_context_open}
-                                                                    onOpenChange={(open) => {
-                                                                        if (!open) setContextMenu(null);
-                                                                    }}
-                                                                    trigger="contextMenu"
-                                                                    placement="top"
-                                                                    content={
-                                                                        <div style={{ minWidth: 160 }}>
-                                                                            <div style={{ marginBottom: 8 }}>
-                                                                                <strong>{group.record.work_name}</strong>
-                                                                                {group.record.deal_name && (
-                                                                                    <div style={{ color: "#666", fontSize: 12 }}>
-                                                                                        {group.record.deal_name}
-                                                                                    </div>
-                                                                                )}
-                                                                                <div style={{ color: "#888", fontSize: 12, marginTop: 4 }}>
-                                                                                    {session.start_time} ~ {session.end_time}
-                                                                                </div>
-                                                                            </div>
-                                                                            <Space direction="vertical" style={{ width: "100%" }}>
-                                                                                <Button
-                                                                                    type="text"
-                                                                                    icon={<EditOutlined />}
-                                                                                    onClick={handleContextEdit}
-                                                                                    style={{ width: "100%", textAlign: "left" }}
-                                                                                    disabled={session.id === "virtual-running-session"}
+                                                                    <Popover
+                                                                        key={
+                                                                            session.id +
+                                                                            idx
+                                                                        }
+                                                                        open={
+                                                                            is_context_open
+                                                                        }
+                                                                        onOpenChange={(
+                                                                            open
+                                                                        ) => {
+                                                                            if (
+                                                                                !open
+                                                                            )
+                                                                                setContextMenu(
+                                                                                    null
+                                                                                );
+                                                                        }}
+                                                                        trigger="contextMenu"
+                                                                        placement="top"
+                                                                        content={
+                                                                            <div
+                                                                                style={{
+                                                                                    minWidth: 160,
+                                                                                }}
+                                                                            >
+                                                                                <div
+                                                                                    style={{
+                                                                                        marginBottom: 8,
+                                                                                    }}
                                                                                 >
-                                                                                    작업 수정
-                                                                                </Button>
-                                                                                <Popconfirm
-                                                                                    title="세션 삭제"
-                                                                                    description={`이 세션(${session.start_time}~${session.end_time})을 삭제하시겠습니까?`}
-                                                                                    onConfirm={handleContextDeleteSession}
-                                                                                    okText="삭제"
-                                                                                    cancelText="취소"
-                                                                                    okButtonProps={{ danger: true }}
-                                                                                >
-                                                                                    <Button
-                                                                                        type="text"
-                                                                                        danger
-                                                                                        icon={<DeleteOutlined />}
-                                                                                        style={{ width: "100%", textAlign: "left" }}
-                                                                                        disabled={session.id === "virtual-running-session"}
-                                                                                    >
-                                                                                        세션 삭제
-                                                                                    </Button>
-                                                                                </Popconfirm>
-                                                                            </Space>
-                                                                        </div>
-                                                                    }
-                                                                >
-                                                                <Tooltip
-                                                                    title={
-                                                                        resize_state?.session_id ===
-                                                                        session.id || is_context_open ? null : (
-                                                                            <div>
-                                                                                <div>
                                                                                     <strong>
                                                                                         {
                                                                                             group
@@ -1549,176 +1436,285 @@ export default function DailyGanttChart() {
                                                                                                 .work_name
                                                                                         }
                                                                                     </strong>
-                                                                                </div>
-                                                                                {group
-                                                                                    .record
-                                                                                    .deal_name && (
-                                                                                    <div>
-                                                                                        {
-                                                                                            group
-                                                                                                .record
-                                                                                                .deal_name
-                                                                                        }
-                                                                                    </div>
-                                                                                )}
-                                                                                <div>
-                                                                                    {
-                                                                                        session.start_time
-                                                                                    }{" "}
-                                                                                    ~{" "}
-                                                                                    {
-                                                                                        session.end_time
-                                                                                    }
-                                                                                </div>
-                                                                                <div>
-                                                                                    {formatMinutes(
-                                                                                        getSessionMinutes(
-                                                                                            session
-                                                                                        )
+                                                                                    {group
+                                                                                        .record
+                                                                                        .deal_name && (
+                                                                                        <div
+                                                                                            style={{
+                                                                                                color: "#666",
+                                                                                                fontSize: 12,
+                                                                                            }}
+                                                                                        >
+                                                                                            {
+                                                                                                group
+                                                                                                    .record
+                                                                                                    .deal_name
+                                                                                            }
+                                                                                        </div>
                                                                                     )}
-                                                                                </div>
-                                                                                <div
-                                                                                    style={{
-                                                                                        marginTop: 4,
-                                                                                    }}
-                                                                                >
-                                                                                    총{" "}
-                                                                                    {
-                                                                                        group
-                                                                                            .sessions
-                                                                                            .length
-                                                                                    }
-                                                                                    회,{" "}
-                                                                                    {formatMinutes(
-                                                                                        getTotalDuration(
-                                                                                            group.sessions
-                                                                                        )
-                                                                                    )}
-                                                                                </div>
-                                                                                {session.id !==
-                                                                                    "virtual-running-session" && (
                                                                                     <div
                                                                                         style={{
+                                                                                            color: "#888",
+                                                                                            fontSize: 12,
                                                                                             marginTop: 4,
-                                                                                            fontSize: 11,
-                                                                                            color: "#aaa",
                                                                                         }}
                                                                                     >
-                                                                                        💡
-                                                                                        모서리
-                                                                                        드래그로
-                                                                                        시간
-                                                                                        조절
-                                                                                        <br />
-                                                                                        💡
-                                                                                        더블클릭으로
+                                                                                        {
+                                                                                            session.start_time
+                                                                                        }{" "}
+                                                                                        ~{" "}
+                                                                                        {
+                                                                                            session.end_time
+                                                                                        }
+                                                                                    </div>
+                                                                                </div>
+                                                                                <Space
+                                                                                    direction="vertical"
+                                                                                    style={{
+                                                                                        width: "100%",
+                                                                                    }}
+                                                                                >
+                                                                                    <Button
+                                                                                        type="text"
+                                                                                        icon={
+                                                                                            <EditOutlined />
+                                                                                        }
+                                                                                        onClick={
+                                                                                            handleContextEdit
+                                                                                        }
+                                                                                        style={{
+                                                                                            width: "100%",
+                                                                                            textAlign:
+                                                                                                "left",
+                                                                                        }}
+                                                                                    >
                                                                                         작업
                                                                                         수정
-                                                                                        <br />
-                                                                                        💡
-                                                                                        우클릭으로
-                                                                                        메뉴
+                                                                                    </Button>
+                                                                                    <Popconfirm
+                                                                                        title="세션 삭제"
+                                                                                        description={`이 세션(${session.start_time}~${session.end_time})을 삭제하시겠습니까?`}
+                                                                                        onConfirm={
+                                                                                            handleContextDeleteSession
+                                                                                        }
+                                                                                        okText="삭제"
+                                                                                        cancelText="취소"
+                                                                                        okButtonProps={{
+                                                                                            danger: true,
+                                                                                        }}
+                                                                                    >
+                                                                                        <Button
+                                                                                            type="text"
+                                                                                            danger
+                                                                                            icon={
+                                                                                                <DeleteOutlined />
+                                                                                            }
+                                                                                            style={{
+                                                                                                width: "100%",
+                                                                                                textAlign:
+                                                                                                    "left",
+                                                                                            }}
+                                                                                            disabled={
+                                                                                                session.id ===
+                                                                                                timer.active_session_id
+                                                                                            }
+                                                                                        >
+                                                                                            세션
+                                                                                            삭제
+                                                                                        </Button>
+                                                                                    </Popconfirm>
+                                                                                </Space>
+                                                                            </div>
+                                                                        }
+                                                                    >
+                                                                        <Tooltip
+                                                                            title={
+                                                                                resize_state?.session_id ===
+                                                                                    session.id ||
+                                                                                is_context_open ? null : (
+                                                                                    <div>
+                                                                                        <div>
+                                                                                            <strong>
+                                                                                                {
+                                                                                                    group
+                                                                                                        .record
+                                                                                                        .work_name
+                                                                                                }
+                                                                                            </strong>
+                                                                                        </div>
+                                                                                        {group
+                                                                                            .record
+                                                                                            .deal_name && (
+                                                                                            <div>
+                                                                                                {
+                                                                                                    group
+                                                                                                        .record
+                                                                                                        .deal_name
+                                                                                                }
+                                                                                            </div>
+                                                                                        )}
+                                                                                        <div>
+                                                                                            {
+                                                                                                session.start_time
+                                                                                            }{" "}
+                                                                                            ~{" "}
+                                                                                            {
+                                                                                                session.end_time
+                                                                                            }
+                                                                                        </div>
+                                                                                        <div>
+                                                                                            {formatMinutes(
+                                                                                                getSessionMinutes(
+                                                                                                    session
+                                                                                                )
+                                                                                            )}
+                                                                                        </div>
+                                                                                        <div
+                                                                                            style={{
+                                                                                                marginTop: 4,
+                                                                                            }}
+                                                                                        >
+                                                                                            총{" "}
+                                                                                            {
+                                                                                                group
+                                                                                                    .sessions
+                                                                                                    .length
+                                                                                            }
+                                                                                            회,{" "}
+                                                                                            {formatMinutes(
+                                                                                                getTotalDuration(
+                                                                                                    group.sessions
+                                                                                                )
+                                                                                            )}
+                                                                                        </div>
+                                                                                        <div
+                                                                                            style={{
+                                                                                                marginTop: 4,
+                                                                                                fontSize: 11,
+                                                                                                color: "#aaa",
+                                                                                            }}
+                                                                                        >
+                                                                                            💡
+                                                                                            모서리
+                                                                                            드래그로
+                                                                                            시간
+                                                                                            조절
+                                                                                            {session.id ===
+                                                                                                timer.active_session_id &&
+                                                                                                " (시작 시간만)"}
+                                                                                            <br />
+                                                                                            💡
+                                                                                            더블클릭으로
+                                                                                            작업
+                                                                                            수정
+                                                                                            <br />
+                                                                                            💡
+                                                                                            우클릭으로
+                                                                                            메뉴
+                                                                                        </div>
+                                                                                    </div>
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <div
+                                                                                className={`gantt-bar ${
+                                                                                    session.id ===
+                                                                                    timer.active_session_id
+                                                                                        ? "gantt-bar-running"
+                                                                                        : ""
+                                                                                } ${
+                                                                                    resize_state?.session_id ===
+                                                                                    session.id
+                                                                                        ? "gantt-bar-resizing"
+                                                                                        : ""
+                                                                                }`}
+                                                                                style={
+                                                                                    getResizingBarStyle(
+                                                                                        session,
+                                                                                        color
+                                                                                    ) ||
+                                                                                    getBarStyle(
+                                                                                        session,
+                                                                                        color,
+                                                                                        session.id ===
+                                                                                            timer.active_session_id
+                                                                                    )
+                                                                                }
+                                                                                onDoubleClick={(
+                                                                                    e
+                                                                                ) =>
+                                                                                    handleBarDoubleClick(
+                                                                                        group.record,
+                                                                                        e
+                                                                                    )
+                                                                                }
+                                                                                onContextMenu={(
+                                                                                    e
+                                                                                ) => {
+                                                                                    e.preventDefault();
+                                                                                    setContextMenu(
+                                                                                        {
+                                                                                            session,
+                                                                                            record: group.record,
+                                                                                        }
+                                                                                    );
+                                                                                }}
+                                                                            >
+                                                                                {/* 리사이즈 핸들 - 왼쪽(시작 시간): 항상 표시, 오른쪽(종료 시간): 진행 중이 아닌 경우에만 */}
+                                                                                <div
+                                                                                    className="resize-handle resize-handle-left"
+                                                                                    onMouseDown={(
+                                                                                        e
+                                                                                    ) =>
+                                                                                        handleResizeStart(
+                                                                                            e,
+                                                                                            session,
+                                                                                            group.record,
+                                                                                            "left"
+                                                                                        )
+                                                                                    }
+                                                                                />
+                                                                                {session.id !==
+                                                                                    timer.active_session_id && (
+                                                                                    <div
+                                                                                        className="resize-handle resize-handle-right"
+                                                                                        onMouseDown={(
+                                                                                            e
+                                                                                        ) =>
+                                                                                            handleResizeStart(
+                                                                                                e,
+                                                                                                session,
+                                                                                                group.record,
+                                                                                                "right"
+                                                                                            )
+                                                                                        }
+                                                                                    />
+                                                                                )}
+                                                                                {/* 리사이즈 중일 때 시간 표시 */}
+                                                                                {resize_state?.session_id ===
+                                                                                    session.id && (
+                                                                                    <div className="resize-time-indicator">
+                                                                                        {minutesToTime(
+                                                                                            resize_state.handle ===
+                                                                                                "left"
+                                                                                                ? resize_state.current_value
+                                                                                                : resize_state.original_start
+                                                                                        )}
+                                                                                        {
+                                                                                            " ~ "
+                                                                                        }
+                                                                                        {minutesToTime(
+                                                                                            resize_state.handle ===
+                                                                                                "right"
+                                                                                                ? resize_state.current_value
+                                                                                                : resize_state.original_end
+                                                                                        )}
                                                                                     </div>
                                                                                 )}
                                                                             </div>
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <div
-                                                                        className={`gantt-bar ${
-                                                                            session.id ===
-                                                                            "virtual-running-session"
-                                                                                ? "gantt-bar-running"
-                                                                                : ""
-                                                                        } ${
-                                                                            resize_state?.session_id ===
-                                                                            session.id
-                                                                                ? "gantt-bar-resizing"
-                                                                                : ""
-                                                                        }`}
-                                                                        style={
-                                                                            getResizingBarStyle(
-                                                                                session,
-                                                                                color
-                                                                            ) ||
-                                                                            getBarStyle(
-                                                                                session,
-                                                                                color,
-                                                                                session.id ===
-                                                                                    "virtual-running-session"
-                                                                            )
-                                                                        }
-                                                                        onDoubleClick={(
-                                                                            e
-                                                                        ) =>
-                                                                            handleBarDoubleClick(
-                                                                                group.record,
-                                                                                e
-                                                                            )
-                                                                        }
-                                                                        onContextMenu={(e) => {
-                                                                            e.preventDefault();
-                                                                            setContextMenu({
-                                                                                session,
-                                                                                record: group.record,
-                                                                            });
-                                                                        }}
-                                                                    >
-                                                                        {/* 리사이즈 핸들 - 왼쪽(시작 시간): 항상 표시, 오른쪽(종료 시간): 레코딩 중이 아닌 경우에만 */}
-                                                                        <div
-                                                                            className="resize-handle resize-handle-left"
-                                                                            onMouseDown={(
-                                                                                e
-                                                                            ) =>
-                                                                                handleResizeStart(
-                                                                                    e,
-                                                                                    session,
-                                                                                    group.record,
-                                                                                    "left"
-                                                                                )
-                                                                            }
-                                                                        />
-                                                                        {session.id !==
-                                                                            "virtual-running-session" && (
-                                                                            <div
-                                                                                className="resize-handle resize-handle-right"
-                                                                                onMouseDown={(
-                                                                                    e
-                                                                                ) =>
-                                                                                    handleResizeStart(
-                                                                                        e,
-                                                                                        session,
-                                                                                        group.record,
-                                                                                        "right"
-                                                                                    )
-                                                                                }
-                                                                            />
-                                                                        )}
-                                                                        {/* 리사이즈 중일 때 시간 표시 */}
-                                                                        {resize_state?.session_id ===
-                                                                            session.id && (
-                                                                            <div className="resize-time-indicator">
-                                                                                {minutesToTime(
-                                                                                    resize_state.handle ===
-                                                                                        "left"
-                                                                                        ? resize_state.current_value
-                                                                                        : resize_state.original_start
-                                                                                )}
-                                                                                {
-                                                                                    " ~ "
-                                                                                }
-                                                                                {minutesToTime(
-                                                                                    resize_state.handle ===
-                                                                                        "right"
-                                                                                        ? resize_state.current_value
-                                                                                        : resize_state.original_end
-                                                                                )}
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                </Tooltip>
-                                                                </Popover>
-                                                            );
+                                                                        </Tooltip>
+                                                                    </Popover>
+                                                                );
                                                             }
                                                         )}
                                                     </div>

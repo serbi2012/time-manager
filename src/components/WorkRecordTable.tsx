@@ -500,16 +500,22 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                         key: "end_time",
                         width: 110,
                         render: (_: unknown, session: WorkSession) => (
-                            <TimeInput
-                                value={session.end_time}
-                                onSave={(new_time) =>
-                                    handleUpdateTime(
-                                        session.id,
-                                        session.start_time,
-                                        new_time
-                                    )
-                                }
-                            />
+                            session.end_time === "" ? (
+                                <Text type="secondary" style={{ fontFamily: "monospace", fontSize: 12 }}>
+                                    진행중
+                                </Text>
+                            ) : (
+                                <TimeInput
+                                    value={session.end_time}
+                                    onSave={(new_time) =>
+                                        handleUpdateTime(
+                                            session.id,
+                                            session.start_time,
+                                            new_time
+                                        )
+                                    }
+                                />
+                            )
                         ),
                     },
                     {
@@ -529,23 +535,35 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                         key: "action",
                         width: 40,
                         render: (_: unknown, session: WorkSession) => (
-                            <Popconfirm
-                                title="세션 삭제"
-                                description="이 세션을 삭제하시겠습니까?"
-                                onConfirm={() =>
-                                    handleDeleteSession(session.id)
-                                }
-                                okText="삭제"
-                                cancelText="취소"
-                                okButtonProps={{ danger: true, autoFocus: true }}
-                            >
-                                <Button
-                                    type="text"
-                                    danger
-                                    icon={<DeleteOutlined />}
-                                    size="small"
-                                />
-                            </Popconfirm>
+                            session.end_time === "" ? (
+                                <Tooltip title="진행 중인 세션은 삭제할 수 없습니다">
+                                    <Button
+                                        type="text"
+                                        danger
+                                        icon={<DeleteOutlined />}
+                                        size="small"
+                                        disabled
+                                    />
+                                </Tooltip>
+                            ) : (
+                                <Popconfirm
+                                    title="세션 삭제"
+                                    description="이 세션을 삭제하시겠습니까?"
+                                    onConfirm={() =>
+                                        handleDeleteSession(session.id)
+                                    }
+                                    okText="삭제"
+                                    cancelText="취소"
+                                    okButtonProps={{ danger: true, autoFocus: true }}
+                                >
+                                    <Button
+                                        type="text"
+                                        danger
+                                        icon={<DeleteOutlined />}
+                                        size="small"
+                                    />
+                                </Popconfirm>
+                            )
                         ),
                     },
                 ]}

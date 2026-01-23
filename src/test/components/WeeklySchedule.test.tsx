@@ -23,6 +23,8 @@ const resetStore = () => {
             start_time: null,
             active_template_id: null,
             active_form_data: null,
+            active_record_id: null,
+            active_session_id: null,
         },
         form_data: {
             project_code: "",

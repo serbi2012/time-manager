@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "1.3.5";
+export const CURRENT_VERSION = "1.3.6";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,23 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "1.3.6",
+        date: "2026-01-23",
+        title: "진행 중 작업 실시간 동기화",
+        changes: [
+            {
+                type: "fix",
+                description:
+                    "진행 중인 작업이 다른 탭/기기와 실시간 동기화됨 (충돌 문제 해결)",
+            },
+            {
+                type: "improvement",
+                description:
+                    "진행 중인 세션의 종료 시간은 수정 불가 (종료 후에만 수정 가능)",
+            },
+        ],
+    },
     {
         version: "1.3.5",
         date: "2026-01-23",

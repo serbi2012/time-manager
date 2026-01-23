@@ -138,6 +138,8 @@ describe('firestore 서비스', () => {
                     category_name: '개발',
                     note: '',
                 },
+                active_record_id: 'record-1',
+                active_session_id: 'session-1',
             }
 
             await saveUserData(user_id, { timer })
@@ -324,6 +326,8 @@ describe('firestore 서비스', () => {
                     start_time: null,
                     active_template_id: null,
                     active_form_data: null,
+                    active_record_id: null,
+                    active_session_id: null,
                 } as TimerState,
                 shortcuts: [
                     {

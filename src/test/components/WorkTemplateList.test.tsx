@@ -25,6 +25,8 @@ const resetStore = () => {
             start_time: null,
             active_template_id: null,
             active_form_data: null,
+            active_record_id: null,
+            active_session_id: null,
         },
         form_data: {
             project_code: '',
@@ -457,9 +459,12 @@ describe('WorkTemplateList', () => {
             ]
             useWorkStore.setState({ templates })
 
-            // 첫 번째 템플릿으로 타이머 시작
+            // 첫 번째 템플릿으로 타이머 시작 (즉시 records에 세션 추가됨)
             useWorkStore.getState().applyTemplate('t1')
             useWorkStore.getState().startTimer('t1')
+
+            // 타이머 시작 시 바로 레코드가 생성됨
+            expect(useWorkStore.getState().records).toHaveLength(1)
 
             // 5분 경과
             vi.advanceTimersByTime(5 * 60 * 1000)
@@ -468,9 +473,19 @@ describe('WorkTemplateList', () => {
             useWorkStore.getState().switchTemplate('t2')
 
             const state = useWorkStore.getState()
-            // 이전 작업이 저장됨
-            expect(state.records).toHaveLength(1)
-            expect(state.records[0].work_name).toBe('작업1')
+            // 이전 작업 세션 종료 + 새 작업 세션 추가 = 2개 레코드
+            expect(state.records).toHaveLength(2)
+            
+            // 이전 작업이 저장됨 (종료 시간이 채워짐)
+            const record1 = state.records.find(r => r.work_name === '작업1')
+            expect(record1).toBeDefined()
+            expect(record1!.sessions[0].end_time).not.toBe('')
+            
+            // 새 작업이 진행 중 (종료 시간이 빈 문자열)
+            const record2 = state.records.find(r => r.work_name === '작업2')
+            expect(record2).toBeDefined()
+            expect(record2!.sessions[0].end_time).toBe('')
+            
             // 새 타이머 실행 중
             expect(state.timer.is_running).toBe(true)
             expect(state.timer.active_template_id).toBe('t2')
