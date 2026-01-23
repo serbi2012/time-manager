@@ -5,7 +5,7 @@
  * 특히 일별 누적시간 계산 로직을 검증합니다.
  */
 import { describe, it, expect, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { ConfigProvider } from "antd";
 import koKR from "antd/locale/ko_KR";
 import { BrowserRouter } from "react-router-dom";
@@ -357,6 +357,83 @@ describe("WeeklySchedule", () => {
 
             const copy_button = screen.getByRole("button", { name: /복사/ });
             expect(copy_button).not.toBeDisabled();
+        });
+
+        it("복사 형식 선택 버튼이 표시됨", () => {
+            const record = createTestRecord();
+            useWorkStore.setState({ records: [record] });
+
+            render(
+                <TestWrapper>
+                    <WeeklySchedule />
+                </TestWrapper>
+            );
+
+            expect(screen.getByRole("radio", { name: "형식 1" })).toBeInTheDocument();
+            expect(screen.getByRole("radio", { name: "형식 2" })).toBeInTheDocument();
+        });
+
+        it("형식 2가 기본 선택되어 있음", () => {
+            const record = createTestRecord();
+            useWorkStore.setState({ records: [record] });
+
+            render(
+                <TestWrapper>
+                    <WeeklySchedule />
+                </TestWrapper>
+            );
+
+            const format2_button = screen.getByRole("radio", { name: "형식 2" });
+            expect(format2_button).toBeChecked();
+        });
+
+        it("형식 1 선택 시 기존 형식으로 텍스트 생성됨", () => {
+            const record = createTestRecord({
+                work_name: "테스트 작업",
+                date: "2026-01-20",
+                deal_name: "세부작업",
+            });
+            useWorkStore.setState({ records: [record] });
+
+            render(
+                <TestWrapper>
+                    <WeeklySchedule />
+                </TestWrapper>
+            );
+
+            // 형식 1 선택 (Radio.Button의 label 요소 클릭)
+            const format1_button = screen.getByText("형식 1");
+            fireEvent.click(format1_button);
+
+            const preview_text = document.querySelector(".copy-preview")?.textContent || "";
+
+            // 형식 1은 '>' 기호와 구분선 없음
+            expect(preview_text).toContain("> 세부작업");
+            expect(preview_text).not.toContain("────");
+            expect(preview_text).not.toContain("■");
+        });
+
+        it("형식 2 선택 시 구분선 형식으로 텍스트 생성됨", () => {
+            const record = createTestRecord({
+                work_name: "테스트 작업",
+                date: "2026-01-20",
+                deal_name: "세부작업",
+            });
+            useWorkStore.setState({ records: [record] });
+
+            render(
+                <TestWrapper>
+                    <WeeklySchedule />
+                </TestWrapper>
+            );
+
+            // 형식 2는 기본값
+            const preview_text = document.querySelector(".copy-preview")?.textContent || "";
+
+            // 형식 2는 구분선, ■ 기호, · 기호 사용
+            expect(preview_text).toContain("────");
+            expect(preview_text).toContain("■");
+            expect(preview_text).toContain("· 세부작업");
         });
     });
 });

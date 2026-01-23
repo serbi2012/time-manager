@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "1.3.7";
+export const CURRENT_VERSION = "1.3.8";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,18 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "1.3.8",
+        date: "2026-01-23",
+        title: "주간 일정 복사 형식 옵션",
+        changes: [
+            {
+                type: "improvement",
+                description:
+                    "주간 일정 복사 시 형식 선택 가능 (형식 1: 기존 형식, 형식 2: 구분선 형식)",
+            },
+        ],
+    },
     {
         version: "1.3.7",
         date: "2026-01-23",

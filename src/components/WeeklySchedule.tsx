@@ -78,6 +78,9 @@ const WeeklySchedule = () => {
         Record<string, { status: string }>
     >({});
 
+    // 복사 형식 (1: 기존 형식, 2: 구분선 형식)
+    const [copy_format, setCopyFormat] = useState<1 | 2>(2);
+
     // 관리업무 숨기기 옵션
     const [hide_management_work, setHideManagementWork] = useState(false);
 
@@ -112,62 +115,86 @@ const WeeklySchedule = () => {
     }, [records, selected_week_start]);
 
     // 특정 날짜까지의 누적시간 계산 (work_name 기준)
-    const getTotalMinutesForWork = useCallback((work_name: string, up_to_date: string): number => {
-        return records
-            .filter((r) => r.work_name === work_name && !r.is_deleted)
-            .reduce((sum, r) => {
-                // 세션별로 날짜를 확인하여 해당 날짜까지의 시간만 계산
-                const sessions_up_to_date = r.sessions?.filter((s) => {
-                    const session_date = s.date || r.date;
-                    return session_date <= up_to_date;
-                }) || [];
-                
-                return sum + sessions_up_to_date.reduce((s_sum, s) => s_sum + (s.duration_minutes || 0), 0);
-            }, 0);
-    }, [records]);
+    const getTotalMinutesForWork = useCallback(
+        (work_name: string, up_to_date: string): number => {
+            return records
+                .filter((r) => r.work_name === work_name && !r.is_deleted)
+                .reduce((sum, r) => {
+                    // 세션별로 날짜를 확인하여 해당 날짜까지의 시간만 계산
+                    const sessions_up_to_date =
+                        r.sessions?.filter((s) => {
+                            const session_date = s.date || r.date;
+                            return session_date <= up_to_date;
+                        }) || [];
+
+                    return (
+                        sum +
+                        sessions_up_to_date.reduce(
+                            (s_sum, s) => s_sum + (s.duration_minutes || 0),
+                            0
+                        )
+                    );
+                }, 0);
+        },
+        [records]
+    );
 
     // 특정 날짜까지의 누적시간 계산 (work_name + deal_name 기준)
-    const getTotalMinutesForDeal = useCallback((
-        work_name: string,
-        deal_name: string,
-        up_to_date: string
-    ): number => {
-        return records
-            .filter(
-                (r) => r.work_name === work_name && r.deal_name === deal_name && !r.is_deleted
-            )
-            .reduce((sum, r) => {
-                // 세션별로 날짜를 확인하여 해당 날짜까지의 시간만 계산
-                const sessions_up_to_date = r.sessions?.filter((s) => {
-                    const session_date = s.date || r.date;
-                    return session_date <= up_to_date;
-                }) || [];
-                
-                return sum + sessions_up_to_date.reduce((s_sum, s) => s_sum + (s.duration_minutes || 0), 0);
-            }, 0);
-    }, [records]);
+    const getTotalMinutesForDeal = useCallback(
+        (work_name: string, deal_name: string, up_to_date: string): number => {
+            return records
+                .filter(
+                    (r) =>
+                        r.work_name === work_name &&
+                        r.deal_name === deal_name &&
+                        !r.is_deleted
+                )
+                .reduce((sum, r) => {
+                    // 세션별로 날짜를 확인하여 해당 날짜까지의 시간만 계산
+                    const sessions_up_to_date =
+                        r.sessions?.filter((s) => {
+                            const session_date = s.date || r.date;
+                            return session_date <= up_to_date;
+                        }) || [];
+
+                    return (
+                        sum +
+                        sessions_up_to_date.reduce(
+                            (s_sum, s) => s_sum + (s.duration_minutes || 0),
+                            0
+                        )
+                    );
+                }, 0);
+        },
+        [records]
+    );
 
     // 작업의 첫 시작일 찾기
-    const getFirstStartDate = useCallback((work_name: string): string => {
-        const work_records = records.filter((r) => r.work_name === work_name);
-        if (work_records.length === 0) return "";
+    const getFirstStartDate = useCallback(
+        (work_name: string): string => {
+            const work_records = records.filter(
+                (r) => r.work_name === work_name
+            );
+            if (work_records.length === 0) return "";
 
-        let earliest_date = work_records[0].date;
-        work_records.forEach((r) => {
-            r.sessions?.forEach((s) => {
-                const session_date = s.date || r.date;
-                if (session_date < earliest_date) {
-                    earliest_date = session_date;
+            let earliest_date = work_records[0].date;
+            work_records.forEach((r) => {
+                r.sessions?.forEach((s) => {
+                    const session_date = s.date || r.date;
+                    if (session_date < earliest_date) {
+                        earliest_date = session_date;
+                    }
+                });
+                if (r.date < earliest_date) {
+                    earliest_date = r.date;
                 }
             });
-            if (r.date < earliest_date) {
-                earliest_date = r.date;
-            }
-        });
 
-        const date = dayjs(earliest_date);
-        return `${date.format("M/D")}(${DAY_NAMES[date.day()]})`;
-    }, [records]);
+            const date = dayjs(earliest_date);
+            return `${date.format("M/D")}(${DAY_NAMES[date.day()]})`;
+        },
+        [records]
+    );
 
     // 날짜별로 그룹화된 데이터 생성
     const day_groups = useMemo(() => {
@@ -204,7 +231,10 @@ const WeeklySchedule = () => {
                             edited?.status ||
                             (record.is_completed ? "완료" : "진행중"),
                         start_date: getFirstStartDate(record.work_name),
-                        total_minutes: getTotalMinutesForWork(record.work_name, date),
+                        total_minutes: getTotalMinutesForWork(
+                            record.work_name,
+                            date
+                        ),
                         deals: [],
                     });
                 }
@@ -232,7 +262,10 @@ const WeeklySchedule = () => {
                 // 관리업무 숨기기 필터 적용
                 const filtered_works = Array.from(work_map.values()).filter(
                     (work) => {
-                        if (hide_management_work && work.project_code === "A24_05591") {
+                        if (
+                            hide_management_work &&
+                            work.project_code === "A24_05591"
+                        ) {
                             return false;
                         }
                         return true;
@@ -250,7 +283,15 @@ const WeeklySchedule = () => {
         });
 
         return groups;
-    }, [week_dates, weekly_records, editable_data, hide_management_work, getFirstStartDate, getTotalMinutesForWork, getTotalMinutesForDeal]);
+    }, [
+        week_dates,
+        weekly_records,
+        editable_data,
+        hide_management_work,
+        getFirstStartDate,
+        getTotalMinutesForWork,
+        getTotalMinutesForDeal,
+    ]);
 
     // 진행상태 수정
     const handleStatusChange = (work_name: string, value: string) => {
@@ -266,24 +307,53 @@ const WeeklySchedule = () => {
     const generateCopyText = (): string => {
         let text = "";
 
-        day_groups.forEach((day_group) => {
-            const date = dayjs(day_group.date);
-            text += `${date.format("M/D")} (${day_group.day_name})\n`;
+        if (copy_format === 1) {
+            // 기존 형식
+            day_groups.forEach((day_group) => {
+                const date = dayjs(day_group.date);
+                text += `${date.format("M/D")} (${day_group.day_name})\n`;
 
-            day_group.works.forEach((work) => {
-                text += `[${work.project_code}] ${work.work_name} (진행상태: ${
-                    work.status
-                }, 시작일자: ${work.start_date}, 누적시간: ${formatMinutes(
-                    work.total_minutes
-                )})\n`;
+                day_group.works.forEach((work) => {
+                    text += `[${work.project_code}] ${
+                        work.work_name
+                    } (진행상태: ${work.status}, 시작일자: ${
+                        work.start_date
+                    }, 누적시간: ${formatMinutes(work.total_minutes)})\n`;
 
-                work.deals.forEach((deal) => {
-                    text += `> ${deal.deal_name} (누적시간: ${formatMinutes(
-                        deal.total_minutes
-                    )})\n`;
+                    work.deals.forEach((deal) => {
+                        text += `> ${deal.deal_name} (누적시간: ${formatMinutes(
+                            deal.total_minutes
+                        )})\n`;
+                    });
                 });
             });
-        });
+        } else {
+            // 구분선 형식
+            const separator = "────────────────────────────────────────";
+
+            day_groups.forEach((day_group) => {
+                const date = dayjs(day_group.date);
+                text += `${separator}\n`;
+                text += `■ ${date.format("M/D")} (${day_group.day_name})\n`;
+                text += `${separator}\n`;
+
+                day_group.works.forEach((work) => {
+                    text += `[${work.project_code}] ${
+                        work.work_name
+                    } (진행상태: ${work.status}, 시작일자: ${
+                        work.start_date
+                    }, 누적시간: ${formatMinutes(work.total_minutes)})\n`;
+
+                    work.deals.forEach((deal) => {
+                        text += `  · ${
+                            deal.deal_name
+                        } (누적시간: ${formatMinutes(deal.total_minutes)})\n`;
+                    });
+
+                    text += "\n";
+                });
+            });
+        }
 
         return text;
     };
@@ -313,7 +383,11 @@ const WeeklySchedule = () => {
         <Content className="weekly-schedule-content">
             <div className="weekly-schedule-container">
                 {/* 헤더 */}
-                <div className={`weekly-header ${is_mobile ? "weekly-header-mobile" : ""}`}>
+                <div
+                    className={`weekly-header ${
+                        is_mobile ? "weekly-header-mobile" : ""
+                    }`}
+                >
                     {!is_mobile && (
                         <Title level={4} style={{ margin: 0 }}>
                             <CalendarOutlined style={{ marginRight: 8 }} />
@@ -336,8 +410,12 @@ const WeeklySchedule = () => {
                             }
                             format={(value) =>
                                 is_mobile
-                                    ? `${value.format("M월")} ${Math.ceil(value.date() / 7)}주`
-                                    : `${value.format("YYYY년 M월")} ${Math.ceil(value.date() / 7)}주차`
+                                    ? `${value.format("M월")} ${Math.ceil(
+                                          value.date() / 7
+                                      )}주`
+                                    : `${value.format(
+                                          "YYYY년 M월"
+                                      )} ${Math.ceil(value.date() / 7)}주차`
                             }
                             style={is_mobile ? { width: 100 } : undefined}
                         />
@@ -346,7 +424,10 @@ const WeeklySchedule = () => {
                             onClick={handleNextWeek}
                             size={is_mobile ? "middle" : "middle"}
                         />
-                        <Button onClick={handleThisWeek} size={is_mobile ? "small" : "middle"}>
+                        <Button
+                            onClick={handleThisWeek}
+                            size={is_mobile ? "small" : "middle"}
+                        >
                             {is_mobile ? "오늘" : "이번 주"}
                         </Button>
                     </Space>
@@ -354,7 +435,9 @@ const WeeklySchedule = () => {
                     <Space size={is_mobile ? "small" : "middle"}>
                         <Radio.Group
                             value={hide_management_work}
-                            onChange={(e) => setHideManagementWork(e.target.value)}
+                            onChange={(e) =>
+                                setHideManagementWork(e.target.value)
+                            }
                             optionType="button"
                             buttonStyle="solid"
                             size="small"
@@ -363,7 +446,9 @@ const WeeklySchedule = () => {
                                 {is_mobile ? "전체" : "전체 보기"}
                             </Radio.Button>
                             <Radio.Button value={true}>
-                                {is_mobile ? "관리제외" : "[A24_05591] 관리업무 제외"}
+                                {is_mobile
+                                    ? "관리제외"
+                                    : "[A24_05591] 관리업무 제외"}
                             </Radio.Button>
                         </Radio.Group>
 
@@ -488,7 +573,25 @@ const WeeklySchedule = () => {
                     <>
                         <Divider />
                         <div className="preview-section">
-                            <Title level={5}>복사 미리보기</Title>
+                            <div className="preview-header">
+                                <Title level={5} style={{ margin: 0 }}>
+                                    복사 미리보기
+                                </Title>
+                                <Radio.Group
+                                    value={copy_format}
+                                    onChange={(e) =>
+                                        setCopyFormat(e.target.value)
+                                    }
+                                    size="small"
+                                >
+                                    <Radio.Button value={1}>
+                                        형식 1
+                                    </Radio.Button>
+                                    <Radio.Button value={2}>
+                                        형식 2
+                                    </Radio.Button>
+                                </Radio.Group>
+                            </div>
                             <pre className="copy-preview">
                                 {generateCopyText()}
                             </pre>
@@ -560,6 +663,13 @@ const WeeklySchedule = () => {
 
                 .preview-section {
                     margin-top: 16px;
+                }
+
+                .preview-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 12px;
                 }
 
                 .copy-preview {
