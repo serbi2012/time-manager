@@ -171,7 +171,7 @@
     box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
 }
 
-/* 반응형 */
+/* 반응형 - 태블릿 (768px ~ 1024px) */
 @media (max-width: 1024px) {
     .app-body {
         flex-direction: column;
@@ -180,24 +180,31 @@
         overflow: visible;
     }
 
-    .app-sider {
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 100% !important;
-        border-right: none;
-        border-bottom: 1px solid #e8e8e8;
-        height: auto;
-        max-height: 300px;
-    }
-
-    .app-sider .ant-layout-sider-children {
-        max-height: 300px;
-    }
-
+    /* 메인 콘텐츠를 먼저 표시 */
     .app-content {
+        order: 1;
         padding: 16px;
         height: auto;
         overflow: visible;
+    }
+
+    /* 사이드바를 아래로 이동 */
+    .app-sider {
+        order: 2;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 100% !important;
+        flex: none !important;
+        border-right: none;
+        border-top: 1px solid #e8e8e8;
+        height: auto !important;
+        max-height: none !important;
+    }
+
+    .app-sider .ant-layout-sider-children {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
     }
 }
 

@@ -16,7 +16,11 @@ import {
     Tag,
     Select,
     Popconfirm,
+    Upload,
+    Image,
+    Spin,
 } from "antd";
+import type { UploadFile, UploadProps } from "antd";
 import {
     EditOutlined,
     MessageOutlined,
@@ -26,6 +30,8 @@ import {
     CheckCircleOutlined,
     SettingOutlined,
     DeleteOutlined,
+    PlusOutlined,
+    PictureOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -39,9 +45,12 @@ import {
     deleteReply,
     updateSuggestionStatus,
     updateSuggestion,
-    deleteSuggestion,
+    deleteSuggestionWithImages,
+    uploadSuggestionImage,
+    addImageToSuggestion,
+    removeImageFromSuggestion,
 } from "../firebase/suggestionService";
-import type { SuggestionPost, SuggestionReply, SuggestionStatus } from "../types";
+import type { SuggestionPost, SuggestionReply, SuggestionStatus, SuggestionImage } from "../types";
 import { useResponsive } from "../hooks/useResponsive";
 import type { User } from "firebase/auth";
 
@@ -244,6 +253,11 @@ export default function SuggestionBoard() {
     const [editing_reply, setEditingReply] = useState<{ post_id: string; reply_id: string } | null>(null);
     const [edit_reply_content, setEditReplyContent] = useState("");
 
+    // 이미지 업로드 상태
+    const [pending_images, setPendingImages] = useState<UploadFile[]>([]);
+    const [pending_edit_images, setPendingEditImages] = useState<UploadFile[]>([]);
+    const [is_uploading, setIsUploading] = useState(false);
+
     const is_admin = user?.email === ADMIN_EMAIL;
     const my_author_id = getAuthorId(user);
 
@@ -264,6 +278,7 @@ export default function SuggestionBoard() {
                 title: editing_post.title,
                 content: editing_post.content,
             });
+            setPendingEditImages([]);
         }
     }, [is_edit_modal_open, editing_post, edit_form]);
 
@@ -340,8 +355,27 @@ export default function SuggestionBoard() {
             const values = await form.validateFields();
             setIsSubmitting(true);
 
+            const post_id = crypto.randomUUID();
+
+            // 이미지 업로드
+            const uploaded_images: SuggestionImage[] = [];
+            if (pending_images.length > 0) {
+                setIsUploading(true);
+                for (const file of pending_images) {
+                    if (file.originFileObj) {
+                        try {
+                            const image = await uploadSuggestionImage(post_id, file.originFileObj);
+                            uploaded_images.push(image);
+                        } catch {
+                            console.error("이미지 업로드 실패:", file.name);
+                        }
+                    }
+                }
+                setIsUploading(false);
+            }
+
             const new_post: SuggestionPost = {
-                id: crypto.randomUUID(),
+                id: post_id,
                 author_id: my_author_id,
                 author_name: values.author_name.trim(),
                 title: values.title.trim(),
@@ -349,16 +383,19 @@ export default function SuggestionBoard() {
                 created_at: new Date().toISOString(),
                 replies: [],
                 status: "pending",
+                images: uploaded_images,
             };
 
             await addSuggestion(new_post);
             message.success("건의사항이 등록되었습니다");
             form.resetFields();
+            setPendingImages([]);
             setIsWriteModalOpen(false);
         } catch {
             message.error("등록에 실패했습니다");
         } finally {
             setIsSubmitting(false);
+            setIsUploading(false);
         }
     };
 
@@ -369,6 +406,22 @@ export default function SuggestionBoard() {
             const values = await edit_form.validateFields();
             setIsSubmitting(true);
 
+            // 새로 추가된 이미지 업로드
+            if (pending_edit_images.length > 0) {
+                setIsUploading(true);
+                for (const file of pending_edit_images) {
+                    if (file.originFileObj) {
+                        try {
+                            const image = await uploadSuggestionImage(editing_post.id, file.originFileObj);
+                            await addImageToSuggestion(editing_post.id, image);
+                        } catch {
+                            console.error("이미지 업로드 실패:", file.name);
+                        }
+                    }
+                }
+                setIsUploading(false);
+            }
+
             await updateSuggestion(
                 editing_post.id,
                 values.title.trim(),
@@ -376,21 +429,67 @@ export default function SuggestionBoard() {
             );
             message.success("게시글이 수정되었습니다");
             edit_form.resetFields();
+            setPendingEditImages([]);
             setIsEditModalOpen(false);
             setEditingPost(null);
         } catch {
             message.error("수정에 실패했습니다");
         } finally {
             setIsSubmitting(false);
+            setIsUploading(false);
         }
     };
 
     const handleDeletePost = async (post_id: string) => {
         try {
-            await deleteSuggestion(post_id);
+            await deleteSuggestionWithImages(post_id);
             message.success("게시글이 삭제되었습니다");
         } catch {
             message.error("삭제에 실패했습니다");
+        }
+    };
+
+    // 이미지 업로드 핸들러 (글쓰기)
+    const handle_image_change: UploadProps["onChange"] = ({ fileList }) => {
+        setPendingImages(fileList);
+    };
+
+    // 이미지 업로드 전 검증
+    const beforeUpload = (file: File) => {
+        const is_image = file.type.startsWith("image/");
+        if (!is_image) {
+            message.error("이미지 파일만 업로드할 수 있습니다");
+            return Upload.LIST_IGNORE;
+        }
+        const is_lt_5mb = file.size / 1024 / 1024 < 5;
+        if (!is_lt_5mb) {
+            message.error("이미지는 5MB 이하여야 합니다");
+            return Upload.LIST_IGNORE;
+        }
+        return false; // 자동 업로드 방지, 수동으로 업로드
+    };
+
+    // 기존 게시글에 이미지 추가
+    const handleAddImageToPost = async (post_id: string, file: File) => {
+        try {
+            setIsUploading(true);
+            const image = await uploadSuggestionImage(post_id, file);
+            await addImageToSuggestion(post_id, image);
+            message.success("이미지가 추가되었습니다");
+        } catch {
+            message.error("이미지 업로드에 실패했습니다");
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    // 기존 게시글에서 이미지 삭제
+    const handleRemoveImageFromPost = async (post_id: string, image_id: string) => {
+        try {
+            await removeImageFromSuggestion(post_id, image_id);
+            message.success("이미지가 삭제되었습니다");
+        } catch {
+            message.error("이미지 삭제에 실패했습니다");
         }
     };
 
@@ -483,6 +582,125 @@ export default function SuggestionBoard() {
                     >
                         {post.content}
                     </Paragraph>
+
+                    {/* 첨부 이미지 */}
+                    {post.images && post.images.length > 0 && (
+                        <div style={{ marginBottom: 16 }}>
+                            <Text
+                                type="secondary"
+                                style={{ fontSize: 13, marginBottom: 8, display: "block" }}
+                            >
+                                <PictureOutlined /> 첨부 이미지 {post.images.length}개
+                            </Text>
+                            <Image.PreviewGroup>
+                                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                                    {post.images.map((img) => (
+                                        <div key={img.id} style={{ position: "relative" }}>
+                                            <Image
+                                                src={img.url}
+                                                alt={img.name}
+                                                style={{
+                                                    maxWidth: 200,
+                                                    maxHeight: 150,
+                                                    objectFit: "cover",
+                                                    borderRadius: 8,
+                                                }}
+                                            />
+                                            {can_edit && (
+                                                <Popconfirm
+                                                    title="이미지 삭제"
+                                                    description="이 이미지를 삭제하시겠습니까?"
+                                                    onConfirm={() =>
+                                                        handleRemoveImageFromPost(post.id, img.id)
+                                                    }
+                                                    okText="삭제"
+                                                    cancelText="취소"
+                                                    okButtonProps={{ danger: true }}
+                                                >
+                                                    <Button
+                                                        type="text"
+                                                        size="small"
+                                                        danger
+                                                        icon={<DeleteOutlined />}
+                                                        style={{
+                                                            position: "absolute",
+                                                            top: 4,
+                                                            right: 4,
+                                                            background: "rgba(255,255,255,0.9)",
+                                                            borderRadius: "50%",
+                                                        }}
+                                                    />
+                                                </Popconfirm>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </Image.PreviewGroup>
+                            {can_edit && (
+                                <Upload
+                                    accept="image/*"
+                                    showUploadList={false}
+                                    beforeUpload={(file) => {
+                                        const is_image = file.type.startsWith("image/");
+                                        if (!is_image) {
+                                            message.error("이미지 파일만 업로드할 수 있습니다");
+                                            return false;
+                                        }
+                                        const is_lt_5mb = file.size / 1024 / 1024 < 5;
+                                        if (!is_lt_5mb) {
+                                            message.error("이미지는 5MB 이하여야 합니다");
+                                            return false;
+                                        }
+                                        handleAddImageToPost(post.id, file);
+                                        return false;
+                                    }}
+                                    disabled={is_uploading}
+                                >
+                                    <Button
+                                        size="small"
+                                        icon={<PlusOutlined />}
+                                        style={{ marginTop: 8 }}
+                                        loading={is_uploading}
+                                    >
+                                        이미지 추가
+                                    </Button>
+                                </Upload>
+                            )}
+                        </div>
+                    )}
+
+                    {/* 이미지가 없을 때 추가 버튼 (수정 권한 있을 때만) */}
+                    {(!post.images || post.images.length === 0) && can_edit && (
+                        <div style={{ marginBottom: 16 }}>
+                            <Upload
+                                accept="image/*"
+                                showUploadList={false}
+                                beforeUpload={(file) => {
+                                    const is_image = file.type.startsWith("image/");
+                                    if (!is_image) {
+                                        message.error("이미지 파일만 업로드할 수 있습니다");
+                                        return false;
+                                    }
+                                    const is_lt_5mb = file.size / 1024 / 1024 < 5;
+                                    if (!is_lt_5mb) {
+                                        message.error("이미지는 5MB 이하여야 합니다");
+                                        return false;
+                                    }
+                                    handleAddImageToPost(post.id, file);
+                                    return false;
+                                }}
+                                disabled={is_uploading}
+                            >
+                                <Button
+                                    size="small"
+                                    icon={<PictureOutlined />}
+                                    loading={is_uploading}
+                                >
+                                    이미지 첨부
+                                </Button>
+                            </Upload>
+                        </div>
+                    )}
 
                     {post.status === "completed" && post.resolved_version && (
                         <div
@@ -717,44 +935,67 @@ export default function SuggestionBoard() {
                     onCancel={() => {
                         setIsWriteModalOpen(false);
                         form.resetFields();
+                        setPendingImages([]);
                     }}
-                    okText="등록 (F8)"
+                    okText={is_uploading ? "업로드 중..." : "등록 (F8)"}
                     cancelText="취소"
-                    confirmLoading={is_submitting}
+                    confirmLoading={is_submitting || is_uploading}
                     destroyOnClose
                 >
-                    <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
-                        <Form.Item
-                            name="author_name"
-                            label="닉네임"
-                            rules={[{ required: true, message: "닉네임을 입력해주세요" }]}
-                        >
-                            <Input
-                                prefix={<UserOutlined />}
-                                placeholder="닉네임을 입력하세요"
-                                maxLength={20}
-                            />
-                        </Form.Item>
-                        <Form.Item
-                            name="title"
-                            label="제목"
-                            rules={[{ required: true, message: "제목을 입력해주세요" }]}
-                        >
-                            <Input placeholder="제목을 입력하세요" maxLength={100} />
-                        </Form.Item>
-                        <Form.Item
-                            name="content"
-                            label="내용"
-                            rules={[{ required: true, message: "내용을 입력해주세요" }]}
-                        >
-                            <TextArea
-                                placeholder="건의사항 내용을 입력하세요"
-                                rows={6}
-                                maxLength={2000}
-                                showCount
-                            />
-                        </Form.Item>
-                    </Form>
+                    <Spin spinning={is_uploading} tip="이미지 업로드 중...">
+                        <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
+                            <Form.Item
+                                name="author_name"
+                                label="닉네임"
+                                rules={[{ required: true, message: "닉네임을 입력해주세요" }]}
+                            >
+                                <Input
+                                    prefix={<UserOutlined />}
+                                    placeholder="닉네임을 입력하세요"
+                                    maxLength={20}
+                                />
+                            </Form.Item>
+                            <Form.Item
+                                name="title"
+                                label="제목"
+                                rules={[{ required: true, message: "제목을 입력해주세요" }]}
+                            >
+                                <Input placeholder="제목을 입력하세요" maxLength={100} />
+                            </Form.Item>
+                            <Form.Item
+                                name="content"
+                                label="내용"
+                                rules={[{ required: true, message: "내용을 입력해주세요" }]}
+                            >
+                                <TextArea
+                                    placeholder="건의사항 내용을 입력하세요"
+                                    rows={6}
+                                    maxLength={2000}
+                                    showCount
+                                />
+                            </Form.Item>
+                            <Form.Item label="이미지 첨부">
+                                <Upload
+                                    listType="picture-card"
+                                    fileList={pending_images}
+                                    onChange={handle_image_change}
+                                    beforeUpload={beforeUpload}
+                                    accept="image/*"
+                                    multiple
+                                >
+                                    {pending_images.length >= 5 ? null : (
+                                        <div>
+                                            <PlusOutlined />
+                                            <div style={{ marginTop: 8 }}>이미지 추가</div>
+                                        </div>
+                                    )}
+                                </Upload>
+                                <Text type="secondary" style={{ fontSize: 12 }}>
+                                    최대 5개, 각 5MB 이하
+                                </Text>
+                            </Form.Item>
+                        </Form>
+                    </Spin>
                 </Modal>
 
                 {/* 수정 모달 */}
@@ -766,33 +1007,107 @@ export default function SuggestionBoard() {
                         setIsEditModalOpen(false);
                         setEditingPost(null);
                         edit_form.resetFields();
+                        setPendingEditImages([]);
                     }}
-                    okText="수정 (F8)"
+                    okText={is_uploading ? "업로드 중..." : "수정 (F8)"}
                     cancelText="취소"
-                    confirmLoading={is_submitting}
+                    confirmLoading={is_submitting || is_uploading}
                     destroyOnClose
                 >
-                    <Form form={edit_form} layout="vertical" style={{ marginTop: 16 }}>
-                        <Form.Item
-                            name="title"
-                            label="제목"
-                            rules={[{ required: true, message: "제목을 입력해주세요" }]}
-                        >
-                            <Input placeholder="제목을 입력하세요" maxLength={100} />
-                        </Form.Item>
-                        <Form.Item
-                            name="content"
-                            label="내용"
-                            rules={[{ required: true, message: "내용을 입력해주세요" }]}
-                        >
-                            <TextArea
-                                placeholder="건의사항 내용을 입력하세요"
-                                rows={6}
-                                maxLength={2000}
-                                showCount
-                            />
-                        </Form.Item>
-                    </Form>
+                    <Spin spinning={is_uploading} tip="이미지 업로드 중...">
+                        <Form form={edit_form} layout="vertical" style={{ marginTop: 16 }}>
+                            <Form.Item
+                                name="title"
+                                label="제목"
+                                rules={[{ required: true, message: "제목을 입력해주세요" }]}
+                            >
+                                <Input placeholder="제목을 입력하세요" maxLength={100} />
+                            </Form.Item>
+                            <Form.Item
+                                name="content"
+                                label="내용"
+                                rules={[{ required: true, message: "내용을 입력해주세요" }]}
+                            >
+                                <TextArea
+                                    placeholder="건의사항 내용을 입력하세요"
+                                    rows={6}
+                                    maxLength={2000}
+                                    showCount
+                                />
+                            </Form.Item>
+                            <Form.Item label="첨부 이미지">
+                                {/* 기존 이미지 */}
+                                {editing_post?.images && editing_post.images.length > 0 && (
+                                    <div style={{ marginBottom: 16 }}>
+                                        <Text type="secondary" style={{ fontSize: 12, marginBottom: 8, display: "block" }}>
+                                            기존 이미지 ({editing_post.images.length}개)
+                                        </Text>
+                                        <Image.PreviewGroup>
+                                            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                                                {editing_post.images.map((img) => (
+                                                    <div key={img.id} style={{ position: "relative" }}>
+                                                        <Image
+                                                            src={img.url}
+                                                            alt={img.name}
+                                                            style={{
+                                                                width: 104,
+                                                                height: 104,
+                                                                objectFit: "cover",
+                                                                borderRadius: 8,
+                                                            }}
+                                                        />
+                                                        <Popconfirm
+                                                            title="이미지 삭제"
+                                                            description="이 이미지를 삭제하시겠습니까?"
+                                                            onConfirm={async () => {
+                                                                await handleRemoveImageFromPost(editing_post.id, img.id);
+                                                            }}
+                                                            okText="삭제"
+                                                            cancelText="취소"
+                                                            okButtonProps={{ danger: true }}
+                                                        >
+                                                            <Button
+                                                                type="text"
+                                                                size="small"
+                                                                danger
+                                                                icon={<DeleteOutlined />}
+                                                                style={{
+                                                                    position: "absolute",
+                                                                    top: 4,
+                                                                    right: 4,
+                                                                    background: "rgba(255,255,255,0.9)",
+                                                                    borderRadius: "50%",
+                                                                }}
+                                                            />
+                                                        </Popconfirm>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </Image.PreviewGroup>
+                                    </div>
+                                )}
+                                {/* 새로 추가할 이미지 */}
+                                <Upload
+                                    listType="picture-card"
+                                    fileList={pending_edit_images}
+                                    onChange={({ fileList }) => setPendingEditImages(fileList)}
+                                    beforeUpload={beforeUpload}
+                                    accept="image/*"
+                                    multiple
+                                >
+                                    {(editing_post?.images?.length || 0) + pending_edit_images.length >= 5 ? null : (
+                                        <div>
+                                            <PlusOutlined />
+                                            <div style={{ marginTop: 8 }}>이미지 추가</div>
+                                        </div>
+                                    )}
+                                </Upload>
+                                <Text type="secondary" style={{ fontSize: 12 }}>
+                                    최대 5개, 각 5MB 이하
+                                </Text>
+                            </Form.Item>
+                        </Form>
+                    </Spin>
                 </Modal>
             </Content>
         </Layout>

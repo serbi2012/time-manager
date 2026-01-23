@@ -23,6 +23,7 @@ export { DEFAULT_TIMER_STATE } from "./timer";
 export type {
     SuggestionStatus,
     SuggestionReply,
+    SuggestionImage,
     SuggestionPost,
 } from "./suggestion";
 

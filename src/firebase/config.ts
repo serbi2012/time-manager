@@ -2,6 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA0lZIaII1T18jX6lKygATpRr6ChJ4W-dU",
@@ -22,5 +23,8 @@ export const googleProvider = new GoogleAuthProvider();
 
 // Firestore 인스턴스
 export const db = getFirestore(app);
+
+// Storage 인스턴스
+export const storage = getStorage(app);
 
 export default app;
