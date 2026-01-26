@@ -9,9 +9,30 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { ConfigProvider } from "antd";
 import koKR from "antd/locale/ko_KR";
 import { BrowserRouter } from "react-router-dom";
+import dayjs from "dayjs";
+import isoWeek from "dayjs/plugin/isoWeek";
 import WeeklySchedule from "../../components/WeeklySchedule";
 import { useWorkStore } from "../../store/useWorkStore";
 import type { WorkRecord, WorkSession } from "../../types";
+
+dayjs.extend(isoWeek);
+
+// 현재 주의 날짜들
+const week_start = dayjs().startOf("isoWeek");
+const THIS_WEEK_START = week_start.format("YYYY-MM-DD");
+const THIS_WEEK_TUESDAY = week_start.add(1, "day").format("YYYY-MM-DD");
+const THIS_WEEK_WEDNESDAY = week_start.add(2, "day").format("YYYY-MM-DD");
+const THIS_WEEK_START_ISO = week_start.toISOString();
+
+// 날짜별 요일 포맷 (예: "1/26 (월)")
+const DAY_NAMES = ["일", "월", "화", "수", "목", "금", "토"];
+const formatDayLabel = (date: string) => {
+    const d = dayjs(date);
+    return `${d.format("M/D")} (${DAY_NAMES[d.day()]})`;
+};
+const MONDAY_LABEL = formatDayLabel(THIS_WEEK_START);
+const TUESDAY_LABEL = formatDayLabel(THIS_WEEK_TUESDAY);
+const WEDNESDAY_LABEL = formatDayLabel(THIS_WEEK_WEDNESDAY);
 
 // 스토어 초기화
 const resetStore = () => {
@@ -34,7 +55,7 @@ const resetStore = () => {
             category_name: "",
             note: "",
         },
-        selected_date: "2026-01-19",
+        selected_date: THIS_WEEK_START,
         custom_task_options: [],
         custom_category_options: [],
         hidden_autocomplete_options: {
@@ -60,7 +81,7 @@ const createTestSession = (
     overrides: Partial<WorkSession> = {}
 ): WorkSession => ({
     id: crypto.randomUUID(),
-    date: "2026-01-19",
+    date: THIS_WEEK_START,
     start_time: "09:00",
     end_time: "10:00",
     duration_minutes: 60,
@@ -79,7 +100,7 @@ const createTestRecord = (overrides: Partial<WorkRecord> = {}): WorkRecord => ({
     note: "",
     start_time: "09:00",
     end_time: "10:00",
-    date: "2026-01-19",
+    date: THIS_WEEK_START,
     sessions: [createTestSession()],
     is_completed: false,
     ...overrides,
@@ -124,19 +145,19 @@ describe("WeeklySchedule", () => {
         it("해당 날짜까지의 누적시간만 표시됨", () => {
             // 1/19에 60분, 1/20에 120분 작업한 레코드 설정
             const record = createTestRecord({
-                date: "2026-01-19",
+                date: THIS_WEEK_START,
                 duration_minutes: 180,
                 sessions: [
                     createTestSession({
                         id: "session-1",
-                        date: "2026-01-19",
+                        date: THIS_WEEK_START,
                         start_time: "09:00",
                         end_time: "10:00",
                         duration_minutes: 60,
                     }),
                     createTestSession({
                         id: "session-2",
-                        date: "2026-01-20",
+                        date: THIS_WEEK_TUESDAY,
                         start_time: "09:00",
                         end_time: "11:00",
                         duration_minutes: 120,
@@ -161,26 +182,26 @@ describe("WeeklySchedule", () => {
             // 3일에 걸쳐 작업한 레코드
             const record = createTestRecord({
                 work_name: "테스트 작업",
-                date: "2026-01-19",
+                date: THIS_WEEK_START,
                 duration_minutes: 360,
                 sessions: [
                     createTestSession({
                         id: "session-1",
-                        date: "2026-01-19",
+                        date: THIS_WEEK_START,
                         start_time: "09:00",
                         end_time: "11:00",
                         duration_minutes: 120, // 1/19: 2시간
                     }),
                     createTestSession({
                         id: "session-2",
-                        date: "2026-01-20",
+                        date: THIS_WEEK_TUESDAY,
                         start_time: "09:00",
                         end_time: "11:00",
                         duration_minutes: 120, // 1/20: 2시간 (누적 4시간)
                     }),
                     createTestSession({
                         id: "session-3",
-                        date: "2026-01-21",
+                        date: THIS_WEEK_WEDNESDAY,
                         start_time: "09:00",
                         end_time: "11:00",
                         duration_minutes: 120, // 1/21: 2시간 (누적 6시간)
@@ -200,16 +221,16 @@ describe("WeeklySchedule", () => {
             const preview_text =
                 document.querySelector(".copy-preview")?.textContent || "";
 
-            // 1/19: 2시간 (02:00)
-            expect(preview_text).toContain("1/19 (월)");
+            // 월요일: 2시간 (02:00)
+            expect(preview_text).toContain(MONDAY_LABEL);
             expect(preview_text).toContain("누적시간: 02:00");
 
-            // 1/20: 4시간 (04:00) - 2+2
-            expect(preview_text).toContain("1/20 (화)");
+            // 화요일: 4시간 (04:00) - 2+2
+            expect(preview_text).toContain(TUESDAY_LABEL);
             expect(preview_text).toContain("누적시간: 04:00");
 
-            // 1/21: 6시간 (06:00) - 2+2+2
-            expect(preview_text).toContain("1/21 (수)");
+            // 수요일: 6시간 (06:00) - 2+2+2
+            expect(preview_text).toContain(WEDNESDAY_LABEL);
             expect(preview_text).toContain("누적시간: 06:00");
         });
 
@@ -218,12 +239,12 @@ describe("WeeklySchedule", () => {
             const record1 = createTestRecord({
                 work_name: "5.6 프레임워크 FE",
                 deal_name: "거래1",
-                date: "2026-01-19",
+                date: THIS_WEEK_START,
                 duration_minutes: 60,
                 sessions: [
                     createTestSession({
                         id: "session-1",
-                        date: "2026-01-19",
+                        date: THIS_WEEK_START,
                         duration_minutes: 60,
                     }),
                 ],
@@ -233,12 +254,12 @@ describe("WeeklySchedule", () => {
                 id: "record-2",
                 work_name: "5.6 프레임워크 FE",
                 deal_name: "거래2",
-                date: "2026-01-19",
+                date: THIS_WEEK_START,
                 duration_minutes: 120,
                 sessions: [
                     createTestSession({
                         id: "session-2",
-                        date: "2026-01-19",
+                        date: THIS_WEEK_START,
                         duration_minutes: 120,
                     }),
                 ],
@@ -260,13 +281,13 @@ describe("WeeklySchedule", () => {
         it("삭제된 레코드는 누적시간 계산에서 제외됨", () => {
             const active_record = createTestRecord({
                 work_name: "활성 작업",
-                date: "2026-01-19",
+                date: THIS_WEEK_START,
                 duration_minutes: 60,
                 is_deleted: false,
                 sessions: [
                     createTestSession({
                         id: "session-1",
-                        date: "2026-01-19",
+                        date: THIS_WEEK_START,
                         duration_minutes: 60,
                     }),
                 ],
@@ -275,14 +296,14 @@ describe("WeeklySchedule", () => {
             const deleted_record = createTestRecord({
                 id: "deleted-record",
                 work_name: "삭제된 작업",
-                date: "2026-01-19",
+                date: THIS_WEEK_START,
                 duration_minutes: 120,
                 is_deleted: true,
-                deleted_at: "2026-01-19T12:00:00.000Z",
+                deleted_at: THIS_WEEK_START_ISO,
                 sessions: [
                     createTestSession({
                         id: "session-2",
-                        date: "2026-01-19",
+                        date: THIS_WEEK_START,
                         duration_minutes: 120,
                     }),
                 ],
@@ -390,7 +411,7 @@ describe("WeeklySchedule", () => {
         it("형식 1 선택 시 기존 형식으로 텍스트 생성됨", () => {
             const record = createTestRecord({
                 work_name: "테스트 작업",
-                date: "2026-01-20",
+                date: THIS_WEEK_TUESDAY,
                 deal_name: "세부작업",
             });
             useWorkStore.setState({ records: [record] });
@@ -416,7 +437,7 @@ describe("WeeklySchedule", () => {
         it("형식 2 선택 시 구분선 형식으로 텍스트 생성됨", () => {
             const record = createTestRecord({
                 work_name: "테스트 작업",
-                date: "2026-01-20",
+                date: THIS_WEEK_TUESDAY,
                 deal_name: "세부작업",
             });
             useWorkStore.setState({ records: [record] });

@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
  * 브레이크포인트 정의
  */
 export const BREAKPOINTS = {
-    mobile: 767,
+    mobile: 480,
     tablet: 1023,
     desktop: 1024,
 } as const;

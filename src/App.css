@@ -172,7 +172,7 @@
 }
 
 /* 반응형 */
-@media (max-width: 1024px) {
+@media (max-width: 480px) {
     .app-body {
         flex-direction: column;
         height: auto;
@@ -260,7 +260,7 @@
    모바일 반응형 스타일 (767px 이하)
    ======================================== */
 
-@media (max-width: 767px) {
+@media (max-width: 480px) {
     /* 헤더 모바일 최적화 */
     .app-header {
         padding: 0 12px;
@@ -424,7 +424,7 @@
     display: none;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 480px) {
     .mobile-bottom-nav {
         display: flex;
         position: fixed;
@@ -481,7 +481,7 @@
     display: none;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 480px) {
     .mobile-preset-fab {
         display: flex;
         position: fixed;
@@ -527,7 +527,7 @@
     display: none;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 480px) {
     /* 데스크톱 테이블 숨김 */
     .desktop-record-table {
         display: none !important;
@@ -615,7 +615,7 @@
    모바일 간트차트 스타일
    ======================================== */
 
-@media (max-width: 767px) {
+@media (max-width: 480px) {
     .gantt-section {
         margin: 0;
         width: 100%;
@@ -669,7 +669,7 @@
    모바일 주간 일정 스타일
    ======================================== */
 
-@media (max-width: 767px) {
+@media (max-width: 480px) {
     .weekly-header {
         flex-direction: column;
         gap: 12px;
@@ -720,7 +720,7 @@
    모바일 설정 모달 스타일
    ======================================== */
 
-@media (max-width: 767px) {
+@media (max-width: 480px) {
     .settings-modal .ant-modal-content {
         height: calc(100vh - 24px);
         display: flex;
@@ -757,7 +757,7 @@
    모바일 프리셋 리스트 스타일
    ======================================== */
 
-@media (max-width: 767px) {
+@media (max-width: 480px) {
     .template-list-mobile {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -811,20 +811,20 @@
    모바일 유틸리티 클래스
    ======================================== */
 
-@media (max-width: 767px) {
+@media (max-width: 480px) {
     .hide-on-mobile {
         display: none !important;
     }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 481px) {
     .show-only-mobile {
         display: none !important;
     }
 }
 
 /* 터치 하이라이트 제거 */
-@media (max-width: 767px) {
+@media (max-width: 480px) {
     * {
         -webkit-tap-highlight-color: transparent;
     }
@@ -909,7 +909,7 @@
     margin-left: 0;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 480px) {
     .suggestion-item-meta .ant-space {
         flex-wrap: wrap;
         gap: 4px !important;
@@ -963,7 +963,7 @@
    모바일 폼 스타일
    ======================================== */
 
-@media (max-width: 767px) {
+@media (max-width: 480px) {
     .ant-form-item-label {
         padding-bottom: 4px !important;
     }
@@ -1391,7 +1391,7 @@
 }
 
 /* 모바일 반응형 */
-@media (max-width: 767px) {
+@media (max-width: 480px) {
     .guide-book-content {
         padding: 12px;
         padding-bottom: 80px;
@@ -1779,7 +1779,7 @@
 }
 
 /* 데모 컴포넌트 모바일 */
-@media (max-width: 767px) {
+@media (max-width: 480px) {
     .demo-wrapper {
         margin: 16px 0;
     }

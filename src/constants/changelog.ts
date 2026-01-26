@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.3";
+export const CURRENT_VERSION = "2.0.4";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,23 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.4",
+        date: "2026-01-26",
+        title: "반응형 레이아웃 개선",
+        changes: [
+            {
+                type: "fix",
+                description:
+                    "태블릿 크기 화면에서 작업 프리셋만 보이던 레이아웃 문제 수정",
+            },
+            {
+                type: "improvement",
+                description:
+                    "모바일 레이아웃이 실제 스마트폰 크기(480px 이하)에서만 적용되도록 변경",
+            },
+        ],
+    },
     {
         version: "2.0.3",
         date: "2026-01-23",
