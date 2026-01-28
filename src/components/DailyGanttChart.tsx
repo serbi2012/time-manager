@@ -39,33 +39,7 @@ import {
 
 const { Text } = Typography;
 
-// 점심시간 상수 (11:40 ~ 12:40)
-const LUNCH_START = 11 * 60 + 40; // 700분 (11:40)
-const LUNCH_END = 12 * 60 + 40; // 760분 (12:40)
-const LUNCH_DURATION = LUNCH_END - LUNCH_START; // 60분
-
-// 점심시간을 제외한 실제 작업 시간 계산
-const calculateDurationExcludingLunch = (
-    start_mins: number,
-    end_mins: number
-): number => {
-    if (end_mins <= LUNCH_START || start_mins >= LUNCH_END) {
-        return end_mins - start_mins;
-    }
-    if (start_mins >= LUNCH_START && end_mins <= LUNCH_END) {
-        return 0;
-    }
-    if (start_mins < LUNCH_START && end_mins > LUNCH_END) {
-        return end_mins - start_mins - LUNCH_DURATION;
-    }
-    if (start_mins < LUNCH_START && end_mins <= LUNCH_END) {
-        return LUNCH_START - start_mins;
-    }
-    if (start_mins >= LUNCH_START && end_mins > LUNCH_END) {
-        return end_mins - LUNCH_END;
-    }
-    return end_mins - start_mins;
-};
+// 점심시간은 store에서 동적으로 가져옴 (getLunchTimeMinutes)
 
 // 시간을 분으로 변환 (예: "09:30" -> 570)
 const timeToMinutes = (time_str: string): number => {
@@ -151,7 +125,37 @@ export default function DailyGanttChart() {
         addCustomCategoryOption,
         hideAutoCompleteOption,
         updateTimerStartTime,
+        getLunchTimeMinutes,
     } = useWorkStore();
+
+    // 점심시간을 store에서 가져오기
+    const lunch_time = useMemo(() => getLunchTimeMinutes(), [getLunchTimeMinutes]);
+    const LUNCH_START_DYNAMIC = lunch_time.start;
+    const LUNCH_END_DYNAMIC = lunch_time.end;
+    const LUNCH_DURATION_DYNAMIC = lunch_time.duration;
+
+    // 점심시간을 제외한 실제 작업 시간 계산 (동적)
+    const calculateDurationExcludingLunchDynamic = useCallback(
+        (start_mins: number, end_mins: number): number => {
+            if (end_mins <= LUNCH_START_DYNAMIC || start_mins >= LUNCH_END_DYNAMIC) {
+                return end_mins - start_mins;
+            }
+            if (start_mins >= LUNCH_START_DYNAMIC && end_mins <= LUNCH_END_DYNAMIC) {
+                return 0;
+            }
+            if (start_mins < LUNCH_START_DYNAMIC && end_mins > LUNCH_END_DYNAMIC) {
+                return end_mins - start_mins - LUNCH_DURATION_DYNAMIC;
+            }
+            if (start_mins < LUNCH_START_DYNAMIC && end_mins <= LUNCH_END_DYNAMIC) {
+                return LUNCH_START_DYNAMIC - start_mins;
+            }
+            if (start_mins >= LUNCH_START_DYNAMIC && end_mins > LUNCH_END_DYNAMIC) {
+                return end_mins - LUNCH_END_DYNAMIC;
+            }
+            return end_mins - start_mins;
+        },
+        [LUNCH_START_DYNAMIC, LUNCH_END_DYNAMIC, LUNCH_DURATION_DYNAMIC]
+    );
 
     // 모달 저장 단축키 설정
     const modal_submit_shortcut = useShortcutStore((state) =>
@@ -292,8 +296,8 @@ export default function DailyGanttChart() {
     const occupied_slots = useMemo((): TimeSlot[] => {
         const slots: TimeSlot[] = [];
 
-        // 점심시간 슬롯 추가
-        slots.push({ start: LUNCH_START, end: LUNCH_END });
+        // 점심시간 슬롯 추가 (동적 값 사용)
+        slots.push({ start: LUNCH_START_DYNAMIC, end: LUNCH_END_DYNAMIC });
 
         grouped_works.forEach((group) => {
             group.sessions.forEach((session) => {
@@ -305,7 +309,7 @@ export default function DailyGanttChart() {
         });
 
         return slots.sort((a, b) => a.start - b.start);
-    }, [grouped_works]);
+    }, [grouped_works, LUNCH_START_DYNAMIC, LUNCH_END_DYNAMIC]);
 
     // 충돌 감지: 모든 세션 쌍을 비교하여 시간이 겹치는 세션 찾기
     const conflict_info = useMemo(() => {
@@ -628,15 +632,15 @@ export default function DailyGanttChart() {
         };
     };
 
-    // 점심시간 오버레이 스타일 계산
+    // 점심시간 오버레이 스타일 계산 (동적 값 사용)
     const lunch_overlay_style = useMemo(() => {
         // 점심시간이 현재 시간 범위에 포함되는지 확인
-        if (LUNCH_END <= time_range.start || LUNCH_START >= time_range.end) {
+        if (LUNCH_END_DYNAMIC <= time_range.start || LUNCH_START_DYNAMIC >= time_range.end) {
             return null; // 점심시간이 범위 밖
         }
 
-        const visible_start = Math.max(LUNCH_START, time_range.start);
-        const visible_end = Math.min(LUNCH_END, time_range.end);
+        const visible_start = Math.max(LUNCH_START_DYNAMIC, time_range.start);
+        const visible_end = Math.min(LUNCH_END_DYNAMIC, time_range.end);
 
         const left = ((visible_start - time_range.start) / total_minutes) * 100;
         const width = ((visible_end - visible_start) / total_minutes) * 100;
@@ -645,7 +649,7 @@ export default function DailyGanttChart() {
             left: `${left}%`,
             width: `${width}%`,
         };
-    }, [time_range, total_minutes]);
+    }, [time_range, total_minutes, LUNCH_START_DYNAMIC, LUNCH_END_DYNAMIC]);
 
     // 분을 읽기 쉬운 형식으로
     const formatMinutes = (minutes: number): string => {
@@ -961,8 +965,8 @@ export default function DailyGanttChart() {
             const values = await form.validateFields();
             const start_mins = timeToMinutes(selected_time_range.start);
             const end_mins = timeToMinutes(selected_time_range.end);
-            // 점심시간을 제외한 실제 작업 시간
-            const duration_minutes = calculateDurationExcludingLunch(
+            // 점심시간을 제외한 실제 작업 시간 (동적 함수 사용)
+            const duration_minutes = calculateDurationExcludingLunchDynamic(
                 start_mins,
                 end_mins
             );

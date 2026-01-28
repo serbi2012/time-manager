@@ -108,10 +108,10 @@ describe('SettingsModal', () => {
             await user.click(screen.getByText('데이터'))
 
             await waitFor(() => {
-                expect(screen.getByText('데이터 내보내기 (Export)')).toBeInTheDocument()
+                expect(screen.getByText('내보내기')).toBeInTheDocument()
             })
 
-            const export_button = screen.getByText('데이터 내보내기 (Export)')
+            const export_button = screen.getByText('내보내기')
             fireEvent.click(export_button)
 
             expect(on_export).toHaveBeenCalledTimes(1)
@@ -129,10 +129,10 @@ describe('SettingsModal', () => {
             await user.click(screen.getByText('데이터'))
 
             await waitFor(() => {
-                expect(screen.getByText('데이터 가져오기 (Import)')).toBeInTheDocument()
+                expect(screen.getByText('가져오기')).toBeInTheDocument()
             })
 
-            const import_button = screen.getByText('데이터 가져오기 (Import)')
+            const import_button = screen.getByText('가져오기')
             expect(import_button.closest('button')).not.toBeDisabled()
         })
 
@@ -149,12 +149,12 @@ describe('SettingsModal', () => {
 
             await waitFor(() => {
                 expect(
-                    screen.getByText(/가져오기 시 기존 데이터가 덮어씌워집니다/)
+                    screen.getByText(/가져오기 시 기존 데이터가 대체/)
                 ).toBeInTheDocument()
             })
         })
 
-        it('로그인되면 Firebase Cloud 태그 표시', async () => {
+        it('로그인되면 클라우드 연결됨 표시', async () => {
             const user = userEvent.setup()
             render(
                 <TestWrapper>
@@ -166,11 +166,11 @@ describe('SettingsModal', () => {
             await user.click(screen.getByText('데이터'))
 
             await waitFor(() => {
-                expect(screen.getByText('Firebase Cloud')).toBeInTheDocument()
+                expect(screen.getByText('클라우드 연결됨')).toBeInTheDocument()
             })
         })
 
-        it('로그인되지 않으면 LocalStorage 태그 표시', async () => {
+        it('로그인되지 않으면 로컬 저장 표시', async () => {
             const user = userEvent.setup()
             render(
                 <TestWrapper>
@@ -182,7 +182,23 @@ describe('SettingsModal', () => {
             await user.click(screen.getByText('데이터'))
 
             await waitFor(() => {
-                expect(screen.getByText('LocalStorage (브라우저)')).toBeInTheDocument()
+                expect(screen.getByText('로컬 저장')).toBeInTheDocument()
+            })
+        })
+
+        it('점심시간 설정 UI가 표시됨', async () => {
+            const user = userEvent.setup()
+            render(
+                <TestWrapper>
+                    <SettingsModal {...defaultProps} />
+                </TestWrapper>
+            )
+
+            // 데이터 탭으로 이동
+            await user.click(screen.getByText('데이터'))
+
+            await waitFor(() => {
+                expect(screen.getByText('점심시간')).toBeInTheDocument()
             })
         })
     })

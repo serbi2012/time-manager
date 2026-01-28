@@ -96,6 +96,10 @@ interface WorkStore {
     // 앱 테마 색상 (기본값: blue)
     app_theme: AppTheme;
 
+    // 점심시간 설정 (기본값: 11:40 ~ 12:40)
+    lunch_start_time: string;
+    lunch_end_time: string;
+
     // 타이머 액션
     startTimer: (template_id?: string) => void;
     startTimerForRecord: (record_id: string) => void; // 기존 레코드에 세션 추가하며 타이머 시작
@@ -178,6 +182,10 @@ interface WorkStore {
 
     // 앱 테마 설정
     setAppTheme: (theme: AppTheme) => void;
+
+    // 점심시간 설정
+    setLunchTime: (start: string, end: string) => void;
+    getLunchTimeMinutes: () => { start: number; end: number; duration: number };
 }
 
 const DEFAULT_FORM_DATA: WorkFormData = {
@@ -445,6 +453,8 @@ export const useWorkStore = create<WorkStore>()(
             },
             use_postfix_on_preset_add: false, // 기본값: 이름 그대로 추가
             app_theme: "blue" as AppTheme, // 기본값: 파란색
+            lunch_start_time: "11:40", // 기본값: 11:40
+            lunch_end_time: "12:40", // 기본값: 12:40
 
     startTimer: (template_id?: string) => {
         const { form_data, records } = get();
@@ -2022,6 +2032,21 @@ export const useWorkStore = create<WorkStore>()(
         // Firebase에 설정 저장
         syncSettings({ app_theme: theme }).catch(console.error);
     },
+
+    setLunchTime: (start, end) => {
+        set({ lunch_start_time: start, lunch_end_time: end });
+        // Firebase에 설정 저장
+        syncSettings({ lunch_start_time: start, lunch_end_time: end }).catch(console.error);
+    },
+
+    getLunchTimeMinutes: () => {
+        const { lunch_start_time, lunch_end_time } = get();
+        const start_parts = lunch_start_time.split(":").map(Number);
+        const end_parts = lunch_end_time.split(":").map(Number);
+        const start = start_parts[0] * 60 + start_parts[1];
+        const end = end_parts[0] * 60 + end_parts[1];
+        return { start, end, duration: end - start };
+    },
         }),
         {
             name: "work-time-storage", // LocalStorage 키
@@ -2035,6 +2060,8 @@ export const useWorkStore = create<WorkStore>()(
                 hidden_autocomplete_options: state.hidden_autocomplete_options,
                 use_postfix_on_preset_add: state.use_postfix_on_preset_add,
                 app_theme: state.app_theme,
+                lunch_start_time: state.lunch_start_time,
+                lunch_end_time: state.lunch_end_time,
             }),
         }
     )

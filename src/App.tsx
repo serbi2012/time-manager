@@ -128,7 +128,8 @@ function MainPage() {
             }
         }
 
-        const today_date = dayjs().format("YYYY-MM-DD");
+        // 선택된 날짜에 작업 추가 (달력에서 다른 날짜를 보고 있으면 해당 날짜에 추가)
+        const target_date = state.selected_date;
 
         // 새 레코드 생성 (타이머 없이 즉시 추가)
         // start_time/end_time 비워서 간트에 표시되지 않도록
@@ -143,7 +144,7 @@ function MainPage() {
             duration_minutes: 0,
             start_time: "",
             end_time: "",
-            date: today_date,
+            date: target_date,
             sessions: [],
             is_completed: false,
             is_deleted: false,

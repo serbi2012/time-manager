@@ -36,7 +36,7 @@ const resetStore = () => {
         selected_date: '2026-01-19',
         custom_task_options: [],
         custom_category_options: [],
-        hidden_autocomplete_options: {
+            hidden_autocomplete_options: {
             work_name: [],
             task_name: [],
             deal_name: [],
@@ -44,6 +44,8 @@ const resetStore = () => {
             task_option: [],
             category_option: [],
         },
+        lunch_start_time: '11:40',
+        lunch_end_time: '12:40',
     })
 }
 
@@ -1441,6 +1443,46 @@ describe('useWorkStore', () => {
             // 하나의 레코드에 3개 세션
             expect(state.records).toHaveLength(1)
             expect(state.records[0].sessions).toHaveLength(3)
+        })
+    })
+
+    // =====================================================
+    // 점심시간 설정 테스트
+    // =====================================================
+    describe('점심시간 설정', () => {
+        it('기본 점심시간이 11:40~12:40으로 설정됨', () => {
+            const state = useWorkStore.getState()
+            expect(state.lunch_start_time).toBe('11:40')
+            expect(state.lunch_end_time).toBe('12:40')
+        })
+
+        it('setLunchTime으로 점심시간 변경', () => {
+            const store = useWorkStore.getState()
+            store.setLunchTime('12:00', '13:00')
+
+            const state = useWorkStore.getState()
+            expect(state.lunch_start_time).toBe('12:00')
+            expect(state.lunch_end_time).toBe('13:00')
+        })
+
+        it('getLunchTimeMinutes가 분 단위로 반환', () => {
+            const store = useWorkStore.getState()
+            store.setLunchTime('11:40', '12:40')
+
+            const lunch_time = store.getLunchTimeMinutes()
+            expect(lunch_time.start).toBe(11 * 60 + 40) // 700분
+            expect(lunch_time.end).toBe(12 * 60 + 40) // 760분
+            expect(lunch_time.duration).toBe(60) // 60분
+        })
+
+        it('다른 점심시간 설정 시 duration 계산', () => {
+            const store = useWorkStore.getState()
+            store.setLunchTime('12:00', '13:30')
+
+            const lunch_time = store.getLunchTimeMinutes()
+            expect(lunch_time.start).toBe(12 * 60) // 720분
+            expect(lunch_time.end).toBe(13 * 60 + 30) // 810분
+            expect(lunch_time.duration).toBe(90) // 90분
         })
     })
 })

@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.5";
+export const CURRENT_VERSION = "2.0.6";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,30 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.6",
+        date: "2026-01-28",
+        title: "세션 추가 및 점심시간 설정",
+        changes: [
+            {
+                type: "feature",
+                description: "세션 이력에서 직접 세션을 추가할 수 있음",
+            },
+            {
+                type: "feature",
+                description: "설정에서 점심시간을 조정할 수 있음 (기본: 11:40~12:40)",
+            },
+            {
+                type: "fix",
+                description:
+                    "새 작업/프리셋 추가 시 선택된 날짜 기준으로 추가됨 (기존: 항상 오늘)",
+            },
+            {
+                type: "style",
+                description: "설정 모달 UI가 카드 기반으로 모던하게 개선됨",
+            },
+        ],
+    },
     {
         version: "2.0.5",
         date: "2026-01-28",

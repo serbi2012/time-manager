@@ -317,11 +317,19 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
     );
     const updateSession = useWorkStore((state) => state.updateSession);
     const deleteSession = useWorkStore((state) => state.deleteSession);
+    const updateRecord = useWorkStore((state) => state.updateRecord);
+    const selected_date = useWorkStore((state) => state.selected_date);
     const app_theme = useWorkStore((state) => state.app_theme);
     const theme_color = APP_THEME_COLORS[app_theme].primary;
 
     // 선택 삭제를 위한 상태
     const [selected_session_keys, setSelectedSessionKeys] = useState<React.Key[]>([]);
+
+    // 세션 추가를 위한 상태
+    const [is_adding_session, setIsAddingSession] = useState(false);
+    const [new_session_date, setNewSessionDate] = useState(selected_date);
+    const [new_session_start, setNewSessionStart] = useState("");
+    const [new_session_end, setNewSessionEnd] = useState("");
 
     // 시간 변경 핸들러
     const handleUpdateTime = useCallback(
@@ -386,6 +394,81 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
         setSelectedSessionKeys([]);
     }, [selected_session_keys, record_id, deleteSession]);
 
+    // 세션 추가 핸들러
+    const handleAddSession = useCallback(() => {
+        if (!record) return;
+        if (!new_session_start || !new_session_end) {
+            message.error("시작 시간과 종료 시간을 모두 입력하세요.");
+            return;
+        }
+
+        // 시간 유효성 검사
+        const start_minutes = dayjs(`2000-01-01 ${new_session_start}`).hour() * 60 +
+            dayjs(`2000-01-01 ${new_session_start}`).minute();
+        const end_minutes = dayjs(`2000-01-01 ${new_session_end}`).hour() * 60 +
+            dayjs(`2000-01-01 ${new_session_end}`).minute();
+
+        if (start_minutes >= end_minutes) {
+            message.error("종료 시간은 시작 시간보다 늦어야 합니다.");
+            return;
+        }
+
+        const duration = end_minutes - start_minutes;
+
+        const new_session: WorkSession = {
+            id: crypto.randomUUID(),
+            date: new_session_date,
+            start_time: new_session_start,
+            end_time: new_session_end,
+            duration_minutes: duration,
+        };
+
+        // 기존 세션과 병합하여 시간순 정렬
+        const updated_sessions = [...(record.sessions || []), new_session].sort((a, b) => {
+            const a_date = a.date || record.date;
+            const b_date = b.date || record.date;
+            if (a_date !== b_date) return a_date.localeCompare(b_date);
+            return (a.start_time || "").localeCompare(b.start_time || "");
+        });
+
+        // 총 시간 계산
+        const total_minutes = updated_sessions.reduce(
+            (sum, s) => sum + (s.duration_minutes || 0),
+            0
+        );
+
+        // 전체 시간 범위 계산
+        const first_session = updated_sessions[0];
+        const last_session = updated_sessions[updated_sessions.length - 1];
+
+        updateRecord(record_id, {
+            sessions: updated_sessions,
+            duration_minutes: total_minutes,
+            start_time: first_session?.start_time || record.start_time,
+            end_time: last_session?.end_time || record.end_time,
+        });
+
+        message.success("세션이 추가되었습니다.");
+
+        // 상태 초기화
+        setIsAddingSession(false);
+        setNewSessionStart("");
+        setNewSessionEnd("");
+    }, [record, record_id, new_session_date, new_session_start, new_session_end, updateRecord]);
+
+    // 세션 추가 취소
+    const handleCancelAddSession = useCallback(() => {
+        setIsAddingSession(false);
+        setNewSessionStart("");
+        setNewSessionEnd("");
+    }, []);
+
+    // 세션 추가 시작
+    const handleStartAddSession = useCallback(() => {
+        setNewSessionDate(selected_date);
+        setIsAddingSession(true);
+    }, [selected_date]);
+
     if (!record) {
         return (
             <div style={{ padding: "16px", color: "#999" }}>
@@ -394,23 +477,78 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
         );
     }
 
+    // sessions가 비어있고, start_time도 없으면 빈 배열 (새 작업 추가 시)
     const sessions: WorkSession[] =
         record.sessions && record.sessions.length > 0
             ? record.sessions
-            : [
-                  {
-                      id: record.id,
-                      date: record.date,
-                      start_time: record.start_time,
-                      end_time: record.end_time,
-                      duration_minutes: record.duration_minutes,
-                  },
-              ];
+            : record.start_time
+              ? [
+                    {
+                        id: record.id,
+                        date: record.date,
+                        start_time: record.start_time,
+                        end_time: record.end_time,
+                        duration_minutes: record.duration_minutes,
+                    },
+                ]
+              : [];
 
     if (sessions.length === 0) {
         return (
-            <div style={{ padding: "16px", color: "#999" }}>
-                세션 이력이 없습니다.
+            <div style={{ padding: "16px" }}>
+                {is_adding_session ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                        <DatePicker
+                            value={dayjs(new_session_date)}
+                            onChange={(date) => setNewSessionDate(date?.format("YYYY-MM-DD") || selected_date)}
+                            size="small"
+                            style={{ width: 120 }}
+                            allowClear={false}
+                        />
+                        <Input
+                            placeholder="시작 (HH:mm)"
+                            value={new_session_start}
+                            onChange={(e) => setNewSessionStart(e.target.value)}
+                            size="small"
+                            style={{ width: 100, fontFamily: "monospace" }}
+                        />
+                        <span>~</span>
+                        <Input
+                            placeholder="종료 (HH:mm)"
+                            value={new_session_end}
+                            onChange={(e) => setNewSessionEnd(e.target.value)}
+                            size="small"
+                            style={{ width: 100, fontFamily: "monospace" }}
+                        />
+                        <Button
+                            type="primary"
+                            size="small"
+                            icon={<CheckOutlined />}
+                            onClick={handleAddSession}
+                        >
+                            추가
+                        </Button>
+                        <Button
+                            size="small"
+                            icon={<CloseOutlined />}
+                            onClick={handleCancelAddSession}
+                        >
+                            취소
+                        </Button>
+                    </div>
+                ) : (
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <Text type="secondary">세션 이력이 없습니다.</Text>
+                        <Button
+                            type="dashed"
+                            size="small"
+                            icon={<PlusOutlined />}
+                            onClick={handleStartAddSession}
+                        >
+                            세션 추가
+                        </Button>
+                    </div>
+                )}
             </div>
         );
     }
@@ -568,6 +706,60 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                     },
                 ]}
             />
+
+            {/* 세션 추가 UI */}
+            <div style={{ marginTop: 12 }}>
+                {is_adding_session ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                        <DatePicker
+                            value={dayjs(new_session_date)}
+                            onChange={(date) => setNewSessionDate(date?.format("YYYY-MM-DD") || selected_date)}
+                            size="small"
+                            style={{ width: 120 }}
+                            allowClear={false}
+                        />
+                        <Input
+                            placeholder="시작 (HH:mm)"
+                            value={new_session_start}
+                            onChange={(e) => setNewSessionStart(e.target.value)}
+                            size="small"
+                            style={{ width: 100, fontFamily: "monospace" }}
+                        />
+                        <span>~</span>
+                        <Input
+                            placeholder="종료 (HH:mm)"
+                            value={new_session_end}
+                            onChange={(e) => setNewSessionEnd(e.target.value)}
+                            size="small"
+                            style={{ width: 100, fontFamily: "monospace" }}
+                        />
+                        <Button
+                            type="primary"
+                            size="small"
+                            icon={<CheckOutlined />}
+                            onClick={handleAddSession}
+                        >
+                            추가
+                        </Button>
+                        <Button
+                            size="small"
+                            icon={<CloseOutlined />}
+                            onClick={handleCancelAddSession}
+                        >
+                            취소
+                        </Button>
+                    </div>
+                ) : (
+                    <Button
+                        type="dashed"
+                        size="small"
+                        icon={<PlusOutlined />}
+                        onClick={handleStartAddSession}
+                    >
+                        세션 추가
+                    </Button>
+                )}
+            </div>
 
             <div className="session-summary">
                 <Space split={<span style={{ color: "#d9d9d9" }}>|</span>}>
@@ -894,10 +1086,10 @@ export default function WorkRecordTable() {
     const handleAddNewWork = async () => {
         try {
             const values = await form.validateFields();
-            const today_date = dayjs().format("YYYY-MM-DD");
 
             // 새 레코드 생성 (타이머 없이 즉시 추가)
             // start_time/end_time 비워서 간트에 표시되지 않도록
+            // 선택된 날짜에 작업 추가 (달력에서 다른 날짜를 보고 있으면 해당 날짜에 추가)
             const new_record: WorkRecord = {
                 id: crypto.randomUUID(),
                 project_code: values.project_code || "A00_00000",
@@ -909,7 +1101,7 @@ export default function WorkRecordTable() {
                 duration_minutes: 0,
                 start_time: "",
                 end_time: "",
-                date: today_date,
+                date: selected_date,
                 sessions: [],
                 is_completed: false,
                 is_deleted: false,

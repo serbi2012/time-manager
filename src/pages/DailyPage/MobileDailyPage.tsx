@@ -4,7 +4,6 @@
 
 import { useState } from "react";
 import { Layout, message } from "antd";
-import dayjs from "dayjs";
 import DailyGanttChart from "../../components/DailyGanttChart";
 import WorkRecordTable from "../../components/WorkRecordTable";
 import { MobilePresetDrawer, MobilePresetFab } from "../../widgets/Navigation";
@@ -69,7 +68,8 @@ export function MobileDailyPage() {
             }
         }
 
-        const today_date = dayjs().format("YYYY-MM-DD");
+        // 선택된 날짜에 작업 추가 (달력에서 다른 날짜를 보고 있으면 해당 날짜에 추가)
+        const target_date = state.selected_date;
 
         const new_record = {
             id: crypto.randomUUID(),
@@ -82,7 +82,7 @@ export function MobileDailyPage() {
             duration_minutes: 0,
             start_time: "",
             end_time: "",
-            date: today_date,
+            date: target_date,
             sessions: [],
             is_completed: false,
             is_deleted: false,

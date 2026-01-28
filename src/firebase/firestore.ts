@@ -104,6 +104,8 @@ export interface UserSettings {
     shortcuts?: ShortcutDefinition[];
     hidden_autocomplete_options?: HiddenAutoCompleteOptions;
     app_theme?: AppTheme;
+    lunch_start_time?: string; // 점심시간 시작 (HH:mm)
+    lunch_end_time?: string; // 점심시간 종료 (HH:mm)
     updated_at: string;
     migrated?: boolean; // 마이그레이션 완료 여부
 }

@@ -15,6 +15,8 @@ import {
     Checkbox,
     Empty,
     Collapse,
+    TimePicker,
+    Card,
 } from "antd";
 import {
     DownloadOutlined,
@@ -28,7 +30,12 @@ import {
     BgColorsOutlined,
     CheckOutlined,
     EditOutlined,
+    ClockCircleOutlined,
+    CloudOutlined,
+    AppstoreOutlined,
+    SaveOutlined,
 } from "@ant-design/icons";
+import dayjs from "dayjs";
 import {
     useShortcutStore,
     CATEGORY_LABELS,
@@ -690,88 +697,177 @@ function ThemeTab() {
 
     return (
         <div>
-            <Text
-                type="secondary"
-                style={{ display: "block", marginBottom: 16 }}
-            >
-                앱 전체의 테마 색상을 선택합니다. 헤더, 버튼, 링크 등 주요 UI 요소의 색상이 변경됩니다.
-            </Text>
+            {/* 헤더 */}
+            <div style={{ marginBottom: 24, textAlign: "center" }}>
+                <div
+                    style={{
+                        width: 64,
+                        height: 64,
+                        borderRadius: 16,
+                        background: APP_THEME_COLORS[app_theme].gradient,
+                        margin: "0 auto 12px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxShadow: `0 8px 24px ${APP_THEME_COLORS[app_theme].primary}33`,
+                    }}
+                >
+                    <BgColorsOutlined style={{ fontSize: 28, color: "white" }} />
+                </div>
+                <Text strong style={{ fontSize: 16, display: "block" }}>
+                    테마 색상
+                </Text>
+                <Text type="secondary" style={{ fontSize: 13 }}>
+                    앱 전체의 테마 색상을 선택하세요
+                </Text>
+            </div>
 
-            <Divider style={{ marginTop: 0 }}>테마 색상</Divider>
-
+            {/* 테마 그리드 */}
             <div
                 style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))",
                     gap: 12,
                 }}
             >
-                {theme_options.map((theme) => (
-                    <div
-                        key={theme}
-                        onClick={() => setAppTheme(theme)}
-                        style={{
-                            position: "relative",
-                            cursor: "pointer",
-                            borderRadius: 8,
-                            overflow: "hidden",
-                            border:
-                                app_theme === theme
+                {theme_options.map((theme) => {
+                    const is_selected = app_theme === theme;
+                    return (
+                        <div
+                            key={theme}
+                            onClick={() => setAppTheme(theme)}
+                            style={{
+                                cursor: "pointer",
+                                borderRadius: 12,
+                                padding: 4,
+                                background: is_selected
+                                    ? `${APP_THEME_COLORS[theme].primary}15`
+                                    : "transparent",
+                                border: is_selected
                                     ? `2px solid ${APP_THEME_COLORS[theme].primary}`
-                                    : "2px solid #f0f0f0",
-                            transition: "all 0.2s",
-                        }}
-                    >
-                        <div
-                            style={{
-                                height: 48,
-                                background: APP_THEME_COLORS[theme].gradient,
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
+                                    : "2px solid transparent",
+                                transition: "all 0.2s ease",
                             }}
                         >
-                            {app_theme === theme && (
-                                <CheckOutlined
-                                    style={{
-                                        color: "white",
-                                        fontSize: 20,
-                                    }}
-                                />
-                            )}
-                        </div>
-                        <div
-                            style={{
-                                padding: "8px 12px",
-                                background: "white",
-                                textAlign: "center",
-                                fontSize: 13,
-                                fontWeight:
-                                    app_theme === theme ? 600 : 400,
-                                color:
-                                    app_theme === theme
+                            <div
+                                style={{
+                                    height: 56,
+                                    borderRadius: 8,
+                                    background: APP_THEME_COLORS[theme].gradient,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    marginBottom: 6,
+                                    boxShadow: is_selected
+                                        ? `0 4px 12px ${APP_THEME_COLORS[theme].primary}40`
+                                        : "none",
+                                }}
+                            >
+                                {is_selected && (
+                                    <div
+                                        style={{
+                                            width: 24,
+                                            height: 24,
+                                            borderRadius: "50%",
+                                            background: "rgba(255,255,255,0.9)",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                        }}
+                                    >
+                                        <CheckOutlined
+                                            style={{
+                                                color: APP_THEME_COLORS[theme].primary,
+                                                fontSize: 14,
+                                            }}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                            <Text
+                                style={{
+                                    display: "block",
+                                    textAlign: "center",
+                                    fontSize: 12,
+                                    fontWeight: is_selected ? 600 : 400,
+                                    color: is_selected
                                         ? APP_THEME_COLORS[theme].primary
-                                        : "#434343",
-                            }}
-                        >
-                            {APP_THEME_LABELS[theme]}
+                                        : "#595959",
+                                }}
+                            >
+                                {APP_THEME_LABELS[theme]}
+                            </Text>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
+            {/* 안내 문구 */}
             <div
                 style={{
                     marginTop: 24,
-                    padding: 16,
-                    background: "#fafafa",
+                    padding: "12px 16px",
+                    background: `${APP_THEME_COLORS[app_theme].primary}08`,
                     borderRadius: 8,
+                    border: `1px solid ${APP_THEME_COLORS[app_theme].primary}20`,
                 }}
             >
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                    💡 테마 설정은 자동으로 저장됩니다. 로그인한 경우 다른 기기에서도 동일한 테마가 적용됩니다.
+                <Text style={{ fontSize: 12, color: "#595959" }}>
+                    테마는 자동 저장됩니다. 로그인하면 모든 기기에 동일하게 적용됩니다.
                 </Text>
             </div>
+        </div>
+    );
+}
+
+// 설정 아이템 컴포넌트 (일관된 레이아웃)
+interface SettingItemProps {
+    icon: React.ReactNode;
+    title: string;
+    description?: string;
+    action: React.ReactNode;
+}
+
+function SettingItem({ icon, title, description, action }: SettingItemProps) {
+    return (
+        <div
+            style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "16px 0",
+                borderBottom: "1px solid #f0f0f0",
+            }}
+        >
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 12, flex: 1 }}>
+                <div
+                    style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 8,
+                        background: "#f5f5f5",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 16,
+                        color: "#595959",
+                        flexShrink: 0,
+                    }}
+                >
+                    {icon}
+                </div>
+                <div style={{ flex: 1 }}>
+                    <Text strong style={{ fontSize: 14, display: "block" }}>
+                        {title}
+                    </Text>
+                    {description && (
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                            {description}
+                        </Text>
+                    )}
+                </div>
+            </div>
+            <div style={{ flexShrink: 0, marginLeft: 16 }}>{action}</div>
         </div>
     );
 }
@@ -790,65 +886,158 @@ function DataTab({
     const setUsePostfix = useWorkStore(
         (state) => state.setUsePostfixOnPresetAdd
     );
+    const lunch_start_time = useWorkStore((state) => state.lunch_start_time);
+    const lunch_end_time = useWorkStore((state) => state.lunch_end_time);
+    const setLunchTime = useWorkStore((state) => state.setLunchTime);
+    const app_theme = useWorkStore((state) => state.app_theme);
+    const theme_color = APP_THEME_COLORS[app_theme].primary;
+
+    // 점심시간 핸들러
+    const handleLunchTimeChange = (
+        times: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null
+    ) => {
+        if (times && times[0] && times[1]) {
+            const start = times[0].format("HH:mm");
+            const end = times[1].format("HH:mm");
+            setLunchTime(start, end);
+            message.success("점심시간이 변경되었습니다");
+        }
+    };
 
     return (
-        <div>
-            <Divider style={{ marginTop: 0 }}>프리셋 설정</Divider>
-            <div
-                style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 8,
+        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+            {/* 시간 설정 섹션 */}
+            <Card
+                size="small"
+                title={
+                    <Space>
+                        <ClockCircleOutlined style={{ color: theme_color }} />
+                        <span>시간 설정</span>
+                    </Space>
+                }
+                styles={{ body: { padding: "0 16px" } }}
+            >
+                <SettingItem
+                    icon={<ClockCircleOutlined />}
+                    title="점심시간"
+                    description="간트차트에 표시되며 작업 시간 계산 시 자동 제외됩니다"
+                    action={
+                        <TimePicker.RangePicker
+                            value={[
+                                dayjs(lunch_start_time, "HH:mm"),
+                                dayjs(lunch_end_time, "HH:mm"),
+                            ]}
+                            onChange={handleLunchTimeChange}
+                            format="HH:mm"
+                            minuteStep={5}
+                            size="small"
+                            style={{ width: 180 }}
+                            allowClear={false}
+                        />
+                    }
+                />
+            </Card>
+
+            {/* 프리셋 설정 섹션 */}
+            <Card
+                size="small"
+                title={
+                    <Space>
+                        <AppstoreOutlined style={{ color: theme_color }} />
+                        <span>프리셋 설정</span>
+                    </Space>
+                }
+                styles={{ body: { padding: "0 16px" } }}
+            >
+                <SettingItem
+                    icon={<AppstoreOutlined />}
+                    title="고유 식별자 자동 추가"
+                    description="프리셋으로 작업 추가 시 거래명에 타임스탬프를 붙입니다"
+                    action={
+                        <Switch
+                            checked={use_postfix}
+                            onChange={setUsePostfix}
+                        />
+                    }
+                />
+            </Card>
+
+            {/* 데이터 관리 섹션 */}
+            <Card
+                size="small"
+                title={
+                    <Space>
+                        <SaveOutlined style={{ color: theme_color }} />
+                        <span>데이터 관리</span>
+                    </Space>
+                }
+                styles={{ body: { padding: 16 } }}
+            >
+                <div
+                    style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: 12,
+                        marginBottom: 16,
+                    }}
+                >
+                    <Button
+                        icon={<DownloadOutlined />}
+                        onClick={onExport}
+                        style={{ height: 48 }}
+                    >
+                        내보내기
+                    </Button>
+                    <Button
+                        icon={<UploadOutlined />}
+                        onClick={onImport}
+                        style={{ height: 48 }}
+                    >
+                        가져오기
+                    </Button>
+                </div>
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                    JSON 파일로 데이터를 백업하거나 복원할 수 있습니다.
+                    가져오기 시 기존 데이터가 대체됩니다.
+                </Text>
+            </Card>
+
+            {/* 저장소 상태 */}
+            <Card
+                size="small"
+                styles={{
+                    body: {
+                        padding: 16,
+                        background: isAuthenticated ? "#f6ffed" : "#e6f4ff",
+                    },
                 }}
             >
-                <div>
-                    <Text>작업 추가 시 구분자(postfix) 사용</Text>
-                    <br />
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                        OFF: "시간관리보고서입력" → 그대로
-                        <br />
-                        ON: "시간관리보고서입력" → "시간관리보고서입력_0122_093045_123"
-                    </Text>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div
+                        style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: "50%",
+                            background: isAuthenticated ? "#52c41a" : "#1677ff",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                        }}
+                    >
+                        <CloudOutlined style={{ color: "white", fontSize: 18 }} />
+                    </div>
+                    <div>
+                        <Text strong style={{ display: "block" }}>
+                            {isAuthenticated ? "클라우드 연결됨" : "로컬 저장"}
+                        </Text>
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                            {isAuthenticated
+                                ? "모든 데이터가 자동으로 동기화됩니다"
+                                : "로그인하면 여러 기기에서 데이터를 동기화할 수 있습니다"}
+                        </Text>
+                    </div>
                 </div>
-                <Switch checked={use_postfix} onChange={setUsePostfix} />
-            </div>
-
-            <Divider>백업 및 복원</Divider>
-            <Space direction="vertical" style={{ width: "100%" }} size="middle">
-                <Button icon={<DownloadOutlined />} onClick={onExport} block>
-                    데이터 내보내기 (Export)
-                </Button>
-                <Button
-                    icon={<UploadOutlined />}
-                    onClick={onImport}
-                    block
-                >
-                    데이터 가져오기 (Import)
-                </Button>
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                    * 가져오기 시 기존 데이터가 덮어씌워집니다
-                </Text>
-            </Space>
-
-            <Divider>저장소 정보</Divider>
-            <Space direction="vertical" style={{ width: "100%" }}>
-                <div
-                    style={{ display: "flex", justifyContent: "space-between" }}
-                >
-                    <Text>저장 위치</Text>
-                    <Tag color={isAuthenticated ? "green" : "blue"}>
-                        {isAuthenticated
-                            ? "Firebase Cloud"
-                            : "LocalStorage (브라우저)"}
-                    </Tag>
-                </div>
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                    {isAuthenticated
-                        ? "데이터가 클라우드에 자동으로 동기화됩니다"
-                        : "데이터가 이 브라우저에 로컬 저장됩니다. 로그인하면 클라우드에 동기화되어 여러 기기에서 사용할 수 있습니다."}
-                </Text>
-            </Space>
+            </Card>
         </div>
     );
 }
@@ -905,23 +1094,63 @@ export default function SettingsModal({
         },
     ];
 
+    // 탭 컨텐츠를 스크롤 가능한 컨테이너로 감싸기
+    const scrollable_tab_items = tab_items.map((item) => ({
+        ...item,
+        children: (
+            <div
+                style={{
+                    height: "calc(70vh - 120px)",
+                    maxHeight: 500,
+                    minHeight: 300,
+                    overflowY: "auto",
+                    paddingRight: 8,
+                }}
+            >
+                {item.children}
+            </div>
+        ),
+    }));
+
     return (
         <Modal
             title="설정"
             open={open}
             onCancel={onClose}
             footer={null}
-            width={700}
+            width={750}
+            centered
             styles={{
-                body: { minHeight: 400 },
+                body: {
+                    padding: "12px 24px 24px",
+                },
             }}
         >
             <Tabs
                 defaultActiveKey="theme"
-                items={tab_items}
+                items={scrollable_tab_items}
                 tabPosition="left"
-                style={{ minHeight: 350 }}
+                tabBarStyle={{
+                    width: 120,
+                    flexShrink: 0,
+                    borderRight: "1px solid #f0f0f0",
+                    marginRight: 0,
+                }}
+                style={{
+                    height: "calc(70vh - 80px)",
+                    maxHeight: 540,
+                    minHeight: 340,
+                }}
             />
+            <style>{`
+                .ant-tabs-left > .ant-tabs-content-holder {
+                    padding-left: 24px;
+                }
+                .ant-tabs-left > .ant-tabs-nav .ant-tabs-tab {
+                    padding: 12px 16px;
+                    margin: 0;
+                }
+            `}</style>
         </Modal>
     );
 }
