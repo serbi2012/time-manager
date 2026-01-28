@@ -1,0 +1,713 @@
+---
+description: 개발 철학, 설계 원칙, 코딩 규칙 등 프로젝트 개발 가이드라인
+globs:
+alwaysApply: true
+---
+
+# 개발 가이드라인 (Development Guidelines)
+
+이 문서는 프로젝트의 **핵심 개발 철학**, **설계 원칙**, **코딩 규칙**을 정의합니다.
+모든 개발은 이 가이드라인에 입각하여 진행되어야 하며, 예외는 없습니다.
+
+---
+
+## 핵심 철칙 (Core Principles)
+
+> ⚠️ **절대 위반 금지**: 아래 철칙은 어떤 상황에서도 타협하지 않습니다.
+
+### 1. 테스트 용이성 (Testability First)
+
+모든 코드는 **테스트 가능**해야 합니다.
+
+```
+❌ 금지: 테스트할 수 없는 코드
+✅ 필수: 유닛 테스트로 모든 기능을 검증할 수 있는 구조
+```
+
+**규칙:**
+
+-   모든 비즈니스 로직은 **순수 함수**로 분리
+-   순수 함수는 `lib/` 폴더에 위치
+-   부수 효과(Side Effect)는 **훅** 또는 **스토어**에서만 처리
+-   외부 의존성(Firebase, localStorage)은 **주입 가능**하게 설계
+-   새 기능 추가 시 **테스트 케이스 작성 가능 여부**를 먼저 검토
+
+**체크리스트:**
+
+-   [ ] 이 함수를 목(mock) 없이 테스트할 수 있는가?
+-   [ ] 입력과 출력이 명확한가?
+-   [ ] 부수 효과가 분리되어 있는가?
+
+---
+
+### 2. 관심사 분리 (Separation of Concerns)
+
+파일이 **300줄을 초과**하면 분리를 검토합니다.
+**500줄을 초과**하면 반드시 분리합니다.
+
+```
+❌ 금지: 하나의 파일에 여러 책임
+✅ 필수: 단일 책임 원칙 (SRP) 준수
+```
+
+**규칙:**
+
+-   **한 파일 = 한 책임**
+-   컴포넌트는 **UI 렌더링**만 담당
+-   로직은 **훅** 또는 **lib 함수**로 분리
+-   상태 관리는 **스토어**에서 처리
+-   스타일이 복잡하면 **별도 CSS/styled 파일**로 분리
+
+**분리 기준:**
+
+| 책임          | 위치                    |
+| ------------- | ----------------------- |
+| UI 렌더링     | `components/`, `ui/`    |
+| 비즈니스 로직 | `lib/` (순수 함수)      |
+| 상태 관리     | `store/`, `hooks/`      |
+| API 통신      | `api/`, `firebase/`     |
+| 타입 정의     | `types/`                |
+| 상수          | `config/`, `constants/` |
+
+---
+
+### 3. 모바일/데스크탑 완전 분리 (Platform Independence)
+
+모바일과 데스크탑은 **서로 영향을 주지 않습니다**.
+
+```
+❌ 금지: 조건문으로 플랫폼 분기 (if isMobile then ...)
+✅ 필수: 플랫폼별 독립 컴포넌트 트리
+```
+
+**규칙:**
+
+-   모바일 전용 컴포넌트: `Mobile*.tsx`
+-   데스크탑 전용 컴포넌트: `Desktop*.tsx`
+-   페이지 진입점에서 플랫폼별 컴포넌트 선택
+-   **모바일 수정이 데스크탑에 영향을 주면 안 됨** (역도 마찬가지)
+-   플랫폼 공통 로직은 `shared/` 또는 `hooks/`에서 공유
+
+**구조 예시:**
+
+```
+pages/DailyPage/
+├── index.tsx           # 플랫폼 스위칭
+├── DesktopDailyPage.tsx
+└── MobileDailyPage.tsx
+```
+
+**금지 패턴:**
+
+```tsx
+// ❌ 절대 금지
+const Component = () => {
+    const { is_mobile } = useResponsive();
+
+    return is_mobile ? (
+        <div className="mobile-layout">...</div>
+    ) : (
+        <div className="desktop-layout">...</div>
+    );
+};
+```
+
+**권장 패턴:**
+
+```tsx
+// ✅ 권장
+// index.tsx
+const DailyPage = () => {
+    const { is_mobile } = useResponsive();
+    return is_mobile ? <MobileDailyPage /> : <DesktopDailyPage />;
+};
+
+// DesktopDailyPage.tsx - 데스크탑만 신경
+// MobileDailyPage.tsx - 모바일만 신경
+```
+
+---
+
+### 4. 공통화 (DRY - Don't Repeat Yourself)
+
+중복된 로직이나 UI는 **반드시 공통화**합니다.
+
+```
+❌ 금지: 같은 로직/UI가 여러 곳에 복사
+✅ 필수: 한 곳에서 정의하고 재사용
+```
+
+**규칙:**
+
+-   2회 이상 사용되는 로직 → `shared/lib/` 또는 `hooks/`로 추출
+-   2회 이상 사용되는 UI → `shared/ui/` 또는 `components/`로 추출
+-   공통 타입 → `shared/types/`에 정의
+-   공통 상수 → `shared/config/`에 정의
+
+**공통화 체크리스트:**
+
+-   [ ] 이 로직이 다른 곳에도 있는가?
+-   [ ] 이 UI 패턴이 다른 곳에도 있는가?
+-   [ ] 추출해도 복잡도가 증가하지 않는가?
+
+---
+
+## 코드 품질 규칙 (Code Quality Rules)
+
+### 순수 함수 우선 (Pure Functions First)
+
+```
+모든 계산 로직 → lib/ 폴더에 순수 함수로
+부수 효과 → hooks/ 또는 store/에서만
+```
+
+**순수 함수 조건:**
+
+-   동일 입력 → 동일 출력
+-   외부 상태 변경 없음
+-   외부 상태 읽기 없음 (매개변수로 전달)
+
+---
+
+### 명시적 의존성 (Explicit Dependencies)
+
+```
+❌ 금지: 암묵적 전역 상태 참조
+✅ 필수: 모든 의존성을 매개변수로 전달
+```
+
+**예시:**
+
+```typescript
+// ❌ 금지: 내부에서 전역 상태 직접 참조
+function calculateTotal() {
+  const records = useWorkStore.getState().records;
+  return records.reduce(...);
+}
+
+// ✅ 권장: 의존성을 매개변수로 전달
+function calculateTotal(records: WorkRecord[]) {
+  return records.reduce(...);
+}
+```
+
+---
+
+### 단방향 의존성 (Unidirectional Dependencies)
+
+```
+pages → widgets → features → shared
+              ↓
+   features 간 직접 import 금지
+```
+
+**규칙:**
+
+-   상위 레이어는 하위 레이어만 import
+-   같은 레이어 간 직접 import 금지 (shared를 통해서만)
+-   순환 의존성 절대 금지
+
+---
+
+### 타입 안전성 (Type Safety)
+
+```
+❌ 금지: any, as 타입 단언, 타입 무시
+✅ 필수: 엄격한 타입 정의
+```
+
+**규칙:**
+
+-   `any` 사용 금지 (불가피한 경우 `unknown` 사용)
+-   타입 단언(`as`) 최소화
+-   모든 함수에 반환 타입 명시 권장
+-   nullable 값은 명시적으로 처리
+
+---
+
+### 에러 처리 (Error Handling)
+
+```
+❌ 금지: 에러 무시, 빈 catch 블록
+✅ 필수: 명시적 에러 처리
+```
+
+**규칙:**
+
+-   try-catch 사용 시 에러 로깅 필수
+-   사용자에게 의미 있는 에러 메시지 표시
+-   에러 상태 UI 처리 (로딩/에러/성공)
+
+---
+
+## 컴포넌트 설계 규칙 (Component Design Rules)
+
+### Props 설계
+
+```
+❌ 금지: 10개 이상의 props, 중첩 객체 props
+✅ 필수: 간결하고 명확한 props
+```
+
+**규칙:**
+
+-   Props가 5개 초과 → 객체로 그룹화 검토
+-   Props가 10개 초과 → 컴포넌트 분리 검토
+-   콜백 함수는 `on` 접두사 (`onClick`, `onChange`)
+-   boolean props는 긍정형 (`isVisible` vs `isHidden`)
+
+---
+
+### 상태 관리
+
+```
+❌ 금지: 컴포넌트 내 복잡한 상태 로직
+✅ 필수: 상태 로직은 훅 또는 스토어로 분리
+```
+
+**상태 위치 결정:**
+
+| 상태 범위          | 위치                        |
+| ------------------ | --------------------------- |
+| 단일 컴포넌트      | `useState`                  |
+| 부모-자식 공유     | props drilling (2단계 이내) |
+| 형제 컴포넌트 공유 | 부모로 상태 끌어올리기      |
+| 전역 상태          | Zustand 스토어              |
+| 서버 상태          | Firebase + 동기화 훅        |
+
+---
+
+### 렌더링 최적화
+
+```
+❌ 금지: 불필요한 리렌더링
+✅ 필수: 메모이제이션 적절히 사용
+```
+
+**규칙:**
+
+-   비용이 큰 계산 → `useMemo`
+-   콜백 함수 → `useCallback` (자식에 전달 시)
+-   순수 컴포넌트 → `React.memo` (필요시)
+-   리스트 렌더링 → 안정적인 `key` 사용
+
+---
+
+## 파일/폴더 구조 규칙 (File Structure Rules)
+
+### 네이밍 규칙
+
+| 대상          | 규칙           | 예시                  |
+| ------------- | -------------- | --------------------- |
+| 컴포넌트 파일 | PascalCase     | `WorkRecordTable.tsx` |
+| 훅 파일       | camelCase      | `useWorkStore.ts`     |
+| 유틸 파일     | snake_case     | `time_utils.ts`       |
+| 테스트 파일   | `*.test.ts(x)` | `time_utils.test.ts`  |
+| 타입 파일     | snake_case     | `domain.ts`           |
+
+### 코드 네이밍
+
+| 대상            | 규칙             | 예시              |
+| --------------- | ---------------- | ----------------- |
+| 변수            | snake_case       | `selected_date`   |
+| 함수            | camelCase        | `handleSubmit`    |
+| 컴포넌트        | PascalCase       | `WorkRecordTable` |
+| 상수            | UPPER_SNAKE_CASE | `DEFAULT_OPTIONS` |
+| 타입/인터페이스 | PascalCase       | `WorkRecord`      |
+
+---
+
+### 폴더 구조
+
+```
+feature/
+├── index.ts          # Public API (외부 노출)
+├── model/            # 타입, 스토어 슬라이스
+│   └── types.ts
+├── lib/              # 순수 함수 (비즈니스 로직)
+│   └── calculator.ts
+├── ui/               # UI 컴포넌트
+│   └── Component.tsx
+└── hooks/            # 커스텀 훅
+    └── useFeature.ts
+```
+
+---
+
+## 테스트 전략 (Testing Strategy)
+
+### 테스트 도구
+
+| 도구                       | 용도                               |
+| -------------------------- | ---------------------------------- |
+| **Vitest**                 | 테스트 러너, 유닛 테스트           |
+| **@testing-library/react** | 컴포넌트 렌더링 및 상호작용 테스트 |
+| **fireEvent / userEvent**  | 사용자 이벤트 시뮬레이션           |
+
+---
+
+### 테스트 유형별 가이드
+
+#### 1. 유닛 테스트 (Unit Test)
+
+순수 함수는 **반드시 유닛 테스트**를 작성합니다.
+
+```typescript
+// lib/time/calculators.test.ts
+describe("timeToMinutes", () => {
+    it("09:30을 570분으로 변환한다", () => {
+        expect(timeToMinutes("09:30")).toBe(570);
+    });
+
+    it("00:00을 0분으로 변환한다", () => {
+        expect(timeToMinutes("00:00")).toBe(0);
+    });
+});
+```
+
+**위치:** `test/unit/` 폴더에 소스 구조 미러링
+
+---
+
+#### 2. 컴포넌트 테스트 (Component Test)
+
+`@testing-library/react`를 사용하여 **렌더링 및 상호작용**을 테스트합니다.
+
+```typescript
+import { render, screen, fireEvent } from "@testing-library/react";
+
+describe("SettingsModal", () => {
+    it("모달이 열리면 제목이 표시된다", () => {
+        render(<SettingsModal open={true} onClose={jest.fn()} />);
+        expect(screen.getByText("설정")).toBeInTheDocument();
+    });
+
+    it("닫기 버튼 클릭 시 onClose가 호출된다", () => {
+        const onClose = vi.fn();
+        render(<SettingsModal open={true} onClose={onClose} />);
+
+        fireEvent.click(screen.getByRole("button", { name: /닫기/ }));
+        expect(onClose).toHaveBeenCalled();
+    });
+});
+```
+
+**위치:** `test/component/` 폴더
+
+---
+
+#### 3. 키보드 이벤트 테스트 (Keyboard Event Test)
+
+단축키는 `fireEvent.keyDown`으로 검증합니다.
+
+```typescript
+describe("Keyboard Shortcuts", () => {
+    it("F8 키를 누르면 타이머가 시작된다", () => {
+        render(<App />);
+
+        fireEvent.keyDown(document, { key: "F8", code: "F8" });
+
+        expect(screen.getByTestId("timer")).toHaveTextContent(/\d{2}:\d{2}/);
+    });
+
+    it("Ctrl+S를 누르면 저장된다", () => {
+        const onSave = vi.fn();
+        render(<Editor onSave={onSave} />);
+
+        fireEvent.keyDown(document, {
+            key: "s",
+            code: "KeyS",
+            ctrlKey: true,
+        });
+
+        expect(onSave).toHaveBeenCalled();
+    });
+});
+```
+
+**주요 단축키 테스트 항목:**
+
+-   F8: 타이머 시작/정지
+-   Escape: 모달 닫기
+-   Ctrl+S: 저장
+
+---
+
+#### 4. 모달 상태 테스트 (Modal State Test)
+
+모달은 **열기/닫기/제출** 동작을 모두 검증합니다.
+
+```typescript
+describe("Modal State", () => {
+    // 열기 테스트
+    it("버튼 클릭 시 모달이 열린다", () => {
+        render(<SettingsPage />);
+
+        fireEvent.click(screen.getByText("설정"));
+
+        expect(screen.getByRole("dialog")).toBeInTheDocument();
+    });
+
+    // 닫기 테스트 - 버튼
+    it("닫기 버튼 클릭 시 모달이 닫힌다", () => {
+        render(<SettingsModal open={true} onClose={onClose} />);
+
+        fireEvent.click(screen.getByRole("button", { name: /닫기/ }));
+
+        expect(onClose).toHaveBeenCalled();
+    });
+
+    // 닫기 테스트 - ESC 키
+    it("ESC 키를 누르면 모달이 닫힌다", () => {
+        render(<SettingsModal open={true} onClose={onClose} />);
+
+        fireEvent.keyDown(document, { key: "Escape" });
+
+        expect(onClose).toHaveBeenCalled();
+    });
+
+    // 제출 테스트
+    it("폼 제출 시 onSubmit이 호출된다", () => {
+        const onSubmit = vi.fn();
+        render(<FormModal open={true} onSubmit={onSubmit} />);
+
+        fireEvent.change(screen.getByLabelText("이름"), {
+            target: { value: "테스트" },
+        });
+        fireEvent.click(screen.getByText("저장"));
+
+        expect(onSubmit).toHaveBeenCalledWith({ name: "테스트" });
+    });
+});
+```
+
+---
+
+#### 5. 스냅샷 테스트 (Snapshot Test)
+
+UI 구조 변경을 감지합니다. **중요한 컴포넌트**에만 적용합니다.
+
+```typescript
+describe("Snapshot", () => {
+    it("WorkRecordTable 구조가 유지된다", () => {
+        const { container } = render(<WorkRecordTable records={mockRecords} />);
+
+        expect(container).toMatchSnapshot();
+    });
+});
+```
+
+**스냅샷 테스트 대상:**
+
+-   레이아웃 컴포넌트
+-   복잡한 테이블/리스트 구조
+-   디자인 시스템 컴포넌트
+
+**주의사항:**
+
+-   스냅샷이 자주 깨지면 **테스트 범위 축소** 검토
+-   동적 데이터(날짜, ID)는 **mock**으로 고정
+-   무의미한 스냅샷 업데이트 금지
+
+---
+
+### 테스트 작성 규칙
+
+#### 필수 테스트 대상
+
+| 대상               | 테스트 유형          | 필수 여부 |
+| ------------------ | -------------------- | --------- |
+| 순수 함수 (`lib/`) | 유닛 테스트          | ✅ 필수   |
+| 커스텀 훅          | 훅 테스트            | ✅ 필수   |
+| 폼 컴포넌트        | 상호작용 테스트      | ✅ 필수   |
+| 모달               | 상태 테스트          | ✅ 필수   |
+| 단축키             | 키보드 이벤트 테스트 | ✅ 필수   |
+| 레이아웃           | 스냅샷 테스트        | 권장      |
+
+#### 테스트 네이밍
+
+```typescript
+// ✅ 권장: 행동 기반 (한글 가능)
+it("F8 키를 누르면 타이머가 시작된다", () => {});
+it("빈 입력 시 에러 메시지가 표시된다", () => {});
+
+// ❌ 금지: 구현 기반
+it("handleClick이 호출된다", () => {});
+it("state가 true가 된다", () => {});
+```
+
+#### AAA 패턴
+
+모든 테스트는 **Arrange-Act-Assert** 패턴을 따릅니다.
+
+```typescript
+it("작업을 추가하면 목록에 표시된다", () => {
+    // Arrange: 준비
+    render(<WorkRecordTable records={[]} />);
+
+    // Act: 실행
+    fireEvent.click(screen.getByText("추가"));
+    fireEvent.change(screen.getByLabelText("작업명"), {
+        target: { value: "새 작업" },
+    });
+    fireEvent.click(screen.getByText("저장"));
+
+    // Assert: 검증
+    expect(screen.getByText("새 작업")).toBeInTheDocument();
+});
+```
+
+---
+
+### 테스트 폴더 구조
+
+```
+test/
+├── unit/                         # 순수 함수 유닛 테스트
+│   ├── shared/lib/               # 공유 라이브러리 테스트
+│   │   ├── time/
+│   │   └── lunch/
+│   └── features/*/lib/           # 기능별 lib 테스트
+│
+├── component/                    # UI 컴포넌트 테스트
+│   ├── features/                 # 기능별 컴포넌트 테스트
+│   └── widgets/                  # 위젯 테스트
+│
+├── hooks/                        # 커스텀 훅 테스트
+│
+└── helpers/                      # 테스트 유틸리티
+    └── mock_factory.ts           # 목 데이터 팩토리
+```
+
+---
+
+### Mock 데이터 관리
+
+`test/helpers/mock_factory.ts`에서 목 데이터를 생성합니다.
+
+```typescript
+// ✅ 권장: 팩토리 함수 사용
+import { createMockRecord, createMockSession } from "@/test/helpers";
+
+const record = createMockRecord({ work_name: "테스트 작업" });
+const session = createMockSession({ start_time: "09:00" });
+
+// ❌ 금지: 테스트 파일 내 하드코딩
+const record = {
+    id: "test-1",
+    work_name: "테스트",
+    // ... 20줄의 하드코딩된 데이터
+};
+```
+
+---
+
+### 테스트 실행 명령어
+
+```bash
+pnpm test              # watch 모드
+pnpm test:run          # 단일 실행
+pnpm test:run --coverage   # 커버리지 포함
+
+# 특정 파일/폴더만 실행
+pnpm test:run src/test/unit
+pnpm test:run src/test/component/features/settings
+```
+
+---
+
+## 금지 패턴 (Anti-Patterns)
+
+### 절대 금지
+
+1. **God Component**: 500줄 이상의 거대 컴포넌트
+2. **Prop Drilling**: 3단계 이상의 props 전달
+3. **Copy-Paste**: 같은 코드를 여러 곳에 복사
+4. **Magic Number**: 의미 없는 숫자 리터럴
+5. **Implicit State**: 암묵적 전역 상태 참조
+6. **Platform Coupling**: 모바일/데스크탑 코드 결합
+7. **Circular Dependency**: 순환 의존성
+8. **Untestable Code**: 테스트 불가능한 구조
+
+### 경고 (Warning)
+
+1. `any` 타입 사용
+2. 주석으로 코드 비활성화
+3. TODO 주석 방치
+4. 콘솔 로그 방치 (개발용 제외)
+5. 하드코딩된 문자열 (상수화 필요)
+
+---
+
+## 코드 리뷰 체크리스트 (Review Checklist)
+
+새 코드 작성 또는 수정 시 확인:
+
+### 필수 체크
+
+-   [ ] 테스트 가능한 구조인가?
+-   [ ] 파일이 300줄을 초과하지 않는가?
+-   [ ] 모바일/데스크탑이 분리되어 있는가?
+-   [ ] 중복 코드가 없는가?
+-   [ ] 순수 함수로 분리 가능한 로직이 있는가?
+-   [ ] 타입이 명시적인가?
+-   [ ] 린트 에러가 없는가?
+
+### 권장 체크
+
+-   [ ] 네이밍이 명확한가?
+-   [ ] 주석 없이도 코드가 이해되는가?
+-   [ ] 에러 처리가 적절한가?
+-   [ ] 성능 이슈가 없는가?
+
+---
+
+## 개발 프로세스 (Development Process)
+
+### 새 기능 개발
+
+1. **설계 검토**: 테스트 가능성, 분리 가능성 확인
+2. **프로토타입**: 최소 기능 구현
+3. **피드백**: 사용자 확인
+4. **구현**: 전체 기능 개발
+5. **테스트**: 유닛 테스트 작성
+6. **리뷰**: 체크리스트 확인
+
+### 버그 수정
+
+1. **재현**: 버그 재현 확인
+2. **테스트**: 실패하는 테스트 케이스 작성
+3. **수정**: 버그 수정
+4. **검증**: 테스트 통과 확인
+
+### 리팩토링
+
+1. **테스트 확보**: 기존 동작 테스트
+2. **분리**: 관심사별 분리
+3. **검증**: 테스트 통과 확인
+4. **최적화**: 필요시 성능 개선
+
+---
+
+## 예외 처리 (Exceptions)
+
+위 규칙의 예외가 필요한 경우:
+
+1. **문서화**: 왜 예외가 필요한지 주석으로 설명
+2. **최소화**: 예외 범위를 최소화
+3. **TODO**: 향후 개선 계획 명시
+4. **리뷰**: 예외 사유 공유
+
+```typescript
+// ⚠️ 예외: Ant Design 라이브러리 타입 호환성 문제로 any 사용
+// TODO: 라이브러리 업데이트 후 타입 수정 필요
+const handleChange = (value: any) => { ... };
+```
+
+---
+
+## 참고 문서
+
+-   `project-overview.mdc`: 프로젝트 구조 및 아키텍처
+-   `versioning.mdc`: 버저닝 전략
+-   `release-prep.mdc`: 릴리즈 프로세스
