@@ -29,6 +29,7 @@ import {
     UndoOutlined,
     BgColorsOutlined,
     CheckOutlined,
+    CheckCircleFilled,
     EditOutlined,
     ClockCircleOutlined,
     CloudOutlined,
@@ -50,6 +51,7 @@ import {
     APP_THEME_LABELS,
     type AppTheme,
 } from "../store/useWorkStore";
+import { useResponsive } from "../hooks/useResponsive";
 
 const { Text } = Typography;
 
@@ -231,7 +233,7 @@ function ShortcutKeyEditor({ shortcut, onClose }: ShortcutKeyEditorProps) {
 }
 
 // 단축키 탭 컴포넌트
-function ShortcutsTab() {
+function ShortcutsTab({ is_mobile }: { is_mobile?: boolean }) {
     const shortcuts = useShortcutStore((state) => state.shortcuts);
     const toggleShortcut = useShortcutStore((state) => state.toggleShortcut);
     const resetToDefault = useShortcutStore((state) => state.resetToDefault);
@@ -309,6 +311,69 @@ function ShortcutsTab() {
         message.success("단축키 설정이 초기화되었습니다");
     };
 
+    // 모바일: 블러 처리 + 사용 불가 메시지
+    if (is_mobile) {
+        return (
+            <div style={{ position: "relative" }}>
+                {/* 블러 처리된 단축키 목록 (미리보기용) */}
+                <div
+                    style={{
+                        filter: "blur(3px)",
+                        opacity: 0.5,
+                        pointerEvents: "none",
+                        userSelect: "none",
+                    }}
+                >
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        {shortcuts.slice(0, 3).map((shortcut) => (
+                            <div
+                                key={shortcut.id}
+                                style={{
+                                    padding: 12,
+                                    background: "#fafafa",
+                                    borderRadius: 8,
+                                    border: "1px solid #f0f0f0",
+                                }}
+                            >
+                                <Text strong style={{ fontSize: 13, display: "block" }}>{shortcut.name}</Text>
+                                <Text type="secondary" style={{ fontSize: 11 }}>{shortcut.description}</Text>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* 오버레이 메시지 */}
+                <div
+                    style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: "rgba(255, 255, 255, 0.85)",
+                        borderRadius: 8,
+                        padding: 24,
+                        textAlign: "center",
+                    }}
+                >
+                    <KeyOutlined style={{ fontSize: 40, color: "#bfbfbf", marginBottom: 16 }} />
+                    <Text strong style={{ fontSize: 16, marginBottom: 8, color: "#595959" }}>
+                        PC에서만 사용 가능
+                    </Text>
+                    <Text type="secondary" style={{ fontSize: 13, lineHeight: 1.5 }}>
+                        단축키 설정은 키보드가 있는<br />
+                        PC 환경에서만 변경할 수 있습니다.
+                    </Text>
+                </div>
+            </div>
+        );
+    }
+
+    // 데스크탑: 테이블로 표시
     return (
         <div>
             <div
@@ -820,15 +885,44 @@ function ThemeTab() {
     );
 }
 
-// 설정 아이템 컴포넌트 (일관된 레이아웃)
+// 설정 아이템 컴포넌트 (일관된 레이아웃 - 반응형)
 interface SettingItemProps {
     icon: React.ReactNode;
     title: string;
     description?: string;
     action: React.ReactNode;
+    is_mobile?: boolean;
 }
 
-function SettingItem({ icon, title, description, action }: SettingItemProps) {
+function SettingItem({ icon, title, description, action, is_mobile }: SettingItemProps) {
+    // 모바일: 세로 레이아웃 (아이콘 제거, 제목+설명 위, 액션 아래)
+    if (is_mobile) {
+        return (
+            <div
+                style={{
+                    padding: "12px 0",
+                    borderBottom: "1px solid #f0f0f0",
+                }}
+            >
+                <div style={{ marginBottom: 8 }}>
+                    <Text strong style={{ fontSize: 14, display: "block", marginBottom: 2 }}>
+                        {title}
+                    </Text>
+                    {description && (
+                        <Text type="secondary" style={{ fontSize: 12, lineHeight: 1.4 }}>
+                            {description}
+                        </Text>
+                    )}
+                </div>
+                <div>{action}</div>
+            </div>
+        );
+    }
+
+    // 데스크탑에서도 icon이 사용되지 않으면 무시
+    void icon;
+
+    // 데스크탑: 가로 레이아웃
     return (
         <div
             style={{
@@ -877,10 +971,12 @@ function DataTab({
     onExport,
     onImport,
     isAuthenticated,
+    is_mobile,
 }: {
     onExport: () => void;
     onImport: () => void;
     isAuthenticated: boolean;
+    is_mobile?: boolean;
 }) {
     const use_postfix = useWorkStore((state) => state.use_postfix_on_preset_add);
     const setUsePostfix = useWorkStore(
@@ -905,7 +1001,7 @@ function DataTab({
     };
 
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: is_mobile ? 16 : 24 }}>
             {/* 시간 설정 섹션 */}
             <Card
                 size="small"
@@ -915,12 +1011,13 @@ function DataTab({
                         <span>시간 설정</span>
                     </Space>
                 }
-                styles={{ body: { padding: "0 16px" } }}
+                styles={{ body: { padding: is_mobile ? "0 12px" : "0 16px" } }}
             >
                 <SettingItem
                     icon={<ClockCircleOutlined />}
                     title="점심시간"
                     description="간트차트에 표시되며 작업 시간 계산 시 자동 제외됩니다"
+                    is_mobile={is_mobile}
                     action={
                         <TimePicker.RangePicker
                             value={[
@@ -931,7 +1028,7 @@ function DataTab({
                             format="HH:mm"
                             minuteStep={5}
                             size="small"
-                            style={{ width: 180 }}
+                            style={{ width: is_mobile ? "100%" : 180 }}
                             allowClear={false}
                         />
                     }
@@ -947,12 +1044,13 @@ function DataTab({
                         <span>프리셋 설정</span>
                     </Space>
                 }
-                styles={{ body: { padding: "0 16px" } }}
+                styles={{ body: { padding: is_mobile ? "0 12px" : "0 16px" } }}
             >
                 <SettingItem
                     icon={<AppstoreOutlined />}
                     title="고유 식별자 자동 추가"
                     description="프리셋으로 작업 추가 시 거래명에 타임스탬프를 붙입니다"
+                    is_mobile={is_mobile}
                     action={
                         <Switch
                             checked={use_postfix}
@@ -971,32 +1069,32 @@ function DataTab({
                         <span>데이터 관리</span>
                     </Space>
                 }
-                styles={{ body: { padding: 16 } }}
+                styles={{ body: { padding: is_mobile ? 12 : 16 } }}
             >
                 <div
                     style={{
                         display: "grid",
                         gridTemplateColumns: "1fr 1fr",
-                        gap: 12,
-                        marginBottom: 16,
+                        gap: is_mobile ? 8 : 12,
+                        marginBottom: is_mobile ? 12 : 16,
                     }}
                 >
                     <Button
                         icon={<DownloadOutlined />}
                         onClick={onExport}
-                        style={{ height: 48 }}
+                        style={{ height: is_mobile ? 40 : 48 }}
                     >
                         내보내기
                     </Button>
                     <Button
                         icon={<UploadOutlined />}
                         onClick={onImport}
-                        style={{ height: 48 }}
+                        style={{ height: is_mobile ? 40 : 48 }}
                     >
                         가져오기
                     </Button>
                 </div>
-                <Text type="secondary" style={{ fontSize: 12 }}>
+                <Text type="secondary" style={{ fontSize: is_mobile ? 11 : 12 }}>
                     JSON 파일로 데이터를 백업하거나 복원할 수 있습니다.
                     가져오기 시 기존 데이터가 대체됩니다.
                 </Text>
@@ -1007,27 +1105,20 @@ function DataTab({
                 size="small"
                 styles={{
                     body: {
-                        padding: 16,
+                        padding: is_mobile ? 12 : 16,
                         background: isAuthenticated ? "#f6ffed" : "#e6f4ff",
+                        borderRadius: 8,
                     },
                 }}
             >
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div
-                        style={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: "50%",
-                            background: isAuthenticated ? "#52c41a" : "#1677ff",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                        }}
-                    >
-                        <CloudOutlined style={{ color: "white", fontSize: 18 }} />
-                    </div>
-                    <div>
-                        <Text strong style={{ display: "block" }}>
+                    {isAuthenticated ? (
+                        <CheckCircleFilled style={{ color: "#52c41a", fontSize: 32, flexShrink: 0 }} />
+                    ) : (
+                        <CloudOutlined style={{ color: "#1677ff", fontSize: 32, flexShrink: 0 }} />
+                    )}
+                    <div style={{ flex: 1 }}>
+                        <Text strong style={{ display: "block", fontSize: 14 }}>
                             {isAuthenticated ? "클라우드 연결됨" : "로컬 저장"}
                         </Text>
                         <Text type="secondary" style={{ fontSize: 12 }}>
@@ -1049,6 +1140,8 @@ export default function SettingsModal({
     onImport,
     isAuthenticated,
 }: SettingsModalProps) {
+    const { is_mobile } = useResponsive();
+
     const tab_items = [
         {
             key: "theme",
@@ -1071,6 +1164,7 @@ export default function SettingsModal({
                     onExport={onExport}
                     onImport={onImport}
                     isAuthenticated={isAuthenticated}
+                    is_mobile={is_mobile}
                 />
             ),
         },
@@ -1090,14 +1184,28 @@ export default function SettingsModal({
                     <KeyOutlined /> 단축키
                 </span>
             ),
-            children: <ShortcutsTab />,
+            children: <ShortcutsTab is_mobile={is_mobile} />,
         },
     ];
 
     // 탭 컨텐츠를 스크롤 가능한 컨테이너로 감싸기
     const scrollable_tab_items = tab_items.map((item) => ({
         ...item,
-        children: (
+        children: is_mobile ? (
+            // 모바일: 모달 내부에서 스크롤 (모달헤더 55px + 탭바 46px + 여백 = 약 130px)
+            <div
+                style={{
+                    maxHeight: "calc(100vh - 280px)",
+                    overflowY: "auto",
+                    overflowX: "hidden",
+                    paddingBottom: 16,
+                    paddingRight: 4,
+                }}
+            >
+                {item.children}
+            </div>
+        ) : (
+            // 데스크탑
             <div
                 style={{
                     height: "calc(70vh - 120px)",
@@ -1112,6 +1220,41 @@ export default function SettingsModal({
         ),
     }));
 
+    // 모바일용 모달 설정
+    if (is_mobile) {
+        return (
+            <Modal
+                title="설정"
+                open={open}
+                onCancel={onClose}
+                footer={null}
+                width="calc(100% - 24px)"
+                centered
+                style={{ 
+                    maxWidth: 400,
+                    margin: "0 auto",
+                }}
+                styles={{
+                    body: {
+                        padding: "0 12px 12px",
+                        maxHeight: "calc(100vh - 180px)",
+                        overflow: "hidden",
+                    },
+                }}
+                className="mobile-settings-modal"
+            >
+                <Tabs
+                    defaultActiveKey="theme"
+                    items={scrollable_tab_items}
+                    tabPosition="top"
+                    centered
+                    size="small"
+                />
+            </Modal>
+        );
+    }
+
+    // 데스크탑용 모달
     return (
         <Modal
             title="설정"

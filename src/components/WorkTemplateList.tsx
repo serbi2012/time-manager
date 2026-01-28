@@ -987,6 +987,13 @@ export default function WorkTemplateList({
                 .template-card:hover .template-hover-buttons {
                     opacity: 1;
                 }
+                
+                /* 모바일: 호버 버튼 항상 표시 */
+                @media (max-width: 480px) {
+                    .template-hover-buttons {
+                        opacity: 1;
+                    }
+                }
             `}</style>
         </>
     );

@@ -411,6 +411,23 @@
         margin-right: 0 !important;
     }
 
+    /* 모바일 날짜 네비게이션 개선 */
+    .ant-card-extra .ant-space-compact {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+    }
+
+    .ant-card-extra .ant-space-compact .ant-picker {
+        width: 140px !important;
+        min-width: 140px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .ant-card-extra .ant-space-compact .ant-btn {
+        min-width: 36px !important;
+        flex-shrink: 0 !important;
+    }
+
     /* 모든 카드 바디에 충분한 패딩 */
     .ant-card > .ant-card-body,
     .ant-card.ant-card-small > .ant-card-body,
@@ -780,35 +797,19 @@
    ======================================== */
 
 @media (max-width: 480px) {
-    .settings-modal .ant-modal-content {
-        height: calc(100vh - 24px);
-        display: flex;
-        flex-direction: column;
+    /* 모바일 설정 모달 */
+    .mobile-settings-modal .ant-tabs-nav {
+        margin-bottom: 8px !important;
     }
 
-    .settings-modal .ant-modal-body {
-        flex: 1;
-        overflow: hidden;
+    .mobile-settings-modal .ant-tabs-tab {
+        padding: 8px 10px !important;
+        font-size: 13px !important;
     }
 
-    .settings-modal .ant-tabs {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .settings-modal .ant-tabs-content {
-        flex: 1;
-        overflow-y: auto;
-    }
-
-    .settings-modal .ant-tabs-nav {
-        margin-bottom: 12px;
-    }
-
-    .settings-modal .ant-tabs-tab {
-        padding: 8px 12px;
-        font-size: 13px;
+    .mobile-settings-modal .ant-tabs-tab .anticon {
+        margin-right: 4px;
+        font-size: 14px;
     }
 }
 
@@ -1032,10 +1033,25 @@
     }
 
     .ant-input,
-    .ant-select-selector,
-    .ant-picker {
+    .ant-select-selector {
         font-size: 16px !important; /* iOS 줌 방지 */
         height: 44px !important;
+    }
+
+    /* DatePicker는 폼에서만 높이 적용 (Space.Compact 내에서는 기본 유지) */
+    .ant-form .ant-picker {
+        font-size: 16px !important;
+        height: 44px !important;
+    }
+
+    /* Space.Compact 내 DatePicker는 버튼과 동일한 높이 유지 */
+    .ant-space-compact .ant-picker {
+        height: 36px !important;
+        font-size: 14px !important;
+    }
+
+    .ant-space-compact .ant-picker .ant-picker-input > input {
+        font-size: 13px !important;
     }
 
     .ant-select-selector {

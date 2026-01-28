@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.8";
+export const CURRENT_VERSION = "2.0.9";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,28 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.9",
+        date: "2026-01-28",
+        title: "모바일 UI 개선",
+        changes: [
+            {
+                type: "style",
+                description:
+                    "모바일 설정 화면이 더 보기 좋게 개선됨",
+            },
+            {
+                type: "improvement",
+                description:
+                    "모바일에서 프리셋 수정/삭제 버튼이 항상 표시됨",
+            },
+            {
+                type: "improvement",
+                description:
+                    "모바일에서 날짜 선택 UI가 개선됨",
+            },
+        ],
+    },
     {
         version: "2.0.8",
         date: "2026-01-28",
