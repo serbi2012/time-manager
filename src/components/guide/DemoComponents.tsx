@@ -381,14 +381,16 @@ export function DemoWorkRecordTable() {
                             disabled
                         >
                             새 작업{" "}
-                            <span style={{
-                                fontSize: 10,
-                                opacity: 0.85,
-                                marginLeft: 2,
-                                padding: "1px 3px",
-                                background: "rgba(255,255,255,0.2)",
-                                borderRadius: 3,
-                            }}>
+                            <span
+                                style={{
+                                    fontSize: 10,
+                                    opacity: 0.85,
+                                    marginLeft: 2,
+                                    padding: "1px 3px",
+                                    background: "rgba(255,255,255,0.2)",
+                                    borderRadius: 3,
+                                }}
+                            >
                                 Alt+N
                             </span>
                         </Button>
@@ -453,16 +455,23 @@ export function DemoWorkTemplateList() {
                         size="small"
                         disabled
                     >
-                        <span style={{ display: "inline-flex", alignItems: "center" }}>
+                        <span
+                            style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                            }}
+                        >
                             추가
-                            <span style={{
-                                fontSize: 10,
-                                opacity: 0.85,
-                                marginLeft: 4,
-                                padding: "1px 4px",
-                                background: "rgba(255,255,255,0.2)",
-                                borderRadius: 3,
-                            }}>
+                            <span
+                                style={{
+                                    fontSize: 10,
+                                    opacity: 0.85,
+                                    marginLeft: 4,
+                                    padding: "1px 4px",
+                                    background: "rgba(255,255,255,0.2)",
+                                    borderRadius: 3,
+                                }}
+                            >
                                 Alt+P
                             </span>
                         </span>
@@ -470,15 +479,6 @@ export function DemoWorkTemplateList() {
                 }
                 className="demo-template-list-card"
             >
-                <Text
-                    type="secondary"
-                    style={{ fontSize: 12, display: "block", marginBottom: 12 }}
-                >
-                    자주 사용하는 작업을 프리셋으로 저장하세요.
-                    <br />
-                    클릭하면 오늘의 작업 기록에 추가됩니다.
-                </Text>
-
                 <div className="demo-template-items">
                     {DEMO_TEMPLATES.map((template) => (
                         <div

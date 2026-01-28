@@ -85,11 +85,7 @@ function SortableTemplateCard({
     };
 
     return (
-        <div
-            ref={setNodeRef}
-            className="template-card"
-            style={style}
-        >
+        <div ref={setNodeRef} className="template-card" style={style}>
             {/* 드래그 핸들 */}
             <div
                 className="template-drag-handle"
@@ -244,7 +240,7 @@ export default function WorkTemplateList({
     const [form] = Form.useForm();
     const [new_task_input, setNewTaskInput] = useState("");
     const [new_category_input, setNewCategoryInput] = useState("");
-    
+
     // Input refs for focus management
     const new_task_input_ref = useRef<InputRef>(null);
     const new_category_input_ref = useRef<InputRef>(null);
@@ -257,7 +253,9 @@ export default function WorkTemplateList({
     // 프로젝트 코드 선택 시 작업명 자동 채우기 핸들러
     const handleProjectCodeSelect = useCallback(
         (value: string) => {
-            const selected = raw_project_code_options.find((opt) => opt.value === value);
+            const selected = raw_project_code_options.find(
+                (opt) => opt.value === value
+            );
             if (selected?.work_name) {
                 form.setFieldsValue({ work_name: selected.work_name });
             }
@@ -270,10 +268,20 @@ export default function WorkTemplateList({
         return raw_project_code_options.map((opt) => ({
             ...opt,
             label: (
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                    }}
+                >
                     <span>{opt.label}</span>
                     <CloseOutlined
-                        style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                        style={{
+                            fontSize: 10,
+                            color: "#999",
+                            cursor: "pointer",
+                        }}
                         onClick={(e) => {
                             e.stopPropagation();
                             hideAutoCompleteOption("project_code", opt.value);
@@ -290,10 +298,20 @@ export default function WorkTemplateList({
         return getAutoCompleteOptions("work_name").map((v) => ({
             value: v,
             label: (
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                    }}
+                >
                     <span>{v}</span>
                     <CloseOutlined
-                        style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                        style={{
+                            fontSize: 10,
+                            color: "#999",
+                            cursor: "pointer",
+                        }}
                         onClick={(e) => {
                             e.stopPropagation();
                             hideAutoCompleteOption("work_name", v);
@@ -303,16 +321,32 @@ export default function WorkTemplateList({
                 </div>
             ),
         }));
-    }, [records, templates, hidden_autocomplete_options, getAutoCompleteOptions, hideAutoCompleteOption]);
+    }, [
+        records,
+        templates,
+        hidden_autocomplete_options,
+        getAutoCompleteOptions,
+        hideAutoCompleteOption,
+    ]);
 
     const deal_name_options = useMemo(() => {
         return getAutoCompleteOptions("deal_name").map((v) => ({
             value: v,
             label: (
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                    }}
+                >
                     <span>{v}</span>
                     <CloseOutlined
-                        style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                        style={{
+                            fontSize: 10,
+                            color: "#999",
+                            cursor: "pointer",
+                        }}
                         onClick={(e) => {
                             e.stopPropagation();
                             hideAutoCompleteOption("deal_name", v);
@@ -322,7 +356,13 @@ export default function WorkTemplateList({
                 </div>
             ),
         }));
-    }, [records, templates, hidden_autocomplete_options, getAutoCompleteOptions, hideAutoCompleteOption]);
+    }, [
+        records,
+        templates,
+        hidden_autocomplete_options,
+        getAutoCompleteOptions,
+        hideAutoCompleteOption,
+    ]);
 
     // 업무명/카테고리명 옵션 (기본 + 사용자 정의, 숨김 필터링)
     const task_options = useMemo(() => {
@@ -350,9 +390,15 @@ export default function WorkTemplateList({
             form.setFieldsValue({ color: TEMPLATE_COLORS[0] });
             setIsModalOpen(true);
         };
-        window.addEventListener("shortcut:openNewPresetModal", handleOpenNewPresetModal);
+        window.addEventListener(
+            "shortcut:openNewPresetModal",
+            handleOpenNewPresetModal
+        );
         return () => {
-            window.removeEventListener("shortcut:openNewPresetModal", handleOpenNewPresetModal);
+            window.removeEventListener(
+                "shortcut:openNewPresetModal",
+                handleOpenNewPresetModal
+            );
         };
     }, [form]);
 
@@ -470,17 +516,26 @@ export default function WorkTemplateList({
                         size="small"
                         onClick={handleOpenAddModal}
                     >
-                        {is_mobile ? "추가" : (
-                            <span style={{ display: "inline-flex", alignItems: "center" }}>
+                        {is_mobile ? (
+                            "추가"
+                        ) : (
+                            <span
+                                style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                }}
+                            >
                                 추가
-                                <span style={{
-                                    fontSize: 10,
-                                    opacity: 0.85,
-                                    marginLeft: 4,
-                                    padding: "1px 4px",
-                                    background: "rgba(255,255,255,0.2)",
-                                    borderRadius: 3,
-                                }}>
+                                <span
+                                    style={{
+                                        fontSize: 10,
+                                        opacity: 0.85,
+                                        marginLeft: 4,
+                                        padding: "1px 4px",
+                                        background: "rgba(255,255,255,0.2)",
+                                        borderRadius: 3,
+                                    }}
+                                >
                                     Alt+P
                                 </span>
                             </span>
@@ -488,17 +543,6 @@ export default function WorkTemplateList({
                     </Button>
                 }
             >
-                {!is_mobile && (
-                    <Text
-                        type="secondary"
-                        style={{ fontSize: 12, display: "block", marginBottom: 12 }}
-                    >
-                        자주 사용하는 작업을 프리셋으로 저장하세요.
-                        <br />
-                        클릭하면 오늘의 작업 기록에 추가됩니다.
-                    </Text>
-                )}
-
                 {templates.length === 0 ? (
                     <Empty
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -545,14 +589,16 @@ export default function WorkTemplateList({
                 footer={[
                     <Button key="ok" type="primary" onClick={handleSubmit}>
                         {is_edit_mode ? "수정" : "추가"}{" "}
-                        <span style={{
-                            fontSize: 11,
-                            opacity: 0.85,
-                            marginLeft: 4,
-                            padding: "1px 4px",
-                            background: "rgba(255,255,255,0.2)",
-                            borderRadius: 3,
-                        }}>
+                        <span
+                            style={{
+                                fontSize: 11,
+                                opacity: 0.85,
+                                marginLeft: 4,
+                                padding: "1px 4px",
+                                background: "rgba(255,255,255,0.2)",
+                                borderRadius: 3,
+                            }}
+                        >
                             F8
                         </span>
                     </Button>,
@@ -571,10 +617,7 @@ export default function WorkTemplateList({
                         }
                     }}
                 >
-                    <Form.Item
-                        name="project_code"
-                        label="프로젝트 코드"
-                    >
+                    <Form.Item name="project_code" label="프로젝트 코드">
                         <AutoComplete
                             options={project_code_options}
                             placeholder="예: A25_01846 (미입력 시 A00_00000)"
@@ -631,13 +674,26 @@ export default function WorkTemplateList({
                                 allowClear
                                 popupMatchSelectWidth={240}
                                 optionRender={(option) => (
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                        }}
+                                    >
                                         <span>{option.label}</span>
                                         <CloseOutlined
-                                            style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                                            style={{
+                                                fontSize: 10,
+                                                color: "#999",
+                                                cursor: "pointer",
+                                            }}
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                hideAutoCompleteOption("task_option", option.value as string);
+                                                hideAutoCompleteOption(
+                                                    "task_option",
+                                                    option.value as string
+                                                );
                                             }}
                                         />
                                     </div>
@@ -656,7 +712,11 @@ export default function WorkTemplateList({
                                             }
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                setTimeout(() => new_task_input_ref.current?.focus(), 0);
+                                                setTimeout(
+                                                    () =>
+                                                        new_task_input_ref.current?.focus(),
+                                                    0
+                                                );
                                             }}
                                         >
                                             <Input
@@ -673,7 +733,11 @@ export default function WorkTemplateList({
                                                 }
                                                 onMouseDown={(e) => {
                                                     e.stopPropagation();
-                                                    setTimeout(() => new_task_input_ref.current?.focus(), 0);
+                                                    setTimeout(
+                                                        () =>
+                                                            new_task_input_ref.current?.focus(),
+                                                        0
+                                                    );
                                                 }}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -712,13 +776,26 @@ export default function WorkTemplateList({
                                 allowClear
                                 popupMatchSelectWidth={240}
                                 optionRender={(option) => (
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                        }}
+                                    >
                                         <span>{option.label}</span>
                                         <CloseOutlined
-                                            style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                                            style={{
+                                                fontSize: 10,
+                                                color: "#999",
+                                                cursor: "pointer",
+                                            }}
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                hideAutoCompleteOption("category_option", option.value as string);
+                                                hideAutoCompleteOption(
+                                                    "category_option",
+                                                    option.value as string
+                                                );
                                             }}
                                         />
                                     </div>
@@ -737,7 +814,11 @@ export default function WorkTemplateList({
                                             }
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                setTimeout(() => new_category_input_ref.current?.focus(), 0);
+                                                setTimeout(
+                                                    () =>
+                                                        new_category_input_ref.current?.focus(),
+                                                    0
+                                                );
                                             }}
                                         >
                                             <Input
@@ -754,7 +835,11 @@ export default function WorkTemplateList({
                                                 }
                                                 onMouseDown={(e) => {
                                                     e.stopPropagation();
-                                                    setTimeout(() => new_category_input_ref.current?.focus(), 0);
+                                                    setTimeout(
+                                                        () =>
+                                                            new_category_input_ref.current?.focus(),
+                                                        0
+                                                    );
                                                 }}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
