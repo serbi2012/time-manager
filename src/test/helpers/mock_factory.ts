@@ -2,7 +2,7 @@
  * 테스트용 목 데이터 생성 헬퍼
  */
 
-import type { WorkSession, WorkRecord, ShortcutDefinition } from "../../shared/types";
+import type { WorkSession, WorkRecord, ShortcutDefinition, WorkTemplate } from "../../shared/types";
 import type { TimeSlot } from "../../features/work-record/lib/conflict_detector";
 
 /**
@@ -52,6 +52,62 @@ export function createMockRecord(overrides: Partial<WorkRecord> & {
 }
 
 /**
+ * 테스트용 WorkRecord 간단 생성 (세션 자동 생성)
+ */
+export function createSimpleRecord(overrides: Partial<WorkRecord> & { 
+    id: string; 
+    work_name: string;
+}): WorkRecord {
+    const date = overrides.date ?? new Date().toISOString().split("T")[0];
+    const start_time = overrides.start_time ?? "09:00";
+    const end_time = overrides.end_time ?? "10:00";
+    const duration_minutes = overrides.duration_minutes ?? calculateDuration(start_time, end_time);
+    
+    return {
+        id: overrides.id,
+        work_name: overrides.work_name,
+        deal_name: overrides.deal_name ?? "테스트 거래",
+        task_name: overrides.task_name ?? "개발",
+        project_code: overrides.project_code ?? "A25_TEST",
+        category_name: overrides.category_name ?? "개발",
+        start_time,
+        end_time,
+        date,
+        duration_minutes,
+        sessions: overrides.sessions ?? [{
+            id: `${overrides.id}-session-1`,
+            date,
+            start_time,
+            end_time,
+            duration_minutes,
+        }],
+        note: overrides.note ?? "",
+        is_completed: overrides.is_completed ?? false,
+        is_deleted: overrides.is_deleted ?? false,
+    };
+}
+
+/**
+ * 테스트용 WorkTemplate 생성
+ */
+export function createMockTemplate(overrides: Partial<WorkTemplate> & { 
+    id: string; 
+    work_name: string;
+}): WorkTemplate {
+    return {
+        id: overrides.id,
+        work_name: overrides.work_name,
+        deal_name: overrides.deal_name ?? "기본 거래",
+        task_name: overrides.task_name ?? "개발",
+        project_code: overrides.project_code ?? "A25_TEST",
+        category_name: overrides.category_name ?? "개발",
+        note: overrides.note ?? "",
+        color: overrides.color ?? "#1677ff",
+        created_at: overrides.created_at ?? new Date().toISOString(),
+    };
+}
+
+/**
  * 테스트용 TimeSlot 생성 (conflict_detector용)
  */
 export function createMockTimeSlot(overrides: Partial<TimeSlot> & { start: number; end: number }): TimeSlot {
@@ -94,4 +150,19 @@ function calculateDuration(start_time: string, end_time: string): number {
     const start_minutes = start_h * 60 + start_m;
     const end_minutes = end_h * 60 + end_m;
     return Math.max(1, end_minutes - start_minutes);
+}
+
+/**
+ * 복수 레코드 생성 헬퍼
+ */
+export function createMockRecords(count: number, baseOverrides?: Partial<WorkRecord>): WorkRecord[] {
+    return Array.from({ length: count }, (_, i) => 
+        createSimpleRecord({
+            id: `record-${i + 1}`,
+            work_name: `작업 ${i + 1}`,
+            start_time: `${String(9 + i).padStart(2, '0')}:00`,
+            end_time: `${String(10 + i).padStart(2, '0')}:00`,
+            ...baseOverrides,
+        })
+    );
 }

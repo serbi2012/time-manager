@@ -1,0 +1,1009 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ThemeTab 스냅샷 > 그린 테마 구조가 유지됨 1`] = `
+<div
+  class="theme-tab"
+>
+  <span
+    class="ant-typography css-dev-only-do-not-override-p45i5k css-var-root"
+  >
+    <strong>
+      앱 테마 색상
+    </strong>
+  </span>
+  <div
+    style="margin-top: 16px;"
+  >
+    <div
+      class="ant-radio-group ant-radio-group-outline css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+      role="radiogroup"
+    >
+      <div
+        class="ant-space css-dev-only-do-not-override-p45i5k ant-space-vertical ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+      >
+        <div
+          class="ant-space-item"
+        >
+          <label
+            class="ant-radio-wrapper css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+          >
+            <span
+              class="ant-radio ant-wave-target"
+            >
+              <input
+                class="ant-radio-input"
+                name="test-id"
+                type="radio"
+                value="blue"
+              />
+              <span
+                class="ant-radio-inner"
+              />
+            </span>
+            <span
+              class="ant-radio-label"
+            >
+              <div
+                class="ant-space css-dev-only-do-not-override-p45i5k ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+              >
+                <div
+                  class="ant-space-item"
+                >
+                  <div
+                    style="width: 16px; height: 16px; border-radius: 4px; background: #1890ff;"
+                  />
+                </div>
+                <div
+                  class="ant-space-item"
+                >
+                  <span>
+                    파란색 (기본)
+                  </span>
+                </div>
+              </div>
+            </span>
+          </label>
+        </div>
+        <div
+          class="ant-space-item"
+        >
+          <label
+            class="ant-radio-wrapper ant-radio-wrapper-checked css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+          >
+            <span
+              class="ant-radio ant-wave-target ant-radio-checked"
+            >
+              <input
+                checked=""
+                class="ant-radio-input"
+                name="test-id"
+                type="radio"
+                value="green"
+              />
+              <span
+                class="ant-radio-inner"
+              />
+            </span>
+            <span
+              class="ant-radio-label"
+            >
+              <div
+                class="ant-space css-dev-only-do-not-override-p45i5k ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+              >
+                <div
+                  class="ant-space-item"
+                >
+                  <div
+                    style="width: 16px; height: 16px; border-radius: 4px; background: #52c41a;"
+                  />
+                </div>
+                <div
+                  class="ant-space-item"
+                >
+                  <span>
+                    초록색
+                  </span>
+                </div>
+              </div>
+            </span>
+          </label>
+        </div>
+        <div
+          class="ant-space-item"
+        >
+          <label
+            class="ant-radio-wrapper css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+          >
+            <span
+              class="ant-radio ant-wave-target"
+            >
+              <input
+                class="ant-radio-input"
+                name="test-id"
+                type="radio"
+                value="purple"
+              />
+              <span
+                class="ant-radio-inner"
+              />
+            </span>
+            <span
+              class="ant-radio-label"
+            >
+              <div
+                class="ant-space css-dev-only-do-not-override-p45i5k ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+              >
+                <div
+                  class="ant-space-item"
+                >
+                  <div
+                    style="width: 16px; height: 16px; border-radius: 4px; background: #722ed1;"
+                  />
+                </div>
+                <div
+                  class="ant-space-item"
+                >
+                  <span>
+                    보라색
+                  </span>
+                </div>
+              </div>
+            </span>
+          </label>
+        </div>
+        <div
+          class="ant-space-item"
+        >
+          <label
+            class="ant-radio-wrapper css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+          >
+            <span
+              class="ant-radio ant-wave-target"
+            >
+              <input
+                class="ant-radio-input"
+                name="test-id"
+                type="radio"
+                value="red"
+              />
+              <span
+                class="ant-radio-inner"
+              />
+            </span>
+            <span
+              class="ant-radio-label"
+            >
+              <div
+                class="ant-space css-dev-only-do-not-override-p45i5k ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+              >
+                <div
+                  class="ant-space-item"
+                >
+                  <div
+                    style="width: 16px; height: 16px; border-radius: 4px; background: #f5222d;"
+                  />
+                </div>
+                <div
+                  class="ant-space-item"
+                >
+                  <span>
+                    빨간색
+                  </span>
+                </div>
+              </div>
+            </span>
+          </label>
+        </div>
+        <div
+          class="ant-space-item"
+        >
+          <label
+            class="ant-radio-wrapper css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+          >
+            <span
+              class="ant-radio ant-wave-target"
+            >
+              <input
+                class="ant-radio-input"
+                name="test-id"
+                type="radio"
+                value="orange"
+              />
+              <span
+                class="ant-radio-inner"
+              />
+            </span>
+            <span
+              class="ant-radio-label"
+            >
+              <div
+                class="ant-space css-dev-only-do-not-override-p45i5k ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+              >
+                <div
+                  class="ant-space-item"
+                >
+                  <div
+                    style="width: 16px; height: 16px; border-radius: 4px; background: #fa8c16;"
+                  />
+                </div>
+                <div
+                  class="ant-space-item"
+                >
+                  <span>
+                    주황색
+                  </span>
+                </div>
+              </div>
+            </span>
+          </label>
+        </div>
+        <div
+          class="ant-space-item"
+        >
+          <label
+            class="ant-radio-wrapper css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+          >
+            <span
+              class="ant-radio ant-wave-target"
+            >
+              <input
+                class="ant-radio-input"
+                name="test-id"
+                type="radio"
+                value="teal"
+              />
+              <span
+                class="ant-radio-inner"
+              />
+            </span>
+            <span
+              class="ant-radio-label"
+            >
+              <div
+                class="ant-space css-dev-only-do-not-override-p45i5k ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+              >
+                <div
+                  class="ant-space-item"
+                >
+                  <div
+                    style="width: 16px; height: 16px; border-radius: 4px; background: #13c2c2;"
+                  />
+                </div>
+                <div
+                  class="ant-space-item"
+                >
+                  <span>
+                    청록색
+                  </span>
+                </div>
+              </div>
+            </span>
+          </label>
+        </div>
+        <div
+          class="ant-space-item"
+        >
+          <label
+            class="ant-radio-wrapper css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+          >
+            <span
+              class="ant-radio ant-wave-target"
+            >
+              <input
+                class="ant-radio-input"
+                name="test-id"
+                type="radio"
+                value="black"
+              />
+              <span
+                class="ant-radio-inner"
+              />
+            </span>
+            <span
+              class="ant-radio-label"
+            >
+              <div
+                class="ant-space css-dev-only-do-not-override-p45i5k ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+              >
+                <div
+                  class="ant-space-item"
+                >
+                  <div
+                    style="width: 16px; height: 16px; border-radius: 4px; background: #434343;"
+                  />
+                </div>
+                <div
+                  class="ant-space-item"
+                >
+                  <span>
+                    검정색
+                  </span>
+                </div>
+              </div>
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+  <style>
+    
+                .theme-tab {
+                    padding: 16px 0;
+                }
+            
+  </style>
+</div>
+`;
+
+exports[`ThemeTab 스냅샷 > 블루 테마 구조가 유지됨 1`] = `
+<div
+  class="theme-tab"
+>
+  <span
+    class="ant-typography css-dev-only-do-not-override-p45i5k css-var-root"
+  >
+    <strong>
+      앱 테마 색상
+    </strong>
+  </span>
+  <div
+    style="margin-top: 16px;"
+  >
+    <div
+      class="ant-radio-group ant-radio-group-outline css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+      role="radiogroup"
+    >
+      <div
+        class="ant-space css-dev-only-do-not-override-p45i5k ant-space-vertical ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+      >
+        <div
+          class="ant-space-item"
+        >
+          <label
+            class="ant-radio-wrapper ant-radio-wrapper-checked css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+          >
+            <span
+              class="ant-radio ant-wave-target ant-radio-checked"
+            >
+              <input
+                checked=""
+                class="ant-radio-input"
+                name="test-id"
+                type="radio"
+                value="blue"
+              />
+              <span
+                class="ant-radio-inner"
+              />
+            </span>
+            <span
+              class="ant-radio-label"
+            >
+              <div
+                class="ant-space css-dev-only-do-not-override-p45i5k ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+              >
+                <div
+                  class="ant-space-item"
+                >
+                  <div
+                    style="width: 16px; height: 16px; border-radius: 4px; background: #1890ff;"
+                  />
+                </div>
+                <div
+                  class="ant-space-item"
+                >
+                  <span>
+                    파란색 (기본)
+                  </span>
+                </div>
+              </div>
+            </span>
+          </label>
+        </div>
+        <div
+          class="ant-space-item"
+        >
+          <label
+            class="ant-radio-wrapper css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+          >
+            <span
+              class="ant-radio ant-wave-target"
+            >
+              <input
+                class="ant-radio-input"
+                name="test-id"
+                type="radio"
+                value="green"
+              />
+              <span
+                class="ant-radio-inner"
+              />
+            </span>
+            <span
+              class="ant-radio-label"
+            >
+              <div
+                class="ant-space css-dev-only-do-not-override-p45i5k ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+              >
+                <div
+                  class="ant-space-item"
+                >
+                  <div
+                    style="width: 16px; height: 16px; border-radius: 4px; background: #52c41a;"
+                  />
+                </div>
+                <div
+                  class="ant-space-item"
+                >
+                  <span>
+                    초록색
+                  </span>
+                </div>
+              </div>
+            </span>
+          </label>
+        </div>
+        <div
+          class="ant-space-item"
+        >
+          <label
+            class="ant-radio-wrapper css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+          >
+            <span
+              class="ant-radio ant-wave-target"
+            >
+              <input
+                class="ant-radio-input"
+                name="test-id"
+                type="radio"
+                value="purple"
+              />
+              <span
+                class="ant-radio-inner"
+              />
+            </span>
+            <span
+              class="ant-radio-label"
+            >
+              <div
+                class="ant-space css-dev-only-do-not-override-p45i5k ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+              >
+                <div
+                  class="ant-space-item"
+                >
+                  <div
+                    style="width: 16px; height: 16px; border-radius: 4px; background: #722ed1;"
+                  />
+                </div>
+                <div
+                  class="ant-space-item"
+                >
+                  <span>
+                    보라색
+                  </span>
+                </div>
+              </div>
+            </span>
+          </label>
+        </div>
+        <div
+          class="ant-space-item"
+        >
+          <label
+            class="ant-radio-wrapper css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+          >
+            <span
+              class="ant-radio ant-wave-target"
+            >
+              <input
+                class="ant-radio-input"
+                name="test-id"
+                type="radio"
+                value="red"
+              />
+              <span
+                class="ant-radio-inner"
+              />
+            </span>
+            <span
+              class="ant-radio-label"
+            >
+              <div
+                class="ant-space css-dev-only-do-not-override-p45i5k ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+              >
+                <div
+                  class="ant-space-item"
+                >
+                  <div
+                    style="width: 16px; height: 16px; border-radius: 4px; background: #f5222d;"
+                  />
+                </div>
+                <div
+                  class="ant-space-item"
+                >
+                  <span>
+                    빨간색
+                  </span>
+                </div>
+              </div>
+            </span>
+          </label>
+        </div>
+        <div
+          class="ant-space-item"
+        >
+          <label
+            class="ant-radio-wrapper css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+          >
+            <span
+              class="ant-radio ant-wave-target"
+            >
+              <input
+                class="ant-radio-input"
+                name="test-id"
+                type="radio"
+                value="orange"
+              />
+              <span
+                class="ant-radio-inner"
+              />
+            </span>
+            <span
+              class="ant-radio-label"
+            >
+              <div
+                class="ant-space css-dev-only-do-not-override-p45i5k ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+              >
+                <div
+                  class="ant-space-item"
+                >
+                  <div
+                    style="width: 16px; height: 16px; border-radius: 4px; background: #fa8c16;"
+                  />
+                </div>
+                <div
+                  class="ant-space-item"
+                >
+                  <span>
+                    주황색
+                  </span>
+                </div>
+              </div>
+            </span>
+          </label>
+        </div>
+        <div
+          class="ant-space-item"
+        >
+          <label
+            class="ant-radio-wrapper css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+          >
+            <span
+              class="ant-radio ant-wave-target"
+            >
+              <input
+                class="ant-radio-input"
+                name="test-id"
+                type="radio"
+                value="teal"
+              />
+              <span
+                class="ant-radio-inner"
+              />
+            </span>
+            <span
+              class="ant-radio-label"
+            >
+              <div
+                class="ant-space css-dev-only-do-not-override-p45i5k ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+              >
+                <div
+                  class="ant-space-item"
+                >
+                  <div
+                    style="width: 16px; height: 16px; border-radius: 4px; background: #13c2c2;"
+                  />
+                </div>
+                <div
+                  class="ant-space-item"
+                >
+                  <span>
+                    청록색
+                  </span>
+                </div>
+              </div>
+            </span>
+          </label>
+        </div>
+        <div
+          class="ant-space-item"
+        >
+          <label
+            class="ant-radio-wrapper css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+          >
+            <span
+              class="ant-radio ant-wave-target"
+            >
+              <input
+                class="ant-radio-input"
+                name="test-id"
+                type="radio"
+                value="black"
+              />
+              <span
+                class="ant-radio-inner"
+              />
+            </span>
+            <span
+              class="ant-radio-label"
+            >
+              <div
+                class="ant-space css-dev-only-do-not-override-p45i5k ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+              >
+                <div
+                  class="ant-space-item"
+                >
+                  <div
+                    style="width: 16px; height: 16px; border-radius: 4px; background: #434343;"
+                  />
+                </div>
+                <div
+                  class="ant-space-item"
+                >
+                  <span>
+                    검정색
+                  </span>
+                </div>
+              </div>
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+  <style>
+    
+                .theme-tab {
+                    padding: 16px 0;
+                }
+            
+  </style>
+</div>
+`;
+
+exports[`ThemeTab 스냅샷 > 퍼플 테마 구조가 유지됨 1`] = `
+<div
+  class="theme-tab"
+>
+  <span
+    class="ant-typography css-dev-only-do-not-override-p45i5k css-var-root"
+  >
+    <strong>
+      앱 테마 색상
+    </strong>
+  </span>
+  <div
+    style="margin-top: 16px;"
+  >
+    <div
+      class="ant-radio-group ant-radio-group-outline css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+      role="radiogroup"
+    >
+      <div
+        class="ant-space css-dev-only-do-not-override-p45i5k ant-space-vertical ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+      >
+        <div
+          class="ant-space-item"
+        >
+          <label
+            class="ant-radio-wrapper css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+          >
+            <span
+              class="ant-radio ant-wave-target"
+            >
+              <input
+                class="ant-radio-input"
+                name="test-id"
+                type="radio"
+                value="blue"
+              />
+              <span
+                class="ant-radio-inner"
+              />
+            </span>
+            <span
+              class="ant-radio-label"
+            >
+              <div
+                class="ant-space css-dev-only-do-not-override-p45i5k ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+              >
+                <div
+                  class="ant-space-item"
+                >
+                  <div
+                    style="width: 16px; height: 16px; border-radius: 4px; background: #1890ff;"
+                  />
+                </div>
+                <div
+                  class="ant-space-item"
+                >
+                  <span>
+                    파란색 (기본)
+                  </span>
+                </div>
+              </div>
+            </span>
+          </label>
+        </div>
+        <div
+          class="ant-space-item"
+        >
+          <label
+            class="ant-radio-wrapper css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+          >
+            <span
+              class="ant-radio ant-wave-target"
+            >
+              <input
+                class="ant-radio-input"
+                name="test-id"
+                type="radio"
+                value="green"
+              />
+              <span
+                class="ant-radio-inner"
+              />
+            </span>
+            <span
+              class="ant-radio-label"
+            >
+              <div
+                class="ant-space css-dev-only-do-not-override-p45i5k ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+              >
+                <div
+                  class="ant-space-item"
+                >
+                  <div
+                    style="width: 16px; height: 16px; border-radius: 4px; background: #52c41a;"
+                  />
+                </div>
+                <div
+                  class="ant-space-item"
+                >
+                  <span>
+                    초록색
+                  </span>
+                </div>
+              </div>
+            </span>
+          </label>
+        </div>
+        <div
+          class="ant-space-item"
+        >
+          <label
+            class="ant-radio-wrapper ant-radio-wrapper-checked css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+          >
+            <span
+              class="ant-radio ant-wave-target ant-radio-checked"
+            >
+              <input
+                checked=""
+                class="ant-radio-input"
+                name="test-id"
+                type="radio"
+                value="purple"
+              />
+              <span
+                class="ant-radio-inner"
+              />
+            </span>
+            <span
+              class="ant-radio-label"
+            >
+              <div
+                class="ant-space css-dev-only-do-not-override-p45i5k ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+              >
+                <div
+                  class="ant-space-item"
+                >
+                  <div
+                    style="width: 16px; height: 16px; border-radius: 4px; background: #722ed1;"
+                  />
+                </div>
+                <div
+                  class="ant-space-item"
+                >
+                  <span>
+                    보라색
+                  </span>
+                </div>
+              </div>
+            </span>
+          </label>
+        </div>
+        <div
+          class="ant-space-item"
+        >
+          <label
+            class="ant-radio-wrapper css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+          >
+            <span
+              class="ant-radio ant-wave-target"
+            >
+              <input
+                class="ant-radio-input"
+                name="test-id"
+                type="radio"
+                value="red"
+              />
+              <span
+                class="ant-radio-inner"
+              />
+            </span>
+            <span
+              class="ant-radio-label"
+            >
+              <div
+                class="ant-space css-dev-only-do-not-override-p45i5k ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+              >
+                <div
+                  class="ant-space-item"
+                >
+                  <div
+                    style="width: 16px; height: 16px; border-radius: 4px; background: #f5222d;"
+                  />
+                </div>
+                <div
+                  class="ant-space-item"
+                >
+                  <span>
+                    빨간색
+                  </span>
+                </div>
+              </div>
+            </span>
+          </label>
+        </div>
+        <div
+          class="ant-space-item"
+        >
+          <label
+            class="ant-radio-wrapper css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+          >
+            <span
+              class="ant-radio ant-wave-target"
+            >
+              <input
+                class="ant-radio-input"
+                name="test-id"
+                type="radio"
+                value="orange"
+              />
+              <span
+                class="ant-radio-inner"
+              />
+            </span>
+            <span
+              class="ant-radio-label"
+            >
+              <div
+                class="ant-space css-dev-only-do-not-override-p45i5k ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+              >
+                <div
+                  class="ant-space-item"
+                >
+                  <div
+                    style="width: 16px; height: 16px; border-radius: 4px; background: #fa8c16;"
+                  />
+                </div>
+                <div
+                  class="ant-space-item"
+                >
+                  <span>
+                    주황색
+                  </span>
+                </div>
+              </div>
+            </span>
+          </label>
+        </div>
+        <div
+          class="ant-space-item"
+        >
+          <label
+            class="ant-radio-wrapper css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+          >
+            <span
+              class="ant-radio ant-wave-target"
+            >
+              <input
+                class="ant-radio-input"
+                name="test-id"
+                type="radio"
+                value="teal"
+              />
+              <span
+                class="ant-radio-inner"
+              />
+            </span>
+            <span
+              class="ant-radio-label"
+            >
+              <div
+                class="ant-space css-dev-only-do-not-override-p45i5k ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+              >
+                <div
+                  class="ant-space-item"
+                >
+                  <div
+                    style="width: 16px; height: 16px; border-radius: 4px; background: #13c2c2;"
+                  />
+                </div>
+                <div
+                  class="ant-space-item"
+                >
+                  <span>
+                    청록색
+                  </span>
+                </div>
+              </div>
+            </span>
+          </label>
+        </div>
+        <div
+          class="ant-space-item"
+        >
+          <label
+            class="ant-radio-wrapper css-dev-only-do-not-override-p45i5k css-var-root ant-radio-css-var"
+          >
+            <span
+              class="ant-radio ant-wave-target"
+            >
+              <input
+                class="ant-radio-input"
+                name="test-id"
+                type="radio"
+                value="black"
+              />
+              <span
+                class="ant-radio-inner"
+              />
+            </span>
+            <span
+              class="ant-radio-label"
+            >
+              <div
+                class="ant-space css-dev-only-do-not-override-p45i5k ant-space-horizontal ant-space-align-center ant-space-gap-row-small ant-space-gap-col-small css-var-root"
+              >
+                <div
+                  class="ant-space-item"
+                >
+                  <div
+                    style="width: 16px; height: 16px; border-radius: 4px; background: #434343;"
+                  />
+                </div>
+                <div
+                  class="ant-space-item"
+                >
+                  <span>
+                    검정색
+                  </span>
+                </div>
+              </div>
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+  <style>
+    
+                .theme-tab {
+                    padding: 16px 0;
+                }
+            
+  </style>
+</div>
+`;

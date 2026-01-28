@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.9";
+export const CURRENT_VERSION = "2.0.10";
 
 // 변경 타입 정의
 export type ChangeType =

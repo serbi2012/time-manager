@@ -205,17 +205,17 @@ describe('SettingsModal', () => {
 
     // =====================================================
     // 단축키 탭 테스트
+    // Note: Ant Design Table이 responsiveObserver를 사용하므로 fireEvent 사용
     // =====================================================
     describe('단축키 탭', () => {
         it('단축키 탭 클릭 시 단축키 목록 표시', async () => {
-            const user = userEvent.setup()
             render(
                 <TestWrapper>
                     <SettingsModal {...defaultProps} />
                 </TestWrapper>
             )
 
-            await user.click(screen.getByText('단축키'))
+            fireEvent.click(screen.getByText('단축키'))
 
             // 단축키 목록이 표시되어야 함
             await waitFor(() => {
@@ -224,7 +224,6 @@ describe('SettingsModal', () => {
         })
 
         it('단축키 토글 시 스토어 상태 변경', async () => {
-            const user = userEvent.setup()
             render(
                 <TestWrapper>
                     <SettingsModal {...defaultProps} />
@@ -232,7 +231,7 @@ describe('SettingsModal', () => {
             )
 
             // 단축키 탭으로 이동
-            await user.click(screen.getByText('단축키'))
+            fireEvent.click(screen.getByText('단축키'))
 
             // 초기 상태 확인
             const initial_state = useShortcutStore.getState()
@@ -246,7 +245,7 @@ describe('SettingsModal', () => {
             })
 
             const switches = screen.getAllByRole('switch')
-            await user.click(switches[0])
+            fireEvent.click(switches[0])
 
             // 스토어 상태 변경 확인
             const updated_state = useShortcutStore.getState()
@@ -255,14 +254,13 @@ describe('SettingsModal', () => {
         })
 
         it('단축키 키 조합이 표시됨', async () => {
-            const user = userEvent.setup()
             render(
                 <TestWrapper>
                     <SettingsModal {...defaultProps} />
                 </TestWrapper>
             )
 
-            await user.click(screen.getByText('단축키'))
+            fireEvent.click(screen.getByText('단축키'))
 
             await waitFor(() => {
                 // Alt+N 같은 키 조합이 표시되어야 함
@@ -271,14 +269,13 @@ describe('SettingsModal', () => {
         })
 
         it('기본값으로 초기화 버튼이 있음', async () => {
-            const user = userEvent.setup()
             render(
                 <TestWrapper>
                     <SettingsModal {...defaultProps} />
                 </TestWrapper>
             )
 
-            await user.click(screen.getByText('단축키'))
+            fireEvent.click(screen.getByText('단축키'))
 
             await waitFor(() => {
                 expect(

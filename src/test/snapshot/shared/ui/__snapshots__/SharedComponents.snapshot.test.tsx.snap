@@ -1,0 +1,91 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`공유 UI 컴포넌트 스냅샷 > DurationDisplay > readable 포맷 스냅샷 1`] = `
+<span
+  class="ant-typography css-dev-only-do-not-override-p45i5k css-var-root"
+>
+  1시간 30분
+</span>
+`;
+
+exports[`공유 UI 컴포넌트 스냅샷 > DurationDisplay > time 포맷 스냅샷 1`] = `
+<span
+  class="ant-typography css-dev-only-do-not-override-p45i5k css-var-root"
+>
+  01:30
+</span>
+`;
+
+exports[`공유 UI 컴포넌트 스냅샷 > DurationDisplay > 스타일 옵션 적용 스냅샷 1`] = `
+<span
+  class="ant-typography ant-typography-success css-dev-only-do-not-override-p45i5k css-var-root"
+>
+  <strong>
+    1시간
+  </strong>
+</span>
+`;
+
+exports[`공유 UI 컴포넌트 스냅샷 > TimeInput > 기본 입력 스냅샷 1`] = `
+<input
+  class="ant-input ant-input-sm css-dev-only-do-not-override-p45i5k ant-input-outlined css-var-root ant-input-css-var"
+  placeholder="HH:mm"
+  style="width: 70px; font-family: monospace;"
+  type="text"
+  value="09:30"
+/>
+`;
+
+exports[`공유 UI 컴포넌트 스냅샷 > TimeInput > 비활성화 입력 스냅샷 1`] = `
+<input
+  class="ant-input ant-input-disabled ant-input-sm css-dev-only-do-not-override-p45i5k ant-input-outlined css-var-root ant-input-css-var"
+  disabled=""
+  placeholder="HH:mm"
+  style="width: 70px; font-family: monospace;"
+  type="text"
+  value="09:30"
+/>
+`;
+
+exports[`공유 UI 컴포넌트 스냅샷 > TimeInput > 커스텀 너비 스냅샷 1`] = `
+<input
+  class="ant-input ant-input-sm css-dev-only-do-not-override-p45i5k ant-input-outlined css-var-root ant-input-css-var"
+  placeholder="HH:mm"
+  style="width: 120px; font-family: monospace;"
+  type="text"
+  value="09:30"
+/>
+`;
+
+exports[`공유 UI 컴포넌트 스냅샷 > TimerDisplay > 기본 타이머 스냅샷 1`] = `
+<span
+  class="ant-typography css-dev-only-do-not-override-p45i5k css-var-root"
+  style="font-family: monospace; font-size: 14px;"
+>
+  <strong>
+    01:01
+  </strong>
+</span>
+`;
+
+exports[`공유 UI 컴포넌트 스냅샷 > TimerDisplay > 실행 중 타이머 스냅샷 1`] = `
+<span
+  class="ant-typography css-dev-only-do-not-override-p45i5k css-var-root"
+  style="font-family: monospace; font-size: 14px; color: #1890ff;"
+>
+  <strong>
+    01:01
+  </strong>
+</span>
+`;
+
+exports[`공유 UI 컴포넌트 스냅샷 > TimerDisplay > 초 포함 타이머 스냅샷 1`] = `
+<span
+  class="ant-typography css-dev-only-do-not-override-p45i5k css-var-root"
+  style="font-family: monospace; font-size: 14px;"
+>
+  <strong>
+    01:01:01
+  </strong>
+</span>
+`;

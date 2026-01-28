@@ -7,7 +7,7 @@
  * 따라서 모달 관련 테스트는 스토어 직접 테스트로 대체합니다.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ConfigProvider } from "antd";
 import koKR from "antd/locale/ko_KR";
@@ -169,7 +169,6 @@ describe("WorkTemplateList", () => {
     // =====================================================
     describe("템플릿 액션 버튼", () => {
         it("수정 버튼 클릭 시 편집 모달 열림", async () => {
-            const user = userEvent.setup();
             const template = createTestTemplate();
             useWorkStore.setState({ templates: [template] });
 
@@ -180,13 +179,14 @@ describe("WorkTemplateList", () => {
             );
 
             // 수정 버튼 클릭 (EditOutlined 아이콘)
+            // Note: fireEvent 사용 (Ant Design 컴포넌트 호환성)
             const edit_buttons = screen.getAllByRole("button");
             const edit_button = edit_buttons.find(
                 (btn) => btn.querySelector(".anticon-edit") !== null
             );
 
             if (edit_button) {
-                await user.click(edit_button);
+                fireEvent.click(edit_button);
 
                 await waitFor(() => {
                     expect(screen.getByText("프리셋 수정")).toBeInTheDocument();
