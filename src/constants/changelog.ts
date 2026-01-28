@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.6";
+export const CURRENT_VERSION = "2.0.7";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,28 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.7",
+        date: "2026-01-28",
+        title: "간트차트 드래그 개선 및 UI 개선",
+        changes: [
+            {
+                type: "improvement",
+                description:
+                    "간트차트에서 드래그 중 영역을 벗어나도 드래그 상태가 유지됨",
+            },
+            {
+                type: "feature",
+                description:
+                    "날짜 선택기 좌우에 화살표 버튼 추가로 어제/내일 빠른 이동 가능",
+            },
+            {
+                type: "style",
+                description:
+                    "작업 기록 헤더 버튼들의 디자인 개선 (Tooltip 추가, 단축키 뱃지 스타일)",
+            },
+        ],
+    },
     {
         version: "2.0.6",
         date: "2026-01-28",

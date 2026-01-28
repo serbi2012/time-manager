@@ -718,7 +718,21 @@ export default function SuggestionBoard() {
                         setIsWriteModalOpen(false);
                         form.resetFields();
                     }}
-                    okText="등록 (F8)"
+                    okText={
+                        <>
+                            등록{" "}
+                            <span style={{
+                                fontSize: 11,
+                                opacity: 0.85,
+                                marginLeft: 4,
+                                padding: "1px 4px",
+                                background: "rgba(255,255,255,0.2)",
+                                borderRadius: 3,
+                            }}>
+                                F8
+                            </span>
+                        </>
+                    }
                     cancelText="취소"
                     confirmLoading={is_submitting}
                     destroyOnClose
@@ -767,7 +781,21 @@ export default function SuggestionBoard() {
                         setEditingPost(null);
                         edit_form.resetFields();
                     }}
-                    okText="수정 (F8)"
+                    okText={
+                        <>
+                            수정{" "}
+                            <span style={{
+                                fontSize: 11,
+                                opacity: 0.85,
+                                marginLeft: 4,
+                                padding: "1px 4px",
+                                background: "rgba(255,255,255,0.2)",
+                                borderRadius: 3,
+                            }}>
+                                F8
+                            </span>
+                        </>
+                    }
                     cancelText="취소"
                     confirmLoading={is_submitting}
                     destroyOnClose

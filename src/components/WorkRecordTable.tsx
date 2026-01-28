@@ -39,6 +39,8 @@ import {
     CloseOutlined,
     MoreOutlined,
     SearchOutlined,
+    LeftOutlined,
+    RightOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
@@ -1518,54 +1520,100 @@ export default function WorkRecordTable() {
                     </Space>
                 }
                 extra={
-                    <Space size={is_mobile ? 4 : 8}>
+                    <Space size={is_mobile ? 4 : 12} wrap>
+                        {/* 날짜 네비게이션 그룹 */}
+                        <Space.Compact>
+                            <Tooltip title="이전 날짜">
+                                <Button
+                                    icon={<LeftOutlined />}
+                                    onClick={() =>
+                                        setSelectedDate(
+                                            dayjs(selected_date)
+                                                .subtract(1, "day")
+                                                .format("YYYY-MM-DD")
+                                        )
+                                    }
+                                />
+                            </Tooltip>
+                            <DatePicker
+                                value={dayjs(selected_date)}
+                                onChange={(date) =>
+                                    setSelectedDate(
+                                        date?.format("YYYY-MM-DD") ||
+                                            dayjs().format("YYYY-MM-DD")
+                                    )
+                                }
+                                format="YYYY-MM-DD (dd)"
+                                allowClear={false}
+                                style={is_mobile ? { width: 130 } : { width: 150 }}
+                            />
+                            <Tooltip title="다음 날짜">
+                                <Button
+                                    icon={<RightOutlined />}
+                                    onClick={() =>
+                                        setSelectedDate(
+                                            dayjs(selected_date)
+                                                .add(1, "day")
+                                                .format("YYYY-MM-DD")
+                                        )
+                                    }
+                                />
+                            </Tooltip>
+                        </Space.Compact>
+
+                        {/* 주요 액션 버튼 */}
                         <Button
                             type="primary"
                             icon={<PlusOutlined />}
                             onClick={() => setIsModalOpen(true)}
                         >
-                            {is_mobile ? null : "새 작업 (Alt+N)"}
+                            {is_mobile ? null : (
+                                <>
+                                    새 작업{" "}
+                                    <span style={{
+                                        fontSize: 11,
+                                        opacity: 0.85,
+                                        marginLeft: 4,
+                                        padding: "1px 4px",
+                                        background: "rgba(255,255,255,0.2)",
+                                        borderRadius: 3,
+                                    }}>
+                                        Alt+N
+                                    </span>
+                                </>
+                            )}
                         </Button>
-                        <Button
-                            icon={<CheckCircleOutlined />}
-                            onClick={() => setIsCompletedModalOpen(true)}
-                        >
-                            {is_mobile
-                                ? completed_records.length > 0
-                                    ? completed_records.length
-                                    : null
-                                : `완료된 작업 (${completed_records.length})`}
-                        </Button>
-                        {deleted_records.length > 0 && (
+
+                        {/* 보조 액션 버튼들 */}
+                        <Tooltip title="완료된 작업 목록">
                             <Button
-                                icon={<DeleteOutlined />}
-                                onClick={() => setIsDeletedModalOpen(true)}
-                                danger
+                                icon={<CheckCircleOutlined style={{ color: "#52c41a" }} />}
+                                onClick={() => setIsCompletedModalOpen(true)}
                             >
                                 {is_mobile
-                                    ? deleted_records.length
-                                    : `휴지통 (${deleted_records.length})`}
+                                    ? completed_records.length || null
+                                    : `완료 ${completed_records.length}`}
                             </Button>
-                        )}
-                        <DatePicker
-                            value={dayjs(selected_date)}
-                            onChange={(date) =>
-                                setSelectedDate(
-                                    date?.format("YYYY-MM-DD") ||
-                                        dayjs().format("YYYY-MM-DD")
-                                )
-                            }
-                            format="YYYY-MM-DD (dd)"
-                            allowClear={false}
-                            style={is_mobile ? { width: 140 } : undefined}
-                        />
-                        <Button
-                            icon={<CopyOutlined />}
-                            onClick={handleCopyToClipboard}
-                            disabled={filtered_records.length === 0}
-                        >
-                            {is_mobile ? null : "복사"}
-                        </Button>
+                        </Tooltip>
+                        <Tooltip title="삭제된 작업 (복구 가능)">
+                            <Button
+                                icon={<DeleteOutlined style={{ color: "#ff4d4f" }} />}
+                                onClick={() => setIsDeletedModalOpen(true)}
+                            >
+                                {is_mobile
+                                    ? deleted_records.length || null
+                                    : `휴지통 ${deleted_records.length}`}
+                            </Button>
+                        </Tooltip>
+                        <Tooltip title="시간 관리 양식으로 복사">
+                            <Button
+                                icon={<CopyOutlined />}
+                                onClick={handleCopyToClipboard}
+                                disabled={filtered_records.length === 0}
+                            >
+                                {is_mobile ? null : "내역 복사"}
+                            </Button>
+                        </Tooltip>
                     </Space>
                 }
             >
@@ -1797,7 +1845,17 @@ export default function WorkRecordTable() {
                 }}
                 footer={[
                     <Button key="ok" type="primary" onClick={handleAddNewWork}>
-                        추가 (F8)
+                        추가{" "}
+                        <span style={{
+                            fontSize: 11,
+                            opacity: 0.85,
+                            marginLeft: 4,
+                            padding: "1px 4px",
+                            background: "rgba(255,255,255,0.2)",
+                            borderRadius: 3,
+                        }}>
+                            F8
+                        </span>
                     </Button>,
                     <Button
                         key="cancel"

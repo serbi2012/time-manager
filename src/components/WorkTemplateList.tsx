@@ -470,7 +470,21 @@ export default function WorkTemplateList({
                         size="small"
                         onClick={handleOpenAddModal}
                     >
-                        {is_mobile ? "추가" : "추가 (Alt+P)"}
+                        {is_mobile ? "추가" : (
+                            <span style={{ display: "inline-flex", alignItems: "center" }}>
+                                추가
+                                <span style={{
+                                    fontSize: 10,
+                                    opacity: 0.85,
+                                    marginLeft: 4,
+                                    padding: "1px 4px",
+                                    background: "rgba(255,255,255,0.2)",
+                                    borderRadius: 3,
+                                }}>
+                                    Alt+P
+                                </span>
+                            </span>
+                        )}
                     </Button>
                 }
             >
@@ -530,7 +544,17 @@ export default function WorkTemplateList({
                 onCancel={handleCloseModal}
                 footer={[
                     <Button key="ok" type="primary" onClick={handleSubmit}>
-                        {is_edit_mode ? "수정" : "추가"} (F8)
+                        {is_edit_mode ? "수정" : "추가"}{" "}
+                        <span style={{
+                            fontSize: 11,
+                            opacity: 0.85,
+                            marginLeft: 4,
+                            padding: "1px 4px",
+                            background: "rgba(255,255,255,0.2)",
+                            borderRadius: 3,
+                        }}>
+                            F8
+                        </span>
                     </Button>,
                     <Button key="cancel" onClick={handleCloseModal}>
                         취소

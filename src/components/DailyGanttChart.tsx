@@ -725,10 +725,10 @@ export default function DailyGanttChart() {
 
     // 드래그 중
     const handleMouseMove = useCallback(
-        (e: React.MouseEvent) => {
+        (clientX: number) => {
             if (!is_dragging || !drag_start_ref.current) return;
 
-            const current_mins = xToMinutes(e.clientX);
+            const current_mins = xToMinutes(clientX);
             const on_existing = isOnExistingBar(current_mins);
 
             // 빈 영역 대기 중이면서 아직 기존 세션 위에 있으면 무시
@@ -798,18 +798,6 @@ export default function DailyGanttChart() {
         drag_start_ref.current = null;
     }, [is_dragging, drag_selection]);
 
-    // 마우스가 영역을 벗어났을 때
-    const handleMouseLeave = useCallback(() => {
-        if (is_dragging) {
-            setIsDragging(false);
-            setDragSelection(null);
-            drag_start_ref.current = null;
-        }
-        if (resize_state) {
-            setResizeState(null);
-        }
-    }, [is_dragging, resize_state]);
-
     // 리사이즈 시작
     const handleResizeStart = useCallback(
         (
@@ -838,10 +826,10 @@ export default function DailyGanttChart() {
 
     // 리사이즈 중 (마우스 이동)
     const handleResizeMove = useCallback(
-        (e: React.MouseEvent) => {
+        (clientX: number) => {
             if (!resize_state) return;
 
-            const mins = xToMinutes(e.clientX);
+            const mins = xToMinutes(clientX);
             const clamped = Math.max(
                 time_range.start,
                 Math.min(time_range.end, mins)
@@ -927,6 +915,35 @@ export default function DailyGanttChart() {
         updateTimerStartTime,
         timer.active_session_id,
     ]);
+
+    // document 레벨 이벤트 리스너 (드래그/리사이즈 중 영역 이탈 시에도 동작)
+    useEffect(() => {
+        if (!is_dragging && !resize_state) return;
+
+        const handleDocumentMouseMove = (e: MouseEvent) => {
+            if (resize_state) {
+                handleResizeMove(e.clientX);
+            } else if (is_dragging) {
+                handleMouseMove(e.clientX);
+            }
+        };
+
+        const handleDocumentMouseUp = () => {
+            if (resize_state) {
+                handleResizeEnd();
+            } else if (is_dragging) {
+                handleMouseUp();
+            }
+        };
+
+        document.addEventListener("mousemove", handleDocumentMouseMove);
+        document.addEventListener("mouseup", handleDocumentMouseUp);
+
+        return () => {
+            document.removeEventListener("mousemove", handleDocumentMouseMove);
+            document.removeEventListener("mouseup", handleDocumentMouseUp);
+        };
+    }, [is_dragging, resize_state, handleMouseMove, handleMouseUp, handleResizeMove, handleResizeEnd]);
 
     // 리사이즈 중인 바 스타일 계산
     const getResizingBarStyle = useCallback(
@@ -1206,21 +1223,7 @@ export default function DailyGanttChart() {
                         className={`gantt-wrapper ${
                             is_mobile ? "gantt-mobile-scroll" : ""
                         }`}
-                        onMouseMove={(e) => {
-                            if (resize_state) {
-                                handleResizeMove(e);
-                            } else {
-                                handleMouseMove(e);
-                            }
-                        }}
-                        onMouseUp={() => {
-                            if (resize_state) {
-                                handleResizeEnd();
-                            } else {
-                                handleMouseUp();
-                            }
-                        }}
-                        onMouseLeave={handleMouseLeave}
+                        // onMouseMove, onMouseUp은 document 레벨에서 처리 (영역 이탈 시에도 드래그 유지)
                         onTouchMove={
                             is_mobile
                                 ? (e) => {

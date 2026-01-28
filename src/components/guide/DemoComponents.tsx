@@ -380,7 +380,17 @@ export function DemoWorkRecordTable() {
                             icon={<PlusOutlined />}
                             disabled
                         >
-                            새 작업 (Alt+N)
+                            새 작업{" "}
+                            <span style={{
+                                fontSize: 10,
+                                opacity: 0.85,
+                                marginLeft: 2,
+                                padding: "1px 3px",
+                                background: "rgba(255,255,255,0.2)",
+                                borderRadius: 3,
+                            }}>
+                                Alt+N
+                            </span>
                         </Button>
                     </Space>
                 }
@@ -443,7 +453,19 @@ export function DemoWorkTemplateList() {
                         size="small"
                         disabled
                     >
-                        추가 (Alt+P)
+                        <span style={{ display: "inline-flex", alignItems: "center" }}>
+                            추가
+                            <span style={{
+                                fontSize: 10,
+                                opacity: 0.85,
+                                marginLeft: 4,
+                                padding: "1px 4px",
+                                background: "rgba(255,255,255,0.2)",
+                                borderRadius: 3,
+                            }}>
+                                Alt+P
+                            </span>
+                        </span>
                     </Button>
                 }
                 className="demo-template-list-card"

@@ -112,9 +112,9 @@ describe('WorkTemplateList', () => {
                 </TestWrapper>
             )
 
-            // '추가 (Alt+P)' 텍스트를 포함한 버튼 찾기
+            // '추가 Alt+P' 텍스트를 포함한 버튼 찾기
             expect(
-                screen.getByRole('button', { name: /추가 \(Alt\+P\)/ })
+                screen.getByRole('button', { name: /추가.*Alt\+P/ })
             ).toBeInTheDocument()
         })
 
