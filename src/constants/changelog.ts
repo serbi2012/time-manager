@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.4";
+export const CURRENT_VERSION = "2.0.5";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,28 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.5",
+        date: "2026-01-28",
+        title: "날짜 표시 한글화 및 UI 개선",
+        changes: [
+            {
+                type: "style",
+                description:
+                    "달력 및 날짜 선택기의 요일, 월 이름이 한국어로 표시됨",
+            },
+            {
+                type: "style",
+                description:
+                    "일간 타임라인 헤더에 연도, 월, 일, 요일이 직관적으로 표시됨",
+            },
+            {
+                type: "improvement",
+                description:
+                    "날짜 선택 시 요일도 함께 표시되어 날짜 확인이 편리해짐",
+            },
+        ],
+    },
     {
         version: "2.0.4",
         date: "2026-01-26",

@@ -1180,9 +1180,15 @@ export default function DailyGanttChart() {
     return (
         <>
             <Card
-                title={`일간 타임라인 (${dayjs(selected_date).format(
-                    "YYYY-MM-DD"
-                )})`}
+                title={
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 16 }}>
+                        <span style={{ fontWeight: 800, fontSize: 17 }}>일간 타임라인</span>
+                        <span style={{ color: "#d9d9d9" }}>|</span>
+                        <span style={{ color: "#555", fontWeight: 500 }}>
+                            {dayjs(selected_date).format("YYYY년 M월 D일")} ({dayjs(selected_date).format("dd")})
+                        </span>
+                    </div>
+                }
                 size="small"
                 extra={
                     <Text type="secondary" style={{ fontSize: 12 }}>

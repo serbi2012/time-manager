@@ -1363,8 +1363,9 @@ export default function WorkRecordTable() {
                                         dayjs().format("YYYY-MM-DD")
                                 )
                             }
+                            format="YYYY-MM-DD (dd)"
                             allowClear={false}
-                            style={is_mobile ? { width: 120 } : undefined}
+                            style={is_mobile ? { width: 140 } : undefined}
                         />
                         <Button
                             icon={<CopyOutlined />}

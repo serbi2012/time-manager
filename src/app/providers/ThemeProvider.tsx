@@ -4,8 +4,13 @@
  */
 
 import { ConfigProvider, theme } from "antd";
+import koKR from "antd/locale/ko_KR";
+import dayjs from "dayjs";
+import "dayjs/locale/ko";
 import { useWorkStore } from "../../store/useWorkStore";
 import { APP_THEME_COLORS } from "../../shared/config";
+
+dayjs.locale("ko");
 
 interface ThemeProviderProps {
     children: React.ReactNode;
@@ -20,6 +25,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
     return (
         <ConfigProvider
+            locale={koKR}
             theme={{
                 algorithm: theme.defaultAlgorithm,
                 token: {
