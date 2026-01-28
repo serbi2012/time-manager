@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.7";
+export const CURRENT_VERSION = "2.0.8";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,23 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.8",
+        date: "2026-01-28",
+        title: "모바일 헤더 개선",
+        changes: [
+            {
+                type: "improvement",
+                description:
+                    "헤더의 '업무 시간 관리' 클릭 시 일간 기록으로 이동",
+            },
+            {
+                type: "style",
+                description:
+                    "모바일 헤더에 현재 페이지명과 오늘 날짜가 표시됨",
+            },
+        ],
+    },
     {
         version: "2.0.7",
         date: "2026-01-28",
