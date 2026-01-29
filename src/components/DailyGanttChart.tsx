@@ -329,9 +329,15 @@ export default function DailyGanttChart() {
         gantt_tick, // 실시간 업데이트를 위해 gantt_tick 유지
     ]);
 
+    // 현재 시간 (분 단위) - 진행 중인 세션 표시용, gantt_tick에 의해 1분마다 업데이트
+    const current_time_mins = useMemo(() => {
+        return dayjs().hour() * 60 + dayjs().minute();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [gantt_tick]);
+
     // 모든 세션의 시간 슬롯 (충돌 감지용) - 시작 시간순 정렬
     // 점심시간도 점유된 슬롯으로 처리
-    // 진행 중인 세션(end_time이 빈)도 이미 grouped_works에 포함되어 있음
+    // 진행 중인 세션(end_time이 빈)은 현재 시간까지로 처리
     const occupied_slots = useMemo((): TimeSlot[] => {
         const slots: TimeSlot[] = [];
 
@@ -340,15 +346,24 @@ export default function DailyGanttChart() {
 
         grouped_works.forEach((group) => {
             group.sessions.forEach((session) => {
+                // 진행 중인 세션(end_time === "")은 현재 시간 사용
+                const end_mins = session.end_time
+                    ? timeToMinutes(session.end_time)
+                    : current_time_mins;
                 slots.push({
                     start: timeToMinutes(session.start_time),
-                    end: timeToMinutes(session.end_time),
+                    end: end_mins,
                 });
             });
         });
 
         return slots.sort((a, b) => a.start - b.start);
-    }, [grouped_works, LUNCH_START_DYNAMIC, LUNCH_END_DYNAMIC]);
+    }, [
+        grouped_works,
+        LUNCH_START_DYNAMIC,
+        LUNCH_END_DYNAMIC,
+        current_time_mins,
+    ]);
 
     // 충돌 감지: 모든 세션 쌍을 비교하여 시간이 겹치는 세션 찾기
     const conflict_info = useMemo(() => {
@@ -368,10 +383,14 @@ export default function DailyGanttChart() {
         }[] = [];
         grouped_works.forEach((group) => {
             group.sessions.forEach((session) => {
+                // 진행 중인 세션(end_time === "")은 현재 시간 사용
+                const end_mins = session.end_time
+                    ? timeToMinutes(session.end_time)
+                    : current_time_mins;
                 all_sessions.push({
                     id: session.id,
                     start: timeToMinutes(session.start_time),
-                    end: timeToMinutes(session.end_time),
+                    end: end_mins,
                     record_id: group.record.id,
                 });
             });
@@ -406,7 +425,7 @@ export default function DailyGanttChart() {
             conflicting_sessions,
             conflict_ranges,
         };
-    }, [grouped_works]);
+    }, [grouped_works, current_time_mins]);
 
     // 특정 시간이 기존 세션 위에 있는지 확인
     const isOnExistingBar = useCallback(
@@ -427,7 +446,10 @@ export default function DailyGanttChart() {
             grouped_works.forEach((group) => {
                 group.sessions.forEach((session) => {
                     const start = timeToMinutes(session.start_time);
-                    const end = timeToMinutes(session.end_time);
+                    // 진행 중인 세션(end_time === "")은 현재 시간 사용
+                    const end = session.end_time
+                        ? timeToMinutes(session.end_time)
+                        : current_time_mins;
                     min_start = Math.min(min_start, start);
                     max_end = Math.max(max_end, end);
                 });
@@ -438,7 +460,7 @@ export default function DailyGanttChart() {
             start: Math.floor(min_start / 60) * 60,
             end: Math.ceil(max_end / 60) * 60,
         };
-    }, [grouped_works]);
+    }, [grouped_works, current_time_mins]);
 
     // 드래그 시작점에서 확장 가능한 범위 계산
     // anchor_mins를 기준으로 왼쪽/오른쪽으로 확장할 수 있는 최대 범위 반환
@@ -699,7 +721,10 @@ export default function DailyGanttChart() {
         is_running = false
     ) => {
         const start = timeToMinutes(session.start_time);
-        const end = timeToMinutes(session.end_time);
+        // 진행 중인 세션은 현재 시간을 end로 사용 (실시간 업데이트)
+        const end = is_running
+            ? current_time_mins
+            : timeToMinutes(session.end_time);
 
         const left = ((start - time_range.start) / total_minutes) * 100;
         let width = ((end - start) / total_minutes) * 100;

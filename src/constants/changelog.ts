@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.11";
+export const CURRENT_VERSION = "2.0.12";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,18 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.12",
+        date: "2026-01-29",
+        title: "간트차트 실시간 업데이트",
+        changes: [
+            {
+                type: "improvement",
+                description:
+                    "간트차트에서 레코딩 중인 작업의 바가 실시간으로 길어짐",
+            },
+        ],
+    },
     {
         version: "2.0.11",
         date: "2026-01-29",
