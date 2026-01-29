@@ -35,6 +35,8 @@ import {
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
+import { useShortcutStore } from "../../store/useShortcutStore";
+import { formatShortcutKeyForPlatform } from "../../hooks/useShortcuts";
 
 const { Text } = Typography;
 
@@ -174,6 +176,12 @@ export function DemoWorkRecordTable() {
         (sum, r) => sum + r.duration_minutes,
         0
     );
+
+    // 단축키 설정에서 동적으로 가져오기
+    const new_work_shortcut = useShortcutStore((state) =>
+        state.shortcuts.find(s => s.id === 'new-work')
+    );
+    const new_work_keys = new_work_shortcut?.keys || 'Alt+N';
 
     const columns: ColumnsType<DemoRecord> = [
         {
@@ -391,7 +399,7 @@ export function DemoWorkRecordTable() {
                                     borderRadius: 3,
                                 }}
                             >
-                                Alt+N
+                                {formatShortcutKeyForPlatform(new_work_keys)}
                             </span>
                         </Button>
                     </Space>
@@ -438,6 +446,12 @@ export function DemoWorkRecordTable() {
  * 작업 프리셋 리스트 데모 - 실제 UI와 동일하게 구현
  */
 export function DemoWorkTemplateList() {
+    // 단축키 설정에서 동적으로 가져오기
+    const new_preset_shortcut = useShortcutStore((state) =>
+        state.shortcuts.find(s => s.id === 'new-preset')
+    );
+    const new_preset_keys = new_preset_shortcut?.keys || 'Alt+P';
+
     return (
         <div className="demo-component">
             <Card
@@ -472,7 +486,7 @@ export function DemoWorkTemplateList() {
                                     borderRadius: 3,
                                 }}
                             >
-                                Alt+P
+                                {formatShortcutKeyForPlatform(new_preset_keys)}
                             </span>
                         </span>
                     </Button>

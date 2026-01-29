@@ -51,6 +51,10 @@ import {
 } from "../store/useWorkStore";
 import type { WorkTemplate } from "../types";
 import { useResponsive } from "../hooks/useResponsive";
+import { useShortcutStore } from "../store/useShortcutStore";
+import { formatShortcutKeyForPlatform } from "../hooks/useShortcuts";
+import { HighlightText } from "../shared/ui/HighlightText";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
 const { Text } = Typography;
 
@@ -207,6 +211,12 @@ export default function WorkTemplateList({
         hideAutoCompleteOption,
     } = useWorkStore();
 
+    // 단축키 설정
+    const new_preset_shortcut = useShortcutStore((state) =>
+        state.shortcuts.find(s => s.id === 'new-preset')
+    );
+    const new_preset_keys = new_preset_shortcut?.keys || 'Alt+P';
+
     // dnd-kit 센서 설정 (모바일에서는 터치 센서 추가)
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -241,6 +251,14 @@ export default function WorkTemplateList({
     const [new_task_input, setNewTaskInput] = useState("");
     const [new_category_input, setNewCategoryInput] = useState("");
 
+    // AutoComplete 검색어 상태 (하이라이트용) - 디바운스 적용
+    const [project_code_search, setProjectCodeSearch] = useState("");
+    const [work_name_search, setWorkNameSearch] = useState("");
+    const [deal_name_search, setDealNameSearch] = useState("");
+    const debounced_project_code_search = useDebouncedValue(project_code_search, 150);
+    const debounced_work_name_search = useDebouncedValue(work_name_search, 150);
+    const debounced_deal_name_search = useDebouncedValue(deal_name_search, 150);
+
     // Input refs for focus management
     const new_task_input_ref = useRef<InputRef>(null);
     const new_category_input_ref = useRef<InputRef>(null);
@@ -248,22 +266,22 @@ export default function WorkTemplateList({
     // 프로젝트 코드 자동완성 옵션 (원본)
     const raw_project_code_options = useMemo(() => {
         return getProjectCodeOptions();
-    }, [records, templates, getProjectCodeOptions]);
+    }, [records, templates, hidden_autocomplete_options, getProjectCodeOptions]);
 
-    // 프로젝트 코드 선택 시 작업명 자동 채우기 핸들러
+    // 프로젝트 코드 선택 시 코드와 작업명 자동 채우기 핸들러
     const handleProjectCodeSelect = useCallback(
         (value: string) => {
-            const selected = raw_project_code_options.find(
-                (opt) => opt.value === value
-            );
-            if (selected?.work_name) {
-                form.setFieldsValue({ work_name: selected.work_name });
-            }
+            // value는 "코드::작업명" 형태
+            const [code, work_name] = value.split("::");
+            form.setFieldsValue({
+                project_code: code, // 실제 코드만 저장
+                ...(work_name ? { work_name } : {}),
+            });
         },
-        [raw_project_code_options, form]
+        [form]
     );
 
-    // 프로젝트 코드 자동완성 옵션 (삭제 버튼 포함)
+    // 프로젝트 코드 자동완성 옵션 (삭제 버튼 포함, 검색어 하이라이트)
     const project_code_options = useMemo(() => {
         return raw_project_code_options.map((opt) => ({
             ...opt,
@@ -275,7 +293,7 @@ export default function WorkTemplateList({
                         alignItems: "center",
                     }}
                 >
-                    <span>{opt.label}</span>
+                    <span><HighlightText text={opt.label} search={debounced_project_code_search} /></span>
                     <CloseOutlined
                         style={{
                             fontSize: 10,
@@ -285,15 +303,15 @@ export default function WorkTemplateList({
                         onClick={(e) => {
                             e.stopPropagation();
                             hideAutoCompleteOption("project_code", opt.value);
-                            message.info(`"${opt.value}" 코드가 숨겨졌습니다`);
+                            message.info(`"${opt.label}" 항목이 숨겨졌습니다`);
                         }}
                     />
                 </div>
             ),
         }));
-    }, [raw_project_code_options, hideAutoCompleteOption]);
+    }, [raw_project_code_options, debounced_project_code_search, hideAutoCompleteOption]);
 
-    // 작업명/거래명 자동완성 옵션 (삭제 버튼 포함)
+    // 작업명/거래명 자동완성 옵션 (삭제 버튼 포함, 검색어 하이라이트)
     const work_name_options = useMemo(() => {
         return getAutoCompleteOptions("work_name").map((v) => ({
             value: v,
@@ -305,7 +323,7 @@ export default function WorkTemplateList({
                         alignItems: "center",
                     }}
                 >
-                    <span>{v}</span>
+                    <span><HighlightText text={v} search={debounced_work_name_search} /></span>
                     <CloseOutlined
                         style={{
                             fontSize: 10,
@@ -325,6 +343,7 @@ export default function WorkTemplateList({
         records,
         templates,
         hidden_autocomplete_options,
+        debounced_work_name_search,
         getAutoCompleteOptions,
         hideAutoCompleteOption,
     ]);
@@ -340,7 +359,7 @@ export default function WorkTemplateList({
                         alignItems: "center",
                     }}
                 >
-                    <span>{v}</span>
+                    <span><HighlightText text={v} search={debounced_deal_name_search} /></span>
                     <CloseOutlined
                         style={{
                             fontSize: 10,
@@ -360,6 +379,7 @@ export default function WorkTemplateList({
         records,
         templates,
         hidden_autocomplete_options,
+        debounced_deal_name_search,
         getAutoCompleteOptions,
         hideAutoCompleteOption,
     ]);
@@ -536,7 +556,7 @@ export default function WorkTemplateList({
                                         borderRadius: 3,
                                     }}
                                 >
-                                    Alt+P
+                                    {formatShortcutKeyForPlatform(new_preset_keys)}
                                 </span>
                             </span>
                         )}
@@ -626,6 +646,7 @@ export default function WorkTemplateList({
                                     .toLowerCase()
                                     .includes(input.toLowerCase())
                             }
+                            onSearch={setProjectCodeSearch}
                             onSelect={(value: string) =>
                                 handleProjectCodeSelect(value)
                             }
@@ -647,6 +668,7 @@ export default function WorkTemplateList({
                                     .toLowerCase()
                                     .includes(input.toLowerCase())
                             }
+                            onSearch={setWorkNameSearch}
                         />
                     </Form.Item>
 
@@ -659,6 +681,7 @@ export default function WorkTemplateList({
                                     .toLowerCase()
                                     .includes(input.toLowerCase())
                             }
+                            onSearch={setDealNameSearch}
                         />
                     </Form.Item>
 

@@ -16,6 +16,8 @@ import {
     message,
     Popover,
     Popconfirm,
+    Segmented,
+    Radio,
 } from "antd";
 import {
     PlusOutlined,
@@ -36,6 +38,8 @@ import {
     formatShortcutKeyForPlatform,
     matchShortcutKey,
 } from "../hooks/useShortcuts";
+import { HighlightText } from "../shared/ui/HighlightText";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
 const { Text } = Typography;
 
@@ -129,7 +133,10 @@ export default function DailyGanttChart() {
     } = useWorkStore();
 
     // 점심시간을 store에서 가져오기
-    const lunch_time = useMemo(() => getLunchTimeMinutes(), [getLunchTimeMinutes]);
+    const lunch_time = useMemo(
+        () => getLunchTimeMinutes(),
+        [getLunchTimeMinutes]
+    );
     const LUNCH_START_DYNAMIC = lunch_time.start;
     const LUNCH_END_DYNAMIC = lunch_time.end;
     const LUNCH_DURATION_DYNAMIC = lunch_time.duration;
@@ -137,19 +144,34 @@ export default function DailyGanttChart() {
     // 점심시간을 제외한 실제 작업 시간 계산 (동적)
     const calculateDurationExcludingLunchDynamic = useCallback(
         (start_mins: number, end_mins: number): number => {
-            if (end_mins <= LUNCH_START_DYNAMIC || start_mins >= LUNCH_END_DYNAMIC) {
+            if (
+                end_mins <= LUNCH_START_DYNAMIC ||
+                start_mins >= LUNCH_END_DYNAMIC
+            ) {
                 return end_mins - start_mins;
             }
-            if (start_mins >= LUNCH_START_DYNAMIC && end_mins <= LUNCH_END_DYNAMIC) {
+            if (
+                start_mins >= LUNCH_START_DYNAMIC &&
+                end_mins <= LUNCH_END_DYNAMIC
+            ) {
                 return 0;
             }
-            if (start_mins < LUNCH_START_DYNAMIC && end_mins > LUNCH_END_DYNAMIC) {
+            if (
+                start_mins < LUNCH_START_DYNAMIC &&
+                end_mins > LUNCH_END_DYNAMIC
+            ) {
                 return end_mins - start_mins - LUNCH_DURATION_DYNAMIC;
             }
-            if (start_mins < LUNCH_START_DYNAMIC && end_mins <= LUNCH_END_DYNAMIC) {
+            if (
+                start_mins < LUNCH_START_DYNAMIC &&
+                end_mins <= LUNCH_END_DYNAMIC
+            ) {
                 return LUNCH_START_DYNAMIC - start_mins;
             }
-            if (start_mins >= LUNCH_START_DYNAMIC && end_mins > LUNCH_END_DYNAMIC) {
+            if (
+                start_mins >= LUNCH_START_DYNAMIC &&
+                end_mins > LUNCH_END_DYNAMIC
+            ) {
                 return end_mins - LUNCH_END_DYNAMIC;
             }
             return end_mins - start_mins;
@@ -200,6 +222,12 @@ export default function DailyGanttChart() {
     } | null>(null);
     const [form] = Form.useForm();
 
+    // 작업 추가 모드: 새 작업 추가 vs 기존 작업에 추가
+    const [add_mode, setAddMode] = useState<"existing" | "new">("new");
+    const [selected_existing_record_id, setSelectedExistingRecordId] = useState<
+        string | null
+    >(null);
+
     // 수정 모달 상태
     const [is_edit_modal_open, setIsEditModalOpen] = useState(false);
     const [edit_record, setEditRecord] = useState<WorkRecord | null>(null);
@@ -208,6 +236,17 @@ export default function DailyGanttChart() {
     // 사용자 정의 옵션 입력
     const [new_task_input, setNewTaskInput] = useState("");
     const [new_category_input, setNewCategoryInput] = useState("");
+
+    // AutoComplete 검색어 상태 (하이라이트용) - 디바운스 적용
+    const [project_code_search, setProjectCodeSearch] = useState("");
+    const [work_name_search, setWorkNameSearch] = useState("");
+    const [deal_name_search, setDealNameSearch] = useState("");
+    const debounced_project_code_search = useDebouncedValue(
+        project_code_search,
+        150
+    );
+    const debounced_work_name_search = useDebouncedValue(work_name_search, 150);
+    const debounced_deal_name_search = useDebouncedValue(deal_name_search, 150);
 
     // Input refs for focus management
     const new_task_input_ref = useRef<InputRef>(null);
@@ -440,25 +479,54 @@ export default function DailyGanttChart() {
 
     const total_minutes = time_range.end - time_range.start;
 
+    // 선택된 날짜의 작업 레코드 (기존 작업에 세션 추가용)
+    // 작업 기록 테이블과 동일한 필터링: 미완료 이월 작업 + 해당 날짜의 완료 작업
+    const today_records = useMemo(() => {
+        // 미완료 작업: 선택된 날짜까지의 미완료 레코드 (삭제된 것 제외)
+        const incomplete_records = records.filter((r) => {
+            if (r.is_deleted) return false;
+            if (r.is_completed) return false;
+            return r.date <= selected_date;
+        });
+
+        // 선택된 날짜의 완료된 레코드도 포함 (삭제된 것 제외)
+        const completed_today = records.filter(
+            (r) => r.date === selected_date && r.is_completed && !r.is_deleted
+        );
+
+        // 완료되지 않은 것을 먼저, 날짜 내림차순
+        return [...incomplete_records, ...completed_today].sort((a, b) => {
+            if (a.is_completed !== b.is_completed) {
+                return a.is_completed ? 1 : -1;
+            }
+            return b.date.localeCompare(a.date);
+        });
+    }, [records, selected_date]);
+
     // 자동완성 옵션 (원본 데이터)
     const raw_project_code_options = useMemo(() => {
         return getProjectCodeOptions();
-    }, [records, templates, getProjectCodeOptions]);
+    }, [
+        records,
+        templates,
+        hidden_autocomplete_options,
+        getProjectCodeOptions,
+    ]);
 
-    // 프로젝트 코드 선택 시 작업명 자동 채우기 핸들러
+    // 프로젝트 코드 선택 시 코드와 작업명 자동 채우기 핸들러
     const handleProjectCodeSelect = useCallback(
         (value: string) => {
-            const selected = raw_project_code_options.find(
-                (opt) => opt.value === value
-            );
-            if (selected?.work_name) {
-                form.setFieldsValue({ work_name: selected.work_name });
-            }
+            // value는 "코드::작업명" 형태
+            const [code, work_name] = value.split("::");
+            form.setFieldsValue({
+                project_code: code, // 실제 코드만 저장
+                ...(work_name ? { work_name } : {}),
+            });
         },
-        [raw_project_code_options, form]
+        [form]
     );
 
-    // 프로젝트 코드 자동완성 옵션 (삭제 버튼 포함)
+    // 프로젝트 코드 자동완성 옵션 (삭제 버튼 포함, 검색어 하이라이트)
     const project_code_options = useMemo(() => {
         return raw_project_code_options.map((opt) => ({
             ...opt,
@@ -470,7 +538,12 @@ export default function DailyGanttChart() {
                         alignItems: "center",
                     }}
                 >
-                    <span>{opt.label}</span>
+                    <span>
+                        <HighlightText
+                            text={opt.label}
+                            search={debounced_project_code_search}
+                        />
+                    </span>
                     <CloseOutlined
                         style={{
                             fontSize: 10,
@@ -480,13 +553,17 @@ export default function DailyGanttChart() {
                         onClick={(e) => {
                             e.stopPropagation();
                             hideAutoCompleteOption("project_code", opt.value);
-                            message.info(`"${opt.value}" 코드가 숨겨졌습니다`);
+                            message.info(`"${opt.label}" 항목이 숨겨졌습니다`);
                         }}
                     />
                 </div>
             ),
         }));
-    }, [raw_project_code_options, hideAutoCompleteOption]);
+    }, [
+        raw_project_code_options,
+        debounced_project_code_search,
+        hideAutoCompleteOption,
+    ]);
 
     const work_name_options = useMemo(() => {
         return getAutoCompleteOptions("work_name").map((v) => ({
@@ -499,7 +576,12 @@ export default function DailyGanttChart() {
                         alignItems: "center",
                     }}
                 >
-                    <span>{v}</span>
+                    <span>
+                        <HighlightText
+                            text={v}
+                            search={debounced_work_name_search}
+                        />
+                    </span>
                     <CloseOutlined
                         style={{
                             fontSize: 10,
@@ -519,6 +601,7 @@ export default function DailyGanttChart() {
         records,
         templates,
         hidden_autocomplete_options,
+        debounced_work_name_search,
         getAutoCompleteOptions,
         hideAutoCompleteOption,
     ]);
@@ -534,7 +617,12 @@ export default function DailyGanttChart() {
                         alignItems: "center",
                     }}
                 >
-                    <span>{v}</span>
+                    <span>
+                        <HighlightText
+                            text={v}
+                            search={debounced_deal_name_search}
+                        />
+                    </span>
                     <CloseOutlined
                         style={{
                             fontSize: 10,
@@ -554,6 +642,7 @@ export default function DailyGanttChart() {
         records,
         templates,
         hidden_autocomplete_options,
+        debounced_deal_name_search,
         getAutoCompleteOptions,
         hideAutoCompleteOption,
     ]);
@@ -635,7 +724,10 @@ export default function DailyGanttChart() {
     // 점심시간 오버레이 스타일 계산 (동적 값 사용)
     const lunch_overlay_style = useMemo(() => {
         // 점심시간이 현재 시간 범위에 포함되는지 확인
-        if (LUNCH_END_DYNAMIC <= time_range.start || LUNCH_START_DYNAMIC >= time_range.end) {
+        if (
+            LUNCH_END_DYNAMIC <= time_range.start ||
+            LUNCH_START_DYNAMIC >= time_range.end
+        ) {
             return null; // 점심시간이 범위 밖
         }
 
@@ -790,6 +882,9 @@ export default function DailyGanttChart() {
                 start: minutesToTime(drag_selection.start_mins),
                 end: minutesToTime(drag_selection.end_mins),
             });
+            // 모달 초기화: 기본값은 새 작업 모드
+            setAddMode("new");
+            setSelectedExistingRecordId(null);
             setIsModalOpen(true);
         }
 
@@ -943,7 +1038,14 @@ export default function DailyGanttChart() {
             document.removeEventListener("mousemove", handleDocumentMouseMove);
             document.removeEventListener("mouseup", handleDocumentMouseUp);
         };
-    }, [is_dragging, resize_state, handleMouseMove, handleMouseUp, handleResizeMove, handleResizeEnd]);
+    }, [
+        is_dragging,
+        resize_state,
+        handleMouseMove,
+        handleMouseUp,
+        handleResizeMove,
+        handleResizeEnd,
+    ]);
 
     // 리사이즈 중인 바 스타일 계산
     const getResizingBarStyle = useCallback(
@@ -974,10 +1076,76 @@ export default function DailyGanttChart() {
         [resize_state, time_range, total_minutes]
     );
 
-    // 작업 추가 핸들러
+    // 기존 작업에 세션 추가 핸들러
+    const handleAddToExistingRecord = () => {
+        if (!selected_time_range || !selected_existing_record_id) return;
+
+        const target_record = records.find(
+            (r) => r.id === selected_existing_record_id
+        );
+        if (!target_record) {
+            message.error("선택된 작업을 찾을 수 없습니다.");
+            return;
+        }
+
+        const start_mins = timeToMinutes(selected_time_range.start);
+        const end_mins = timeToMinutes(selected_time_range.end);
+        const duration_minutes = calculateDurationExcludingLunchDynamic(
+            start_mins,
+            end_mins
+        );
+
+        const new_session = {
+            id: crypto.randomUUID(),
+            date: selected_date,
+            start_time: selected_time_range.start,
+            end_time: selected_time_range.end,
+            duration_minutes,
+        };
+
+        const updated_sessions = [
+            ...(target_record.sessions || []),
+            new_session,
+        ];
+        const total_minutes = updated_sessions.reduce(
+            (sum, s) => sum + (s.duration_minutes || 0),
+            0
+        );
+
+        const sorted_sessions = [...updated_sessions].sort((a, b) => {
+            return timeToMinutes(a.start_time) - timeToMinutes(b.start_time);
+        });
+
+        updateRecord(target_record.id, {
+            sessions: sorted_sessions,
+            duration_minutes: total_minutes,
+            start_time:
+                sorted_sessions[0]?.start_time || target_record.start_time,
+            end_time:
+                sorted_sessions[sorted_sessions.length - 1]?.end_time ||
+                target_record.end_time,
+        });
+
+        message.success(
+            `"${target_record.work_name}"에 ${selected_time_range.start} ~ ${selected_time_range.end} 세션이 추가되었습니다.`
+        );
+
+        setIsModalOpen(false);
+        setSelectedTimeRange(null);
+        setSelectedExistingRecordId(null);
+    };
+
+    // 새 작업 추가 핸들러
     const handleAddWork = async () => {
         if (!selected_time_range) return;
 
+        // 기존 작업 모드인 경우
+        if (add_mode === "existing") {
+            handleAddToExistingRecord();
+            return;
+        }
+
+        // 새 작업 모드
         try {
             const values = await form.validateFields();
             const start_mins = timeToMinutes(selected_time_range.start);
@@ -1074,6 +1242,7 @@ export default function DailyGanttChart() {
         form.resetFields();
         setIsModalOpen(false);
         setSelectedTimeRange(null);
+        setSelectedExistingRecordId(null);
     };
 
     // 더블클릭으로 수정 모달 열기
@@ -1202,11 +1371,21 @@ export default function DailyGanttChart() {
         <>
             <Card
                 title={
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 16 }}>
-                        <span style={{ fontWeight: 800, fontSize: 17 }}>일간 타임라인</span>
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 12,
+                            fontSize: 16,
+                        }}
+                    >
+                        <span style={{ fontWeight: 800, fontSize: 17 }}>
+                            일간 타임라인
+                        </span>
                         <span style={{ color: "#d9d9d9" }}>|</span>
                         <span style={{ color: "#555", fontWeight: 500 }}>
-                            {dayjs(selected_date).format("YYYY년 M월 D일")} ({dayjs(selected_date).format("dd")})
+                            {dayjs(selected_date).format("YYYY년 M월 D일")} (
+                            {dayjs(selected_date).format("dd")})
                         </span>
                     </div>
                 }
@@ -2242,7 +2421,15 @@ export default function DailyGanttChart() {
                 open={is_modal_open}
                 onCancel={handleModalCancel}
                 footer={[
-                    <Button key="ok" type="primary" onClick={handleAddWork}>
+                    <Button
+                        key="ok"
+                        type="primary"
+                        onClick={handleAddWork}
+                        disabled={
+                            add_mode === "existing" &&
+                            !selected_existing_record_id
+                        }
+                    >
                         추가 ({formatShortcutKeyForPlatform(modal_submit_keys)})
                     </Button>,
                     <Button key="cancel" onClick={handleModalCancel}>
@@ -2250,131 +2437,203 @@ export default function DailyGanttChart() {
                     </Button>,
                 ]}
             >
-                <Form
-                    form={form}
-                    layout="vertical"
-                    onKeyDown={(e) => {
-                        if (matchShortcutKey(e, modal_submit_keys)) {
-                            e.preventDefault();
-                            handleAddWork();
-                        }
-                    }}
-                >
-                    <Form.Item name="project_code" label="프로젝트 코드">
-                        <AutoComplete
-                            options={project_code_options}
-                            placeholder="예: A25_01846 (미입력 시 A00_00000)"
-                            filterOption={(input, option) =>
-                                (option?.value ?? "")
-                                    .toLowerCase()
-                                    .includes(input.toLowerCase())
-                            }
-                            onSelect={(value: string) =>
-                                handleProjectCodeSelect(value)
-                            }
-                        />
-                    </Form.Item>
-
-                    <Form.Item
-                        name="work_name"
-                        label="작업명"
-                        rules={[
-                            { required: true, message: "작업명을 입력하세요" },
+                {/* 오늘 작업이 있으면 모드 선택 표시 */}
+                {today_records.length > 0 && (
+                    <Segmented
+                        value={add_mode}
+                        onChange={(value) => {
+                            setAddMode(value as "existing" | "new");
+                            setSelectedExistingRecordId(null);
+                        }}
+                        options={[
+                            { label: "새 작업 추가", value: "new" },
+                            { label: "기존 작업에 추가", value: "existing" },
                         ]}
-                    >
-                        <AutoComplete
-                            options={work_name_options}
-                            placeholder="예: 5.6 프레임워크 FE"
-                            filterOption={(input, option) =>
-                                (option?.value ?? "")
-                                    .toLowerCase()
-                                    .includes(input.toLowerCase())
-                            }
-                        />
-                    </Form.Item>
+                        block
+                        style={{ marginBottom: 16 }}
+                    />
+                )}
 
-                    <Form.Item name="deal_name" label="거래명 (상세 작업)">
-                        <AutoComplete
-                            options={deal_name_options}
-                            placeholder="예: 5.6 테스트 케이스 확인 및 이슈 처리"
-                            filterOption={(input, option) =>
-                                (option?.value ?? "")
-                                    .toLowerCase()
-                                    .includes(input.toLowerCase())
-                            }
-                        />
-                    </Form.Item>
-
-                    <Space style={{ width: "100%" }} size="middle">
-                        <Form.Item
-                            name="task_name"
-                            label="업무명"
-                            style={{ flex: 1 }}
+                {/* 기존 작업 선택 모드 */}
+                {add_mode === "existing" && today_records.length > 0 ? (
+                    <div>
+                        <Text
+                            type="secondary"
+                            style={{ display: "block", marginBottom: 12 }}
                         >
-                            <Select
-                                placeholder="업무 선택"
-                                options={task_options}
-                                allowClear
-                                popupMatchSelectWidth={240}
-                                optionRender={(option) => (
-                                    <div
+                            세션을 추가할 작업을 선택하세요:
+                        </Text>
+                        <Radio.Group
+                            value={selected_existing_record_id}
+                            onChange={(e) =>
+                                setSelectedExistingRecordId(e.target.value)
+                            }
+                            style={{ width: "100%" }}
+                        >
+                            <Space
+                                direction="vertical"
+                                style={{ width: "100%" }}
+                            >
+                                {today_records.map((record) => (
+                                    <Radio
+                                        key={record.id}
+                                        value={record.id}
                                         style={{
-                                            display: "flex",
-                                            justifyContent: "space-between",
-                                            alignItems: "center",
+                                            width: "100%",
+                                            padding: "8px 12px",
+                                            border: "1px solid #d9d9d9",
+                                            borderRadius: 6,
+                                            backgroundColor:
+                                                selected_existing_record_id ===
+                                                record.id
+                                                    ? "#e6f4ff"
+                                                    : "transparent",
                                         }}
                                     >
-                                        <span>{option.label}</span>
-                                        <CloseOutlined
+                                        <div>
+                                            <Text strong>
+                                                {record.work_name}
+                                            </Text>
+                                            {record.deal_name && (
+                                                <Text
+                                                    type="secondary"
+                                                    style={{ marginLeft: 8 }}
+                                                >
+                                                    - {record.deal_name}
+                                                </Text>
+                                            )}
+                                            <br />
+                                            <Text
+                                                type="secondary"
+                                                style={{ fontSize: 12 }}
+                                            >
+                                                [{record.project_code}]{" "}
+                                                {record.task_name &&
+                                                    `${record.task_name}`}
+                                                {record.sessions?.length
+                                                    ? ` (${record.sessions.length}개 세션)`
+                                                    : ""}
+                                            </Text>
+                                        </div>
+                                    </Radio>
+                                ))}
+                            </Space>
+                        </Radio.Group>
+                    </div>
+                ) : (
+                    /* 새 작업 추가 폼 */
+                    <Form
+                        form={form}
+                        layout="vertical"
+                        onKeyDown={(e) => {
+                            if (matchShortcutKey(e, modal_submit_keys)) {
+                                e.preventDefault();
+                                handleAddWork();
+                            }
+                        }}
+                    >
+                        <Form.Item name="project_code" label="프로젝트 코드">
+                            <AutoComplete
+                                options={project_code_options}
+                                placeholder="예: A25_01846 (미입력 시 A00_00000)"
+                                filterOption={(input, option) =>
+                                    (option?.value ?? "")
+                                        .toLowerCase()
+                                        .includes(input.toLowerCase())
+                                }
+                                onSearch={setProjectCodeSearch}
+                                onSelect={(value: string) =>
+                                    handleProjectCodeSelect(value)
+                                }
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="work_name"
+                            label="작업명"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "작업명을 입력하세요",
+                                },
+                            ]}
+                        >
+                            <AutoComplete
+                                options={work_name_options}
+                                placeholder="예: 5.6 프레임워크 FE"
+                                filterOption={(input, option) =>
+                                    (option?.value ?? "")
+                                        .toLowerCase()
+                                        .includes(input.toLowerCase())
+                                }
+                                onSearch={setWorkNameSearch}
+                            />
+                        </Form.Item>
+
+                        <Form.Item name="deal_name" label="거래명 (상세 작업)">
+                            <AutoComplete
+                                options={deal_name_options}
+                                placeholder="예: 5.6 테스트 케이스 확인 및 이슈 처리"
+                                filterOption={(input, option) =>
+                                    (option?.value ?? "")
+                                        .toLowerCase()
+                                        .includes(input.toLowerCase())
+                                }
+                                onSearch={setDealNameSearch}
+                            />
+                        </Form.Item>
+
+                        <Space style={{ width: "100%" }} size="middle">
+                            <Form.Item
+                                name="task_name"
+                                label="업무명"
+                                style={{ flex: 1 }}
+                            >
+                                <Select
+                                    placeholder="업무 선택"
+                                    options={task_options}
+                                    allowClear
+                                    popupMatchSelectWidth={240}
+                                    optionRender={(option) => (
+                                        <div
                                             style={{
-                                                fontSize: 10,
-                                                color: "#999",
-                                                cursor: "pointer",
-                                            }}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                hideAutoCompleteOption(
-                                                    "task_option",
-                                                    option.value as string
-                                                );
-                                            }}
-                                        />
-                                    </div>
-                                )}
-                                dropdownRender={(menu) => (
-                                    <>
-                                        {menu}
-                                        <Divider style={{ margin: "8px 0" }} />
-                                        <Space
-                                            style={{
-                                                padding: "0 8px 4px",
-                                                width: "100%",
-                                            }}
-                                            onMouseDown={(e) =>
-                                                e.stopPropagation()
-                                            }
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setTimeout(
-                                                    () =>
-                                                        new_task_input_ref.current?.focus(),
-                                                    0
-                                                );
+                                                display: "flex",
+                                                justifyContent: "space-between",
+                                                alignItems: "center",
                                             }}
                                         >
-                                            <Input
-                                                ref={new_task_input_ref}
-                                                placeholder="새 업무명"
-                                                value={new_task_input}
-                                                onChange={(e) =>
-                                                    setNewTaskInput(
-                                                        e.target.value
-                                                    )
-                                                }
-                                                onKeyDown={(e) =>
+                                            <span>{option.label}</span>
+                                            <CloseOutlined
+                                                style={{
+                                                    fontSize: 10,
+                                                    color: "#999",
+                                                    cursor: "pointer",
+                                                }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    hideAutoCompleteOption(
+                                                        "task_option",
+                                                        option.value as string
+                                                    );
+                                                }}
+                                            />
+                                        </div>
+                                    )}
+                                    dropdownRender={(menu) => (
+                                        <>
+                                            {menu}
+                                            <Divider
+                                                style={{ margin: "8px 0" }}
+                                            />
+                                            <Space
+                                                style={{
+                                                    padding: "0 8px 4px",
+                                                    width: "100%",
+                                                }}
+                                                onMouseDown={(e) =>
                                                     e.stopPropagation()
                                                 }
-                                                onMouseDown={(e) => {
+                                                onClick={(e) => {
                                                     e.stopPropagation();
                                                     setTimeout(
                                                         () =>
@@ -2382,101 +2641,105 @@ export default function DailyGanttChart() {
                                                         0
                                                     );
                                                 }}
+                                            >
+                                                <Input
+                                                    ref={new_task_input_ref}
+                                                    placeholder="새 업무명"
+                                                    value={new_task_input}
+                                                    onChange={(e) =>
+                                                        setNewTaskInput(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    onKeyDown={(e) =>
+                                                        e.stopPropagation()
+                                                    }
+                                                    onMouseDown={(e) => {
+                                                        e.stopPropagation();
+                                                        setTimeout(
+                                                            () =>
+                                                                new_task_input_ref.current?.focus(),
+                                                            0
+                                                        );
+                                                    }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        new_task_input_ref.current?.focus();
+                                                    }}
+                                                    onFocus={(e) =>
+                                                        e.stopPropagation()
+                                                    }
+                                                    size="small"
+                                                    style={{ flex: 1 }}
+                                                />
+                                                <Button
+                                                    type="text"
+                                                    icon={<PlusOutlined />}
+                                                    onClick={
+                                                        handleAddTaskOption
+                                                    }
+                                                    onMouseDown={(e) =>
+                                                        e.stopPropagation()
+                                                    }
+                                                    size="small"
+                                                >
+                                                    추가
+                                                </Button>
+                                            </Space>
+                                        </>
+                                    )}
+                                />
+                            </Form.Item>
+                            <Form.Item
+                                name="category_name"
+                                label="카테고리"
+                                style={{ flex: 1 }}
+                            >
+                                <Select
+                                    placeholder="카테고리"
+                                    options={category_options}
+                                    allowClear
+                                    popupMatchSelectWidth={240}
+                                    optionRender={(option) => (
+                                        <div
+                                            style={{
+                                                display: "flex",
+                                                justifyContent: "space-between",
+                                                alignItems: "center",
+                                            }}
+                                        >
+                                            <span>{option.label}</span>
+                                            <CloseOutlined
+                                                style={{
+                                                    fontSize: 10,
+                                                    color: "#999",
+                                                    cursor: "pointer",
+                                                }}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    new_task_input_ref.current?.focus();
+                                                    hideAutoCompleteOption(
+                                                        "category_option",
+                                                        option.value as string
+                                                    );
                                                 }}
-                                                onFocus={(e) =>
-                                                    e.stopPropagation()
-                                                }
-                                                size="small"
-                                                style={{ flex: 1 }}
                                             />
-                                            <Button
-                                                type="text"
-                                                icon={<PlusOutlined />}
-                                                onClick={handleAddTaskOption}
+                                        </div>
+                                    )}
+                                    dropdownRender={(menu) => (
+                                        <>
+                                            {menu}
+                                            <Divider
+                                                style={{ margin: "8px 0" }}
+                                            />
+                                            <Space
+                                                style={{
+                                                    padding: "0 8px 4px",
+                                                    width: "100%",
+                                                }}
                                                 onMouseDown={(e) =>
                                                     e.stopPropagation()
                                                 }
-                                                size="small"
-                                            >
-                                                추가
-                                            </Button>
-                                        </Space>
-                                    </>
-                                )}
-                            />
-                        </Form.Item>
-                        <Form.Item
-                            name="category_name"
-                            label="카테고리"
-                            style={{ flex: 1 }}
-                        >
-                            <Select
-                                placeholder="카테고리"
-                                options={category_options}
-                                allowClear
-                                popupMatchSelectWidth={240}
-                                optionRender={(option) => (
-                                    <div
-                                        style={{
-                                            display: "flex",
-                                            justifyContent: "space-between",
-                                            alignItems: "center",
-                                        }}
-                                    >
-                                        <span>{option.label}</span>
-                                        <CloseOutlined
-                                            style={{
-                                                fontSize: 10,
-                                                color: "#999",
-                                                cursor: "pointer",
-                                            }}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                hideAutoCompleteOption(
-                                                    "category_option",
-                                                    option.value as string
-                                                );
-                                            }}
-                                        />
-                                    </div>
-                                )}
-                                dropdownRender={(menu) => (
-                                    <>
-                                        {menu}
-                                        <Divider style={{ margin: "8px 0" }} />
-                                        <Space
-                                            style={{
-                                                padding: "0 8px 4px",
-                                                width: "100%",
-                                            }}
-                                            onMouseDown={(e) =>
-                                                e.stopPropagation()
-                                            }
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setTimeout(
-                                                    () =>
-                                                        new_category_input_ref.current?.focus(),
-                                                    0
-                                                );
-                                            }}
-                                        >
-                                            <Input
-                                                ref={new_category_input_ref}
-                                                placeholder="새 카테고리"
-                                                value={new_category_input}
-                                                onChange={(e) =>
-                                                    setNewCategoryInput(
-                                                        e.target.value
-                                                    )
-                                                }
-                                                onKeyDown={(e) =>
-                                                    e.stopPropagation()
-                                                }
-                                                onMouseDown={(e) => {
+                                                onClick={(e) => {
                                                     e.stopPropagation();
                                                     setTimeout(
                                                         () =>
@@ -2484,40 +2747,62 @@ export default function DailyGanttChart() {
                                                         0
                                                     );
                                                 }}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    new_category_input_ref.current?.focus();
-                                                }}
-                                                onFocus={(e) =>
-                                                    e.stopPropagation()
-                                                }
-                                                size="small"
-                                                style={{ flex: 1 }}
-                                            />
-                                            <Button
-                                                type="text"
-                                                icon={<PlusOutlined />}
-                                                onClick={
-                                                    handleAddCategoryOption
-                                                }
-                                                onMouseDown={(e) =>
-                                                    e.stopPropagation()
-                                                }
-                                                size="small"
                                             >
-                                                추가
-                                            </Button>
-                                        </Space>
-                                    </>
-                                )}
-                            />
-                        </Form.Item>
-                    </Space>
+                                                <Input
+                                                    ref={new_category_input_ref}
+                                                    placeholder="새 카테고리"
+                                                    value={new_category_input}
+                                                    onChange={(e) =>
+                                                        setNewCategoryInput(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    onKeyDown={(e) =>
+                                                        e.stopPropagation()
+                                                    }
+                                                    onMouseDown={(e) => {
+                                                        e.stopPropagation();
+                                                        setTimeout(
+                                                            () =>
+                                                                new_category_input_ref.current?.focus(),
+                                                            0
+                                                        );
+                                                    }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        new_category_input_ref.current?.focus();
+                                                    }}
+                                                    onFocus={(e) =>
+                                                        e.stopPropagation()
+                                                    }
+                                                    size="small"
+                                                    style={{ flex: 1 }}
+                                                />
+                                                <Button
+                                                    type="text"
+                                                    icon={<PlusOutlined />}
+                                                    onClick={
+                                                        handleAddCategoryOption
+                                                    }
+                                                    onMouseDown={(e) =>
+                                                        e.stopPropagation()
+                                                    }
+                                                    size="small"
+                                                >
+                                                    추가
+                                                </Button>
+                                            </Space>
+                                        </>
+                                    )}
+                                />
+                            </Form.Item>
+                        </Space>
 
-                    <Form.Item name="note" label="비고">
-                        <Input.TextArea placeholder="추가 메모" rows={2} />
-                    </Form.Item>
-                </Form>
+                        <Form.Item name="note" label="비고">
+                            <Input.TextArea placeholder="추가 메모" rows={2} />
+                        </Form.Item>
+                    </Form>
+                )}
             </Modal>
 
             {/* 작업 수정 모달 */}
@@ -2567,6 +2852,7 @@ export default function DailyGanttChart() {
                                     .toLowerCase()
                                     .includes(input.toLowerCase())
                             }
+                            onSearch={setProjectCodeSearch}
                             onSelect={(value: string) => {
                                 const selected = raw_project_code_options.find(
                                     (opt) => opt.value === value
@@ -2595,6 +2881,7 @@ export default function DailyGanttChart() {
                                     .toLowerCase()
                                     .includes(input.toLowerCase())
                             }
+                            onSearch={setWorkNameSearch}
                         />
                     </Form.Item>
 
@@ -2607,6 +2894,7 @@ export default function DailyGanttChart() {
                                     .toLowerCase()
                                     .includes(input.toLowerCase())
                             }
+                            onSearch={setDealNameSearch}
                         />
                     </Form.Item>
 

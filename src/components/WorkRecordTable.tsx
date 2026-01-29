@@ -54,6 +54,8 @@ import { useShortcutStore } from "../store/useShortcutStore";
 import type { WorkRecord, WorkSession } from "../types";
 import { useResponsive } from "../hooks/useResponsive";
 import { formatShortcutKeyForPlatform, matchShortcutKey } from "../hooks/useShortcuts";
+import { HighlightText } from "../shared/ui/HighlightText";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
 const { Text } = Typography;
 
@@ -824,11 +826,17 @@ export default function WorkRecordTable() {
     // 테마 색상
     const theme_color = APP_THEME_COLORS[app_theme].primary;
 
-    // 모달 저장 단축키 설정
-    const modal_submit_shortcut = useShortcutStore((state) => 
-        state.shortcuts.find(s => s.id === 'modal-submit')
-    );
-    const modal_submit_keys = modal_submit_shortcut?.keys || 'F8';
+    // 단축키 설정
+    const shortcuts = useShortcutStore((state) => state.shortcuts);
+    const getShortcutKeys = useCallback((id: string, fallback: string = '') => {
+        const shortcut = shortcuts.find(s => s.id === id);
+        return shortcut?.keys || fallback;
+    }, [shortcuts]);
+    
+    const modal_submit_keys = getShortcutKeys('modal-submit', 'F8');
+    const new_work_keys = getShortcutKeys('new-work', 'Alt+N');
+    const prev_day_keys = getShortcutKeys('prev-day', 'Alt+Left');
+    const next_day_keys = getShortcutKeys('next-day', 'Alt+Right');
 
     // 타이머 표시를 위한 리렌더링 트리거
     const [, setTick] = useState(0);
@@ -852,19 +860,27 @@ export default function WorkRecordTable() {
     const [edit_task_input, setEditTaskInput] = useState("");
     const [edit_category_input, setEditCategoryInput] = useState("");
 
+    // AutoComplete 검색어 상태 (하이라이트용) - 디바운스 적용
+    const [project_code_search, setProjectCodeSearch] = useState("");
+    const [work_name_search, setWorkNameSearch] = useState("");
+    const [deal_name_search, setDealNameSearch] = useState("");
+    const debounced_project_code_search = useDebouncedValue(project_code_search, 150);
+    const debounced_work_name_search = useDebouncedValue(work_name_search, 150);
+    const debounced_deal_name_search = useDebouncedValue(deal_name_search, 150);
+
     // Input refs for focus management
     const new_task_input_ref = useRef<InputRef>(null);
     const new_category_input_ref = useRef<InputRef>(null);
     const edit_task_input_ref = useRef<InputRef>(null);
     const edit_category_input_ref = useRef<InputRef>(null);
 
-    // 작업명/거래명 자동완성 옵션 (records, templates 변경 시 갱신, 삭제 버튼 포함)
+    // 작업명/거래명 자동완성 옵션 (records, templates 변경 시 갱신, 삭제 버튼 포함, 검색어 하이라이트)
     const work_name_options = useMemo(() => {
         return getAutoCompleteOptions("work_name").map((v) => ({
             value: v,
             label: (
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span>{v}</span>
+                    <span><HighlightText text={v} search={debounced_work_name_search} /></span>
                     <CloseOutlined
                         style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
                         onClick={(e) => {
@@ -876,14 +892,14 @@ export default function WorkRecordTable() {
                 </div>
             ),
         }));
-    }, [records, templates, hidden_autocomplete_options, getAutoCompleteOptions, hideAutoCompleteOption]);
+    }, [records, templates, hidden_autocomplete_options, debounced_work_name_search, getAutoCompleteOptions, hideAutoCompleteOption]);
 
     const deal_name_options = useMemo(() => {
         return getAutoCompleteOptions("deal_name").map((v) => ({
             value: v,
             label: (
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span>{v}</span>
+                    <span><HighlightText text={v} search={debounced_deal_name_search} /></span>
                     <CloseOutlined
                         style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
                         onClick={(e) => {
@@ -895,7 +911,7 @@ export default function WorkRecordTable() {
                 </div>
             ),
         }));
-    }, [records, templates, hidden_autocomplete_options, getAutoCompleteOptions, hideAutoCompleteOption]);
+    }, [records, templates, hidden_autocomplete_options, debounced_deal_name_search, getAutoCompleteOptions, hideAutoCompleteOption]);
 
     // 업무명/카테고리명 옵션 (기본 + 사용자 정의, 숨김 필터링)
     const task_options = useMemo(() => {
@@ -1234,34 +1250,41 @@ export default function WorkRecordTable() {
     }, [deleted_records, deleted_search_text]);
 
     // 프로젝트 코드 자동완성 옵션 (삭제 버튼 포함)
+    // 프로젝트 코드 원본 레이블 저장 (하이라이트용)
+    const project_code_raw_options = useMemo(() => {
+        return getProjectCodeOptions();
+    }, [records, templates, hidden_autocomplete_options, getProjectCodeOptions]);
+
     const project_code_options = useMemo(() => {
-        return getProjectCodeOptions().map((opt) => ({
+        return project_code_raw_options.map((opt) => ({
             ...opt,
             label: (
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span>{opt.label}</span>
+                    <span><HighlightText text={opt.label} search={debounced_project_code_search} /></span>
                     <CloseOutlined
                         style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
                         onClick={(e) => {
                             e.stopPropagation();
                             hideAutoCompleteOption("project_code", opt.value);
-                            message.info(`"${opt.value}" 코드가 숨겨졌습니다`);
+                            message.info(`"${opt.label}" 항목이 숨겨졌습니다`);
                         }}
                     />
                 </div>
             ),
         }));
-    }, [records, templates, getProjectCodeOptions, hideAutoCompleteOption]);
+    }, [project_code_raw_options, debounced_project_code_search, hideAutoCompleteOption]);
 
-    // 프로젝트 코드 선택 시 작업명 자동 채우기 핸들러
+    // 프로젝트 코드 선택 시 코드와 작업명 자동 채우기 핸들러
     const handleProjectCodeSelect = useCallback(
         (value: string, form_instance: ReturnType<typeof Form.useForm>[0]) => {
-            const selected = project_code_options.find((opt) => opt.value === value);
-            if (selected?.work_name) {
-                form_instance.setFieldsValue({ work_name: selected.work_name });
-            }
+            // value는 "코드::작업명" 형태
+            const [code, work_name] = value.split("::");
+            form_instance.setFieldsValue({
+                project_code: code, // 실제 코드만 저장
+                ...(work_name ? { work_name } : {}),
+            });
         },
-        [project_code_options]
+        []
     );
 
     // 확장 행 렌더링 (record_id만 전달하여 타이머 리렌더링 영향 완전 차단)
@@ -1523,7 +1546,7 @@ export default function WorkRecordTable() {
                     <Space size={is_mobile ? 4 : 12} wrap>
                         {/* 날짜 네비게이션 그룹 */}
                         <Space.Compact>
-                            <Tooltip title="이전 날짜">
+                            <Tooltip title={`이전 날짜 (${formatShortcutKeyForPlatform(prev_day_keys)})`}>
                                 <Button
                                     icon={<LeftOutlined />}
                                     onClick={() =>
@@ -1547,7 +1570,7 @@ export default function WorkRecordTable() {
                                 allowClear={false}
                                 style={is_mobile ? { width: 130 } : { width: 150 }}
                             />
-                            <Tooltip title="다음 날짜">
+                            <Tooltip title={`다음 날짜 (${formatShortcutKeyForPlatform(next_day_keys)})`}>
                                 <Button
                                     icon={<RightOutlined />}
                                     onClick={() =>
@@ -1578,7 +1601,7 @@ export default function WorkRecordTable() {
                                         background: "rgba(255,255,255,0.2)",
                                         borderRadius: 3,
                                     }}>
-                                        Alt+N
+                                        {formatShortcutKeyForPlatform(new_work_keys)}
                                     </span>
                                 </>
                             )}
@@ -1887,6 +1910,7 @@ export default function WorkRecordTable() {
                                     .toLowerCase()
                                     .includes(input.toLowerCase())
                             }
+                            onSearch={setProjectCodeSearch}
                             onSelect={(value: string) =>
                                 handleProjectCodeSelect(value, form)
                             }
@@ -1908,6 +1932,7 @@ export default function WorkRecordTable() {
                                     .toLowerCase()
                                     .includes(input.toLowerCase())
                             }
+                            onSearch={setWorkNameSearch}
                         />
                     </Form.Item>
 
@@ -1920,6 +1945,7 @@ export default function WorkRecordTable() {
                                     .toLowerCase()
                                     .includes(input.toLowerCase())
                             }
+                            onSearch={setDealNameSearch}
                         />
                     </Form.Item>
 
@@ -2156,6 +2182,7 @@ export default function WorkRecordTable() {
                                     .toLowerCase()
                                     .includes(input.toLowerCase())
                             }
+                            onSearch={setProjectCodeSearch}
                             onSelect={(value: string) =>
                                 handleProjectCodeSelect(value, edit_form)
                             }
@@ -2177,6 +2204,7 @@ export default function WorkRecordTable() {
                                     .toLowerCase()
                                     .includes(input.toLowerCase())
                             }
+                            onSearch={setWorkNameSearch}
                         />
                     </Form.Item>
 
@@ -2189,6 +2217,7 @@ export default function WorkRecordTable() {
                                     .toLowerCase()
                                     .includes(input.toLowerCase())
                             }
+                            onSearch={setDealNameSearch}
                         />
                     </Form.Item>
 

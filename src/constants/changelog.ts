@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.10";
+export const CURRENT_VERSION = "2.0.11";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,43 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.11",
+        date: "2026-01-29",
+        title: "자동완성 검색 개선",
+        changes: [
+            {
+                type: "feature",
+                description:
+                    "간트차트에서 드래그로 추가 시 오늘의 기존 작업에 세션 추가 가능",
+            },
+            {
+                type: "improvement",
+                description:
+                    "자동완성에서 부분 검색(Like 검색) 지원 및 검색어 하이라이트",
+            },
+            {
+                type: "improvement",
+                description:
+                    "같은 프로젝트 코드의 다른 작업명을 개별 선택 가능",
+            },
+            {
+                type: "improvement",
+                description:
+                    "버튼에 설정된 단축키가 동적으로 표시됨",
+            },
+            {
+                type: "performance",
+                description:
+                    "자동완성 검색 시 성능 최적화 (디바운스 적용)",
+            },
+            {
+                type: "fix",
+                description:
+                    "자동완성 옵션 숨김 시 즉시 반영되지 않던 문제 수정",
+            },
+        ],
+    },
     {
         version: "2.0.9",
         date: "2026-01-28",

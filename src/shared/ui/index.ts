@@ -13,3 +13,6 @@ export { DateInput, type DateInputProps } from "./DateInput";
 export { CategoryTag, type CategoryTagProps } from "./CategoryTag";
 export { DurationDisplay, type DurationDisplayProps } from "./DurationDisplay";
 export { TimerDisplay, type TimerDisplayProps } from "./TimerDisplay";
+
+// 유틸리티 컴포넌트
+export { HighlightText } from "./HighlightText";

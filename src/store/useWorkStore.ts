@@ -1885,53 +1885,46 @@ export const useWorkStore = create<WorkStore>()(
         return filtered.sort();
     },
 
-    // 프로젝트 코드 자동완성 옵션 (코드 + 작업명 표시, 숨김 목록 필터링)
+    // 프로젝트 코드 자동완성 옵션 (코드 + 작업명별 개별 옵션, 숨김 목록 필터링)
     getProjectCodeOptions: () => {
         const { records, templates, hidden_autocomplete_options } = get();
-        const code_map = new Map<string, Set<string>>(); // code -> work_names
+        // 코드+작업명 조합을 Set으로 관리 (중복 제거)
+        const code_work_pairs = new Set<string>();
 
         // 레코드에서 추출
         records.forEach((r) => {
             if (r.project_code && r.project_code.trim()) {
-                if (!code_map.has(r.project_code)) {
-                    code_map.set(r.project_code, new Set());
-                }
-                if (r.work_name) {
-                    code_map.get(r.project_code)!.add(r.work_name);
-                }
+                const work_name = r.work_name?.trim() || "";
+                code_work_pairs.add(`${r.project_code}::${work_name}`);
             }
         });
 
         // 템플릿에서도 추출
         templates.forEach((t) => {
             if (t.project_code && t.project_code.trim()) {
-                if (!code_map.has(t.project_code)) {
-                    code_map.set(t.project_code, new Set());
-                }
-                if (t.work_name) {
-                    code_map.get(t.project_code)!.add(t.work_name);
-                }
+                const work_name = t.work_name?.trim() || "";
+                code_work_pairs.add(`${t.project_code}::${work_name}`);
             }
         });
 
-        // 숨김 목록
+        // 숨김 목록 (코드::작업명 형태)
         const hidden_codes = hidden_autocomplete_options.project_code || [];
 
-        // 옵션 생성: { value: 코드, label: "[코드] 작업명1, 작업명2...", work_name: 첫번째 작업명 }
+        // 옵션 생성: { value: "코드::작업명", label: "[코드] 작업명", work_name: 작업명 }
         const options: { value: string; label: string; work_name?: string }[] =
             [];
-        code_map.forEach((work_names, code) => {
-            // 숨김 처리된 코드 제외
-            if (hidden_codes.includes(code)) return;
+        code_work_pairs.forEach((pair) => {
+            // 숨김 처리된 항목 제외
+            if (hidden_codes.includes(pair)) return;
 
-            const names_arr = Array.from(work_names);
-            const names = names_arr.slice(0, 3).join(", ");
-            const suffix =
-                work_names.size > 3 ? ` 외 ${work_names.size - 3}개` : "";
+            const [code, work_name] = pair.split("::");
+            const label = work_name
+                ? `[${code}] ${work_name}`
+                : `[${code}]`;
             options.push({
-                value: code,
-                label: `[${code}] ${names}${suffix}`,
-                work_name: names_arr[0] || undefined, // 첫 번째 작업명
+                value: pair, // "코드::작업명" 형태로 저장
+                label,
+                work_name: work_name || undefined,
             });
         });
 

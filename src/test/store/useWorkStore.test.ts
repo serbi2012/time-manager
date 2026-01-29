@@ -1291,7 +1291,7 @@ describe('useWorkStore', () => {
                 }).not.toThrow()
             })
 
-            it('getProjectCodeOptions - 중복 코드 병합', () => {
+            it('getProjectCodeOptions - 같은 코드의 다른 작업명은 별도 옵션으로 생성', () => {
                 const records = [
                     createTestRecord({
                         id: 'r1',
@@ -1307,13 +1307,14 @@ describe('useWorkStore', () => {
                 useWorkStore.setState({ records })
 
                 const options = useWorkStore.getState().getProjectCodeOptions()
-                // 같은 코드는 하나로 병합됨
+                // 같은 코드라도 작업명이 다르면 별도 옵션으로 생성됨
                 const a00_options = options.filter(
-                    (o) => o.value === 'A00_00000'
+                    (o) => o.value.startsWith('A00_00000::')
                 )
-                expect(a00_options).toHaveLength(1)
-                // 라벨에 여러 작업명이 포함됨
-                expect(a00_options[0].label).toContain('작업1')
+                expect(a00_options).toHaveLength(2)
+                // 각 옵션에 작업명이 포함됨
+                expect(a00_options.some((o) => o.label.includes('작업1'))).toBe(true)
+                expect(a00_options.some((o) => o.label.includes('작업2'))).toBe(true)
             })
         })
 
