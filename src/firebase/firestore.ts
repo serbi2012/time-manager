@@ -15,6 +15,13 @@ import type { WorkRecord, WorkTemplate, TimerState } from "../types";
 import type { ShortcutDefinition } from "../store/useShortcutStore";
 import type { AppTheme } from "../store/useWorkStore";
 
+// undefined 값을 제거하는 헬퍼 함수 (Firebase는 undefined를 지원하지 않음)
+function removeUndefined<T extends object>(obj: T): T {
+    return Object.fromEntries(
+        Object.entries(obj).filter(([, v]) => v !== undefined)
+    ) as T;
+}
+
 // 숨김 자동완성 옵션 타입
 export interface HiddenAutoCompleteOptions {
     work_name: string[];
@@ -120,10 +127,10 @@ export async function saveRecord(
     record: WorkRecord
 ): Promise<void> {
     const record_ref = doc(db, "users", user_id, "records", record.id);
-    await setDoc(record_ref, {
+    await setDoc(record_ref, removeUndefined({
         ...record,
         updated_at: new Date().toISOString(),
-    });
+    }));
 }
 
 // 여러 레코드 일괄 저장 (배치 사용)
@@ -141,10 +148,10 @@ export async function saveRecordsBatch(
 
         for (const record of chunk) {
             const record_ref = doc(db, "users", user_id, "records", record.id);
-            batch.set(record_ref, {
+            batch.set(record_ref, removeUndefined({
                 ...record,
                 updated_at: new Date().toISOString(),
-            });
+            }));
         }
 
         await batch.commit();
