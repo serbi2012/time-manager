@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.12";
+export const CURRENT_VERSION = "2.0.13";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,23 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.13",
+        date: "2026-01-30",
+        title: "수정 모달에서 세션 시간 수정",
+        changes: [
+            {
+                type: "feature",
+                description:
+                    "간트차트에서 세션 더블클릭 시 시작/종료 시간도 수정 가능",
+            },
+            {
+                type: "improvement",
+                description:
+                    "시간 수정 시 다른 세션과의 충돌 자동 감지 및 경고",
+            },
+        ],
+    },
     {
         version: "2.0.12",
         date: "2026-01-29",

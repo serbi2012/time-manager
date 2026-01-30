@@ -231,6 +231,7 @@ export default function DailyGanttChart() {
     // 수정 모달 상태
     const [is_edit_modal_open, setIsEditModalOpen] = useState(false);
     const [edit_record, setEditRecord] = useState<WorkRecord | null>(null);
+    const [edit_session, setEditSession] = useState<WorkSession | null>(null);
     const [edit_form] = Form.useForm();
 
     // 사용자 정의 옵션 입력
@@ -1272,12 +1273,20 @@ export default function DailyGanttChart() {
 
     // 더블클릭으로 수정 모달 열기
     const handleBarDoubleClick = useCallback(
-        (record: WorkRecord, e: React.MouseEvent) => {
+        (record: WorkRecord, session: WorkSession, e: React.MouseEvent) => {
             e.stopPropagation();
             e.preventDefault();
             // 진행 중인 작업도 수정 가능 (종료 시간 제외)
 
             setEditRecord(record);
+            setEditSession(session);
+            
+            // 진행 중인 세션인 경우 현재 시간을 종료 시간으로 표시
+            const is_active_session = session.id === timer.active_session_id;
+            const display_end_time = is_active_session 
+                ? dayjs().format("HH:mm") 
+                : session.end_time;
+            
             edit_form.setFieldsValue({
                 project_code: record.project_code,
                 work_name: record.work_name,
@@ -1285,20 +1294,30 @@ export default function DailyGanttChart() {
                 task_name: record.task_name,
                 category_name: record.category_name,
                 note: record.note,
+                session_start_time: session.start_time,
+                session_end_time: display_end_time,
             });
             setIsEditModalOpen(true);
         },
-        [edit_form]
+        [edit_form, timer.active_session_id]
     );
 
     // 우클릭 메뉴에서 수정 클릭
     const handleContextEdit = useCallback(() => {
         if (!context_menu) return;
 
-        const { record } = context_menu;
+        const { record, session } = context_menu;
         // 진행 중인 작업도 수정 가능 (종료 시간 제외)
 
         setEditRecord(record);
+        setEditSession(session);
+        
+        // 진행 중인 세션인 경우 현재 시간을 종료 시간으로 표시
+        const is_active_session = session.id === timer.active_session_id;
+        const display_end_time = is_active_session 
+            ? dayjs().format("HH:mm") 
+            : session.end_time;
+        
         edit_form.setFieldsValue({
             project_code: record.project_code,
             work_name: record.work_name,
@@ -1306,10 +1325,12 @@ export default function DailyGanttChart() {
             task_name: record.task_name,
             category_name: record.category_name,
             note: record.note,
+            session_start_time: session.start_time,
+            session_end_time: display_end_time,
         });
         setIsEditModalOpen(true);
         setContextMenu(null);
-    }, [context_menu, edit_form]);
+    }, [context_menu, edit_form, timer.active_session_id]);
 
     // 우클릭 메뉴에서 세션 삭제
     const handleContextDeleteSession = useCallback(() => {
@@ -1329,11 +1350,71 @@ export default function DailyGanttChart() {
 
     // 수정 저장 핸들러
     const handleEditWork = async () => {
-        if (!edit_record) return;
+        if (!edit_record || !edit_session) return;
 
         try {
             const values = await edit_form.validateFields();
+            
+            // 세션 시간이 변경되었는지 확인
+            const is_active_session = edit_session.id === timer.active_session_id;
+            const original_start = edit_session.start_time;
+            const original_end = is_active_session 
+                ? dayjs().format("HH:mm") 
+                : edit_session.end_time;
+            
+            const new_start = values.session_start_time;
+            const new_end = values.session_end_time;
+            
+            const is_time_changed = 
+                new_start !== original_start || new_end !== original_end;
+            
+            // 진행 중인 세션의 종료 시간 변경 시도 시 경고
+            if (is_active_session && new_end !== original_end) {
+                message.warning("진행 중인 세션의 종료 시간은 수정할 수 없습니다.");
+                return;
+            }
+            
+            // 세션 시간 수정 (시간이 변경된 경우에만)
+            if (is_time_changed) {
+                // 진행 중인 세션의 시작 시간 변경
+                if (is_active_session) {
+                    const today = dayjs(selected_date);
+                    const new_start_mins = timeToMinutes(new_start);
+                    const new_start_timestamp = today
+                        .hour(Math.floor(new_start_mins / 60))
+                        .minute(new_start_mins % 60)
+                        .second(0)
+                        .millisecond(0)
+                        .valueOf();
+                    
+                    const result = updateTimerStartTime(new_start_timestamp);
+                    if (!result.success) {
+                        message.error(result.message);
+                        return;
+                    }
+                    if (result.adjusted) {
+                        message.info(result.message);
+                    }
+                } else {
+                    // 일반 세션 시간 수정
+                    const result = updateSession(
+                        edit_record.id,
+                        edit_session.id,
+                        new_start,
+                        new_end
+                    );
+                    
+                    if (!result.success) {
+                        message.error(result.message);
+                        return;
+                    }
+                    if (result.adjusted) {
+                        message.info(result.message);
+                    }
+                }
+            }
 
+            // 작업 정보 수정
             updateRecord(edit_record.id, {
                 project_code: values.project_code || "A00_00000",
                 work_name: values.work_name,
@@ -1346,6 +1427,7 @@ export default function DailyGanttChart() {
             message.success("작업이 수정되었습니다.");
             setIsEditModalOpen(false);
             setEditRecord(null);
+            setEditSession(null);
             edit_form.resetFields();
         } catch {
             // validation failed
@@ -1357,6 +1439,7 @@ export default function DailyGanttChart() {
         edit_form.resetFields();
         setIsEditModalOpen(false);
         setEditRecord(null);
+        setEditSession(null);
     };
 
     // 사용자 정의 옵션 추가
@@ -2031,6 +2114,7 @@ export default function DailyGanttChart() {
                                                                                 ) =>
                                                                                     handleBarDoubleClick(
                                                                                         group.record,
+                                                                                        session,
                                                                                         e
                                                                                     )
                                                                                 }
@@ -2868,6 +2952,83 @@ export default function DailyGanttChart() {
                         }
                     }}
                 >
+                    {/* 세션 시간 수정 */}
+                    <div 
+                        style={{ 
+                            marginBottom: 16, 
+                            padding: 12, 
+                            background: "#f5f5f5", 
+                            borderRadius: 8 
+                        }}
+                    >
+                        <div style={{ 
+                            marginBottom: 8, 
+                            fontWeight: 500, 
+                            fontSize: 13, 
+                            color: "#666" 
+                        }}>
+                            세션 시간
+                        </div>
+                        <Space size="middle">
+                            <Form.Item
+                                name="session_start_time"
+                                label="시작"
+                                rules={[
+                                    { 
+                                        required: true, 
+                                        message: "시작 시간 필수" 
+                                    },
+                                    {
+                                        pattern: /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
+                                        message: "HH:mm 형식"
+                                    }
+                                ]}
+                                style={{ marginBottom: 0 }}
+                            >
+                                <Input 
+                                    placeholder="09:00" 
+                                    style={{ width: 80 }}
+                                    maxLength={5}
+                                />
+                            </Form.Item>
+                            <span style={{ color: "#999" }}>~</span>
+                            <Form.Item
+                                name="session_end_time"
+                                label="종료"
+                                rules={[
+                                    { 
+                                        required: true, 
+                                        message: "종료 시간 필수" 
+                                    },
+                                    {
+                                        pattern: /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
+                                        message: "HH:mm 형식"
+                                    }
+                                ]}
+                                style={{ marginBottom: 0 }}
+                            >
+                                <Input 
+                                    placeholder="18:00" 
+                                    style={{ width: 80 }}
+                                    maxLength={5}
+                                    disabled={
+                                        edit_session?.id === 
+                                        timer.active_session_id
+                                    }
+                                />
+                            </Form.Item>
+                        </Space>
+                        {edit_session?.id === timer.active_session_id && (
+                            <div style={{ 
+                                marginTop: 8, 
+                                fontSize: 12, 
+                                color: "#ff9800" 
+                            }}>
+                                * 진행 중인 세션의 종료 시간은 수정 불가
+                            </div>
+                        )}
+                    </div>
+
                     <Form.Item name="project_code" label="프로젝트 코드">
                         <AutoComplete
                             options={project_code_options}
