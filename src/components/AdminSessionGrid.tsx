@@ -19,6 +19,7 @@ import {
     Tabs,
     Descriptions,
     Badge,
+    Radio,
 } from "antd";
 import {
     WarningOutlined,
@@ -35,6 +36,9 @@ import {
     DatabaseOutlined,
     PlayCircleOutlined,
     ClockCircleOutlined,
+    BarChartOutlined,
+    ExportOutlined,
+    SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import dayjs from "dayjs";
@@ -42,6 +46,15 @@ import { useWorkStore } from "../store/useWorkStore";
 import { useAuth } from "../firebase/useAuth";
 import type { WorkRecord, WorkSession } from "../types";
 import { timeToMinutes } from "../shared/lib/time";
+import {
+    RecordsExplorer,
+    SessionsExplorer,
+    StatsDashboard,
+    TrashManager,
+    ExportPanel,
+    IntegrityChecker,
+} from "../features/admin/ui";
+import { formatDuration } from "../features/admin/lib";
 
 const { Content } = Layout;
 const { Text, Title } = Typography;
@@ -274,15 +287,26 @@ type ViewMode =
     | "time_search"
     | "invisible"
     | "running";
-type AdminTab = "sessions" | "records";
+type AdminTab =
+    | "sessions"
+    | "records"
+    | "explorer"
+    | "statistics"
+    | "trash"
+    | "export"
+    | "integrity";
 
 function AdminSessionGridContent() {
     const records = useWorkStore((state) => state.records);
     const deleteSession = useWorkStore((state) => state.deleteSession);
     const updateRecord = useWorkStore((state) => state.updateRecord);
     const deleteRecord = useWorkStore((state) => state.deleteRecord);
+    const permanentlyDeleteRecord = useWorkStore(
+        (state) => state.permanentlyDeleteRecord
+    );
 
     const [admin_tab, setAdminTab] = useState<AdminTab>("sessions");
+    const [time_format, setTimeFormat] = useState<"minutes" | "hours">("hours");
     const [view_mode, setViewMode] = useState<ViewMode>("all");
     const [date_range, setDateRange] = useState<
         [dayjs.Dayjs | null, dayjs.Dayjs | null] | null
@@ -675,7 +699,8 @@ function AdminSessionGridContent() {
             dataIndex: "duration_minutes",
             width: 90,
             align: "right",
-            render: (mins: number) => `${mins}분`,
+            render: (mins: number) =>
+                formatDuration(mins || 0, time_format),
             sorter: (a, b) => a.duration_minutes - b.duration_minutes,
         },
         {
@@ -929,7 +954,8 @@ function AdminSessionGridContent() {
             dataIndex: "duration_minutes",
             width: 90,
             align: "right",
-            render: (mins: number) => `${mins}분`,
+            render: (mins: number) =>
+                formatDuration(mins || 0, time_format),
             sorter: (a, b) => a.duration_minutes - b.duration_minutes,
         },
         {
@@ -1064,6 +1090,27 @@ function AdminSessionGridContent() {
                             <Tag color="purple">관리자</Tag>
                         </Space>
                     }
+                    extra={
+                        <Space>
+                            <span style={{ color: "#666", fontSize: 13 }}>
+                                시간 표시:
+                            </span>
+                            <Radio.Group
+                                value={time_format}
+                                onChange={(e) => setTimeFormat(e.target.value)}
+                                size="small"
+                                optionType="button"
+                                buttonStyle="solid"
+                            >
+                                <Radio.Button value="hours">
+                                    시간 분
+                                </Radio.Button>
+                                <Radio.Button value="minutes">
+                                    분
+                                </Radio.Button>
+                            </Radio.Group>
+                        </Space>
+                    }
                 >
                     <Tabs
                         activeKey={admin_tab}
@@ -1090,6 +1137,62 @@ function AdminSessionGridContent() {
                                                 size="small"
                                             />
                                         )}
+                                    </Space>
+                                ),
+                            },
+                            {
+                                key: "explorer",
+                                label: (
+                                    <Space>
+                                        <SearchOutlined />
+                                        데이터 탐색기
+                                    </Space>
+                                ),
+                            },
+                            {
+                                key: "statistics",
+                                label: (
+                                    <Space>
+                                        <BarChartOutlined />
+                                        통계
+                                    </Space>
+                                ),
+                            },
+                            {
+                                key: "trash",
+                                label: (
+                                    <Space>
+                                        <DeleteOutlined />
+                                        휴지통
+                                        {records.filter((r) => r.is_deleted)
+                                            .length > 0 && (
+                                            <Badge
+                                                count={
+                                                    records.filter(
+                                                        (r) => r.is_deleted
+                                                    ).length
+                                                }
+                                                size="small"
+                                            />
+                                        )}
+                                    </Space>
+                                ),
+                            },
+                            {
+                                key: "export",
+                                label: (
+                                    <Space>
+                                        <ExportOutlined />
+                                        내보내기
+                                    </Space>
+                                ),
+                            },
+                            {
+                                key: "integrity",
+                                label: (
+                                    <Space>
+                                        <SafetyCertificateOutlined />
+                                        정합성 검사
                                     </Space>
                                 ),
                             },
@@ -1878,6 +1981,83 @@ function AdminSessionGridContent() {
                             </Card>
                         </Space>
                     )}
+
+                    {/* 데이터 탐색기 탭 */}
+                    {admin_tab === "explorer" && (
+                        <Tabs
+                            defaultActiveKey="records"
+                            items={[
+                                {
+                                    key: "records",
+                                    label: "레코드 탐색",
+                                    children: (
+                                        <RecordsExplorer
+                                            records={records}
+                                            time_format={time_format}
+                                        />
+                                    ),
+                                },
+                                {
+                                    key: "sessions",
+                                    label: "세션 탐색",
+                                    children: (
+                                        <SessionsExplorer
+                                            records={records}
+                                            time_format={time_format}
+                                        />
+                                    ),
+                                },
+                            ]}
+                        />
+                    )}
+
+                    {/* 통계 대시보드 탭 */}
+                    {admin_tab === "statistics" && (
+                        <StatsDashboard
+                            records={records}
+                            time_format={time_format}
+                        />
+                    )}
+
+                    {/* 휴지통 탭 */}
+                    {admin_tab === "trash" && (
+                        <TrashManager
+                            records={records}
+                            on_restore={(record_id) => {
+                                updateRecord(record_id, {
+                                    is_deleted: false,
+                                    deleted_at: undefined,
+                                });
+                            }}
+                            on_permanent_delete={(record_id) => {
+                                permanentlyDeleteRecord(record_id);
+                            }}
+                            time_format={time_format}
+                        />
+                    )}
+
+                    {/* 내보내기 탭 */}
+                    {admin_tab === "export" && (
+                        <ExportPanel
+                            records={records}
+                            time_format={time_format}
+                        />
+                    )}
+
+                    {/* 정합성 검사 탭 */}
+                    {admin_tab === "integrity" && (
+                        <IntegrityChecker
+                            records={records}
+                            on_fix_time_mismatch={(record_id, new_duration) => {
+                                updateRecord(record_id, {
+                                    duration_minutes: new_duration,
+                                });
+                            }}
+                            on_delete_session={(record_id, session_id) => {
+                                deleteSession(record_id, session_id);
+                            }}
+                        />
+                    )}
                 </Card>
 
                 {/* 레코드 상세 정보 모달 */}
@@ -1953,7 +2133,11 @@ function AdminSessionGridContent() {
                                     {detail_modal_record.category_name}
                                 </Descriptions.Item>
                                 <Descriptions.Item label="소요시간">
-                                    {detail_modal_record.duration_minutes}분
+                                    {formatDuration(
+                                        detail_modal_record.duration_minutes ||
+                                            0,
+                                        time_format
+                                    )}
                                 </Descriptions.Item>
                                 <Descriptions.Item label="시간">
                                     {detail_modal_record.start_time || "-"} ~{" "}
@@ -2013,7 +2197,10 @@ function AdminSessionGridContent() {
                                                         "duration_minutes",
                                                     width: 90,
                                                     render: (mins: number) =>
-                                                        `${mins}분`,
+                                                        formatDuration(
+                                                            mins || 0,
+                                                            time_format
+                                                        ),
                                                 },
                                                 {
                                                     title: "ID",
@@ -2131,7 +2318,10 @@ function AdminSessionGridContent() {
                                     {merge_target_group.total_sessions}개
                                 </Descriptions.Item>
                                 <Descriptions.Item label="총 소요시간">
-                                    {merge_target_group.total_duration}분
+                                    {formatDuration(
+                                        merge_target_group.total_duration || 0,
+                                        time_format
+                                    )}
                                 </Descriptions.Item>
                                 <Descriptions.Item label="날짜 범위">
                                     {merge_target_group.date_range}
@@ -2181,7 +2371,10 @@ function AdminSessionGridContent() {
                                             dataIndex: "duration_minutes",
                                             width: 90,
                                             render: (mins: number) =>
-                                                `${mins}분`,
+                                                formatDuration(
+                                                    mins || 0,
+                                                    time_format
+                                                ),
                                         },
                                         {
                                             title: "시간",

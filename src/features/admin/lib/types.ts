@@ -7,7 +7,14 @@ import type { WorkRecord, WorkSession } from "../../../shared/types";
 /**
  * 관리자 탭 타입
  */
-export type AdminTab = "sessions" | "records";
+export type AdminTab =
+  | "sessions"
+  | "records"
+  | "explorer"
+  | "statistics"
+  | "trash"
+  | "export"
+  | "integrity";
 
 /**
  * 뷰 모드 타입

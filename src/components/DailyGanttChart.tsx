@@ -503,7 +503,7 @@ export default function DailyGanttChart() {
     const total_minutes = time_range.end - time_range.start;
 
     // 선택된 날짜의 작업 레코드 (기존 작업에 세션 추가용)
-    // 작업 기록 테이블과 동일한 필터링: 미완료 이월 작업 + 해당 날짜의 완료 작업
+    // 작업 기록 테이블과 동일한 필터링: 미완료 이월 작업 + 해당 날짜의 완료 작업 + 해당 날짜에 세션이 있는 작업
     const today_records = useMemo(() => {
         // 미완료 작업: 선택된 날짜까지의 미완료 레코드 (삭제된 것 제외)
         const incomplete_records = records.filter((r) => {
@@ -517,8 +517,25 @@ export default function DailyGanttChart() {
             (r) => r.date === selected_date && r.is_completed && !r.is_deleted
         );
 
+        // 선택된 날짜에 세션이 있는 레코드도 포함 (간트 차트와 동기화)
+        const records_with_sessions_today = records.filter((r) => {
+            if (r.is_deleted) return false;
+            if (!r.sessions || r.sessions.length === 0) return false;
+            // 레코드가 이미 포함되어 있으면 스킵
+            if (!r.is_completed && r.date <= selected_date) return false;
+            if (r.date === selected_date && r.is_completed) return false;
+            // 해당 날짜에 세션이 있는지 확인
+            return r.sessions.some(
+                (s) => (s.date || r.date) === selected_date
+            );
+        });
+
         // 완료되지 않은 것을 먼저, 날짜 내림차순
-        return [...incomplete_records, ...completed_today].sort((a, b) => {
+        return [
+            ...incomplete_records,
+            ...completed_today,
+            ...records_with_sessions_today,
+        ].sort((a, b) => {
             if (a.is_completed !== b.is_completed) {
                 return a.is_completed ? 1 : -1;
             }

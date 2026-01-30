@@ -22,6 +22,13 @@ export function TrashModal({
     on_restore,
     on_permanent_delete,
 }: TrashModalProps) {
+    // 삭제일 기준 내림차순 정렬 (최신 삭제가 위로)
+    const sorted_records = [...records].sort((a, b) => {
+        const date_a = a.deleted_at ? new Date(a.deleted_at).getTime() : 0;
+        const date_b = b.deleted_at ? new Date(b.deleted_at).getTime() : 0;
+        return date_b - date_a;
+    });
+
     const columns: ColumnsType<WorkRecord> = [
         {
             title: "작업명",
@@ -100,7 +107,7 @@ export function TrashModal({
                         </Text>
                     </Space>
                     <Table
-                        dataSource={records}
+                        dataSource={sorted_records}
                         columns={columns}
                         rowKey="id"
                         size="small"

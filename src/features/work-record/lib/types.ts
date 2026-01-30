@@ -60,7 +60,6 @@ export interface RecordTableHeaderProps {
     on_date_change: (date: string) => void;
     total_minutes: number;
     record_count: number;
-    completed_count: number;
     on_show_completed: () => void;
     on_show_trash: () => void;
 }

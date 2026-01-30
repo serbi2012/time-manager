@@ -23,7 +23,6 @@ export function RecordTableHeader({
     on_date_change,
     total_minutes,
     record_count,
-    completed_count,
     on_show_completed,
     on_show_trash,
 }: RecordTableHeaderProps) {
@@ -99,7 +98,7 @@ export function RecordTableHeader({
                             icon={<CheckCircleOutlined />}
                             onClick={on_show_completed}
                         >
-                            완료 ({completed_count})
+                            완료
                         </Button>
                         <Button
                             icon={<DeleteOutlined />}

@@ -986,7 +986,24 @@ export default function WorkRecordTable() {
             (r) => r.date === selected_date && r.is_completed && !r.is_deleted
         );
 
-        const all_records = [...incomplete_records, ...completed_today];
+        // 선택된 날짜에 세션이 있는 레코드도 포함 (간트 차트와 동기화)
+        const records_with_sessions_today = records.filter((r) => {
+            if (r.is_deleted) return false;
+            if (!r.sessions || r.sessions.length === 0) return false;
+            // 레코드가 이미 포함되어 있으면 스킵
+            if (!r.is_completed && r.date <= selected_date) return false;
+            if (r.date === selected_date && r.is_completed) return false;
+            // 해당 날짜에 세션이 있는지 확인
+            return r.sessions.some(
+                (s) => (s.date || r.date) === selected_date
+            );
+        });
+
+        const all_records = [
+            ...incomplete_records,
+            ...completed_today,
+            ...records_with_sessions_today,
+        ];
 
         // 진행 중인 작업이 있고, 오늘 날짜인 경우
         const active_form = timer.active_form_data;
@@ -1231,21 +1248,29 @@ export default function WorkRecordTable() {
         });
     }, [completed_records, completed_search_text]);
 
-    // 검색어로 필터링된 삭제된 작업 목록
+    // 검색어로 필터링된 삭제된 작업 목록 (삭제일 기준 내림차순 정렬)
     const filtered_deleted_records = useMemo(() => {
-        if (!deleted_search_text.trim()) {
-            return deleted_records;
+        let result = deleted_records;
+        
+        if (deleted_search_text.trim()) {
+            const search_lower = deleted_search_text.toLowerCase().trim();
+            result = result.filter((record) => {
+                const deal_name = (record.deal_name || "").toLowerCase();
+                const work_name = (record.work_name || "").toLowerCase();
+                const project_code = (record.project_code || "").toLowerCase();
+                return (
+                    deal_name.includes(search_lower) ||
+                    work_name.includes(search_lower) ||
+                    project_code.includes(search_lower)
+                );
+            });
         }
-        const search_lower = deleted_search_text.toLowerCase().trim();
-        return deleted_records.filter((record) => {
-            const deal_name = (record.deal_name || "").toLowerCase();
-            const work_name = (record.work_name || "").toLowerCase();
-            const project_code = (record.project_code || "").toLowerCase();
-            return (
-                deal_name.includes(search_lower) ||
-                work_name.includes(search_lower) ||
-                project_code.includes(search_lower)
-            );
+        
+        // 삭제일 기준 내림차순 정렬 (최신 삭제가 위로)
+        return [...result].sort((a, b) => {
+            const date_a = a.deleted_at ? new Date(a.deleted_at).getTime() : 0;
+            const date_b = b.deleted_at ? new Date(b.deleted_at).getTime() : 0;
+            return date_b - date_a;
         });
     }, [deleted_records, deleted_search_text]);
 
@@ -1613,9 +1638,7 @@ export default function WorkRecordTable() {
                                 icon={<CheckCircleOutlined style={{ color: "#52c41a" }} />}
                                 onClick={() => setIsCompletedModalOpen(true)}
                             >
-                                {is_mobile
-                                    ? completed_records.length || null
-                                    : `완료 ${completed_records.length}`}
+                                {is_mobile ? null : "완료"}
                             </Button>
                         </Tooltip>
                         <Tooltip title="삭제된 작업 (복구 가능)">
@@ -1623,9 +1646,7 @@ export default function WorkRecordTable() {
                                 icon={<DeleteOutlined style={{ color: "#ff4d4f" }} />}
                                 onClick={() => setIsDeletedModalOpen(true)}
                             >
-                                {is_mobile
-                                    ? deleted_records.length || null
-                                    : `휴지통 ${deleted_records.length}`}
+                                {is_mobile ? null : "휴지통"}
                             </Button>
                         </Tooltip>
                         <Tooltip title="시간 관리 양식으로 복사">
