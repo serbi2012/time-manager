@@ -1085,14 +1085,14 @@ export default function WorkRecordTable() {
         return matching?.id || null;
     };
 
-    // 클립보드 복사 (표 형식)
+    // 클립보드 복사 (표 형식) - 선택된 날짜의 시간만 계산
     const handleCopyToClipboard = () => {
         const header = "작업명\t업무명\t거래명\t카테고리명\t시간(분)\t비고";
         const rows = filtered_records.map(
             (r) =>
                 `${r.work_name}\t${r.task_name}\t${r.deal_name}\t${
                     r.category_name
-                }\t${getRecordDurationMinutes(r)}\t${r.note}`
+                }\t${getRecordDurationMinutesForDate(r, selected_date)}\t${r.note}`
         );
         const text = [header, ...rows].join("\n");
         navigator.clipboard.writeText(text);
