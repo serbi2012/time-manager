@@ -25,13 +25,16 @@ import dayjs from "dayjs";
 
 // 테스트용 mock 데이터 생성
 function createMockRecord(overrides: Partial<WorkRecord> = {}): WorkRecord {
+  const today = dayjs().format("YYYY-MM-DD");
   return {
     id: `record-${Math.random().toString(36).substring(7)}`,
-    date: dayjs().format("YYYY-MM-DD"),
+    date: today,
     work_name: "테스트 작업",
+    task_name: "개발",
     deal_name: "테스트 딜",
     project_code: "TEST-001",
     category_name: "개발",
+    note: "",
     duration_minutes: 60,
     start_time: "09:00",
     end_time: "10:00",
@@ -40,10 +43,10 @@ function createMockRecord(overrides: Partial<WorkRecord> = {}): WorkRecord {
     sessions: [
       {
         id: `session-${Math.random().toString(36).substring(7)}`,
+        date: today,
         start_time: "09:00",
         end_time: "10:00",
         duration_minutes: 60,
-        date: dayjs().format("YYYY-MM-DD"),
       },
     ],
     ...overrides,
@@ -126,16 +129,17 @@ describe("calculateSessionStats", () => {
   });
 
   it("세션 통계를 올바르게 계산한다", () => {
+    const today = dayjs().format("YYYY-MM-DD");
     const records = [
       createMockRecord({
         sessions: [
-          { id: "s1", start_time: "09:00", end_time: "10:00", duration_minutes: 60 },
-          { id: "s2", start_time: "11:00", end_time: "11:30", duration_minutes: 30 },
+          { id: "s1", date: today, start_time: "09:00", end_time: "10:00", duration_minutes: 60 },
+          { id: "s2", date: today, start_time: "11:00", end_time: "11:30", duration_minutes: 30 },
         ],
       }),
       createMockRecord({
         sessions: [
-          { id: "s3", start_time: "14:00", end_time: "16:00", duration_minutes: 120 },
+          { id: "s3", date: today, start_time: "14:00", end_time: "16:00", duration_minutes: 120 },
         ],
       }),
     ];
@@ -157,11 +161,12 @@ describe("calculateHourlyStats", () => {
   });
 
   it("세션 시작 시간을 기준으로 집계한다", () => {
+    const today = dayjs().format("YYYY-MM-DD");
     const records = [
       createMockRecord({
         sessions: [
-          { id: "s1", start_time: "09:00", end_time: "10:00", duration_minutes: 60 },
-          { id: "s2", start_time: "09:30", end_time: "10:00", duration_minutes: 30 },
+          { id: "s1", date: today, start_time: "09:00", end_time: "10:00", duration_minutes: 60 },
+          { id: "s2", date: today, start_time: "09:30", end_time: "10:00", duration_minutes: 30 },
         ],
       }),
     ];
@@ -283,14 +288,15 @@ describe("calculateCompletionStats", () => {
 
 describe("calculateSessionDistribution", () => {
   it("세션 시간 분포를 계산한다", () => {
+    const today = dayjs().format("YYYY-MM-DD");
     const records = [
       createMockRecord({
         sessions: [
-          { id: "s1", start_time: "09:00", end_time: "09:10", duration_minutes: 10 },
-          { id: "s2", start_time: "10:00", end_time: "10:20", duration_minutes: 20 },
-          { id: "s3", start_time: "11:00", end_time: "11:45", duration_minutes: 45 },
-          { id: "s4", start_time: "14:00", end_time: "15:30", duration_minutes: 90 },
-          { id: "s5", start_time: "16:00", end_time: "18:30", duration_minutes: 150 },
+          { id: "s1", date: today, start_time: "09:00", end_time: "09:10", duration_minutes: 10 },
+          { id: "s2", date: today, start_time: "10:00", end_time: "10:20", duration_minutes: 20 },
+          { id: "s3", date: today, start_time: "11:00", end_time: "11:45", duration_minutes: 45 },
+          { id: "s4", date: today, start_time: "14:00", end_time: "15:30", duration_minutes: 90 },
+          { id: "s5", date: today, start_time: "16:00", end_time: "18:30", duration_minutes: 150 },
         ],
       }),
     ];
