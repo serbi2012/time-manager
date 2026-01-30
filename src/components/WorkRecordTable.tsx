@@ -1085,16 +1085,66 @@ export default function WorkRecordTable() {
         return matching?.id || null;
     };
 
-    // 클립보드 복사 (표 형식) - 선택된 날짜의 시간만 계산
+    // 클립보드 복사 (마크다운 표 형식) - 선택된 날짜의 시간만 계산, 거래명 정렬
     const handleCopyToClipboard = () => {
-        const header = "작업명\t업무명\t거래명\t카테고리명\t시간(분)\t비고";
-        const rows = filtered_records.map(
-            (r) =>
-                `${r.work_name}\t${r.task_name}\t${r.deal_name}\t${
-                    r.category_name
-                }\t${getRecordDurationMinutesForDate(r, selected_date)}\t${r.note}`
+        // 작업명 기준 역순 정렬
+        const sorted_records = [...filtered_records].sort((a, b) =>
+            (b.work_name || "").localeCompare(a.work_name || "", "ko")
         );
-        const text = [header, ...rows].join("\n");
+
+        // 각 컬럼의 최대 너비 계산
+        const columns = ["작업명", "업무명", "거래명", "카테고리명", "시간(분)", "비고"];
+        const data = sorted_records.map((r) => [
+            r.work_name || "-",
+            r.task_name || "-",
+            r.deal_name || "-",
+            r.category_name || "-",
+            `${getRecordDurationMinutesForDate(r, selected_date)}`,
+            r.note || "",
+        ]);
+
+        // 컬럼별 최대 너비 (한글은 2칸으로 계산)
+        const getDisplayWidth = (str: string) => {
+            let width = 0;
+            for (const char of str) {
+                width += char.charCodeAt(0) > 127 ? 2 : 1;
+            }
+            return width;
+        };
+
+        const col_widths = columns.map((col, i) => {
+            const header_width = getDisplayWidth(col);
+            const max_data_width = data.reduce(
+                (max, row) => Math.max(max, getDisplayWidth(row[i])),
+                0
+            );
+            return Math.max(header_width, max_data_width);
+        });
+
+        // 문자열 패딩 (한글 너비 고려)
+        const padString = (str: string, width: number) => {
+            const display_width = getDisplayWidth(str);
+            const padding = width - display_width;
+            return str + " ".repeat(Math.max(0, padding));
+        };
+
+        // 마크다운 표 생성
+        const header_row =
+            "| " +
+            columns.map((col, i) => padString(col, col_widths[i])).join(" | ") +
+            " |";
+        const separator =
+            "|" +
+            col_widths.map((w) => "-".repeat(w + 2)).join("|") +
+            "|";
+        const data_rows = data.map(
+            (row) =>
+                "| " +
+                row.map((cell, i) => padString(cell, col_widths[i])).join(" | ") +
+                " |"
+        );
+
+        const text = [header_row, separator, ...data_rows].join("\n");
         navigator.clipboard.writeText(text);
     };
 
