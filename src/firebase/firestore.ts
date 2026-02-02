@@ -103,6 +103,9 @@ export function createInitialUserData(): UserData {
 // 새로운 컬렉션 구조 CRUD 함수들
 // ============================================
 
+// 트랜지션 속도 타입
+type TransitionSpeed = "slow" | "normal" | "fast";
+
 // 사용자 설정 타입 (records, templates 제외)
 export interface UserSettings {
     timer?: TimerState;
@@ -113,6 +116,8 @@ export interface UserSettings {
     app_theme?: AppTheme;
     lunch_start_time?: string; // 점심시간 시작 (HH:mm)
     lunch_end_time?: string; // 점심시간 종료 (HH:mm)
+    transition_enabled?: boolean; // 트랜지션 활성화 여부
+    transition_speed?: TransitionSpeed; // 트랜지션 속도
     updated_at: string;
     migrated?: boolean; // 마이그레이션 완료 여부
 }

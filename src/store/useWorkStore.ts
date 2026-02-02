@@ -100,6 +100,10 @@ interface WorkStore {
     lunch_start_time: string;
     lunch_end_time: string;
 
+    // 트랜지션 설정
+    transition_enabled: boolean;
+    transition_speed: TransitionSpeed;
+
     // 타이머 액션
     startTimer: (template_id?: string) => void;
     startTimerForRecord: (record_id: string) => void; // 기존 레코드에 세션 추가하며 타이머 시작
@@ -108,7 +112,12 @@ interface WorkStore {
     resetTimer: () => void;
     switchTemplate: (template_id: string) => void;
     updateActiveFormData: (data: Partial<WorkFormData>) => void; // 타이머 실행 중 form_data 업데이트
-    updateTimerStartTime: (new_start_time: number) => { success: boolean; adjusted: boolean; message?: string; adjusted_start_time?: number }; // 타이머 시작 시간 변경 (간트차트 리사이즈용)
+    updateTimerStartTime: (new_start_time: number) => {
+        success: boolean;
+        adjusted: boolean;
+        message?: string;
+        adjusted_start_time?: number;
+    }; // 타이머 시작 시간 변경 (간트차트 리사이즈용)
 
     // 폼 액션
     setFormData: (data: Partial<WorkFormData>) => void;
@@ -169,11 +178,23 @@ interface WorkStore {
 
     // 자동완성 옵션 숨김 관리
     hideAutoCompleteOption: (
-        field: "work_name" | "task_name" | "deal_name" | "project_code" | "task_option" | "category_option",
+        field:
+            | "work_name"
+            | "task_name"
+            | "deal_name"
+            | "project_code"
+            | "task_option"
+            | "category_option",
         value: string
     ) => void;
     unhideAutoCompleteOption: (
-        field: "work_name" | "task_name" | "deal_name" | "project_code" | "task_option" | "category_option",
+        field:
+            | "work_name"
+            | "task_name"
+            | "deal_name"
+            | "project_code"
+            | "task_option"
+            | "category_option",
         value: string
     ) => void;
 
@@ -186,6 +207,10 @@ interface WorkStore {
     // 점심시간 설정
     setLunchTime: (start: string, end: string) => void;
     getLunchTimeMinutes: () => { start: number; end: number; duration: number };
+
+    // 트랜지션 설정
+    setTransitionEnabled: (enabled: boolean) => void;
+    setTransitionSpeed: (speed: TransitionSpeed) => void;
 }
 
 const DEFAULT_FORM_DATA: WorkFormData = {
@@ -216,7 +241,9 @@ const findExistingRecord = (
     date: string,
     work_name: string,
     deal_name: string,
-    set_fn?: (updater: (state: { records: WorkRecord[] }) => { records: WorkRecord[] }) => void
+    set_fn?: (
+        updater: (state: { records: WorkRecord[] }) => { records: WorkRecord[] }
+    ) => void
 ): WorkRecord | undefined => {
     // 1. 미완료 작업 중에서 같은 work_name + deal_name 찾기 (날짜 무관)
     const incomplete_matches = records.filter(
@@ -239,7 +266,9 @@ const findExistingRecord = (
                 let updated = state.records.map((r) =>
                     r.id === merged.base_record.id ? merged.base_record : r
                 );
-                updated = updated.filter((r) => !merged.deleted_ids.includes(r.id));
+                updated = updated.filter(
+                    (r) => !merged.deleted_ids.includes(r.id)
+                );
                 return { records: updated };
             });
             return merged.base_record;
@@ -293,7 +322,10 @@ const mergeRecords = (
         return (a.start_time || "").localeCompare(b.start_time || "");
     });
 
-    const total = all_sessions.reduce((sum, s) => sum + getSessionMinutes(s), 0);
+    const total = all_sessions.reduce(
+        (sum, s) => sum + getSessionMinutes(s),
+        0
+    );
     const first = all_sessions[0];
     const last = all_sessions[all_sessions.length - 1];
 
@@ -377,14 +409,27 @@ export const DEFAULT_CATEGORY_OPTIONS = [
 ];
 
 // 앱 테마 색상 타입
-export type AppTheme = "blue" | "green" | "purple" | "red" | "orange" | "teal" | "black";
+export type AppTheme =
+    | "blue"
+    | "green"
+    | "purple"
+    | "red"
+    | "orange"
+    | "teal"
+    | "black";
+
+// 트랜지션 속도 타입
+export type TransitionSpeed = "slow" | "normal" | "fast";
 
 // 테마별 색상 정의
-export const APP_THEME_COLORS: Record<AppTheme, {
-    primary: string;       // Ant Design colorPrimary
-    gradient: string;      // 헤더 그라데이션
-    gradientDark: string;  // 어두운 그라데이션 (그림자용)
-}> = {
+export const APP_THEME_COLORS: Record<
+    AppTheme,
+    {
+        primary: string; // Ant Design colorPrimary
+        gradient: string; // 헤더 그라데이션
+        gradientDark: string; // 어두운 그라데이션 (그림자용)
+    }
+> = {
     blue: {
         primary: "#1890ff",
         gradient: "linear-gradient(135deg, #1890ff 0%, #096dd9 100%)",
@@ -455,237 +500,365 @@ export const useWorkStore = create<WorkStore>()(
             app_theme: "blue" as AppTheme, // 기본값: 파란색
             lunch_start_time: "11:40", // 기본값: 11:40
             lunch_end_time: "12:40", // 기본값: 12:40
+            transition_enabled: false, // 기본값: 비활성화
+            transition_speed: "normal" as TransitionSpeed, // 기본값: 보통
 
-    startTimer: (template_id?: string) => {
-        const { form_data, records } = get();
-        const start_time = Date.now();
-        const start_dayjs = dayjs(start_time);
-        const record_date = start_dayjs.format("YYYY-MM-DD");
-        const start_time_str = start_dayjs.format("HH:mm");
+            startTimer: (template_id?: string) => {
+                const { form_data, records } = get();
+                const start_time = Date.now();
+                const start_dayjs = dayjs(start_time);
+                const record_date = start_dayjs.format("YYYY-MM-DD");
+                const start_time_str = start_dayjs.format("HH:mm");
 
-        // 진행 중인 세션 생성 (end_time은 빈 문자열)
-        const new_session: WorkSession = {
-            id: crypto.randomUUID(),
-            date: record_date,
-            start_time: start_time_str,
-            end_time: "", // 진행 중 표시
-            duration_minutes: 0,
-        };
+                // 진행 중인 세션 생성 (end_time은 빈 문자열)
+                const new_session: WorkSession = {
+                    id: crypto.randomUUID(),
+                    date: record_date,
+                    start_time: start_time_str,
+                    end_time: "", // 진행 중 표시
+                    duration_minutes: 0,
+                };
 
-        // 같은 작업 기록 찾기 (미완료 작업 우선)
-        const existing_record = findExistingRecord(
-            records,
-            record_date,
-            form_data.work_name,
-            form_data.deal_name,
-            set
-        );
+                // 같은 작업 기록 찾기 (미완료 작업 우선)
+                const existing_record = findExistingRecord(
+                    records,
+                    record_date,
+                    form_data.work_name,
+                    form_data.deal_name,
+                    set
+                );
 
-        let active_record_id: string;
-        let active_session_id: string;
+                let active_record_id: string;
+                let active_session_id: string;
 
-        if (existing_record) {
-            // 기존 레코드에 이미 진행 중인 세션(end_time = "")이 있는지 확인
-            const existing_running_session = (
-                existing_record.sessions || []
-            ).find((s) => s.end_time === "");
+                if (existing_record) {
+                    // 기존 레코드에 이미 진행 중인 세션(end_time = "")이 있는지 확인
+                    const existing_running_session = (
+                        existing_record.sessions || []
+                    ).find((s) => s.end_time === "");
 
-            if (existing_running_session) {
-                // 이미 진행 중인 세션이 있으면 새 세션을 추가하지 않고 기존 세션 사용
-                active_record_id = existing_record.id;
-                active_session_id = existing_running_session.id;
+                    if (existing_running_session) {
+                        // 이미 진행 중인 세션이 있으면 새 세션을 추가하지 않고 기존 세션 사용
+                        active_record_id = existing_record.id;
+                        active_session_id = existing_running_session.id;
 
-                // 타이머 상태만 업데이트 (세션은 추가하지 않음)
+                        // 타이머 상태만 업데이트 (세션은 추가하지 않음)
+                        set({
+                            timer: {
+                                is_running: true,
+                                start_time: start_time, // 현재 타이머 시작 시간
+                                active_template_id: template_id || null,
+                                active_form_data: { ...form_data },
+                                active_record_id: active_record_id,
+                                active_session_id: active_session_id,
+                            },
+                        });
+                        return;
+                    }
+
+                    // 진행 중인 세션이 없으면 새 세션 추가
+                    active_record_id = existing_record.id;
+                    active_session_id = new_session.id;
+                    set((state) => ({
+                        records: state.records.map((r) =>
+                            r.id === existing_record.id
+                                ? {
+                                      ...r,
+                                      sessions: [
+                                          ...(r.sessions || []),
+                                          new_session,
+                                      ],
+                                      start_time:
+                                          r.start_time || start_time_str,
+                                  }
+                                : r
+                        ),
+                    }));
+                    // Firebase에 업데이트
+                    const updated_record = get().records.find(
+                        (r) => r.id === existing_record.id
+                    );
+                    if (updated_record) {
+                        syncRecord(updated_record).catch(console.error);
+                    }
+                } else {
+                    // 새 레코드 생성
+                    active_record_id = crypto.randomUUID();
+                    active_session_id = new_session.id;
+                    const new_record: WorkRecord = {
+                        id: active_record_id,
+                        ...form_data,
+                        project_code:
+                            form_data.project_code || DEFAULT_PROJECT_CODE,
+                        duration_minutes: 0,
+                        start_time: start_time_str,
+                        end_time: "",
+                        date: record_date,
+                        sessions: [new_session],
+                        is_completed: false,
+                    };
+                    set((state) => ({
+                        records: [...state.records, new_record],
+                    }));
+                    // Firebase에 저장
+                    syncRecord(new_record).catch(console.error);
+                }
+
+                // 타이머 상태 업데이트
                 set({
                     timer: {
                         is_running: true,
-                        start_time: start_time, // 현재 타이머 시작 시간
+                        start_time: start_time,
                         active_template_id: template_id || null,
                         active_form_data: { ...form_data },
                         active_record_id: active_record_id,
                         active_session_id: active_session_id,
                     },
                 });
-                return;
-            }
-
-            // 진행 중인 세션이 없으면 새 세션 추가
-            active_record_id = existing_record.id;
-            active_session_id = new_session.id;
-            set((state) => ({
-                records: state.records.map((r) =>
-                    r.id === existing_record.id
-                        ? {
-                              ...r,
-                              sessions: [...(r.sessions || []), new_session],
-                              start_time: r.start_time || start_time_str,
-                          }
-                        : r
-                ),
-            }));
-            // Firebase에 업데이트
-            const updated_record = get().records.find((r) => r.id === existing_record.id);
-            if (updated_record) {
-                syncRecord(updated_record).catch(console.error);
-            }
-        } else {
-            // 새 레코드 생성
-            active_record_id = crypto.randomUUID();
-            active_session_id = new_session.id;
-            const new_record: WorkRecord = {
-                id: active_record_id,
-                ...form_data,
-                project_code: form_data.project_code || DEFAULT_PROJECT_CODE,
-                duration_minutes: 0,
-                start_time: start_time_str,
-                end_time: "",
-                date: record_date,
-                sessions: [new_session],
-                is_completed: false,
-            };
-            set((state) => ({
-                records: [...state.records, new_record],
-            }));
-            // Firebase에 저장
-            syncRecord(new_record).catch(console.error);
-        }
-
-        // 타이머 상태 업데이트
-        set({
-            timer: {
-                is_running: true,
-                start_time: start_time,
-                active_template_id: template_id || null,
-                active_form_data: { ...form_data },
-                active_record_id: active_record_id,
-                active_session_id: active_session_id,
+                // 타이머 상태도 Firebase에 저장
+                syncSettings({ timer: get().timer }).catch(console.error);
             },
-        });
-        // 타이머 상태도 Firebase에 저장
-        syncSettings({ timer: get().timer }).catch(console.error);
-    },
 
-    startTimerForRecord: (record_id: string) => {
-        const { records, timer } = get();
-        const record = records.find((r) => r.id === record_id);
-        if (!record) return;
+            startTimerForRecord: (record_id: string) => {
+                const { records, timer } = get();
+                const record = records.find((r) => r.id === record_id);
+                if (!record) return;
 
-        // 현재 타이머가 동작 중이면 먼저 정지
-        if (timer.is_running) {
-            get().stopTimer();
-        }
+                // 현재 타이머가 동작 중이면 먼저 정지
+                if (timer.is_running) {
+                    get().stopTimer();
+                }
 
-        const start_time = Date.now();
-        const start_dayjs = dayjs(start_time);
-        const record_date = start_dayjs.format("YYYY-MM-DD");
-        const start_time_str = start_dayjs.format("HH:mm");
+                const start_time = Date.now();
+                const start_dayjs = dayjs(start_time);
+                const record_date = start_dayjs.format("YYYY-MM-DD");
+                const start_time_str = start_dayjs.format("HH:mm");
 
-        // 진행 중인 세션 생성 (end_time은 빈 문자열)
-        const new_session: WorkSession = {
-            id: crypto.randomUUID(),
-            date: record_date,
-            start_time: start_time_str,
-            end_time: "", // 진행 중 표시
-            duration_minutes: 0,
-        };
+                // 진행 중인 세션 생성 (end_time은 빈 문자열)
+                const new_session: WorkSession = {
+                    id: crypto.randomUUID(),
+                    date: record_date,
+                    start_time: start_time_str,
+                    end_time: "", // 진행 중 표시
+                    duration_minutes: 0,
+                };
 
-        // 기존 레코드에 이미 진행 중인 세션(end_time = "")이 있는지 확인
-        const existing_running_session = (record.sessions || []).find(
-            (s) => s.end_time === ""
-        );
+                // 기존 레코드에 이미 진행 중인 세션(end_time = "")이 있는지 확인
+                const existing_running_session = (record.sessions || []).find(
+                    (s) => s.end_time === ""
+                );
 
-        let active_session_id: string;
+                let active_session_id: string;
 
-        if (existing_running_session) {
-            // 이미 진행 중인 세션이 있으면 해당 세션 사용
-            active_session_id = existing_running_session.id;
-        } else {
-            // 새 세션 추가
-            active_session_id = new_session.id;
-            set((state) => ({
-                records: state.records.map((r) =>
-                    r.id === record_id
-                        ? {
-                              ...r,
-                              sessions: [...(r.sessions || []), new_session],
-                              start_time: r.start_time || start_time_str,
-                          }
-                        : r
-                ),
-            }));
-            // Firebase에 업데이트
-            const updated_record = get().records.find((r) => r.id === record_id);
-            if (updated_record) {
-                syncRecord(updated_record).catch(console.error);
-            }
-        }
+                if (existing_running_session) {
+                    // 이미 진행 중인 세션이 있으면 해당 세션 사용
+                    active_session_id = existing_running_session.id;
+                } else {
+                    // 새 세션 추가
+                    active_session_id = new_session.id;
+                    set((state) => ({
+                        records: state.records.map((r) =>
+                            r.id === record_id
+                                ? {
+                                      ...r,
+                                      sessions: [
+                                          ...(r.sessions || []),
+                                          new_session,
+                                      ],
+                                      start_time:
+                                          r.start_time || start_time_str,
+                                  }
+                                : r
+                        ),
+                    }));
+                    // Firebase에 업데이트
+                    const updated_record = get().records.find(
+                        (r) => r.id === record_id
+                    );
+                    if (updated_record) {
+                        syncRecord(updated_record).catch(console.error);
+                    }
+                }
 
-        // 레코드의 form_data 구성
-        const record_form_data: WorkFormData = {
-            project_code: record.project_code || "",
-            work_name: record.work_name,
-            task_name: record.task_name,
-            deal_name: record.deal_name,
-            category_name: record.category_name,
-            note: record.note,
-        };
+                // 레코드의 form_data 구성
+                const record_form_data: WorkFormData = {
+                    project_code: record.project_code || "",
+                    work_name: record.work_name,
+                    task_name: record.task_name,
+                    deal_name: record.deal_name,
+                    category_name: record.category_name,
+                    note: record.note,
+                };
 
-        // 타이머 상태 업데이트
-        set({
-            form_data: record_form_data,
-            timer: {
-                is_running: true,
-                start_time: start_time,
-                active_template_id: null,
-                active_form_data: record_form_data,
-                active_record_id: record_id,
-                active_session_id: active_session_id,
+                // 타이머 상태 업데이트
+                set({
+                    form_data: record_form_data,
+                    timer: {
+                        is_running: true,
+                        start_time: start_time,
+                        active_template_id: null,
+                        active_form_data: record_form_data,
+                        active_record_id: record_id,
+                        active_session_id: active_session_id,
+                    },
+                });
+                // 타이머 상태 Firebase에 저장
+                syncSettings({ timer: get().timer }).catch(console.error);
             },
-        });
-        // 타이머 상태 Firebase에 저장
-        syncSettings({ timer: get().timer }).catch(console.error);
-    },
 
-    stopTimer: () => {
-        const { timer, records } = get();
-        if (!timer.is_running || !timer.start_time || !timer.active_form_data)
-            return null;
+            stopTimer: () => {
+                const { timer, records } = get();
+                if (
+                    !timer.is_running ||
+                    !timer.start_time ||
+                    !timer.active_form_data
+                )
+                    return null;
 
-        // 진행 중인 세션의 레코드와 세션 ID 확인
-        const { active_record_id, active_session_id } = timer;
-        if (!active_record_id || !active_session_id) {
-            // 이전 버전 호환: active_record_id/session_id가 없는 경우 (이미 실행 중이던 타이머)
-            // 기존 방식대로 처리
-            const active_form = timer.active_form_data;
-            const end_time = Date.now();
-            const record_date = dayjs(timer.start_time).format("YYYY-MM-DD");
-            const new_session = createSession(timer.start_time, end_time);
+                // 진행 중인 세션의 레코드와 세션 ID 확인
+                const { active_record_id, active_session_id } = timer;
+                if (!active_record_id || !active_session_id) {
+                    // 이전 버전 호환: active_record_id/session_id가 없는 경우 (이미 실행 중이던 타이머)
+                    // 기존 방식대로 처리
+                    const active_form = timer.active_form_data;
+                    const end_time = Date.now();
+                    const record_date = dayjs(timer.start_time).format(
+                        "YYYY-MM-DD"
+                    );
+                    const new_session = createSession(
+                        timer.start_time,
+                        end_time
+                    );
 
-            const existing_record = findExistingRecord(
-                records,
-                record_date,
-                active_form.work_name,
-                active_form.deal_name,
-                set
-            );
+                    const existing_record = findExistingRecord(
+                        records,
+                        record_date,
+                        active_form.work_name,
+                        active_form.deal_name,
+                        set
+                    );
 
-            if (existing_record) {
-                const updated_sessions = [
-                    ...(existing_record.sessions || []),
-                    new_session,
-                ];
+                    if (existing_record) {
+                        const updated_sessions = [
+                            ...(existing_record.sessions || []),
+                            new_session,
+                        ];
+                        const total_minutes =
+                            calculateTotalMinutes(updated_sessions);
+                        const new_start_time =
+                            existing_record.start_time ||
+                            new_session.start_time;
+
+                        set((state) => ({
+                            records: state.records.map((r) =>
+                                r.id === existing_record.id
+                                    ? {
+                                          ...r,
+                                          duration_minutes: total_minutes,
+                                          start_time: new_start_time,
+                                          end_time: new_session.end_time,
+                                          sessions: updated_sessions,
+                                      }
+                                    : r
+                            ),
+                            timer: DEFAULT_TIMER,
+                            form_data: DEFAULT_FORM_DATA,
+                        }));
+
+                        // Firebase에 업데이트
+                        const updated_record = get().records.find(
+                            (r) => r.id === existing_record.id
+                        );
+                        if (updated_record) {
+                            syncRecord(updated_record).catch(console.error);
+                        }
+                        syncSettings({ timer: DEFAULT_TIMER }).catch(
+                            console.error
+                        );
+
+                        return {
+                            ...existing_record,
+                            duration_minutes: total_minutes,
+                        };
+                    } else {
+                        const new_record: WorkRecord = {
+                            id: crypto.randomUUID(),
+                            ...active_form,
+                            project_code:
+                                active_form.project_code ||
+                                DEFAULT_PROJECT_CODE,
+                            duration_minutes: calculateTotalMinutes([
+                                new_session,
+                            ]),
+                            start_time: new_session.start_time,
+                            end_time: new_session.end_time,
+                            date: record_date,
+                            sessions: [new_session],
+                            is_completed: false,
+                        };
+
+                        set((state) => ({
+                            records: [...state.records, new_record],
+                            timer: DEFAULT_TIMER,
+                            form_data: DEFAULT_FORM_DATA,
+                        }));
+
+                        // Firebase에 저장
+                        syncRecord(new_record).catch(console.error);
+                        syncSettings({ timer: DEFAULT_TIMER }).catch(
+                            console.error
+                        );
+
+                        return new_record;
+                    }
+                }
+
+                // 새로운 방식: 이미 추가된 세션의 end_time 업데이트
+                const end_time = Date.now();
+                const end_dayjs = dayjs(end_time);
+                const end_time_str = end_dayjs.format("HH:mm");
+
+                const record = records.find((r) => r.id === active_record_id);
+                if (!record) {
+                    set({ timer: DEFAULT_TIMER, form_data: DEFAULT_FORM_DATA });
+                    return null;
+                }
+
+                // 세션의 종료 시간 및 소요 시간 계산
+                const start_dayjs = dayjs(timer.start_time);
+                const start_minutes =
+                    start_dayjs.hour() * 60 + start_dayjs.minute();
+                const end_minutes = end_dayjs.hour() * 60 + end_dayjs.minute();
+                const duration_minutes = Math.max(
+                    1,
+                    calculateDurationExcludingLunch(start_minutes, end_minutes)
+                );
+
+                // 세션 업데이트
+                const updated_sessions = record.sessions.map((s) =>
+                    s.id === active_session_id
+                        ? { ...s, end_time: end_time_str, duration_minutes }
+                        : s
+                );
+
+                // 레코드 총 시간 재계산
                 const total_minutes = calculateTotalMinutes(updated_sessions);
-                const new_start_time = existing_record.start_time || new_session.start_time;
+
+                // 마지막 종료 시간 결정
+                const last_session = updated_sessions
+                    .filter((s) => s.end_time !== "")
+                    .sort((a, b) => a.end_time.localeCompare(b.end_time))
+                    .pop();
 
                 set((state) => ({
                     records: state.records.map((r) =>
-                        r.id === existing_record.id
+                        r.id === active_record_id
                             ? {
                                   ...r,
-                                  duration_minutes: total_minutes,
-                                  start_time: new_start_time,
-                                  end_time: new_session.end_time,
                                   sessions: updated_sessions,
+                                  duration_minutes: total_minutes,
+                                  end_time:
+                                      last_session?.end_time || end_time_str,
                               }
                             : r
                     ),
@@ -694,1352 +867,1461 @@ export const useWorkStore = create<WorkStore>()(
                 }));
 
                 // Firebase에 업데이트
-                const updated_record = get().records.find((r) => r.id === existing_record.id);
-                if (updated_record) {
-                    syncRecord(updated_record).catch(console.error);
+                const final_record = get().records.find(
+                    (r) => r.id === active_record_id
+                );
+                if (final_record) {
+                    syncRecord(final_record).catch(console.error);
                 }
                 syncSettings({ timer: DEFAULT_TIMER }).catch(console.error);
 
-                return { ...existing_record, duration_minutes: total_minutes };
-            } else {
-                const new_record: WorkRecord = {
-                    id: crypto.randomUUID(),
-                    ...active_form,
-                    project_code: active_form.project_code || DEFAULT_PROJECT_CODE,
-                    duration_minutes: calculateTotalMinutes([new_session]),
-                    start_time: new_session.start_time,
-                    end_time: new_session.end_time,
-                    date: record_date,
-                    sessions: [new_session],
-                    is_completed: false,
-                };
+                return { ...record, duration_minutes: total_minutes };
+            },
 
-                set((state) => ({
-                    records: [...state.records, new_record],
-                    timer: DEFAULT_TIMER,
-                    form_data: DEFAULT_FORM_DATA,
-                }));
+            // 작업 전환: 현재 작업 저장 후 새 작업 시작
+            switchTemplate: (template_id: string) => {
+                const { timer, templates, records } = get();
+                const template = templates.find((t) => t.id === template_id);
+                if (!template) return;
 
-                // Firebase에 저장
-                syncRecord(new_record).catch(console.error);
-                syncSettings({ timer: DEFAULT_TIMER }).catch(console.error);
+                // 현재 진행 중인 작업이 있으면 세션 종료
+                if (
+                    timer.is_running &&
+                    timer.start_time &&
+                    timer.active_form_data
+                ) {
+                    const { active_record_id, active_session_id } = timer;
+                    const end_time = Date.now();
+                    const end_dayjs = dayjs(end_time);
+                    const end_time_str = end_dayjs.format("HH:mm");
 
-                return new_record;
-            }
-        }
+                    if (active_record_id && active_session_id) {
+                        // 새로운 방식: 이미 추가된 세션의 end_time 업데이트
+                        const record = records.find(
+                            (r) => r.id === active_record_id
+                        );
+                        if (record) {
+                            const start_dayjs = dayjs(timer.start_time);
+                            const start_minutes =
+                                start_dayjs.hour() * 60 + start_dayjs.minute();
+                            const end_minutes =
+                                end_dayjs.hour() * 60 + end_dayjs.minute();
+                            const duration_minutes = Math.max(
+                                1,
+                                calculateDurationExcludingLunch(
+                                    start_minutes,
+                                    end_minutes
+                                )
+                            );
 
-        // 새로운 방식: 이미 추가된 세션의 end_time 업데이트
-        const end_time = Date.now();
-        const end_dayjs = dayjs(end_time);
-        const end_time_str = end_dayjs.format("HH:mm");
+                            const updated_sessions = record.sessions.map((s) =>
+                                s.id === active_session_id
+                                    ? {
+                                          ...s,
+                                          end_time: end_time_str,
+                                          duration_minutes,
+                                      }
+                                    : s
+                            );
 
-        const record = records.find((r) => r.id === active_record_id);
-        if (!record) {
-            set({ timer: DEFAULT_TIMER, form_data: DEFAULT_FORM_DATA });
-            return null;
-        }
+                            const total_minutes =
+                                calculateTotalMinutes(updated_sessions);
+                            const last_session = updated_sessions
+                                .filter((s) => s.end_time !== "")
+                                .sort((a, b) =>
+                                    a.end_time.localeCompare(b.end_time)
+                                )
+                                .pop();
 
-        // 세션의 종료 시간 및 소요 시간 계산
-        const start_dayjs = dayjs(timer.start_time);
-        const start_minutes = start_dayjs.hour() * 60 + start_dayjs.minute();
-        const end_minutes = end_dayjs.hour() * 60 + end_dayjs.minute();
-        const duration_minutes = Math.max(
-            1,
-            calculateDurationExcludingLunch(start_minutes, end_minutes)
-        );
+                            set((state) => ({
+                                records: state.records.map((r) =>
+                                    r.id === active_record_id
+                                        ? {
+                                              ...r,
+                                              sessions: updated_sessions,
+                                              duration_minutes: total_minutes,
+                                              end_time:
+                                                  last_session?.end_time ||
+                                                  end_time_str,
+                                          }
+                                        : r
+                                ),
+                            }));
 
-        // 세션 업데이트
-        const updated_sessions = record.sessions.map((s) =>
-            s.id === active_session_id
-                ? { ...s, end_time: end_time_str, duration_minutes }
-                : s
-        );
+                            // Firebase에 업데이트
+                            const updated_record = get().records.find(
+                                (r) => r.id === active_record_id
+                            );
+                            if (updated_record) {
+                                syncRecord(updated_record).catch(console.error);
+                            }
+                        }
+                    } else {
+                        // 이전 버전 호환: active_record_id/session_id가 없는 경우
+                        const active_form = timer.active_form_data;
+                        const record_date = dayjs(timer.start_time).format(
+                            "YYYY-MM-DD"
+                        );
+                        const new_session = createSession(
+                            timer.start_time,
+                            end_time
+                        );
 
-        // 레코드 총 시간 재계산
-        const total_minutes = calculateTotalMinutes(updated_sessions);
+                        const existing_record = findExistingRecord(
+                            records,
+                            record_date,
+                            active_form.work_name,
+                            active_form.deal_name,
+                            set
+                        );
 
-        // 마지막 종료 시간 결정
-        const last_session = updated_sessions
-            .filter((s) => s.end_time !== "")
-            .sort((a, b) => a.end_time.localeCompare(b.end_time))
-            .pop();
+                        if (existing_record) {
+                            const updated_sessions = [
+                                ...(existing_record.sessions || []),
+                                new_session,
+                            ];
+                            const total_minutes =
+                                calculateTotalMinutes(updated_sessions);
+                            const new_start_time =
+                                existing_record.start_time ||
+                                new_session.start_time;
 
-        set((state) => ({
-            records: state.records.map((r) =>
-                r.id === active_record_id
-                    ? {
-                          ...r,
-                          sessions: updated_sessions,
-                          duration_minutes: total_minutes,
-                          end_time: last_session?.end_time || end_time_str,
-                      }
-                    : r
-            ),
-            timer: DEFAULT_TIMER,
-            form_data: DEFAULT_FORM_DATA,
-        }));
+                            set((state) => ({
+                                records: state.records.map((r) =>
+                                    r.id === existing_record.id
+                                        ? {
+                                              ...r,
+                                              duration_minutes: total_minutes,
+                                              start_time: new_start_time,
+                                              end_time: new_session.end_time,
+                                              sessions: updated_sessions,
+                                          }
+                                        : r
+                                ),
+                            }));
 
-        // Firebase에 업데이트
-        const final_record = get().records.find((r) => r.id === active_record_id);
-        if (final_record) {
-            syncRecord(final_record).catch(console.error);
-        }
-        syncSettings({ timer: DEFAULT_TIMER }).catch(console.error);
+                            // Firebase에 업데이트
+                            const updated_record = get().records.find(
+                                (r) => r.id === existing_record.id
+                            );
+                            if (updated_record) {
+                                syncRecord(updated_record).catch(console.error);
+                            }
+                        } else {
+                            const new_record: WorkRecord = {
+                                id: crypto.randomUUID(),
+                                ...active_form,
+                                project_code:
+                                    active_form.project_code ||
+                                    DEFAULT_PROJECT_CODE,
+                                duration_minutes: calculateTotalMinutes([
+                                    new_session,
+                                ]),
+                                start_time: new_session.start_time,
+                                end_time: new_session.end_time,
+                                date: record_date,
+                                sessions: [new_session],
+                                is_completed: false,
+                            };
 
-        return { ...record, duration_minutes: total_minutes };
-    },
+                            set((state) => ({
+                                records: [...state.records, new_record],
+                            }));
 
-    // 작업 전환: 현재 작업 저장 후 새 작업 시작
-    switchTemplate: (template_id: string) => {
-        const { timer, templates, records } = get();
-        const template = templates.find((t) => t.id === template_id);
-        if (!template) return;
-
-        // 현재 진행 중인 작업이 있으면 세션 종료
-        if (timer.is_running && timer.start_time && timer.active_form_data) {
-            const { active_record_id, active_session_id } = timer;
-            const end_time = Date.now();
-            const end_dayjs = dayjs(end_time);
-            const end_time_str = end_dayjs.format("HH:mm");
-
-            if (active_record_id && active_session_id) {
-                // 새로운 방식: 이미 추가된 세션의 end_time 업데이트
-                const record = records.find((r) => r.id === active_record_id);
-                if (record) {
-                    const start_dayjs = dayjs(timer.start_time);
-                    const start_minutes = start_dayjs.hour() * 60 + start_dayjs.minute();
-                    const end_minutes = end_dayjs.hour() * 60 + end_dayjs.minute();
-                    const duration_minutes = Math.max(
-                        1,
-                        calculateDurationExcludingLunch(start_minutes, end_minutes)
-                    );
-
-                    const updated_sessions = record.sessions.map((s) =>
-                        s.id === active_session_id
-                            ? { ...s, end_time: end_time_str, duration_minutes }
-                            : s
-                    );
-
-                    const total_minutes = calculateTotalMinutes(updated_sessions);
-                    const last_session = updated_sessions
-                        .filter((s) => s.end_time !== "")
-                        .sort((a, b) => a.end_time.localeCompare(b.end_time))
-                        .pop();
-
-                    set((state) => ({
-                        records: state.records.map((r) =>
-                            r.id === active_record_id
-                                ? {
-                                      ...r,
-                                      sessions: updated_sessions,
-                                      duration_minutes: total_minutes,
-                                      end_time: last_session?.end_time || end_time_str,
-                                  }
-                                : r
-                        ),
-                    }));
-
-                    // Firebase에 업데이트
-                    const updated_record = get().records.find((r) => r.id === active_record_id);
-                    if (updated_record) {
-                        syncRecord(updated_record).catch(console.error);
+                            // Firebase에 저장
+                            syncRecord(new_record).catch(console.error);
+                        }
                     }
                 }
-            } else {
-                // 이전 버전 호환: active_record_id/session_id가 없는 경우
-                const active_form = timer.active_form_data;
-                const record_date = dayjs(timer.start_time).format("YYYY-MM-DD");
-                const new_session = createSession(timer.start_time, end_time);
 
+                // 새 템플릿으로 타이머 시작 (records에도 세션 추가)
+                const new_form_data: WorkFormData = {
+                    project_code: template.project_code || DEFAULT_PROJECT_CODE,
+                    work_name: template.work_name,
+                    task_name: template.task_name,
+                    deal_name: template.deal_name,
+                    category_name: template.category_name,
+                    note: template.note,
+                };
+
+                // 폼 데이터 먼저 설정
+                set({ form_data: new_form_data });
+
+                // 새 작업 시작 (startTimer와 유사한 로직)
+                const start_time = Date.now();
+                const start_dayjs = dayjs(start_time);
+                const record_date = start_dayjs.format("YYYY-MM-DD");
+                const start_time_str = start_dayjs.format("HH:mm");
+
+                const new_session: WorkSession = {
+                    id: crypto.randomUUID(),
+                    date: record_date,
+                    start_time: start_time_str,
+                    end_time: "",
+                    duration_minutes: 0,
+                };
+
+                // 최신 records 가져오기 (이전 세션 종료 후 상태)
+                const current_records = get().records;
                 const existing_record = findExistingRecord(
-                    records,
+                    current_records,
                     record_date,
-                    active_form.work_name,
-                    active_form.deal_name,
+                    new_form_data.work_name,
+                    new_form_data.deal_name,
                     set
                 );
 
-                if (existing_record) {
-                    const updated_sessions = [
-                        ...(existing_record.sessions || []),
-                        new_session,
-                    ];
-                    const total_minutes = calculateTotalMinutes(updated_sessions);
-                    const new_start_time = existing_record.start_time || new_session.start_time;
+                let active_record_id: string;
 
+                if (existing_record) {
+                    active_record_id = existing_record.id;
                     set((state) => ({
                         records: state.records.map((r) =>
                             r.id === existing_record.id
                                 ? {
                                       ...r,
-                                      duration_minutes: total_minutes,
-                                      start_time: new_start_time,
-                                      end_time: new_session.end_time,
-                                      sessions: updated_sessions,
+                                      sessions: [
+                                          ...(r.sessions || []),
+                                          new_session,
+                                      ],
+                                      start_time:
+                                          r.start_time || start_time_str,
                                   }
                                 : r
                         ),
                     }));
-
                     // Firebase에 업데이트
-                    const updated_record = get().records.find((r) => r.id === existing_record.id);
+                    const updated_record = get().records.find(
+                        (r) => r.id === existing_record.id
+                    );
                     if (updated_record) {
                         syncRecord(updated_record).catch(console.error);
                     }
                 } else {
+                    active_record_id = crypto.randomUUID();
                     const new_record: WorkRecord = {
-                        id: crypto.randomUUID(),
-                        ...active_form,
+                        id: active_record_id,
+                        ...new_form_data,
                         project_code:
-                            active_form.project_code || DEFAULT_PROJECT_CODE,
-                        duration_minutes: calculateTotalMinutes([new_session]),
-                        start_time: new_session.start_time,
-                        end_time: new_session.end_time,
+                            new_form_data.project_code || DEFAULT_PROJECT_CODE,
+                        duration_minutes: 0,
+                        start_time: start_time_str,
+                        end_time: "",
                         date: record_date,
                         sessions: [new_session],
                         is_completed: false,
                     };
-
                     set((state) => ({
                         records: [...state.records, new_record],
                     }));
-
                     // Firebase에 저장
                     syncRecord(new_record).catch(console.error);
                 }
-            }
-        }
 
-        // 새 템플릿으로 타이머 시작 (records에도 세션 추가)
-        const new_form_data: WorkFormData = {
-            project_code: template.project_code || DEFAULT_PROJECT_CODE,
-            work_name: template.work_name,
-            task_name: template.task_name,
-            deal_name: template.deal_name,
-            category_name: template.category_name,
-            note: template.note,
-        };
-
-        // 폼 데이터 먼저 설정
-        set({ form_data: new_form_data });
-
-        // 새 작업 시작 (startTimer와 유사한 로직)
-        const start_time = Date.now();
-        const start_dayjs = dayjs(start_time);
-        const record_date = start_dayjs.format("YYYY-MM-DD");
-        const start_time_str = start_dayjs.format("HH:mm");
-
-        const new_session: WorkSession = {
-            id: crypto.randomUUID(),
-            date: record_date,
-            start_time: start_time_str,
-            end_time: "",
-            duration_minutes: 0,
-        };
-
-        // 최신 records 가져오기 (이전 세션 종료 후 상태)
-        const current_records = get().records;
-        const existing_record = findExistingRecord(
-            current_records,
-            record_date,
-            new_form_data.work_name,
-            new_form_data.deal_name,
-            set
-        );
-
-        let active_record_id: string;
-
-        if (existing_record) {
-            active_record_id = existing_record.id;
-            set((state) => ({
-                records: state.records.map((r) =>
-                    r.id === existing_record.id
-                        ? {
-                              ...r,
-                              sessions: [...(r.sessions || []), new_session],
-                              start_time: r.start_time || start_time_str,
-                          }
-                        : r
-                ),
-            }));
-            // Firebase에 업데이트
-            const updated_record = get().records.find((r) => r.id === existing_record.id);
-            if (updated_record) {
-                syncRecord(updated_record).catch(console.error);
-            }
-        } else {
-            active_record_id = crypto.randomUUID();
-            const new_record: WorkRecord = {
-                id: active_record_id,
-                ...new_form_data,
-                project_code: new_form_data.project_code || DEFAULT_PROJECT_CODE,
-                duration_minutes: 0,
-                start_time: start_time_str,
-                end_time: "",
-                date: record_date,
-                sessions: [new_session],
-                is_completed: false,
-            };
-            set((state) => ({
-                records: [...state.records, new_record],
-            }));
-            // Firebase에 저장
-            syncRecord(new_record).catch(console.error);
-        }
-
-        set({
-            timer: {
-                is_running: true,
-                start_time: start_time,
-                active_template_id: template_id,
-                active_form_data: new_form_data,
-                active_record_id: active_record_id,
-                active_session_id: new_session.id,
+                set({
+                    timer: {
+                        is_running: true,
+                        start_time: start_time,
+                        active_template_id: template_id,
+                        active_form_data: new_form_data,
+                        active_record_id: active_record_id,
+                        active_session_id: new_session.id,
+                    },
+                });
+                // 타이머 상태 Firebase에 저장
+                syncSettings({ timer: get().timer }).catch(console.error);
             },
-        });
-        // 타이머 상태 Firebase에 저장
-        syncSettings({ timer: get().timer }).catch(console.error);
-    },
 
-    // 경과 시간을 실시간으로 계산 (저장하지 않음)
-    getElapsedSeconds: () => {
-        const { timer } = get();
-        if (!timer.is_running || !timer.start_time) return 0;
-        return Math.floor((Date.now() - timer.start_time) / 1000);
-    },
-
-    resetTimer: () => {
-        const { timer, records } = get();
-
-        // 진행 중인 세션이 있으면 삭제
-        if (timer.is_running && timer.active_record_id && timer.active_session_id) {
-            const record = records.find((r) => r.id === timer.active_record_id);
-            if (record) {
-                const remaining_sessions = record.sessions.filter(
-                    (s) => s.id !== timer.active_session_id
-                );
-
-                if (remaining_sessions.length === 0) {
-                    // 세션이 모두 삭제되면 레코드도 삭제
-                    set((state) => ({
-                        records: state.records.filter((r) => r.id !== timer.active_record_id),
-                    }));
-                    // Firebase에서 삭제
-                    syncDeleteRecord(timer.active_record_id).catch(console.error);
-                } else {
-                    // 남은 세션으로 레코드 업데이트
-                    const total_minutes = calculateTotalMinutes(remaining_sessions);
-                    set((state) => ({
-                        records: state.records.map((r) =>
-                            r.id === timer.active_record_id
-                                ? {
-                                      ...r,
-                                      sessions: remaining_sessions,
-                                      duration_minutes: total_minutes,
-                                  }
-                                : r
-                        ),
-                    }));
-                    // Firebase에 업데이트
-                    const updated_record = get().records.find((r) => r.id === timer.active_record_id);
-                    if (updated_record) {
-                        syncRecord(updated_record).catch(console.error);
-                    }
-                }
-            }
-        }
-
-        set({ timer: DEFAULT_TIMER, form_data: DEFAULT_FORM_DATA });
-        // 타이머 상태 Firebase에 저장
-        syncSettings({ timer: DEFAULT_TIMER }).catch(console.error);
-    },
-
-    // 타이머 실행 중 active_form_data 업데이트
-    updateActiveFormData: (data) => {
-        set((state) => ({
-            timer: {
-                ...state.timer,
-                active_form_data: state.timer.active_form_data
-                    ? { ...state.timer.active_form_data, ...data }
-                    : null,
+            // 경과 시간을 실시간으로 계산 (저장하지 않음)
+            getElapsedSeconds: () => {
+                const { timer } = get();
+                if (!timer.is_running || !timer.start_time) return 0;
+                return Math.floor((Date.now() - timer.start_time) / 1000);
             },
-            form_data: { ...state.form_data, ...data },
-        }));
-    },
 
-    // 타이머 시작 시간 변경 (간트차트에서 진행 중인 작업의 시작 시간을 앞당길 때)
-    updateTimerStartTime: (new_start_time) => {
-        const { timer, records } = get();
-        if (!timer.is_running || !timer.start_time) {
-            return { success: false, adjusted: false, message: "타이머가 실행 중이 아닙니다." };
-        }
+            resetTimer: () => {
+                const { timer, records } = get();
 
-        // 새 시작 시간은 현재 시간보다 미래일 수 없음
-        if (new_start_time > Date.now()) {
-            return { success: false, adjusted: false, message: "시작 시간은 현재 시간보다 미래일 수 없습니다." };
-        }
-
-        const new_start_dayjs = dayjs(new_start_time);
-        const timer_date = new_start_dayjs.format("YYYY-MM-DD");
-        const new_start_mins = new_start_dayjs.hour() * 60 + new_start_dayjs.minute();
-        const current_end_mins = dayjs().hour() * 60 + dayjs().minute();
-
-        // 시간 문자열을 분으로 변환 (HH:mm -> 분)
-        const timeStrToMinutes = (time: string): number => {
-            const parts = time.split(":").map(Number);
-            const h = parts[0] || 0;
-            const m = parts[1] || 0;
-            return h * 60 + m;
-        };
-
-        // 같은 날짜의 다른 세션 수집 (현재 진행 중인 세션 제외)
-        const same_day_sessions: {
-            record_id: string;
-            session_id: string;
-            start_mins: number;
-            end_mins: number;
-            work_name: string;
-            deal_name: string;
-        }[] = [];
-
-        records.forEach((r) => {
-            if (r.is_deleted) return;
-            r.sessions?.forEach((s) => {
-                const session_date = s.date || r.date;
-                // 현재 진행 중인 세션은 제외
+                // 진행 중인 세션이 있으면 삭제
                 if (
-                    session_date === timer_date &&
-                    !(r.id === timer.active_record_id && s.id === timer.active_session_id)
+                    timer.is_running &&
+                    timer.active_record_id &&
+                    timer.active_session_id
                 ) {
-                    // end_time이 없는 세션(다른 진행 중인 세션)은 현재 시간까지로 처리
-                    const end_mins = s.end_time ? timeStrToMinutes(s.end_time) : current_end_mins;
-                    same_day_sessions.push({
-                        record_id: r.id,
-                        session_id: s.id,
-                        start_mins: timeStrToMinutes(s.start_time),
-                        end_mins,
-                        work_name: r.work_name,
-                        deal_name: r.deal_name,
-                    });
-                }
-            });
-        });
+                    const record = records.find(
+                        (r) => r.id === timer.active_record_id
+                    );
+                    if (record) {
+                        const remaining_sessions = record.sessions.filter(
+                            (s) => s.id !== timer.active_session_id
+                        );
 
-        // 충돌 검사 및 자동 조정
-        let was_adjusted = false;
-        let adjusted_start_mins = new_start_mins;
-
-        // 충돌 작업 정보를 포함한 메시지 생성 헬퍼
-        const formatConflictInfo = (other: typeof same_day_sessions[0]) => {
-            const name_part = other.deal_name 
-                ? `"${other.work_name} > ${other.deal_name}"` 
-                : `"${other.work_name}"`;
-            const end_time_str = `${Math.floor(other.end_mins / 60).toString().padStart(2, "0")}:${(other.end_mins % 60).toString().padStart(2, "0")}`;
-            const start_time_str = `${Math.floor(other.start_mins / 60).toString().padStart(2, "0")}:${(other.start_mins % 60).toString().padStart(2, "0")}`;
-            return `${name_part} (${start_time_str}~${end_time_str})`;
-        };
-
-        // 충돌이 있는 동안 반복적으로 조정 (최대 10회)
-        for (let iteration = 0; iteration < 10; iteration++) {
-            let has_conflict = false;
-
-            for (const other of same_day_sessions) {
-                // 진행 중인 세션의 범위: [adjusted_start_mins, current_end_mins]
-                const overlaps = !(
-                    current_end_mins <= other.start_mins ||
-                    adjusted_start_mins >= other.end_mins
-                );
-
-                if (overlaps) {
-                    has_conflict = true;
-
-                    // 진행 중인 세션이 기존 세션을 완전히 포함하는 경우
-                    if (
-                        adjusted_start_mins <= other.start_mins &&
-                        current_end_mins >= other.end_mins
-                    ) {
-                        return {
-                            success: false,
-                            adjusted: false,
-                            message: `${formatConflictInfo(other)} 작업과 시간이 완전히 겹칩니다.`,
-                        };
-                    }
-
-                    // 기존 세션이 진행 중인 세션을 완전히 포함하는 경우
-                    if (
-                        other.start_mins <= adjusted_start_mins &&
-                        other.end_mins >= current_end_mins
-                    ) {
-                        return {
-                            success: false,
-                            adjusted: false,
-                            message: `${formatConflictInfo(other)} 작업 안에 완전히 포함됩니다.`,
-                        };
-                    }
-
-                    // 시작 시간이 기존 세션 안에 있는 경우 → 시작 시간을 기존 세션 종료 시간으로 조정
-                    if (
-                        adjusted_start_mins >= other.start_mins &&
-                        adjusted_start_mins < other.end_mins
-                    ) {
-                        adjusted_start_mins = other.end_mins;
-                        was_adjusted = true;
+                        if (remaining_sessions.length === 0) {
+                            // 세션이 모두 삭제되면 레코드도 삭제
+                            set((state) => ({
+                                records: state.records.filter(
+                                    (r) => r.id !== timer.active_record_id
+                                ),
+                            }));
+                            // Firebase에서 삭제
+                            syncDeleteRecord(timer.active_record_id).catch(
+                                console.error
+                            );
+                        } else {
+                            // 남은 세션으로 레코드 업데이트
+                            const total_minutes =
+                                calculateTotalMinutes(remaining_sessions);
+                            set((state) => ({
+                                records: state.records.map((r) =>
+                                    r.id === timer.active_record_id
+                                        ? {
+                                              ...r,
+                                              sessions: remaining_sessions,
+                                              duration_minutes: total_minutes,
+                                          }
+                                        : r
+                                ),
+                            }));
+                            // Firebase에 업데이트
+                            const updated_record = get().records.find(
+                                (r) => r.id === timer.active_record_id
+                            );
+                            if (updated_record) {
+                                syncRecord(updated_record).catch(console.error);
+                            }
+                        }
                     }
                 }
-            }
 
-            if (!has_conflict) break;
-        }
-
-        // 조정 후 유효성 검사
-        if (adjusted_start_mins >= current_end_mins) {
-            return {
-                success: false,
-                adjusted: false,
-                message: "충돌을 피할 수 없습니다. 다른 시간을 선택하세요.",
-            };
-        }
-
-        // 조정된 시작 시간 타임스탬프 계산
-        const adjusted_start_time = dayjs(new_start_time)
-            .hour(Math.floor(adjusted_start_mins / 60))
-            .minute(adjusted_start_mins % 60)
-            .second(0)
-            .millisecond(0)
-            .valueOf();
-
-        const adjusted_start_time_str = `${Math.floor(adjusted_start_mins / 60).toString().padStart(2, "0")}:${(adjusted_start_mins % 60).toString().padStart(2, "0")}`;
-
-        // 타이머 상태 업데이트
-        set((state) => ({
-            timer: {
-                ...state.timer,
-                start_time: adjusted_start_time,
+                set({ timer: DEFAULT_TIMER, form_data: DEFAULT_FORM_DATA });
+                // 타이머 상태 Firebase에 저장
+                syncSettings({ timer: DEFAULT_TIMER }).catch(console.error);
             },
-        }));
 
-        // 진행 중인 세션의 start_time도 업데이트
-        if (timer.active_record_id && timer.active_session_id) {
-            const record = records.find((r) => r.id === timer.active_record_id);
-            if (record) {
-                const updated_sessions = record.sessions.map((s) =>
-                    s.id === timer.active_session_id
-                        ? { ...s, start_time: adjusted_start_time_str }
+            // 타이머 실행 중 active_form_data 업데이트
+            updateActiveFormData: (data) => {
+                set((state) => ({
+                    timer: {
+                        ...state.timer,
+                        active_form_data: state.timer.active_form_data
+                            ? { ...state.timer.active_form_data, ...data }
+                            : null,
+                    },
+                    form_data: { ...state.form_data, ...data },
+                }));
+            },
+
+            // 타이머 시작 시간 변경 (간트차트에서 진행 중인 작업의 시작 시간을 앞당길 때)
+            updateTimerStartTime: (new_start_time) => {
+                const { timer, records } = get();
+                if (!timer.is_running || !timer.start_time) {
+                    return {
+                        success: false,
+                        adjusted: false,
+                        message: "타이머가 실행 중이 아닙니다.",
+                    };
+                }
+
+                // 새 시작 시간은 현재 시간보다 미래일 수 없음
+                if (new_start_time > Date.now()) {
+                    return {
+                        success: false,
+                        adjusted: false,
+                        message:
+                            "시작 시간은 현재 시간보다 미래일 수 없습니다.",
+                    };
+                }
+
+                const new_start_dayjs = dayjs(new_start_time);
+                const timer_date = new_start_dayjs.format("YYYY-MM-DD");
+                const new_start_mins =
+                    new_start_dayjs.hour() * 60 + new_start_dayjs.minute();
+                const current_end_mins = dayjs().hour() * 60 + dayjs().minute();
+
+                // 시간 문자열을 분으로 변환 (HH:mm -> 분)
+                const timeStrToMinutes = (time: string): number => {
+                    const parts = time.split(":").map(Number);
+                    const h = parts[0] || 0;
+                    const m = parts[1] || 0;
+                    return h * 60 + m;
+                };
+
+                // 같은 날짜의 다른 세션 수집 (현재 진행 중인 세션 제외)
+                const same_day_sessions: {
+                    record_id: string;
+                    session_id: string;
+                    start_mins: number;
+                    end_mins: number;
+                    work_name: string;
+                    deal_name: string;
+                }[] = [];
+
+                records.forEach((r) => {
+                    if (r.is_deleted) return;
+                    r.sessions?.forEach((s) => {
+                        const session_date = s.date || r.date;
+                        // 현재 진행 중인 세션은 제외
+                        if (
+                            session_date === timer_date &&
+                            !(
+                                r.id === timer.active_record_id &&
+                                s.id === timer.active_session_id
+                            )
+                        ) {
+                            // end_time이 없는 세션(다른 진행 중인 세션)은 현재 시간까지로 처리
+                            const end_mins = s.end_time
+                                ? timeStrToMinutes(s.end_time)
+                                : current_end_mins;
+                            same_day_sessions.push({
+                                record_id: r.id,
+                                session_id: s.id,
+                                start_mins: timeStrToMinutes(s.start_time),
+                                end_mins,
+                                work_name: r.work_name,
+                                deal_name: r.deal_name,
+                            });
+                        }
+                    });
+                });
+
+                // 충돌 검사 및 자동 조정
+                let was_adjusted = false;
+                let adjusted_start_mins = new_start_mins;
+
+                // 충돌 작업 정보를 포함한 메시지 생성 헬퍼
+                const formatConflictInfo = (
+                    other: (typeof same_day_sessions)[0]
+                ) => {
+                    const name_part = other.deal_name
+                        ? `"${other.work_name} > ${other.deal_name}"`
+                        : `"${other.work_name}"`;
+                    const end_time_str = `${Math.floor(other.end_mins / 60)
+                        .toString()
+                        .padStart(2, "0")}:${(other.end_mins % 60)
+                        .toString()
+                        .padStart(2, "0")}`;
+                    const start_time_str = `${Math.floor(other.start_mins / 60)
+                        .toString()
+                        .padStart(2, "0")}:${(other.start_mins % 60)
+                        .toString()
+                        .padStart(2, "0")}`;
+                    return `${name_part} (${start_time_str}~${end_time_str})`;
+                };
+
+                // 충돌이 있는 동안 반복적으로 조정 (최대 10회)
+                for (let iteration = 0; iteration < 10; iteration++) {
+                    let has_conflict = false;
+
+                    for (const other of same_day_sessions) {
+                        // 진행 중인 세션의 범위: [adjusted_start_mins, current_end_mins]
+                        const overlaps = !(
+                            current_end_mins <= other.start_mins ||
+                            adjusted_start_mins >= other.end_mins
+                        );
+
+                        if (overlaps) {
+                            has_conflict = true;
+
+                            // 진행 중인 세션이 기존 세션을 완전히 포함하는 경우
+                            if (
+                                adjusted_start_mins <= other.start_mins &&
+                                current_end_mins >= other.end_mins
+                            ) {
+                                return {
+                                    success: false,
+                                    adjusted: false,
+                                    message: `${formatConflictInfo(
+                                        other
+                                    )} 작업과 시간이 완전히 겹칩니다.`,
+                                };
+                            }
+
+                            // 기존 세션이 진행 중인 세션을 완전히 포함하는 경우
+                            if (
+                                other.start_mins <= adjusted_start_mins &&
+                                other.end_mins >= current_end_mins
+                            ) {
+                                return {
+                                    success: false,
+                                    adjusted: false,
+                                    message: `${formatConflictInfo(
+                                        other
+                                    )} 작업 안에 완전히 포함됩니다.`,
+                                };
+                            }
+
+                            // 시작 시간이 기존 세션 안에 있는 경우 → 시작 시간을 기존 세션 종료 시간으로 조정
+                            if (
+                                adjusted_start_mins >= other.start_mins &&
+                                adjusted_start_mins < other.end_mins
+                            ) {
+                                adjusted_start_mins = other.end_mins;
+                                was_adjusted = true;
+                            }
+                        }
+                    }
+
+                    if (!has_conflict) break;
+                }
+
+                // 조정 후 유효성 검사
+                if (adjusted_start_mins >= current_end_mins) {
+                    return {
+                        success: false,
+                        adjusted: false,
+                        message:
+                            "충돌을 피할 수 없습니다. 다른 시간을 선택하세요.",
+                    };
+                }
+
+                // 조정된 시작 시간 타임스탬프 계산
+                const adjusted_start_time = dayjs(new_start_time)
+                    .hour(Math.floor(adjusted_start_mins / 60))
+                    .minute(adjusted_start_mins % 60)
+                    .second(0)
+                    .millisecond(0)
+                    .valueOf();
+
+                const adjusted_start_time_str = `${Math.floor(
+                    adjusted_start_mins / 60
+                )
+                    .toString()
+                    .padStart(2, "0")}:${(adjusted_start_mins % 60)
+                    .toString()
+                    .padStart(2, "0")}`;
+
+                // 타이머 상태 업데이트
+                set((state) => ({
+                    timer: {
+                        ...state.timer,
+                        start_time: adjusted_start_time,
+                    },
+                }));
+
+                // 진행 중인 세션의 start_time도 업데이트
+                if (timer.active_record_id && timer.active_session_id) {
+                    const record = records.find(
+                        (r) => r.id === timer.active_record_id
+                    );
+                    if (record) {
+                        const updated_sessions = record.sessions.map((s) =>
+                            s.id === timer.active_session_id
+                                ? { ...s, start_time: adjusted_start_time_str }
+                                : s
+                        );
+
+                        // 첫 세션이면 레코드의 start_time도 업데이트
+                        const first_session = updated_sessions.sort((a, b) =>
+                            a.start_time.localeCompare(b.start_time)
+                        )[0];
+
+                        set((state) => ({
+                            records: state.records.map((r) =>
+                                r.id === timer.active_record_id
+                                    ? {
+                                          ...r,
+                                          sessions: updated_sessions,
+                                          start_time:
+                                              first_session?.start_time ||
+                                              r.start_time,
+                                      }
+                                    : r
+                            ),
+                        }));
+
+                        // Firebase에 업데이트
+                        const updated_record = get().records.find(
+                            (r) => r.id === timer.active_record_id
+                        );
+                        if (updated_record) {
+                            syncRecord(updated_record).catch(console.error);
+                        }
+                    }
+                }
+
+                // 타이머 상태 Firebase에 저장
+                syncSettings({ timer: get().timer }).catch(console.error);
+
+                return {
+                    success: true,
+                    adjusted: was_adjusted,
+                    message: was_adjusted
+                        ? "시간 충돌로 인해 자동 조정되었습니다."
+                        : undefined,
+                    adjusted_start_time: was_adjusted
+                        ? adjusted_start_time
+                        : undefined,
+                };
+            },
+
+            setFormData: (data) => {
+                set((state) => ({
+                    form_data: { ...state.form_data, ...data },
+                }));
+            },
+
+            resetFormData: () => {
+                set({ form_data: DEFAULT_FORM_DATA });
+            },
+
+            addRecord: (record) => {
+                set((state) => ({
+                    records: [...state.records, record],
+                }));
+                // Firebase에 저장
+                syncRecord(record).catch(console.error);
+            },
+
+            deleteRecord: (id) => {
+                set((state) => ({
+                    records: state.records.filter((r) => r.id !== id),
+                }));
+                // Firebase에서 삭제
+                syncDeleteRecord(id).catch(console.error);
+            },
+
+            // 휴지통으로 이동 (soft delete)
+            softDeleteRecord: (id) => {
+                set((state) => ({
+                    records: state.records.map((r) =>
+                        r.id === id
+                            ? {
+                                  ...r,
+                                  is_deleted: true,
+                                  deleted_at: new Date().toISOString(),
+                              }
+                            : r
+                    ),
+                }));
+                // Firebase에 업데이트
+                const record = get().records.find((r) => r.id === id);
+                if (record) {
+                    syncRecord(record).catch(console.error);
+                }
+            },
+
+            // 휴지통에서 복원
+            restoreRecord: (id) => {
+                set((state) => ({
+                    records: state.records.map((r) =>
+                        r.id === id
+                            ? { ...r, is_deleted: false, deleted_at: undefined }
+                            : r
+                    ),
+                }));
+                // Firebase에 업데이트
+                const record = get().records.find((r) => r.id === id);
+                if (record) {
+                    syncRecord(record).catch(console.error);
+                }
+            },
+
+            // 완전 삭제
+            permanentlyDeleteRecord: (id) => {
+                set((state) => ({
+                    records: state.records.filter((r) => r.id !== id),
+                }));
+                // Firebase에서 삭제
+                syncDeleteRecord(id).catch(console.error);
+            },
+
+            // 삭제된 작업 목록
+            getDeletedRecords: () => {
+                return get().records.filter((r) => r.is_deleted === true);
+            },
+
+            updateRecord: (id, record) => {
+                set((state) => ({
+                    records: state.records.map((r) =>
+                        r.id === id ? { ...r, ...record } : r
+                    ),
+                }));
+                // Firebase에 업데이트
+                const updated_record = get().records.find((r) => r.id === id);
+                if (updated_record) {
+                    syncRecord(updated_record).catch(console.error);
+                }
+            },
+
+            // 세션 수정 (시간 충돌 방지 포함)
+            updateSession: (
+                record_id,
+                session_id,
+                new_start,
+                new_end,
+                new_date
+            ) => {
+                const { records } = get();
+                const record = records.find((r) => r.id === record_id);
+                if (!record)
+                    return {
+                        success: false,
+                        adjusted: false,
+                        message: "레코드를 찾을 수 없습니다.",
+                    };
+
+                const session_index = record.sessions.findIndex(
+                    (s) => s.id === session_id
+                );
+                if (session_index === -1)
+                    return {
+                        success: false,
+                        adjusted: false,
+                        message: "세션을 찾을 수 없습니다.",
+                    };
+
+                const current_session = record.sessions[session_index];
+                const target_date =
+                    new_date || current_session.date || record.date;
+                const is_date_changed =
+                    new_date &&
+                    new_date !== (current_session.date || record.date);
+
+                // 시간 문자열을 분으로 변환 (HH:mm -> 분)
+                const timeToMinutes = (time: string): number => {
+                    const parts = time.split(":").map(Number);
+                    const h = parts[0] || 0;
+                    const m = parts[1] || 0;
+                    return h * 60 + m;
+                };
+
+                // 분을 시간 문자열로 변환 (분 -> HH:mm)
+                const minutesToTime = (mins: number): string => {
+                    const h = Math.floor(mins / 60);
+                    const m = Math.floor(mins % 60);
+                    return `${h.toString().padStart(2, "0")}:${m
+                        .toString()
+                        .padStart(2, "0")}`;
+                };
+
+                let adjusted_start = new_start;
+                let adjusted_end = new_end;
+                let was_adjusted = false;
+
+                const new_start_mins = timeToMinutes(new_start);
+                const new_end_mins = timeToMinutes(new_end);
+
+                // 종료 시간이 시작 시간보다 빨라지면 안됨
+                if (new_end_mins <= new_start_mins) {
+                    return {
+                        success: false,
+                        adjusted: false,
+                        message: "종료 시간은 시작 시간보다 나중이어야 합니다.",
+                    };
+                }
+
+                // 대상 날짜의 모든 세션 수집 (현재 수정 중인 세션 제외)
+                const same_day_sessions: {
+                    record_id: string;
+                    session: WorkSession;
+                    start_mins: number;
+                    end_mins: number;
+                    work_name: string;
+                    deal_name: string;
+                }[] = [];
+
+                records.forEach((r) => {
+                    // 삭제된 레코드는 충돌 감지에서 제외
+                    if (r.is_deleted) return;
+
+                    r.sessions?.forEach((s) => {
+                        const session_date = s.date || r.date;
+                        if (
+                            session_date === target_date &&
+                            !(r.id === record_id && s.id === session_id)
+                        ) {
+                            same_day_sessions.push({
+                                record_id: r.id,
+                                session: s,
+                                start_mins: timeToMinutes(s.start_time),
+                                end_mins: timeToMinutes(s.end_time),
+                                work_name: r.work_name,
+                                deal_name: r.deal_name,
+                            });
+                        }
+                    });
+                });
+
+                // 현재 레코딩 중인 작업의 시간도 충돌 감지에 포함
+                const { timer } = get();
+                if (
+                    timer.is_running &&
+                    timer.start_time &&
+                    timer.active_form_data
+                ) {
+                    const timer_date = dayjs(timer.start_time).format(
+                        "YYYY-MM-DD"
+                    );
+                    if (timer_date === target_date) {
+                        const timer_start_mins = timeToMinutes(
+                            dayjs(timer.start_time).format("HH:mm")
+                        );
+                        const timer_end_mins = timeToMinutes(
+                            dayjs().format("HH:mm")
+                        );
+                        if (timer_end_mins > timer_start_mins) {
+                            same_day_sessions.push({
+                                record_id: "virtual-running-record",
+                                session: {
+                                    id: "virtual-running-session",
+                                    date: timer_date,
+                                    start_time: dayjs(timer.start_time).format(
+                                        "HH:mm"
+                                    ),
+                                    end_time: dayjs().format("HH:mm"),
+                                    duration_minutes:
+                                        timer_end_mins - timer_start_mins,
+                                },
+                                start_mins: timer_start_mins,
+                                end_mins: timer_end_mins,
+                                work_name:
+                                    timer.active_form_data.work_name ||
+                                    "진행 중인 작업",
+                                deal_name:
+                                    timer.active_form_data.deal_name || "",
+                            });
+                        }
+                    }
+                }
+
+                // 충돌 작업 정보를 포함한 메시지 생성 헬퍼
+                const formatConflictInfo = (
+                    other: (typeof same_day_sessions)[0]
+                ) => {
+                    const name_part = other.deal_name
+                        ? `"${other.work_name} > ${other.deal_name}"`
+                        : `"${other.work_name}"`;
+                    return `${name_part} (${other.session.start_time}~${other.session.end_time})`;
+                };
+
+                // 날짜가 변경된 경우: 충돌 검사만 하고 자동 조정 안함
+                if (is_date_changed) {
+                    for (const other of same_day_sessions) {
+                        const overlaps = !(
+                            new_end_mins <= other.start_mins ||
+                            new_start_mins >= other.end_mins
+                        );
+                        if (overlaps) {
+                            return {
+                                success: false,
+                                adjusted: false,
+                                message: `${target_date}에 ${formatConflictInfo(
+                                    other
+                                )} 작업과 시간이 겹칩니다. 시간을 조정하세요.`,
+                            };
+                        }
+                    }
+                } else {
+                    // 날짜가 동일한 경우: 충돌 시 자동 조정
+                    let current_start_mins = new_start_mins;
+                    let current_end_mins = new_end_mins;
+
+                    // 충돌이 있는 동안 반복적으로 조정 (최대 10회)
+                    for (let iteration = 0; iteration < 10; iteration++) {
+                        let has_conflict = false;
+
+                        for (const other of same_day_sessions) {
+                            // 현재 세션이 기존 세션과 겹치는지 확인
+                            const overlaps = !(
+                                current_end_mins <= other.start_mins ||
+                                current_start_mins >= other.end_mins
+                            );
+
+                            if (overlaps) {
+                                has_conflict = true;
+
+                                // 새 세션이 기존 세션을 완전히 포함하는 경우 → 실패
+                                if (
+                                    current_start_mins <= other.start_mins &&
+                                    current_end_mins >= other.end_mins
+                                ) {
+                                    return {
+                                        success: false,
+                                        adjusted: false,
+                                        message: `${formatConflictInfo(
+                                            other
+                                        )} 작업과 시간이 완전히 겹칩니다.`,
+                                    };
+                                }
+
+                                // 기존 세션이 새 세션을 완전히 포함하는 경우 → 실패
+                                if (
+                                    other.start_mins <= current_start_mins &&
+                                    other.end_mins >= current_end_mins
+                                ) {
+                                    return {
+                                        success: false,
+                                        adjusted: false,
+                                        message: `${formatConflictInfo(
+                                            other
+                                        )} 작업 안에 완전히 포함됩니다.`,
+                                    };
+                                }
+
+                                // 시작 시간이 기존 세션 안에 있는 경우 → 시작 시간을 기존 세션 종료 시간으로 조정
+                                if (
+                                    current_start_mins >= other.start_mins &&
+                                    current_start_mins < other.end_mins
+                                ) {
+                                    current_start_mins = other.end_mins;
+                                    was_adjusted = true;
+                                }
+                                // 종료 시간이 기존 세션 안에 있는 경우 → 종료 시간을 기존 세션 시작 시간으로 조정
+                                else if (
+                                    current_end_mins > other.start_mins &&
+                                    current_end_mins <= other.end_mins
+                                ) {
+                                    current_end_mins = other.start_mins;
+                                    was_adjusted = true;
+                                }
+                            }
+                        }
+
+                        if (!has_conflict) break;
+                    }
+
+                    adjusted_start = minutesToTime(current_start_mins);
+                    adjusted_end = minutesToTime(current_end_mins);
+                }
+
+                // 조정 후에도 유효한지 확인
+                const final_start_mins = timeToMinutes(adjusted_start);
+                const final_end_mins = timeToMinutes(adjusted_end);
+                if (final_end_mins <= final_start_mins) {
+                    return {
+                        success: false,
+                        adjusted: false,
+                        message:
+                            "충돌을 피할 수 없습니다. 다른 시간을 선택하세요.",
+                    };
+                }
+
+                // 세션 업데이트 (점심시간 제외한 실제 작업 시간)
+                const duration_minutes = Math.max(
+                    1,
+                    calculateDurationExcludingLunch(
+                        final_start_mins,
+                        final_end_mins
+                    )
+                );
+                const updated_sessions = record.sessions.map((s, idx) =>
+                    idx === session_index
+                        ? {
+                              ...s,
+                              date: target_date,
+                              start_time: adjusted_start,
+                              end_time: adjusted_end,
+                              duration_minutes,
+                          }
                         : s
                 );
 
-                // 첫 세션이면 레코드의 start_time도 업데이트
-                const first_session = updated_sessions.sort((a, b) =>
-                    a.start_time.localeCompare(b.start_time)
-                )[0];
+                // 날짜별로 세션 정렬 (날짜 오름차순, 시간 오름차순)
+                const sorted_sessions = [...updated_sessions].sort((a, b) => {
+                    const date_a = a.date || record.date;
+                    const date_b = b.date || record.date;
+                    if (date_a !== date_b) return date_a.localeCompare(date_b);
+                    return (
+                        timeToMinutes(a.start_time) -
+                        timeToMinutes(b.start_time)
+                    );
+                });
+
+                // 레코드 업데이트 (총 시간, 시작/종료 시간 재계산)
+                const total_minutes = updated_sessions.reduce(
+                    (sum, s) => sum + getSessionMinutes(s),
+                    0
+                );
 
                 set((state) => ({
                     records: state.records.map((r) =>
-                        r.id === timer.active_record_id
+                        r.id === record_id
                             ? {
                                   ...r,
-                                  sessions: updated_sessions,
-                                  start_time: first_session?.start_time || r.start_time,
+                                  sessions: sorted_sessions,
+                                  duration_minutes: Math.max(1, total_minutes),
+                                  start_time:
+                                      sorted_sessions[0]?.start_time ||
+                                      r.start_time,
+                                  end_time:
+                                      sorted_sessions[
+                                          sorted_sessions.length - 1
+                                      ]?.end_time || r.end_time,
                               }
                             : r
                     ),
                 }));
 
                 // Firebase에 업데이트
-                const updated_record = get().records.find((r) => r.id === timer.active_record_id);
+                const updated_record = get().records.find(
+                    (r) => r.id === record_id
+                );
                 if (updated_record) {
                     syncRecord(updated_record).catch(console.error);
                 }
-            }
-        }
 
-        // 타이머 상태 Firebase에 저장
-        syncSettings({ timer: get().timer }).catch(console.error);
-
-        return {
-            success: true,
-            adjusted: was_adjusted,
-            message: was_adjusted ? "시간 충돌로 인해 자동 조정되었습니다." : undefined,
-            adjusted_start_time: was_adjusted ? adjusted_start_time : undefined,
-        };
-    },
-
-    setFormData: (data) => {
-        set((state) => ({
-            form_data: { ...state.form_data, ...data },
-        }));
-    },
-
-    resetFormData: () => {
-        set({ form_data: DEFAULT_FORM_DATA });
-    },
-
-    addRecord: (record) => {
-        set((state) => ({
-            records: [...state.records, record],
-        }));
-        // Firebase에 저장
-        syncRecord(record).catch(console.error);
-    },
-
-    deleteRecord: (id) => {
-        set((state) => ({
-            records: state.records.filter((r) => r.id !== id),
-        }));
-        // Firebase에서 삭제
-        syncDeleteRecord(id).catch(console.error);
-    },
-
-    // 휴지통으로 이동 (soft delete)
-    softDeleteRecord: (id) => {
-        set((state) => ({
-            records: state.records.map((r) =>
-                r.id === id
-                    ? {
-                          ...r,
-                          is_deleted: true,
-                          deleted_at: new Date().toISOString(),
-                      }
-                    : r
-            ),
-        }));
-        // Firebase에 업데이트
-        const record = get().records.find((r) => r.id === id);
-        if (record) {
-            syncRecord(record).catch(console.error);
-        }
-    },
-
-    // 휴지통에서 복원
-    restoreRecord: (id) => {
-        set((state) => ({
-            records: state.records.map((r) =>
-                r.id === id
-                    ? { ...r, is_deleted: false, deleted_at: undefined }
-                    : r
-            ),
-        }));
-        // Firebase에 업데이트
-        const record = get().records.find((r) => r.id === id);
-        if (record) {
-            syncRecord(record).catch(console.error);
-        }
-    },
-
-    // 완전 삭제
-    permanentlyDeleteRecord: (id) => {
-        set((state) => ({
-            records: state.records.filter((r) => r.id !== id),
-        }));
-        // Firebase에서 삭제
-        syncDeleteRecord(id).catch(console.error);
-    },
-
-    // 삭제된 작업 목록
-    getDeletedRecords: () => {
-        return get().records.filter((r) => r.is_deleted === true);
-    },
-
-    updateRecord: (id, record) => {
-        set((state) => ({
-            records: state.records.map((r) =>
-                r.id === id ? { ...r, ...record } : r
-            ),
-        }));
-        // Firebase에 업데이트
-        const updated_record = get().records.find((r) => r.id === id);
-        if (updated_record) {
-            syncRecord(updated_record).catch(console.error);
-        }
-    },
-
-    // 세션 수정 (시간 충돌 방지 포함)
-    updateSession: (record_id, session_id, new_start, new_end, new_date) => {
-        const { records } = get();
-        const record = records.find((r) => r.id === record_id);
-        if (!record)
-            return {
-                success: false,
-                adjusted: false,
-                message: "레코드를 찾을 수 없습니다.",
-            };
-
-        const session_index = record.sessions.findIndex(
-            (s) => s.id === session_id
-        );
-        if (session_index === -1)
-            return {
-                success: false,
-                adjusted: false,
-                message: "세션을 찾을 수 없습니다.",
-            };
-
-        const current_session = record.sessions[session_index];
-        const target_date = new_date || current_session.date || record.date;
-        const is_date_changed =
-            new_date && new_date !== (current_session.date || record.date);
-
-        // 시간 문자열을 분으로 변환 (HH:mm -> 분)
-        const timeToMinutes = (time: string): number => {
-            const parts = time.split(":").map(Number);
-            const h = parts[0] || 0;
-            const m = parts[1] || 0;
-            return h * 60 + m;
-        };
-
-        // 분을 시간 문자열로 변환 (분 -> HH:mm)
-        const minutesToTime = (mins: number): string => {
-            const h = Math.floor(mins / 60);
-            const m = Math.floor(mins % 60);
-            return `${h.toString().padStart(2, "0")}:${m
-                .toString()
-                .padStart(2, "0")}`;
-        };
-
-        let adjusted_start = new_start;
-        let adjusted_end = new_end;
-        let was_adjusted = false;
-
-        const new_start_mins = timeToMinutes(new_start);
-        const new_end_mins = timeToMinutes(new_end);
-
-        // 종료 시간이 시작 시간보다 빨라지면 안됨
-        if (new_end_mins <= new_start_mins) {
-            return {
-                success: false,
-                adjusted: false,
-                message: "종료 시간은 시작 시간보다 나중이어야 합니다.",
-            };
-        }
-
-        // 대상 날짜의 모든 세션 수집 (현재 수정 중인 세션 제외)
-        const same_day_sessions: {
-            record_id: string;
-            session: WorkSession;
-            start_mins: number;
-            end_mins: number;
-            work_name: string;
-            deal_name: string;
-        }[] = [];
-
-        records.forEach((r) => {
-            // 삭제된 레코드는 충돌 감지에서 제외
-            if (r.is_deleted) return;
-            
-            r.sessions?.forEach((s) => {
-                const session_date = s.date || r.date;
-                if (
-                    session_date === target_date &&
-                    !(r.id === record_id && s.id === session_id)
-                ) {
-                    same_day_sessions.push({
-                        record_id: r.id,
-                        session: s,
-                        start_mins: timeToMinutes(s.start_time),
-                        end_mins: timeToMinutes(s.end_time),
-                        work_name: r.work_name,
-                        deal_name: r.deal_name,
-                    });
-                }
-            });
-        });
-
-        // 현재 레코딩 중인 작업의 시간도 충돌 감지에 포함
-        const { timer } = get();
-        if (timer.is_running && timer.start_time && timer.active_form_data) {
-            const timer_date = dayjs(timer.start_time).format("YYYY-MM-DD");
-            if (timer_date === target_date) {
-                const timer_start_mins = timeToMinutes(
-                    dayjs(timer.start_time).format("HH:mm")
-                );
-                const timer_end_mins = timeToMinutes(dayjs().format("HH:mm"));
-                if (timer_end_mins > timer_start_mins) {
-                    same_day_sessions.push({
-                        record_id: "virtual-running-record",
-                        session: {
-                            id: "virtual-running-session",
-                            date: timer_date,
-                            start_time: dayjs(timer.start_time).format("HH:mm"),
-                            end_time: dayjs().format("HH:mm"),
-                            duration_minutes: timer_end_mins - timer_start_mins,
-                        },
-                        start_mins: timer_start_mins,
-                        end_mins: timer_end_mins,
-                        work_name: timer.active_form_data.work_name || "진행 중인 작업",
-                        deal_name: timer.active_form_data.deal_name || "",
-                    });
-                }
-            }
-        }
-
-        // 충돌 작업 정보를 포함한 메시지 생성 헬퍼
-        const formatConflictInfo = (other: typeof same_day_sessions[0]) => {
-            const name_part = other.deal_name 
-                ? `"${other.work_name} > ${other.deal_name}"` 
-                : `"${other.work_name}"`;
-            return `${name_part} (${other.session.start_time}~${other.session.end_time})`;
-        };
-
-        // 날짜가 변경된 경우: 충돌 검사만 하고 자동 조정 안함
-        if (is_date_changed) {
-            for (const other of same_day_sessions) {
-                const overlaps = !(
-                    new_end_mins <= other.start_mins ||
-                    new_start_mins >= other.end_mins
-                );
-                if (overlaps) {
-                    return {
-                        success: false,
-                        adjusted: false,
-                        message: `${target_date}에 ${formatConflictInfo(other)} 작업과 시간이 겹칩니다. 시간을 조정하세요.`,
-                    };
-                }
-            }
-        } else {
-            // 날짜가 동일한 경우: 충돌 시 자동 조정
-            let current_start_mins = new_start_mins;
-            let current_end_mins = new_end_mins;
-
-            // 충돌이 있는 동안 반복적으로 조정 (최대 10회)
-            for (let iteration = 0; iteration < 10; iteration++) {
-                let has_conflict = false;
-
-                for (const other of same_day_sessions) {
-                    // 현재 세션이 기존 세션과 겹치는지 확인
-                    const overlaps = !(
-                        current_end_mins <= other.start_mins ||
-                        current_start_mins >= other.end_mins
-                    );
-
-                    if (overlaps) {
-                        has_conflict = true;
-
-                        // 새 세션이 기존 세션을 완전히 포함하는 경우 → 실패
-                        if (
-                            current_start_mins <= other.start_mins &&
-                            current_end_mins >= other.end_mins
-                        ) {
-                            return {
-                                success: false,
-                                adjusted: false,
-                                message: `${formatConflictInfo(other)} 작업과 시간이 완전히 겹칩니다.`,
-                            };
-                        }
-
-                        // 기존 세션이 새 세션을 완전히 포함하는 경우 → 실패
-                        if (
-                            other.start_mins <= current_start_mins &&
-                            other.end_mins >= current_end_mins
-                        ) {
-                            return {
-                                success: false,
-                                adjusted: false,
-                                message: `${formatConflictInfo(other)} 작업 안에 완전히 포함됩니다.`,
-                            };
-                        }
-
-                        // 시작 시간이 기존 세션 안에 있는 경우 → 시작 시간을 기존 세션 종료 시간으로 조정
-                        if (
-                            current_start_mins >= other.start_mins &&
-                            current_start_mins < other.end_mins
-                        ) {
-                            current_start_mins = other.end_mins;
-                            was_adjusted = true;
-                        }
-                        // 종료 시간이 기존 세션 안에 있는 경우 → 종료 시간을 기존 세션 시작 시간으로 조정
-                        else if (
-                            current_end_mins > other.start_mins &&
-                            current_end_mins <= other.end_mins
-                        ) {
-                            current_end_mins = other.start_mins;
-                            was_adjusted = true;
-                        }
-                    }
-                }
-
-                if (!has_conflict) break;
-            }
-
-            adjusted_start = minutesToTime(current_start_mins);
-            adjusted_end = minutesToTime(current_end_mins);
-        }
-
-        // 조정 후에도 유효한지 확인
-        const final_start_mins = timeToMinutes(adjusted_start);
-        const final_end_mins = timeToMinutes(adjusted_end);
-        if (final_end_mins <= final_start_mins) {
-            return {
-                success: false,
-                adjusted: false,
-                message: "충돌을 피할 수 없습니다. 다른 시간을 선택하세요.",
-            };
-        }
-
-        // 세션 업데이트 (점심시간 제외한 실제 작업 시간)
-        const duration_minutes = Math.max(
-            1,
-            calculateDurationExcludingLunch(final_start_mins, final_end_mins)
-        );
-        const updated_sessions = record.sessions.map((s, idx) =>
-            idx === session_index
-                ? {
-                      ...s,
-                      date: target_date,
-                      start_time: adjusted_start,
-                      end_time: adjusted_end,
-                      duration_minutes,
-                  }
-                : s
-        );
-
-        // 날짜별로 세션 정렬 (날짜 오름차순, 시간 오름차순)
-        const sorted_sessions = [...updated_sessions].sort((a, b) => {
-            const date_a = a.date || record.date;
-            const date_b = b.date || record.date;
-            if (date_a !== date_b) return date_a.localeCompare(date_b);
-            return timeToMinutes(a.start_time) - timeToMinutes(b.start_time);
-        });
-
-        // 레코드 업데이트 (총 시간, 시작/종료 시간 재계산)
-        const total_minutes = updated_sessions.reduce(
-            (sum, s) => sum + getSessionMinutes(s),
-            0
-        );
-
-        set((state) => ({
-            records: state.records.map((r) =>
-                r.id === record_id
-                    ? {
-                          ...r,
-                          sessions: sorted_sessions,
-                          duration_minutes: Math.max(1, total_minutes),
-                          start_time:
-                              sorted_sessions[0]?.start_time || r.start_time,
-                          end_time:
-                              sorted_sessions[sorted_sessions.length - 1]
-                                  ?.end_time || r.end_time,
-                      }
-                    : r
-            ),
-        }));
-
-        // Firebase에 업데이트
-        const updated_record = get().records.find((r) => r.id === record_id);
-        if (updated_record) {
-            syncRecord(updated_record).catch(console.error);
-        }
-
-        return {
-            success: true,
-            adjusted: was_adjusted,
-            message: was_adjusted
-                ? "시간 충돌로 인해 자동 조정되었습니다."
-                : undefined,
-        };
-    },
-
-    // 세션 삭제
-    deleteSession: (record_id, session_id) => {
-        const { records } = get();
-        const record = records.find((r) => r.id === record_id);
-        if (!record) return;
-
-        const updated_sessions = record.sessions.filter(
-            (s) => s.id !== session_id
-        );
-
-        // 세션이 모두 삭제되면 레코드도 삭제
-        if (updated_sessions.length === 0) {
-            set((state) => ({
-                records: state.records.filter((r) => r.id !== record_id),
-            }));
-            // Firebase에서 삭제
-            syncDeleteRecord(record_id).catch(console.error);
-            return;
-        }
-
-        // 시간 재계산
-        const timeToMinutes = (time: string): number => {
-            const parts = time.split(":").map(Number);
-            return (parts[0] || 0) * 60 + (parts[1] || 0);
-        };
-
-        const total_minutes = updated_sessions.reduce(
-            (sum, s) => sum + getSessionMinutes(s),
-            0
-        );
-        const sorted_sessions = [...updated_sessions].sort(
-            (a, b) => timeToMinutes(a.start_time) - timeToMinutes(b.start_time)
-        );
-
-        set((state) => ({
-            records: state.records.map((r) =>
-                r.id === record_id
-                    ? {
-                          ...r,
-                          sessions: updated_sessions,
-                          duration_minutes: Math.max(1, total_minutes),
-                          start_time:
-                              sorted_sessions[0]?.start_time || r.start_time,
-                          end_time:
-                              sorted_sessions[sorted_sessions.length - 1]
-                                  ?.end_time || r.end_time,
-                      }
-                    : r
-            ),
-        }));
-        // Firebase에 업데이트
-        const updated_record = get().records.find((r) => r.id === record_id);
-        if (updated_record) {
-            syncRecord(updated_record).catch(console.error);
-        }
-    },
-
-    // 템플릿 관리
-    addTemplate: (template) => {
-        const new_template: WorkTemplate = {
-            ...template,
-            id: crypto.randomUUID(),
-            created_at: dayjs().toISOString(),
-        };
-        set((state) => ({
-            templates: [...state.templates, new_template],
-        }));
-        // Firebase에 저장
-        syncTemplate(new_template).catch(console.error);
-        return new_template;
-    },
-
-    deleteTemplate: (id) => {
-        set((state) => ({
-            templates: state.templates.filter((t) => t.id !== id),
-        }));
-        // Firebase에서 삭제
-        syncDeleteTemplate(id).catch(console.error);
-    },
-
-    updateTemplate: (id, template) => {
-        set((state) => ({
-            templates: state.templates.map((t) =>
-                t.id === id ? { ...t, ...template } : t
-            ),
-        }));
-        // Firebase에 업데이트
-        const updated_template = get().templates.find((t) => t.id === id);
-        if (updated_template) {
-            syncTemplate(updated_template).catch(console.error);
-        }
-    },
-
-    reorderTemplates: (active_id, over_id) => {
-        set((state) => {
-            const old_index = state.templates.findIndex((t) => t.id === active_id);
-            const new_index = state.templates.findIndex((t) => t.id === over_id);
-            if (old_index === -1 || new_index === -1) return state;
-
-            const new_templates = [...state.templates];
-            const [removed] = new_templates.splice(old_index, 1);
-            new_templates.splice(new_index, 0, removed);
-
-            return { templates: new_templates };
-        });
-        // 순서 변경된 템플릿들 Firebase에 저장
-        const { templates } = get();
-        templates.forEach((t) => {
-            syncTemplate(t).catch(console.error);
-        });
-    },
-
-    applyTemplate: (template_id) => {
-        const { templates } = get();
-        const template = templates.find((t) => t.id === template_id);
-        if (!template) return;
-
-        set({
-            form_data: {
-                project_code: template.project_code || "",
-                work_name: template.work_name,
-                task_name: template.task_name,
-                deal_name: template.deal_name,
-                category_name: template.category_name,
-                note: template.note,
+                return {
+                    success: true,
+                    adjusted: was_adjusted,
+                    message: was_adjusted
+                        ? "시간 충돌로 인해 자동 조정되었습니다."
+                        : undefined,
+                };
             },
-        });
-    },
 
-    setSelectedDate: (date) => {
-        set({ selected_date: date });
-    },
+            // 세션 삭제
+            deleteSession: (record_id, session_id) => {
+                const { records } = get();
+                const record = records.find((r) => r.id === record_id);
+                if (!record) return;
 
-    getFilteredRecords: () => {
-        const { records, selected_date } = get();
-        return records.filter((r) => r.date === selected_date && !r.is_deleted);
-    },
+                const updated_sessions = record.sessions.filter(
+                    (s) => s.id !== session_id
+                );
 
-    // 미완료 작업: 선택된 날짜의 레코드 + 과거 미완료 레코드
-    getIncompleteRecords: () => {
-        const { records, selected_date } = get();
-        return records.filter((r) => {
-            // 삭제된 레코드는 제외
-            if (r.is_deleted) return false;
-            // 완료된 레코드는 제외
-            if (r.is_completed) return false;
-            // 선택된 날짜의 레코드 또는 과거의 미완료 레코드
-            return r.date <= selected_date;
-        });
-    },
+                // 세션이 모두 삭제되면 레코드도 삭제
+                if (updated_sessions.length === 0) {
+                    set((state) => ({
+                        records: state.records.filter(
+                            (r) => r.id !== record_id
+                        ),
+                    }));
+                    // Firebase에서 삭제
+                    syncDeleteRecord(record_id).catch(console.error);
+                    return;
+                }
 
-    // 완료된 작업 목록
-    getCompletedRecords: () => {
-        const { records } = get();
-        return records
-            .filter((r) => r.is_completed && !r.is_deleted)
-            .sort((a, b) => {
-                // 완료 시간 기준 내림차순 정렬
-                const a_time = a.completed_at || a.date;
-                const b_time = b.completed_at || b.date;
-                return b_time.localeCompare(a_time);
-            });
-    },
+                // 시간 재계산
+                const timeToMinutes = (time: string): number => {
+                    const parts = time.split(":").map(Number);
+                    return (parts[0] || 0) * 60 + (parts[1] || 0);
+                };
 
-    // 완료 상태 관리
-    markAsCompleted: (id: string) => {
-        const { timer, records } = get();
-        const record = records.find((r) => r.id === id);
+                const total_minutes = updated_sessions.reduce(
+                    (sum, s) => sum + getSessionMinutes(s),
+                    0
+                );
+                const sorted_sessions = [...updated_sessions].sort(
+                    (a, b) =>
+                        timeToMinutes(a.start_time) -
+                        timeToMinutes(b.start_time)
+                );
 
-        // 현재 타이머가 이 작업과 관련이 있으면 중지
-        if (
-            timer.is_running &&
-            timer.active_form_data &&
-            record &&
-            timer.active_form_data.work_name === record.work_name &&
-            timer.active_form_data.deal_name === record.deal_name
-        ) {
-            // 타이머 중지 (세션 저장)
-            get().stopTimer();
-        }
+                set((state) => ({
+                    records: state.records.map((r) =>
+                        r.id === record_id
+                            ? {
+                                  ...r,
+                                  sessions: updated_sessions,
+                                  duration_minutes: Math.max(1, total_minutes),
+                                  start_time:
+                                      sorted_sessions[0]?.start_time ||
+                                      r.start_time,
+                                  end_time:
+                                      sorted_sessions[
+                                          sorted_sessions.length - 1
+                                      ]?.end_time || r.end_time,
+                              }
+                            : r
+                    ),
+                }));
+                // Firebase에 업데이트
+                const updated_record = get().records.find(
+                    (r) => r.id === record_id
+                );
+                if (updated_record) {
+                    syncRecord(updated_record).catch(console.error);
+                }
+            },
 
-        set((state) => ({
-            records: state.records.map((r) =>
-                r.id === id
-                    ? {
-                          ...r,
-                          is_completed: true,
-                          completed_at: new Date().toISOString(),
-                      }
-                    : r
-            ),
-        }));
-        // Firebase에 업데이트
-        const updated_record = get().records.find((r) => r.id === id);
-        if (updated_record) {
-            syncRecord(updated_record).catch(console.error);
-        }
-    },
+            // 템플릿 관리
+            addTemplate: (template) => {
+                const new_template: WorkTemplate = {
+                    ...template,
+                    id: crypto.randomUUID(),
+                    created_at: dayjs().toISOString(),
+                };
+                set((state) => ({
+                    templates: [...state.templates, new_template],
+                }));
+                // Firebase에 저장
+                syncTemplate(new_template).catch(console.error);
+                return new_template;
+            },
 
-    markAsIncomplete: (id: string) => {
-        set((state) => ({
-            records: state.records.map((r) =>
-                r.id === id
-                    ? { ...r, is_completed: false, completed_at: undefined }
-                    : r
-            ),
-        }));
-        // Firebase에 업데이트
-        const updated_record = get().records.find((r) => r.id === id);
-        if (updated_record) {
-            syncRecord(updated_record).catch(console.error);
-        }
-    },
+            deleteTemplate: (id) => {
+                set((state) => ({
+                    templates: state.templates.filter((t) => t.id !== id),
+                }));
+                // Firebase에서 삭제
+                syncDeleteTemplate(id).catch(console.error);
+            },
 
-    // 자동완성 옵션 생성 (숨김 목록 필터링)
-    getAutoCompleteOptions: (field) => {
-        const { records, templates, hidden_autocomplete_options } = get();
-        const values = new Set<string>();
+            updateTemplate: (id, template) => {
+                set((state) => ({
+                    templates: state.templates.map((t) =>
+                        t.id === id ? { ...t, ...template } : t
+                    ),
+                }));
+                // Firebase에 업데이트
+                const updated_template = get().templates.find(
+                    (t) => t.id === id
+                );
+                if (updated_template) {
+                    syncTemplate(updated_template).catch(console.error);
+                }
+            },
 
-        // 기존 레코드에서 추출
-        records.forEach((r) => {
-            const value = r[field as keyof WorkRecord];
-            if (typeof value === "string" && value.trim()) {
-                values.add(value);
-            }
-        });
+            reorderTemplates: (active_id, over_id) => {
+                set((state) => {
+                    const old_index = state.templates.findIndex(
+                        (t) => t.id === active_id
+                    );
+                    const new_index = state.templates.findIndex(
+                        (t) => t.id === over_id
+                    );
+                    if (old_index === -1 || new_index === -1) return state;
 
-        // 템플릿에서도 추출
-        templates.forEach((t) => {
-            const value = t[field as keyof WorkTemplate];
-            if (typeof value === "string" && value.trim()) {
-                values.add(value);
-            }
-        });
+                    const new_templates = [...state.templates];
+                    const [removed] = new_templates.splice(old_index, 1);
+                    new_templates.splice(new_index, 0, removed);
 
-        // 숨김 목록 필터링
-        const hidden_list =
-            hidden_autocomplete_options[
-                field as keyof typeof hidden_autocomplete_options
-            ] || [];
-        const filtered = Array.from(values).filter(
-            (v) => !hidden_list.includes(v)
-        );
+                    return { templates: new_templates };
+                });
+                // 순서 변경된 템플릿들 Firebase에 저장
+                const { templates } = get();
+                templates.forEach((t) => {
+                    syncTemplate(t).catch(console.error);
+                });
+            },
 
-        return filtered.sort();
-    },
+            applyTemplate: (template_id) => {
+                const { templates } = get();
+                const template = templates.find((t) => t.id === template_id);
+                if (!template) return;
 
-    // 프로젝트 코드 자동완성 옵션 (코드 + 작업명별 개별 옵션, 숨김 목록 필터링)
-    getProjectCodeOptions: () => {
-        const { records, templates, hidden_autocomplete_options } = get();
-        // 코드+작업명 조합을 Set으로 관리 (중복 제거)
-        const code_work_pairs = new Set<string>();
+                set({
+                    form_data: {
+                        project_code: template.project_code || "",
+                        work_name: template.work_name,
+                        task_name: template.task_name,
+                        deal_name: template.deal_name,
+                        category_name: template.category_name,
+                        note: template.note,
+                    },
+                });
+            },
 
-        // 레코드에서 추출
-        records.forEach((r) => {
-            if (r.project_code && r.project_code.trim()) {
-                const work_name = r.work_name?.trim() || "";
-                code_work_pairs.add(`${r.project_code}::${work_name}`);
-            }
-        });
+            setSelectedDate: (date) => {
+                set({ selected_date: date });
+            },
 
-        // 템플릿에서도 추출
-        templates.forEach((t) => {
-            if (t.project_code && t.project_code.trim()) {
-                const work_name = t.work_name?.trim() || "";
-                code_work_pairs.add(`${t.project_code}::${work_name}`);
-            }
-        });
+            getFilteredRecords: () => {
+                const { records, selected_date } = get();
+                return records.filter(
+                    (r) => r.date === selected_date && !r.is_deleted
+                );
+            },
 
-        // 숨김 목록 (코드::작업명 형태)
-        const hidden_codes = hidden_autocomplete_options.project_code || [];
+            // 미완료 작업: 선택된 날짜의 레코드 + 과거 미완료 레코드
+            getIncompleteRecords: () => {
+                const { records, selected_date } = get();
+                return records.filter((r) => {
+                    // 삭제된 레코드는 제외
+                    if (r.is_deleted) return false;
+                    // 완료된 레코드는 제외
+                    if (r.is_completed) return false;
+                    // 선택된 날짜의 레코드 또는 과거의 미완료 레코드
+                    return r.date <= selected_date;
+                });
+            },
 
-        // 옵션 생성: { value: "코드::작업명", label: "[코드] 작업명", work_name: 작업명 }
-        const options: { value: string; label: string; work_name?: string }[] =
-            [];
-        code_work_pairs.forEach((pair) => {
-            // 숨김 처리된 항목 제외
-            if (hidden_codes.includes(pair)) return;
+            // 완료된 작업 목록
+            getCompletedRecords: () => {
+                const { records } = get();
+                return records
+                    .filter((r) => r.is_completed && !r.is_deleted)
+                    .sort((a, b) => {
+                        // 완료 시간 기준 내림차순 정렬
+                        const a_time = a.completed_at || a.date;
+                        const b_time = b.completed_at || b.date;
+                        return b_time.localeCompare(a_time);
+                    });
+            },
 
-            const [code, work_name] = pair.split("::");
-            const label = work_name
-                ? `[${code}] ${work_name}`
-                : `[${code}]`;
-            options.push({
-                value: pair, // "코드::작업명" 형태로 저장
-                label,
-                work_name: work_name || undefined,
-            });
-        });
+            // 완료 상태 관리
+            markAsCompleted: (id: string) => {
+                const { timer, records } = get();
+                const record = records.find((r) => r.id === id);
 
-        return options.sort((a, b) => a.value.localeCompare(b.value));
-    },
+                // 현재 타이머가 이 작업과 관련이 있으면 중지
+                if (
+                    timer.is_running &&
+                    timer.active_form_data &&
+                    record &&
+                    timer.active_form_data.work_name === record.work_name &&
+                    timer.active_form_data.deal_name === record.deal_name
+                ) {
+                    // 타이머 중지 (세션 저장)
+                    get().stopTimer();
+                }
 
-    // 사용자 정의 옵션 관리
-    addCustomTaskOption: (option) => {
-        const trimmed = option.trim();
-        if (!trimmed) return;
-        set((state) => ({
-            custom_task_options: state.custom_task_options.includes(trimmed)
-                ? state.custom_task_options
-                : [...state.custom_task_options, trimmed],
-        }));
-        // Firebase에 설정 저장
-        const { custom_task_options } = get();
-        syncSettings({ custom_task_options }).catch(console.error);
-    },
+                set((state) => ({
+                    records: state.records.map((r) =>
+                        r.id === id
+                            ? {
+                                  ...r,
+                                  is_completed: true,
+                                  completed_at: new Date().toISOString(),
+                              }
+                            : r
+                    ),
+                }));
+                // Firebase에 업데이트
+                const updated_record = get().records.find((r) => r.id === id);
+                if (updated_record) {
+                    syncRecord(updated_record).catch(console.error);
+                }
+            },
 
-    addCustomCategoryOption: (option) => {
-        const trimmed = option.trim();
-        if (!trimmed) return;
-        set((state) => ({
-            custom_category_options: state.custom_category_options.includes(
-                trimmed
-            )
-                ? state.custom_category_options
-                : [...state.custom_category_options, trimmed],
-        }));
-        // Firebase에 설정 저장
-        const { custom_category_options } = get();
-        syncSettings({ custom_category_options }).catch(console.error);
-    },
+            markAsIncomplete: (id: string) => {
+                set((state) => ({
+                    records: state.records.map((r) =>
+                        r.id === id
+                            ? {
+                                  ...r,
+                                  is_completed: false,
+                                  completed_at: undefined,
+                              }
+                            : r
+                    ),
+                }));
+                // Firebase에 업데이트
+                const updated_record = get().records.find((r) => r.id === id);
+                if (updated_record) {
+                    syncRecord(updated_record).catch(console.error);
+                }
+            },
 
-    removeCustomTaskOption: (option) => {
-        set((state) => ({
-            custom_task_options: state.custom_task_options.filter(
-                (o) => o !== option
-            ),
-        }));
-        // Firebase에 설정 저장
-        const { custom_task_options } = get();
-        syncSettings({ custom_task_options }).catch(console.error);
-    },
+            // 자동완성 옵션 생성 (숨김 목록 필터링)
+            getAutoCompleteOptions: (field) => {
+                const { records, templates, hidden_autocomplete_options } =
+                    get();
+                const values = new Set<string>();
 
-    removeCustomCategoryOption: (option) => {
-        set((state) => ({
-            custom_category_options: state.custom_category_options.filter(
-                (o) => o !== option
-            ),
-        }));
-        // Firebase에 설정 저장
-        const { custom_category_options } = get();
-        syncSettings({ custom_category_options }).catch(console.error);
-    },
+                // 기존 레코드에서 추출
+                records.forEach((r) => {
+                    const value = r[field as keyof WorkRecord];
+                    if (typeof value === "string" && value.trim()) {
+                        values.add(value);
+                    }
+                });
 
-    // 자동완성 옵션 숨김 처리
-    hideAutoCompleteOption: (field, value) => {
-        set((state) => {
-            const current_list = state.hidden_autocomplete_options[field] || [];
-            return {
-                hidden_autocomplete_options: {
-                    ...state.hidden_autocomplete_options,
-                    [field]: current_list.includes(value)
-                        ? current_list
-                        : [...current_list, value],
-                },
-            };
-        });
-        // Firebase에 설정 저장
-        const { hidden_autocomplete_options } = get();
-        syncSettings({ hidden_autocomplete_options }).catch(console.error);
-    },
+                // 템플릿에서도 추출
+                templates.forEach((t) => {
+                    const value = t[field as keyof WorkTemplate];
+                    if (typeof value === "string" && value.trim()) {
+                        values.add(value);
+                    }
+                });
 
-    // 자동완성 옵션 숨김 해제
-    unhideAutoCompleteOption: (field, value) => {
-        set((state) => {
-            const current_list = state.hidden_autocomplete_options[field] || [];
-            return {
-                hidden_autocomplete_options: {
-                    ...state.hidden_autocomplete_options,
-                    [field]: current_list.filter((v) => v !== value),
-                },
-            };
-        });
-        // Firebase에 설정 저장
-        const { hidden_autocomplete_options } = get();
-        syncSettings({ hidden_autocomplete_options }).catch(console.error);
-    },
+                // 숨김 목록 필터링
+                const hidden_list =
+                    hidden_autocomplete_options[
+                        field as keyof typeof hidden_autocomplete_options
+                    ] || [];
+                const filtered = Array.from(values).filter(
+                    (v) => !hidden_list.includes(v)
+                );
 
-    setUsePostfixOnPresetAdd: (value) => {
-        set({ use_postfix_on_preset_add: value });
-    },
+                return filtered.sort();
+            },
 
-    setAppTheme: (theme) => {
-        set({ app_theme: theme });
-        // Firebase에 설정 저장
-        syncSettings({ app_theme: theme }).catch(console.error);
-    },
+            // 프로젝트 코드 자동완성 옵션 (코드 + 작업명별 개별 옵션, 숨김 목록 필터링)
+            getProjectCodeOptions: () => {
+                const { records, templates, hidden_autocomplete_options } =
+                    get();
+                // 코드+작업명 조합을 Set으로 관리 (중복 제거)
+                const code_work_pairs = new Set<string>();
 
-    setLunchTime: (start, end) => {
-        set({ lunch_start_time: start, lunch_end_time: end });
-        // Firebase에 설정 저장
-        syncSettings({ lunch_start_time: start, lunch_end_time: end }).catch(console.error);
-    },
+                // 레코드에서 추출
+                records.forEach((r) => {
+                    if (r.project_code && r.project_code.trim()) {
+                        const work_name = r.work_name?.trim() || "";
+                        code_work_pairs.add(`${r.project_code}::${work_name}`);
+                    }
+                });
 
-    getLunchTimeMinutes: () => {
-        const { lunch_start_time, lunch_end_time } = get();
-        const start_parts = lunch_start_time.split(":").map(Number);
-        const end_parts = lunch_end_time.split(":").map(Number);
-        const start = start_parts[0] * 60 + start_parts[1];
-        const end = end_parts[0] * 60 + end_parts[1];
-        return { start, end, duration: end - start };
-    },
+                // 템플릿에서도 추출
+                templates.forEach((t) => {
+                    if (t.project_code && t.project_code.trim()) {
+                        const work_name = t.work_name?.trim() || "";
+                        code_work_pairs.add(`${t.project_code}::${work_name}`);
+                    }
+                });
+
+                // 숨김 목록 (코드::작업명 형태)
+                const hidden_codes =
+                    hidden_autocomplete_options.project_code || [];
+
+                // 옵션 생성: { value: "코드::작업명", label: "[코드] 작업명", work_name: 작업명 }
+                const options: {
+                    value: string;
+                    label: string;
+                    work_name?: string;
+                }[] = [];
+                code_work_pairs.forEach((pair) => {
+                    // 숨김 처리된 항목 제외
+                    if (hidden_codes.includes(pair)) return;
+
+                    const [code, work_name] = pair.split("::");
+                    const label = work_name
+                        ? `[${code}] ${work_name}`
+                        : `[${code}]`;
+                    options.push({
+                        value: pair, // "코드::작업명" 형태로 저장
+                        label,
+                        work_name: work_name || undefined,
+                    });
+                });
+
+                return options.sort((a, b) => a.value.localeCompare(b.value));
+            },
+
+            // 사용자 정의 옵션 관리
+            addCustomTaskOption: (option) => {
+                const trimmed = option.trim();
+                if (!trimmed) return;
+                set((state) => ({
+                    custom_task_options: state.custom_task_options.includes(
+                        trimmed
+                    )
+                        ? state.custom_task_options
+                        : [...state.custom_task_options, trimmed],
+                }));
+                // Firebase에 설정 저장
+                const { custom_task_options } = get();
+                syncSettings({ custom_task_options }).catch(console.error);
+            },
+
+            addCustomCategoryOption: (option) => {
+                const trimmed = option.trim();
+                if (!trimmed) return;
+                set((state) => ({
+                    custom_category_options:
+                        state.custom_category_options.includes(trimmed)
+                            ? state.custom_category_options
+                            : [...state.custom_category_options, trimmed],
+                }));
+                // Firebase에 설정 저장
+                const { custom_category_options } = get();
+                syncSettings({ custom_category_options }).catch(console.error);
+            },
+
+            removeCustomTaskOption: (option) => {
+                set((state) => ({
+                    custom_task_options: state.custom_task_options.filter(
+                        (o) => o !== option
+                    ),
+                }));
+                // Firebase에 설정 저장
+                const { custom_task_options } = get();
+                syncSettings({ custom_task_options }).catch(console.error);
+            },
+
+            removeCustomCategoryOption: (option) => {
+                set((state) => ({
+                    custom_category_options:
+                        state.custom_category_options.filter(
+                            (o) => o !== option
+                        ),
+                }));
+                // Firebase에 설정 저장
+                const { custom_category_options } = get();
+                syncSettings({ custom_category_options }).catch(console.error);
+            },
+
+            // 자동완성 옵션 숨김 처리
+            hideAutoCompleteOption: (field, value) => {
+                set((state) => {
+                    const current_list =
+                        state.hidden_autocomplete_options[field] || [];
+                    return {
+                        hidden_autocomplete_options: {
+                            ...state.hidden_autocomplete_options,
+                            [field]: current_list.includes(value)
+                                ? current_list
+                                : [...current_list, value],
+                        },
+                    };
+                });
+                // Firebase에 설정 저장
+                const { hidden_autocomplete_options } = get();
+                syncSettings({ hidden_autocomplete_options }).catch(
+                    console.error
+                );
+            },
+
+            // 자동완성 옵션 숨김 해제
+            unhideAutoCompleteOption: (field, value) => {
+                set((state) => {
+                    const current_list =
+                        state.hidden_autocomplete_options[field] || [];
+                    return {
+                        hidden_autocomplete_options: {
+                            ...state.hidden_autocomplete_options,
+                            [field]: current_list.filter((v) => v !== value),
+                        },
+                    };
+                });
+                // Firebase에 설정 저장
+                const { hidden_autocomplete_options } = get();
+                syncSettings({ hidden_autocomplete_options }).catch(
+                    console.error
+                );
+            },
+
+            setUsePostfixOnPresetAdd: (value) => {
+                set({ use_postfix_on_preset_add: value });
+            },
+
+            setAppTheme: (theme) => {
+                set({ app_theme: theme });
+                // Firebase에 설정 저장
+                syncSettings({ app_theme: theme }).catch(console.error);
+            },
+
+            setLunchTime: (start, end) => {
+                set({ lunch_start_time: start, lunch_end_time: end });
+                // Firebase에 설정 저장
+                syncSettings({
+                    lunch_start_time: start,
+                    lunch_end_time: end,
+                }).catch(console.error);
+            },
+
+            getLunchTimeMinutes: () => {
+                const { lunch_start_time, lunch_end_time } = get();
+                const start_parts = lunch_start_time.split(":").map(Number);
+                const end_parts = lunch_end_time.split(":").map(Number);
+                const start = start_parts[0] * 60 + start_parts[1];
+                const end = end_parts[0] * 60 + end_parts[1];
+                return { start, end, duration: end - start };
+            },
+
+            setTransitionEnabled: (enabled) => {
+                set({ transition_enabled: enabled });
+                // Firebase에 설정 저장
+                syncSettings({ transition_enabled: enabled }).catch(
+                    console.error
+                );
+            },
+
+            setTransitionSpeed: (speed) => {
+                set({ transition_speed: speed });
+                // Firebase에 설정 저장
+                syncSettings({ transition_speed: speed }).catch(console.error);
+            },
         }),
         {
             name: "work-time-storage", // LocalStorage 키
@@ -2055,6 +2337,8 @@ export const useWorkStore = create<WorkStore>()(
                 app_theme: state.app_theme,
                 lunch_start_time: state.lunch_start_time,
                 lunch_end_time: state.lunch_end_time,
+                transition_enabled: state.transition_enabled,
+                transition_speed: state.transition_speed,
             }),
         }
     )

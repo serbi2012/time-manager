@@ -7,6 +7,11 @@ import DailyGanttChart from "../../components/DailyGanttChart";
 import WorkRecordTable from "../../components/WorkRecordTable";
 import { DesktopSidebar } from "../../widgets/Navigation";
 import { useWorkStore } from "../../store/useWorkStore";
+import {
+    SlideIn,
+    usePageTransitionContext,
+    DESKTOP_DAILY_DELAYS,
+} from "../../shared/ui";
 
 const { Content } = Layout;
 
@@ -88,16 +93,44 @@ export function DesktopDailyPage() {
         message.success(`"${template.work_name}" 작업이 추가되었습니다`);
     };
 
+    const {
+        is_ready,
+        transition_enabled,
+        transition_speed,
+    } = usePageTransitionContext();
+
     return (
         <Layout className="app-body">
-            <DesktopSidebar on_add_record_only={handleAddRecordOnly} />
+            <SlideIn
+                direction="left"
+                show={is_ready}
+                delay={DESKTOP_DAILY_DELAYS.sidebar}
+                enabled={transition_enabled}
+                speed={transition_speed}
+            >
+                <DesktopSidebar on_add_record_only={handleAddRecordOnly} />
+            </SlideIn>
             <Content className="app-content">
-                <div className="gantt-section">
+                <SlideIn
+                    direction="top"
+                    show={is_ready}
+                    delay={DESKTOP_DAILY_DELAYS.gantt}
+                    className="gantt-section"
+                    enabled={transition_enabled}
+                    speed={transition_speed}
+                >
                     <DailyGanttChart />
-                </div>
-                <div className="table-section">
+                </SlideIn>
+                <SlideIn
+                    direction="bottom"
+                    show={is_ready}
+                    delay={DESKTOP_DAILY_DELAYS.table}
+                    className="table-section"
+                    enabled={transition_enabled}
+                    speed={transition_speed}
+                >
                     <WorkRecordTable />
-                </div>
+                </SlideIn>
             </Content>
         </Layout>
     );
