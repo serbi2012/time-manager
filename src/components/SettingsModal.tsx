@@ -17,6 +17,7 @@ import {
     Collapse,
     TimePicker,
     Card,
+    Select,
 } from "antd";
 import {
     DownloadOutlined,
@@ -35,6 +36,7 @@ import {
     CloudOutlined,
     AppstoreOutlined,
     SaveOutlined,
+    ThunderboltOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import {
@@ -50,7 +52,9 @@ import {
     APP_THEME_COLORS,
     APP_THEME_LABELS,
     type AppTheme,
+    type TransitionSpeed,
 } from "../store/useWorkStore";
+import { TRANSITION_SPEED_LABELS } from "../shared/ui";
 import { useResponsive } from "../hooks/useResponsive";
 
 const { Text } = Typography;
@@ -988,6 +992,16 @@ function DataTab({
     const app_theme = useWorkStore((state) => state.app_theme);
     const theme_color = APP_THEME_COLORS[app_theme].primary;
 
+    // 트랜지션 설정
+    const transition_enabled = useWorkStore((state) => state.transition_enabled);
+    const transition_speed = useWorkStore((state) => state.transition_speed);
+    const setTransitionEnabled = useWorkStore(
+        (state) => state.setTransitionEnabled
+    );
+    const setTransitionSpeed = useWorkStore(
+        (state) => state.setTransitionSpeed
+    );
+
     // 점심시간 핸들러
     const handleLunchTimeChange = (
         times: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null
@@ -1055,6 +1069,62 @@ function DataTab({
                         <Switch
                             checked={use_postfix}
                             onChange={setUsePostfix}
+                        />
+                    }
+                />
+            </Card>
+
+            {/* 트랜지션 설정 섹션 */}
+            <Card
+                size="small"
+                title={
+                    <Space>
+                        <ThunderboltOutlined style={{ color: theme_color }} />
+                        <span>트랜지션 효과</span>
+                    </Space>
+                }
+                styles={{ body: { padding: is_mobile ? "0 12px" : "0 16px" } }}
+            >
+                <SettingItem
+                    icon={<ThunderboltOutlined />}
+                    title="페이지 진입 애니메이션"
+                    description="페이지 로딩 후 UI가 슬라이드되며 나타납니다"
+                    is_mobile={is_mobile}
+                    action={
+                        <Switch
+                            checked={transition_enabled}
+                            onChange={setTransitionEnabled}
+                        />
+                    }
+                />
+                <SettingItem
+                    icon={<ThunderboltOutlined />}
+                    title="애니메이션 속도"
+                    description="트랜지션 효과의 속도를 조절합니다"
+                    is_mobile={is_mobile}
+                    action={
+                        <Select
+                            value={transition_speed}
+                            onChange={(value) =>
+                                setTransitionSpeed(value as TransitionSpeed)
+                            }
+                            options={[
+                                {
+                                    value: "slow",
+                                    label: TRANSITION_SPEED_LABELS.slow,
+                                },
+                                {
+                                    value: "normal",
+                                    label: TRANSITION_SPEED_LABELS.normal,
+                                },
+                                {
+                                    value: "fast",
+                                    label: TRANSITION_SPEED_LABELS.fast,
+                                },
+                            ]}
+                            size="small"
+                            style={{ width: is_mobile ? "100%" : 100 }}
+                            disabled={!transition_enabled}
                         />
                     }
                 />

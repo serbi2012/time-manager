@@ -1,0 +1,346 @@
+---
+description: 페이지 트랜지션 시스템 개발 가이드
+globs:
+  - src/shared/ui/transitions/**
+  - src/app/layouts/**
+  - src/pages/**
+---
+
+# 트랜지션 시스템 (Page Transitions)
+
+이 문서는 페이지 진입 시 UI 요소들의 트랜지션 효과 시스템을 설명합니다.
+
+---
+
+## 아키텍처 개요
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Layout (Desktop/Mobile)                 │
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │ PageTransitionProvider                                  ││
+│  │  - is_ready (initial_load_done)                        ││
+│  │  - transition_enabled (설정)                            ││
+│  │  - transition_speed (설정)                              ││
+│  │                                                         ││
+│  │  ┌─────────────────────────────────────────────────┐   ││
+│  │  │              Pages (Daily, Weekly...)            │   ││
+│  │  │                                                  │   ││
+│  │  │   usePageTransitionContext() 로 상태 소비       │   ││
+│  │  │                                                  │   ││
+│  │  │   SlideIn / FadeIn 컴포넌트로 UI 래핑           │   ││
+│  │  └─────────────────────────────────────────────────┘   ││
+│  └─────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 파일 구조
+
+```
+src/shared/ui/transitions/
+├── index.ts                  # Public API
+├── transition_config.ts      # 설정 상수 (속도, 딜레이, 방향)
+├── SlideIn.tsx              # 슬라이드 인 컴포넌트
+├── FadeIn.tsx               # 페이드 인 컴포넌트
+├── PageTransitionContext.tsx # 상태 전달 Context
+└── usePageTransition.ts     # 헬퍼 훅
+```
+
+---
+
+## 핵심 컴포넌트
+
+### 1. SlideIn
+
+방향별 슬라이드 인 애니메이션 컴포넌트
+
+```tsx
+import { SlideIn } from "@/shared/ui";
+
+<SlideIn
+  direction="left"    // "left" | "right" | "top" | "bottom"
+  show={is_ready}     // 트랜지션 시작 조건
+  delay={0.1}         // 딜레이 (초)
+  enabled={true}      // 활성화 여부 (false면 즉시 표시)
+  speed="normal"      // "slow" | "normal" | "fast"
+>
+  <Sidebar />
+</SlideIn>
+```
+
+**방향별 초기 오프셋:**
+| 방향 | X | Y |
+|------|-----|-----|
+| left | -100 | 0 |
+| right | 100 | 0 |
+| top | 0 | -50 |
+| bottom | 0 | 50 |
+
+### 2. FadeIn
+
+페이드 인 애니메이션 컴포넌트
+
+```tsx
+import { FadeIn } from "@/shared/ui";
+
+<FadeIn
+  show={is_ready}
+  delay={0.2}
+  enabled={true}
+  speed="normal"
+>
+  <FloatingButton />
+</FadeIn>
+```
+
+### 3. PageTransitionContext
+
+레이아웃에서 페이지로 트랜지션 상태 전달
+
+**Provider (Layout에서):**
+```tsx
+import { PageTransitionProvider } from "@/shared/ui";
+
+<PageTransitionProvider
+  is_ready={initial_load_done}
+  transition_enabled={transition_enabled}
+  transition_speed={transition_speed}
+>
+  <Routes>...</Routes>
+</PageTransitionProvider>
+```
+
+**Consumer (Page에서):**
+```tsx
+import { usePageTransitionContext } from "@/shared/ui";
+
+const { is_ready, transition_enabled, transition_speed } = usePageTransitionContext();
+```
+
+---
+
+## 설정 상수
+
+### 트랜지션 속도
+
+```typescript
+type TransitionSpeed = "slow" | "normal" | "fast";
+
+// Duration (초)
+{ slow: 0.7, normal: 0.5, fast: 0.25 }
+
+// Stagger (순차 딜레이, 초)
+{ slow: 0.15, normal: 0.1, fast: 0.05 }
+```
+
+### 페이지별 딜레이 설정
+
+```typescript
+// 데스크탑 일간 페이지
+DESKTOP_DAILY_DELAYS = {
+  header: 0,
+  sidebar: 0.1,
+  gantt: 0.2,
+  table: 0.3,
+}
+
+// 모바일 일간 페이지
+MOBILE_DAILY_DELAYS = {
+  header: 0,
+  content: 0.15,
+}
+```
+
+---
+
+## 사용 예시
+
+### 데스크탑 페이지
+
+```tsx
+// DesktopDailyPage.tsx
+import { SlideIn, usePageTransitionContext, DESKTOP_DAILY_DELAYS } from "@/shared/ui";
+
+export function DesktopDailyPage() {
+  const { is_ready, transition_enabled, transition_speed } = usePageTransitionContext();
+
+  return (
+    <div className="app-body">
+      {/* 사이드바: 왼쪽에서 슬라이드 */}
+      <SlideIn
+        direction="left"
+        show={is_ready}
+        delay={DESKTOP_DAILY_DELAYS.sidebar}
+        enabled={transition_enabled}
+        speed={transition_speed}
+      >
+        <Sidebar />
+      </SlideIn>
+
+      <main className="app-content">
+        {/* 간트차트: 위에서 슬라이드 */}
+        <SlideIn
+          direction="top"
+          show={is_ready}
+          delay={DESKTOP_DAILY_DELAYS.gantt}
+          enabled={transition_enabled}
+          speed={transition_speed}
+        >
+          <GanttChart />
+        </SlideIn>
+
+        {/* 테이블: 아래에서 슬라이드 */}
+        <SlideIn
+          direction="bottom"
+          show={is_ready}
+          delay={DESKTOP_DAILY_DELAYS.table}
+          enabled={transition_enabled}
+          speed={transition_speed}
+        >
+          <WorkRecordTable />
+        </SlideIn>
+      </main>
+    </div>
+  );
+}
+```
+
+### 레이아웃 설정
+
+```tsx
+// DesktopLayout.tsx
+import { AnimatePresence, motion } from "framer-motion";
+import { PageTransitionProvider, SlideIn } from "@/shared/ui";
+
+export function DesktopLayout() {
+  const { initial_load_done } = useSyncStatus();
+  const { transition_enabled, transition_speed } = useWorkStore();
+  const is_transition_ready = initial_load_done;
+
+  return (
+    <Layout>
+      {/* 헤더: 위에서 슬라이드 */}
+      <SlideIn
+        direction="top"
+        show={is_transition_ready}
+        delay={0}
+        enabled={transition_enabled}
+        speed={transition_speed}
+      >
+        <Header />
+      </SlideIn>
+
+      {/* 로딩 오버레이 */}
+      <AnimatePresence>
+        {!initial_load_done && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            style={{ position: "fixed", inset: 0, ... }}
+          >
+            <Spin />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 페이지에 트랜지션 상태 전달 */}
+      <PageTransitionProvider
+        is_ready={is_transition_ready}
+        transition_enabled={transition_enabled}
+        transition_speed={transition_speed}
+      >
+        <Routes>...</Routes>
+      </PageTransitionProvider>
+    </Layout>
+  );
+}
+```
+
+---
+
+## 사용자 설정
+
+설정 모달에서 트랜지션을 커스터마이징할 수 있습니다:
+
+- **트랜지션 활성화/비활성화**: `transition_enabled` (boolean)
+- **트랜지션 속도**: `transition_speed` ("slow" | "normal" | "fast")
+
+이 설정은 Zustand 스토어에 저장되며 Firebase와 동기화됩니다.
+
+---
+
+## 주의사항
+
+### 1. will-change 사용 금지
+
+```tsx
+// ❌ 금지 - 텍스트가 흐려짐
+style={{ willChange: "transform, opacity" }}
+
+// ✅ 권장 - Framer Motion이 자동 최적화
+style={style}  // 또는 생략
+```
+
+### 2. 로딩 오버레이는 전체 화면 덮기
+
+```tsx
+// ❌ 금지 - 헤더 영역이 비어 보임
+style={{ position: "fixed", top: 64, ... }}
+
+// ✅ 권장 - 전체 화면 덮기
+style={{ position: "fixed", top: 0, ... }}
+```
+
+### 3. 트랜지션 비활성화 시 즉시 렌더링
+
+`enabled={false}` 일 때는 애니메이션 없이 즉시 표시됩니다.
+
+---
+
+## 새 페이지에 트랜지션 추가하기
+
+1. **딜레이 설정 추가** (`transition_config.ts`):
+```typescript
+export const PAGE_TRANSITION_DELAYS = {
+  // 기존...
+  desktop_new_page: {
+    section1: 0,
+    section2: 0.1,
+    section3: 0.2,
+  },
+};
+```
+
+2. **헬퍼 상수 내보내기** (`usePageTransition.ts`):
+```typescript
+export const DESKTOP_NEW_PAGE_DELAYS = PAGE_TRANSITION_DELAYS.desktop_new_page;
+```
+
+3. **index.ts에 export 추가**
+
+4. **페이지 컴포넌트에서 사용**:
+```tsx
+import { SlideIn, usePageTransitionContext, DESKTOP_NEW_PAGE_DELAYS } from "@/shared/ui";
+
+const { is_ready, transition_enabled, transition_speed } = usePageTransitionContext();
+
+<SlideIn
+  direction="left"
+  show={is_ready}
+  delay={DESKTOP_NEW_PAGE_DELAYS.section1}
+  enabled={transition_enabled}
+  speed={transition_speed}
+>
+  <Section1 />
+</SlideIn>
+```
+
+---
+
+## 의존성
+
+- **framer-motion**: 애니메이션 라이브러리
+- **zustand**: 설정 상태 관리 (transition_enabled, transition_speed)

@@ -8,6 +8,12 @@ import DailyGanttChart from "../../components/DailyGanttChart";
 import WorkRecordTable from "../../components/WorkRecordTable";
 import { MobilePresetDrawer, MobilePresetFab } from "../../widgets/Navigation";
 import { useWorkStore } from "../../store/useWorkStore";
+import {
+    SlideIn,
+    FadeIn,
+    usePageTransitionContext,
+    MOBILE_DAILY_DELAYS,
+} from "../../shared/ui";
 
 const { Content } = Layout;
 
@@ -95,21 +101,43 @@ export function MobileDailyPage() {
         setIsPresetDrawerOpen(false);
     };
 
+    const {
+        is_ready,
+        transition_enabled,
+        transition_speed,
+    } = usePageTransitionContext();
+
     return (
         <Layout className="app-body">
-            <Content className="app-content">
-                <div className="gantt-section">
-                    <DailyGanttChart />
-                </div>
-                <div className="table-section">
-                    <WorkRecordTable />
-                </div>
-            </Content>
+            <SlideIn
+                direction="bottom"
+                show={is_ready}
+                delay={MOBILE_DAILY_DELAYS.content}
+                style={{ flex: 1, display: "flex", flexDirection: "column" }}
+                enabled={transition_enabled}
+                speed={transition_speed}
+            >
+                <Content className="app-content">
+                    <div className="gantt-section">
+                        <DailyGanttChart />
+                    </div>
+                    <div className="table-section">
+                        <WorkRecordTable />
+                    </div>
+                </Content>
+            </SlideIn>
 
-            <MobilePresetFab
-                on_open={() => setIsPresetDrawerOpen(true)}
-                app_theme={app_theme}
-            />
+            <FadeIn
+                show={is_ready}
+                delay={MOBILE_DAILY_DELAYS.content + 0.2}
+                enabled={transition_enabled}
+                speed={transition_speed}
+            >
+                <MobilePresetFab
+                    on_open={() => setIsPresetDrawerOpen(true)}
+                    app_theme={app_theme}
+                />
+            </FadeIn>
 
             <MobilePresetDrawer
                 is_open={is_preset_drawer_open}

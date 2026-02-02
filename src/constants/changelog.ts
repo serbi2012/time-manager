@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.14";
+export const CURRENT_VERSION = "2.0.15";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,23 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.15",
+        date: "2026-02-02",
+        title: "페이지 트랜지션 효과",
+        changes: [
+            {
+                type: "feature",
+                description:
+                    "페이지 진입 시 UI 요소들이 부드럽게 나타나는 트랜지션 효과 추가",
+            },
+            {
+                type: "feature",
+                description:
+                    "설정에서 트랜지션 효과 활성화/비활성화 및 속도 조절 가능",
+            },
+        ],
+    },
     {
         version: "2.0.13",
         date: "2026-01-30",
@@ -100,13 +117,11 @@ export const CHANGELOG: ChangelogEntry[] = [
             },
             {
                 type: "improvement",
-                description:
-                    "버튼에 설정된 단축키가 동적으로 표시됨",
+                description: "버튼에 설정된 단축키가 동적으로 표시됨",
             },
             {
                 type: "performance",
-                description:
-                    "자동완성 검색 시 성능 최적화 (디바운스 적용)",
+                description: "자동완성 검색 시 성능 최적화 (디바운스 적용)",
             },
             {
                 type: "fix",
@@ -122,18 +137,15 @@ export const CHANGELOG: ChangelogEntry[] = [
         changes: [
             {
                 type: "style",
-                description:
-                    "모바일 설정 화면이 더 보기 좋게 개선됨",
+                description: "모바일 설정 화면이 더 보기 좋게 개선됨",
             },
             {
                 type: "improvement",
-                description:
-                    "모바일에서 프리셋 수정/삭제 버튼이 항상 표시됨",
+                description: "모바일에서 프리셋 수정/삭제 버튼이 항상 표시됨",
             },
             {
                 type: "improvement",
-                description:
-                    "모바일에서 날짜 선택 UI가 개선됨",
+                description: "모바일에서 날짜 선택 UI가 개선됨",
             },
         ],
     },
@@ -149,8 +161,7 @@ export const CHANGELOG: ChangelogEntry[] = [
             },
             {
                 type: "style",
-                description:
-                    "모바일 헤더에 현재 페이지명과 오늘 날짜가 표시됨",
+                description: "모바일 헤더에 현재 페이지명과 오늘 날짜가 표시됨",
             },
         ],
     },
@@ -187,7 +198,8 @@ export const CHANGELOG: ChangelogEntry[] = [
             },
             {
                 type: "feature",
-                description: "설정에서 점심시간을 조정할 수 있음 (기본: 11:40~12:40)",
+                description:
+                    "설정에서 점심시간을 조정할 수 있음 (기본: 11:40~12:40)",
             },
             {
                 type: "fix",
@@ -282,8 +294,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         changes: [
             {
                 type: "improvement",
-                description:
-                    "동기화 안정성 대폭 개선 - 변경된 데이터만 저장",
+                description: "동기화 안정성 대폭 개선 - 변경된 데이터만 저장",
             },
             {
                 type: "improvement",
@@ -292,8 +303,7 @@ export const CHANGELOG: ChangelogEntry[] = [
             },
             {
                 type: "fix",
-                description:
-                    "진행 중 세션 중복 생성 문제 해결",
+                description: "진행 중 세션 중복 생성 문제 해결",
             },
         ],
     },
@@ -546,8 +556,7 @@ export const CHANGELOG: ChangelogEntry[] = [
             },
             {
                 type: "feature",
-                description:
-                    "실제 UI 미리보기로 기능 이해 도움",
+                description: "실제 UI 미리보기로 기능 이해 도움",
             },
             {
                 type: "docs",
@@ -580,8 +589,7 @@ export const CHANGELOG: ChangelogEntry[] = [
             },
             {
                 type: "feature",
-                description:
-                    "비로그인 사용자도 자신의 게시글 수정/삭제 가능",
+                description: "비로그인 사용자도 자신의 게시글 수정/삭제 가능",
             },
             {
                 type: "improvement",
@@ -590,8 +598,7 @@ export const CHANGELOG: ChangelogEntry[] = [
             },
             {
                 type: "improvement",
-                description:
-                    "삭제 확인에서 엔터키로 바로 확인 가능",
+                description: "삭제 확인에서 엔터키로 바로 확인 가능",
             },
         ],
     },
