@@ -439,6 +439,7 @@ export default function DailyGanttChart() {
     );
 
     // 시간 범위 계산 (기본 9시-18시)
+    // 진행 중인 세션은 current_time_mins를 사용하여 getBarStyle과 동기화
     const time_range = useMemo(() => {
         let min_start = 9 * 60;
         let max_end = 18 * 60;
@@ -447,10 +448,12 @@ export default function DailyGanttChart() {
             grouped_works.forEach((group) => {
                 group.sessions.forEach((session) => {
                     const start = timeToMinutes(session.start_time);
-                    // 진행 중인 세션(end_time === "")은 현재 시간 사용
-                    const end = session.end_time
-                        ? timeToMinutes(session.end_time)
-                        : current_time_mins;
+                    // 진행 중인 세션(active_session_id)은 current_time_mins 직접 사용
+                    // grouped_works에서 채워진 end_time이 아닌 실시간 시간 사용
+                    const is_running = session.id === timer.active_session_id;
+                    const end = is_running
+                        ? current_time_mins
+                        : timeToMinutes(session.end_time);
                     min_start = Math.min(min_start, start);
                     max_end = Math.max(max_end, end);
                 });
@@ -461,7 +464,7 @@ export default function DailyGanttChart() {
             start: Math.floor(min_start / 60) * 60,
             end: Math.ceil(max_end / 60) * 60,
         };
-    }, [grouped_works, current_time_mins]);
+    }, [grouped_works, current_time_mins, timer.active_session_id]);
 
     // 드래그 시작점에서 확장 가능한 범위 계산
     // anchor_mins를 기준으로 왼쪽/오른쪽으로 확장할 수 있는 최대 범위 반환
@@ -744,13 +747,18 @@ export default function DailyGanttChart() {
             ? current_time_mins
             : timeToMinutes(session.end_time);
 
-        const left = ((start - time_range.start) / total_minutes) * 100;
+        let left = ((start - time_range.start) / total_minutes) * 100;
         let width = ((end - start) / total_minutes) * 100;
 
         // 모든 세션에 최소 너비 보장 (0분 세션도 표시)
         // 최소 5분 너비 또는 1% 중 큰 값
         const min_width_percent = Math.max((5 / total_minutes) * 100, 1);
         width = Math.max(width, min_width_percent);
+
+        // 바가 영역을 벗어나지 않도록 범위 제한 (방어적 코딩)
+        left = Math.max(0, Math.min(left, 100));
+        const max_width = 100 - left;
+        width = Math.min(width, max_width);
 
         return {
             left: `${left}%`,
