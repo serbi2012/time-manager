@@ -196,6 +196,33 @@ const WeeklySchedule = () => {
         [records]
     );
 
+    // 작업의 진행상태 판단
+    // 1. 타이머가 돌아가는 세션이 있으면 → "진행중"
+    // 2. 모든 세션 종료 + 완료 버튼 안 누름 → "진행중"
+    // 3. 모든 세션 종료 + 완료 버튼 누름 → "완료"
+    const getWorkProgressStatus = useCallback(
+        (work_name: string): string => {
+            const work_records = records.filter(
+                (r) => r.work_name === work_name && !r.is_deleted
+            );
+
+            if (work_records.length === 0) return "진행중";
+
+            // 1. 진행중인 세션(end_time이 빈 문자열)이 하나라도 있으면 "진행중"
+            const all_sessions = work_records.flatMap((r) => r.sessions || []);
+            const has_running_session = all_sessions.some(
+                (s) => s.end_time === ""
+            );
+            if (has_running_session) return "진행중";
+
+            // 2. 모든 레코드가 is_completed여야 "완료"
+            const all_completed = work_records.every((r) => r.is_completed);
+
+            return all_completed ? "완료" : "진행중";
+        },
+        [records]
+    );
+
     // 날짜별로 그룹화된 데이터 생성
     const day_groups = useMemo(() => {
         const groups: DayGroup[] = [];
@@ -229,7 +256,7 @@ const WeeklySchedule = () => {
                         work_name: record.work_name,
                         status:
                             edited?.status ||
-                            (record.is_completed ? "완료" : "진행중"),
+                            getWorkProgressStatus(record.work_name),
                         start_date: getFirstStartDate(record.work_name),
                         total_minutes: getTotalMinutesForWork(
                             record.work_name,
@@ -289,6 +316,7 @@ const WeeklySchedule = () => {
         editable_data,
         hide_management_work,
         getFirstStartDate,
+        getWorkProgressStatus,
         getTotalMinutesForWork,
         getTotalMinutesForDeal,
     ]);
