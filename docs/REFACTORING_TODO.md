@@ -15,6 +15,7 @@
 5. [공통 훅 추출](#5-공통-훅-추출)
 6. [순수 함수 통합](#6-순수-함수-통합)
 7. [스토어 분리](#7-스토어-분리)
+   7.5. [상수 통합 관리](#75-상수-통합-관리)
 8. [거대 컴포넌트 분리](#8-거대-컴포넌트-분리)
 9. [플랫폼 완전 분리](#9-플랫폼-완전-분리)
 10. [정리 및 문서화](#10-정리-및-문서화)
@@ -107,7 +108,7 @@ pnpm add @tanstack/react-table
 ### 1.5 상태 관리 보조
 
 ```bash
-pnpm add immer
+pnpm add mutative
 ```
 
 **용도**: Zustand 슬라이스에서 불변 상태 업데이트 간소화
@@ -138,7 +139,7 @@ pnpm add -D playwright @playwright/test  # E2E 테스트
 -   [ ] `lodash-es` 설치 및 타입 확인
 -   [ ] `react-hook-form` + `zod` 설치
 -   [ ] `@tanstack/react-table` 설치
--   [ ] `immer` 설치
+-   [x] `mutative` 설치 (immer보다 빠른 대안)
 -   [ ] `clsx` 설치
 -   [ ] `msw` 설치
 -   [ ] `Storybook` 설치 및 초기 설정
@@ -2108,7 +2109,7 @@ store/
 ```typescript
 // src/store/slices/records.ts
 import { StateCreator } from "zustand";
-import { produce } from "immer";
+import { create } from "mutative";
 import { WorkRecord } from "@/shared/types";
 
 export interface RecordsSlice {
@@ -2131,19 +2132,19 @@ export const createRecordsSlice: StateCreator<RecordsSlice> = (set) => ({
     records: [],
     selected_record_id: null,
 
-    // Actions (immer로 불변성 관리)
+    // Actions (mutative로 불변성 관리)
     setRecords: (records) => set({ records }),
 
     addRecord: (record) =>
         set(
-            produce((state: RecordsSlice) => {
+            create((state) => {
                 state.records.push(record);
             })
         ),
 
     updateRecord: (id, updates) =>
         set(
-            produce((state: RecordsSlice) => {
+            create((state) => {
                 const index = state.records.findIndex((r) => r.id === id);
                 if (index !== -1) {
                     state.records[index] = {
@@ -2156,7 +2157,7 @@ export const createRecordsSlice: StateCreator<RecordsSlice> = (set) => ({
 
     deleteRecord: (id) =>
         set(
-            produce((state: RecordsSlice) => {
+            create((state) => {
                 const index = state.records.findIndex((r) => r.id === id);
                 if (index !== -1) {
                     state.records[index].is_deleted = true;
@@ -2167,7 +2168,7 @@ export const createRecordsSlice: StateCreator<RecordsSlice> = (set) => ({
 
     restoreRecord: (id) =>
         set(
-            produce((state: RecordsSlice) => {
+            create((state) => {
                 const index = state.records.findIndex((r) => r.id === id);
                 if (index !== -1) {
                     state.records[index].is_deleted = false;
@@ -2178,7 +2179,7 @@ export const createRecordsSlice: StateCreator<RecordsSlice> = (set) => ({
 
     completeRecord: (id) =>
         set(
-            produce((state: RecordsSlice) => {
+            create((state) => {
                 const index = state.records.findIndex((r) => r.id === id);
                 if (index !== -1) {
                     state.records[index].is_completed = true;
@@ -2240,17 +2241,61 @@ export const useWorkStore = create<WorkStore>()(
 
 ### 7.5 TODO 체크리스트
 
--   [ ] `store/slices/` 폴더 생성
--   [ ] `records.ts` 슬라이스 생성
--   [ ] `templates.ts` 슬라이스 생성
--   [ ] `timer.ts` 슬라이스 생성
--   [ ] `settings.ts` 슬라이스 생성
--   [ ] `form.ts` 슬라이스 생성
--   [ ] `ui.ts` 슬라이스 생성
--   [ ] `useWorkStore.ts` 슬라이스 조합으로 리팩토링
--   [ ] `immer` 미들웨어 적용
--   [ ] 각 슬라이스에 대한 테스트 작성
--   [ ] 기존 테스트 호환성 확인
+-   [x] `store/slices/` 폴더 생성
+-   [x] `records.ts` 슬라이스 생성
+-   [x] `templates.ts` 슬라이스 생성
+-   [x] `timer.ts` 슬라이스 생성
+-   [x] `settings.ts` 슬라이스 생성
+-   [x] `form.ts` 슬라이스 생성
+-   [x] `ui.ts` 슬라이스 생성
+-   [x] `useWorkStore.ts` 슬라이스 조합으로 리팩토링
+-   [x] `mutative` 적용 완료 (immer보다 빠른 대안)
+-   [x] 각 슬라이스에 대한 테스트 작성 (기존 테스트 재사용)
+-   [x] 기존 테스트 호환성 확인 (838개 테스트 모두 통과)
+
+---
+
+## 7.5 상수 통합 관리
+
+> **목표**: 중복 상수 제거, UI 텍스트/매직 넘버/스타일 값 중앙 집중 관리
+
+### 완료 항목
+
+-   [x] `shared/constants/` 폴더 구조 생성
+-   [x] 기존 중복 상수 통합 (`store/constants.ts` ↔ `shared/config/`)
+-   [x] 문자열 리터럴 유니온 → const 객체 + 타입 패턴 변환
+    -   [x] `AppTheme`, `TransitionSpeed`
+    -   [x] `SuggestionStatus`, `SyncStatus`, `FilterStatus`
+    -   [x] `ShortcutCategory`
+    -   [x] `ListAnimationType`, `HoverType`, `EmptyImageType` 등
+-   [x] 시간 관련 매직 넘버 상수화
+    -   [x] 단위 상수: `MINUTES_PER_HOUR`, `MS_PER_SECOND` 등
+    -   [x] 업무 시간: 점심시간, 업무 시작/종료
+    -   [x] 지속 시간: 타이머 간격, 딜레이 값
+-   [x] UI 텍스트 상수 정의
+    -   [x] 버튼 텍스트 (`BUTTON_TEXT`)
+    -   [x] 알림 메시지 (`MESSAGES`)
+    -   [x] 폼 레이블, 테이블 컬럼 (`FORM_LABELS`, `TABLE_COLUMNS`)
+    -   [x] 모달 제목, Popconfirm (`MODAL_TITLES`, `POPCONFIRM_TEXT`)
+    -   [x] Placeholder, 빈 상태 메시지
+-   [x] 스타일 토큰 정의
+    -   [x] 색상: 시맨틱, 텍스트, 배경, 테마
+    -   [x] z-index 레이어 정의
+    -   [x] 간격, 폰트 크기, 브레이크포인트
+-   [x] 호환성 레이어 설정 (기존 import 경로 유지)
+-   [x] 테스트 통과 확인 (838개)
+
+### 생성된 구조
+
+```
+src/shared/constants/
+├── index.ts                 # Public API
+├── app/                     # storage_keys, admin, defaults
+├── enums/                   # theme, status, shortcut, ui
+├── time/                    # units, work_hours, durations
+├── style/                   # colors, z_index, spacing
+└── ui/                      # buttons, messages, labels, modals, placeholders
+```
 
 ---
 

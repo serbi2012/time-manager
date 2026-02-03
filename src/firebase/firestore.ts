@@ -11,7 +11,7 @@ import {
 } from "firebase/firestore";
 import type { Unsubscribe } from "firebase/firestore";
 import { db } from "./config";
-import type { WorkRecord, WorkTemplate, TimerState } from "../types";
+import type { WorkRecord, WorkTemplate, TimerState, HiddenAutoCompleteOptions } from "../types";
 import type { ShortcutDefinition } from "../store/useShortcutStore";
 import type { AppTheme } from "../store/useWorkStore";
 
@@ -22,15 +22,8 @@ function removeUndefined<T extends object>(obj: T): T {
     ) as T;
 }
 
-// 숨김 자동완성 옵션 타입
-export interface HiddenAutoCompleteOptions {
-    work_name: string[];
-    task_name: string[];
-    deal_name: string[];
-    project_code: string[];
-    task_option: string[];
-    category_option: string[];
-}
+// HiddenAutoCompleteOptions re-export for backward compatibility
+export type { HiddenAutoCompleteOptions };
 
 // 사용자 데이터 구조
 export interface UserData {
