@@ -1,291 +1,196 @@
 /**
- * 테스트 유틸리티 및 커스텀 렌더링 헬퍼
+ * 테스트 유틸리티
+ * 커스텀 렌더러 및 유틸리티 함수
  */
-
-/* eslint-disable react-refresh/only-export-components */
-
-import type { ReactElement, ReactNode } from "react";
-import { render } from "@testing-library/react";
-import type { RenderOptions, RenderResult } from "@testing-library/react";
+import { ReactElement, ReactNode } from "react";
+import { render, RenderOptions, RenderResult } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
-import type { MemoryRouterProps } from "react-router-dom";
+import { BrowserRouter, MemoryRouter } from "react-router-dom";
 import { ConfigProvider } from "antd";
 import koKR from "antd/locale/ko_KR";
-import { vi } from "vitest";
 
-// =====================================================
-// 래퍼 컴포넌트
-// =====================================================
+// ============================================================================
+// Provider 래퍼
+// ============================================================================
 
-interface AllProvidersProps {
+interface ProvidersProps {
     children: ReactNode;
-    routerProps?: MemoryRouterProps;
 }
 
-/**
- * 모든 Provider를 포함한 테스트 래퍼
- */
-function AllProviders({ children, routerProps }: AllProvidersProps) {
+function AllProviders({ children }: ProvidersProps) {
     return (
         <ConfigProvider locale={koKR}>
-            <MemoryRouter {...routerProps}>
-                {children}
-            </MemoryRouter>
+            <BrowserRouter>{children}</BrowserRouter>
         </ConfigProvider>
     );
 }
 
-/**
- * Ant Design Provider만 포함한 테스트 래퍼
- */
-function AntdProvider({ children }: { children: ReactNode }) {
+function MemoryRouterProvider({ children }: ProvidersProps) {
     return (
         <ConfigProvider locale={koKR}>
-            {children}
+            <MemoryRouter>{children}</MemoryRouter>
         </ConfigProvider>
     );
 }
 
-// =====================================================
-// 커스텀 렌더링 함수
-// =====================================================
+// ============================================================================
+// 커스텀 렌더러
+// ============================================================================
 
-interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
-    routerProps?: MemoryRouterProps;
-    withRouter?: boolean;
+export interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
+    /** 초기 라우트 경로 */
+    initialRoute?: string;
+    /** MemoryRouter 사용 여부 */
+    useMemoryRouter?: boolean;
+    /** 래퍼 사용 안함 */
+    withoutWrapper?: boolean;
+}
+
+export interface CustomRenderResult extends RenderResult {
+    /** userEvent 인스턴스 */
+    user: ReturnType<typeof userEvent.setup>;
 }
 
 /**
- * 커스텀 렌더 함수 (Provider 자동 포함)
+ * Provider가 포함된 커스텀 렌더러
  */
 export function renderWithProviders(
     ui: ReactElement,
     options: CustomRenderOptions = {}
-): RenderResult & { user: ReturnType<typeof userEvent.setup> } {
-    const { routerProps, withRouter = true, ...renderOptions } = options;
+): CustomRenderResult {
+    const {
+        useMemoryRouter = false,
+        withoutWrapper = false,
+        ...renderOptions
+    } = options;
 
-    const Wrapper = ({ children }: { children: ReactNode }) => {
-        if (withRouter) {
-            return (
-                <AllProviders routerProps={routerProps}>
-                    {children}
-                </AllProviders>
-            );
-        }
-        return <AntdProvider>{children}</AntdProvider>;
+    const Wrapper = withoutWrapper
+        ? ({ children }: ProvidersProps) => <>{children}</>
+        : useMemoryRouter
+        ? MemoryRouterProvider
+        : AllProviders;
+
+    const result = render(ui, {
+        wrapper: Wrapper,
+        ...renderOptions,
+    });
+
+    return {
+        ...result,
+        user: userEvent.setup(),
     };
+}
 
-    const user = userEvent.setup();
-    const result = render(ui, { wrapper: Wrapper, ...renderOptions });
+// ============================================================================
+// 유틸리티 함수
+// ============================================================================
 
-    return { ...result, user };
+/**
+ * 특정 시간만큼 대기
+ */
+export function wait(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
- * Antd만 포함한 렌더 (라우터 불필요 시)
+ * 애니메이션 완료 대기 (기본 500ms)
  */
-export function renderWithAntd(
-    ui: ReactElement,
-    options: Omit<RenderOptions, "wrapper"> = {}
-): RenderResult & { user: ReturnType<typeof userEvent.setup> } {
-    return renderWithProviders(ui, { ...options, withRouter: false });
-}
-
-// =====================================================
-// 키보드 이벤트 헬퍼
-// =====================================================
-
-interface KeyEventOptions {
-    key: string;
-    code?: string;
-    ctrlKey?: boolean;
-    altKey?: boolean;
-    shiftKey?: boolean;
-    metaKey?: boolean;
+export async function waitForAnimation(ms = 500): Promise<void> {
+    await wait(ms);
 }
 
 /**
- * 키보드 이벤트 발생시키기
+ * 요소가 보일 때까지 대기
  */
-export function fireKeyboardEvent(
-    element: Element | Window | Document,
-    eventType: "keydown" | "keyup" | "keypress",
-    options: KeyEventOptions
-) {
-    const event = new KeyboardEvent(eventType, {
-        key: options.key,
-        code: options.code ?? options.key,
-        ctrlKey: options.ctrlKey ?? false,
-        altKey: options.altKey ?? false,
-        shiftKey: options.shiftKey ?? false,
-        metaKey: options.metaKey ?? false,
-        bubbles: true,
-        cancelable: true,
-    });
+export async function waitForElement(
+    container: HTMLElement,
+    selector: string,
+    timeout = 3000
+): Promise<Element | null> {
+    const startTime = Date.now();
 
-    element.dispatchEvent(event);
-    return event;
-}
-
-/**
- * 단축키 이벤트 발생 (Alt+키)
- */
-export function fireShortcut(key: string, modifiers: Partial<Omit<KeyEventOptions, "key">> = {}) {
-    return fireKeyboardEvent(window, "keydown", {
-        key,
-        altKey: modifiers.altKey ?? true,
-        ctrlKey: modifiers.ctrlKey ?? false,
-        shiftKey: modifiers.shiftKey ?? false,
-        metaKey: modifiers.metaKey ?? false,
-    });
-}
-
-/**
- * ESC 키 이벤트
- */
-export function fireEscapeKey(element: Element | Document = document) {
-    return fireKeyboardEvent(element, "keydown", { key: "Escape", code: "Escape" });
-}
-
-/**
- * Enter 키 이벤트
- */
-export function fireEnterKey(element: Element | Document = document) {
-    return fireKeyboardEvent(element, "keydown", { key: "Enter", code: "Enter" });
-}
-
-// =====================================================
-// 모달 테스트 헬퍼
-// =====================================================
-
-/**
- * 모달이 열렸는지 확인
- */
-export function isModalOpen(): boolean {
-    const modal = document.querySelector(".ant-modal");
-    return modal !== null && !modal.classList.contains("ant-modal-hidden");
-}
-
-/**
- * 모달 닫기 버튼 찾기
- */
-export function findModalCloseButton(): HTMLButtonElement | null {
-    return document.querySelector(".ant-modal-close") as HTMLButtonElement | null;
-}
-
-/**
- * 모달 오버레이(마스크) 찾기
- */
-export function findModalMask(): HTMLDivElement | null {
-    return document.querySelector(".ant-modal-mask") as HTMLDivElement | null;
-}
-
-/**
- * 특정 텍스트를 포함한 모달 찾기
- */
-export function findModalByTitle(title: string): HTMLDivElement | null {
-    const modals = document.querySelectorAll(".ant-modal");
-    for (const modal of modals) {
-        const titleElement = modal.querySelector(".ant-modal-title");
-        if (titleElement?.textContent?.includes(title)) {
-            return modal as HTMLDivElement;
-        }
+    while (Date.now() - startTime < timeout) {
+        const element = container.querySelector(selector);
+        if (element) return element;
+        await wait(50);
     }
+
     return null;
 }
 
-// =====================================================
-// 비동기 헬퍼
-// =====================================================
-
 /**
- * 지정된 시간만큼 대기
+ * 모든 애니메이션 완료 대기
  */
-export function wait(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+export async function waitForAnimations(element: HTMLElement): Promise<void> {
+    const animations = element.getAnimations();
+    await Promise.all(animations.map((animation) => animation.finished));
 }
 
-/**
- * 다음 틱까지 대기
- */
-export function nextTick(): Promise<void> {
-    return wait(0);
-}
+// ============================================================================
+// 이벤트 헬퍼
+// ============================================================================
 
 /**
- * 애니메이션 프레임 대기
+ * 키보드 이벤트 시뮬레이션
  */
-export function nextFrame(): Promise<void> {
-    return new Promise(resolve => requestAnimationFrame(() => resolve()));
-}
-
-// =====================================================
-// 스토어 모킹 헬퍼
-// =====================================================
-
-/**
- * Zustand 스토어 모킹을 위한 타입 정의
- */
-export type StoreMock<T> = {
-    getState: () => T;
-    setState: (partial: Partial<T>) => void;
-    subscribe: ReturnType<typeof vi.fn>;
-};
-
-/**
- * 간단한 스토어 모킹 생성
- */
-export function createMockStore<T extends object>(initialState: T): StoreMock<T> {
-    let state = { ...initialState };
-    return {
-        getState: () => state,
-        setState: (partial: Partial<T>) => {
-            state = { ...state, ...partial };
-        },
-        subscribe: vi.fn(),
-    };
-}
-
-// =====================================================
-// matchMedia 모킹 헬퍼
-// =====================================================
-
-/**
- * matchMedia를 특정 조건으로 모킹
- */
-export function mockMatchMedia(matches: boolean) {
-    Object.defineProperty(window, "matchMedia", {
-        writable: true,
-        value: vi.fn().mockImplementation((query: string) => ({
-            matches,
-            media: query,
-            onchange: null,
-            addListener: vi.fn(),
-            removeListener: vi.fn(),
-            addEventListener: vi.fn(),
-            removeEventListener: vi.fn(),
-            dispatchEvent: vi.fn(),
-        })),
+export function createKeyboardEvent(
+    key: string,
+    options: Partial<KeyboardEventInit> = {}
+): KeyboardEvent {
+    return new KeyboardEvent("keydown", {
+        key,
+        code: key.length === 1 ? `Key${key.toUpperCase()}` : key,
+        bubbles: true,
+        cancelable: true,
+        ...options,
     });
 }
 
 /**
- * 모바일 뷰포트로 모킹
+ * F8 키 이벤트 (타이머 시작/정지)
  */
-export function mockMobileViewport() {
-    mockMatchMedia(true);
+export function createF8Event(): KeyboardEvent {
+    return createKeyboardEvent("F8", { code: "F8" });
 }
 
 /**
- * 데스크탑 뷰포트로 모킹
+ * Escape 키 이벤트 (모달 닫기)
  */
-export function mockDesktopViewport() {
-    mockMatchMedia(false);
+export function createEscapeEvent(): KeyboardEvent {
+    return createKeyboardEvent("Escape", { code: "Escape" });
 }
 
-// =====================================================
-// 내보내기
-// =====================================================
+/**
+ * Ctrl+S 이벤트 (저장)
+ */
+export function createCtrlSEvent(): KeyboardEvent {
+    return createKeyboardEvent("s", { code: "KeyS", ctrlKey: true });
+}
 
+// ============================================================================
+// 스토어 헬퍼
+// ============================================================================
+
+/**
+ * Zustand 스토어 상태 리셋
+ * 테스트 간 상태 격리를 위해 사용
+ */
+export function resetStore<T extends object>(
+    store: { setState: (state: Partial<T>) => void; getInitialState?: () => T },
+    initialState?: Partial<T>
+): void {
+    if (store.getInitialState) {
+        store.setState(store.getInitialState());
+    }
+    if (initialState) {
+        store.setState(initialState);
+    }
+}
+
+// ============================================================================
+// Re-export
+// ============================================================================
+
+export * from "@testing-library/react";
 export { userEvent };
+export { renderWithProviders as render };
