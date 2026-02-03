@@ -1,168 +1,318 @@
 /**
- * 테스트용 목 데이터 생성 헬퍼
+ * 테스트용 목 데이터 팩토리
+ * @faker-js/faker를 활용한 랜덤 데이터 생성
  */
+import { faker } from "@faker-js/faker/locale/ko";
+import type {
+    WorkRecord,
+    WorkSession,
+    WorkTemplate,
+} from "@/shared/types/domain";
 
-import type { WorkSession, WorkRecord, ShortcutDefinition, WorkTemplate } from "../../shared/types";
-import type { TimeSlot } from "../../features/work-record/lib/conflict_detector";
+// ============================================================================
+// WorkSession 팩토리
+// ============================================================================
 
-/**
- * 테스트용 WorkSession 생성
- */
-export function createMockSession(overrides: Partial<WorkSession> & { id: string; date: string; start_time: string; end_time: string }): WorkSession {
-    const duration_minutes = overrides.duration_minutes ?? calculateDuration(overrides.start_time, overrides.end_time);
+export interface CreateMockSessionOptions {
+    id?: string;
+    date?: string;
+    start_time?: string;
+    end_time?: string;
+    duration_minutes?: number;
+}
+
+export function createMockSession(
+    overrides: CreateMockSessionOptions = {}
+): WorkSession {
+    const start_hour = faker.number.int({ min: 9, max: 16 });
+    const start_minute = faker.helpers.arrayElement([0, 15, 30, 45]);
+    const duration =
+        overrides.duration_minutes ?? faker.number.int({ min: 15, max: 120 });
+
+    const end_hour = start_hour + Math.floor((start_minute + duration) / 60);
+    const end_minute = (start_minute + duration) % 60;
+
     return {
-        id: overrides.id,
-        date: overrides.date,
-        start_time: overrides.start_time,
-        end_time: overrides.end_time,
-        duration_minutes,
+        id: overrides.id ?? faker.string.uuid(),
+        date:
+            overrides.date ??
+            faker.date.recent({ days: 7 }).toISOString().split("T")[0],
+        start_time:
+            overrides.start_time ??
+            `${String(start_hour).padStart(2, "0")}:${String(
+                start_minute
+            ).padStart(2, "0")}`,
+        end_time:
+            overrides.end_time ??
+            `${String(end_hour).padStart(2, "0")}:${String(end_minute).padStart(
+                2,
+                "0"
+            )}`,
+        duration_minutes: duration,
     };
 }
 
-/**
- * 테스트용 WorkRecord 생성
- */
-export function createMockRecord(overrides: Partial<WorkRecord> & { 
-    id: string; 
-    work_name: string;
-    deal_name: string;
-    sessions: WorkSession[];
-}): WorkRecord {
-    const first_session = overrides.sessions[0];
-    const last_session = overrides.sessions[overrides.sessions.length - 1];
-    
-    const total_duration = overrides.duration_minutes ?? 
-        overrides.sessions.reduce((sum, s) => sum + s.duration_minutes, 0);
-    
-    return {
-        id: overrides.id,
-        work_name: overrides.work_name,
-        deal_name: overrides.deal_name,
-        task_name: overrides.task_name ?? "",
-        project_code: overrides.project_code ?? "",
-        category_name: overrides.category_name ?? "",
-        start_time: overrides.start_time ?? first_session?.start_time ?? "09:00",
-        end_time: overrides.end_time ?? last_session?.end_time ?? "18:00",
-        date: overrides.date ?? first_session?.date ?? new Date().toISOString().split("T")[0],
-        duration_minutes: total_duration,
-        sessions: overrides.sessions,
-        note: overrides.note ?? "",
-        is_completed: overrides.is_completed ?? false,
-    };
+export function createMockSessions(
+    count: number,
+    options: CreateMockSessionOptions = {}
+): WorkSession[] {
+    return Array.from({ length: count }, () => createMockSession(options));
 }
 
-/**
- * 테스트용 WorkRecord 간단 생성 (세션 자동 생성)
- */
-export function createSimpleRecord(overrides: Partial<WorkRecord> & { 
-    id: string; 
-    work_name: string;
-}): WorkRecord {
-    const date = overrides.date ?? new Date().toISOString().split("T")[0];
-    const start_time = overrides.start_time ?? "09:00";
-    const end_time = overrides.end_time ?? "10:00";
-    const duration_minutes = overrides.duration_minutes ?? calculateDuration(start_time, end_time);
-    
-    return {
-        id: overrides.id,
-        work_name: overrides.work_name,
-        deal_name: overrides.deal_name ?? "테스트 거래",
-        task_name: overrides.task_name ?? "개발",
-        project_code: overrides.project_code ?? "A25_TEST",
-        category_name: overrides.category_name ?? "개발",
-        start_time,
-        end_time,
-        date,
-        duration_minutes,
-        sessions: overrides.sessions ?? [{
-            id: `${overrides.id}-session-1`,
-            date,
-            start_time,
-            end_time,
-            duration_minutes,
-        }],
-        note: overrides.note ?? "",
-        is_completed: overrides.is_completed ?? false,
-        is_deleted: overrides.is_deleted ?? false,
-    };
+// ============================================================================
+// WorkRecord 팩토리
+// ============================================================================
+
+export interface CreateMockRecordOptions {
+    id?: string;
+    project_code?: string;
+    work_name?: string;
+    task_name?: string;
+    deal_name?: string;
+    category_name?: string;
+    duration_minutes?: number;
+    note?: string;
+    start_time?: string;
+    end_time?: string;
+    date?: string;
+    sessions?: WorkSession[];
+    is_completed?: boolean;
+    completed_at?: string;
+    is_deleted?: boolean;
+    deleted_at?: string;
 }
 
-/**
- * 테스트용 WorkTemplate 생성
- */
-export function createMockTemplate(overrides: Partial<WorkTemplate> & { 
-    id: string; 
-    work_name: string;
-}): WorkTemplate {
-    return {
-        id: overrides.id,
-        work_name: overrides.work_name,
-        deal_name: overrides.deal_name ?? "기본 거래",
-        task_name: overrides.task_name ?? "개발",
-        project_code: overrides.project_code ?? "A25_TEST",
-        category_name: overrides.category_name ?? "개발",
-        note: overrides.note ?? "",
-        color: overrides.color ?? "#1677ff",
-        created_at: overrides.created_at ?? new Date().toISOString(),
-    };
-}
+const PROJECT_CODES = ["PRJ001", "PRJ002", "PRJ003", "MAINT", "SUPPORT"];
+const WORK_NAMES = [
+    "기능 개발",
+    "버그 수정",
+    "코드 리뷰",
+    "회의",
+    "문서 작성",
+    "테스트",
+];
+const TASK_NAMES = ["개발", "기획", "디자인", "QA", "운영"];
+const CATEGORY_NAMES = ["개발", "관리", "회의", "기타", "지원"];
 
-/**
- * 테스트용 TimeSlot 생성 (conflict_detector용)
- */
-export function createMockTimeSlot(overrides: Partial<TimeSlot> & { start: number; end: number }): TimeSlot {
-    return {
-        start: overrides.start,
-        end: overrides.end,
-        record_id: overrides.record_id ?? "test-record",
-        session_id: overrides.session_id ?? "test-session",
-        work_name: overrides.work_name ?? "테스트 업무",
-        deal_name: overrides.deal_name ?? "테스트 딜",
-    };
-}
-
-/**
- * 테스트용 ShortcutDefinition 생성
- */
-export function createMockShortcut(overrides: Partial<ShortcutDefinition> & { 
-    id: string; 
-    name: string;
-    keys: string;
-    category: ShortcutDefinition["category"];
-}): ShortcutDefinition {
-    return {
-        id: overrides.id,
-        name: overrides.name,
-        description: overrides.description ?? "",
-        keys: overrides.keys,
-        category: overrides.category,
-        enabled: overrides.enabled ?? true,
-        action: overrides.action ?? "defaultAction",
-    };
-}
-
-/**
- * 시간 문자열로부터 분 단위 duration 계산
- */
-function calculateDuration(start_time: string, end_time: string): number {
-    const [start_h, start_m] = start_time.split(":").map(Number);
-    const [end_h, end_m] = end_time.split(":").map(Number);
-    const start_minutes = start_h * 60 + start_m;
-    const end_minutes = end_h * 60 + end_m;
-    return Math.max(1, end_minutes - start_minutes);
-}
-
-/**
- * 복수 레코드 생성 헬퍼
- */
-export function createMockRecords(count: number, baseOverrides?: Partial<WorkRecord>): WorkRecord[] {
-    return Array.from({ length: count }, (_, i) => 
-        createSimpleRecord({
-            id: `record-${i + 1}`,
-            work_name: `작업 ${i + 1}`,
-            start_time: `${String(9 + i).padStart(2, '0')}:00`,
-            end_time: `${String(10 + i).padStart(2, '0')}:00`,
-            ...baseOverrides,
-        })
+export function createMockRecord(
+    overrides: CreateMockRecordOptions = {}
+): WorkRecord {
+    const date =
+        overrides.date ??
+        faker.date.recent({ days: 7 }).toISOString().split("T")[0];
+    const sessions = overrides.sessions ?? [createMockSession({ date })];
+    const total_duration = sessions.reduce(
+        (sum, s) => sum + s.duration_minutes,
+        0
     );
+
+    const work_name =
+        overrides.work_name ?? faker.helpers.arrayElement(WORK_NAMES);
+
+    return {
+        id: overrides.id ?? faker.string.uuid(),
+        project_code:
+            overrides.project_code ?? faker.helpers.arrayElement(PROJECT_CODES),
+        work_name,
+        task_name:
+            overrides.task_name ?? faker.helpers.arrayElement(TASK_NAMES),
+        deal_name:
+            overrides.deal_name ??
+            `${work_name}_${faker.number.int({ min: 1, max: 99 })}`,
+        category_name:
+            overrides.category_name ??
+            faker.helpers.arrayElement(CATEGORY_NAMES),
+        duration_minutes: overrides.duration_minutes ?? total_duration,
+        note: overrides.note ?? faker.lorem.sentence(),
+        start_time: overrides.start_time ?? sessions[0]?.start_time ?? "09:00",
+        end_time:
+            overrides.end_time ??
+            sessions[sessions.length - 1]?.end_time ??
+            "18:00",
+        date,
+        sessions,
+        is_completed: overrides.is_completed ?? false,
+        completed_at: overrides.completed_at,
+        is_deleted: overrides.is_deleted ?? false,
+        deleted_at: overrides.deleted_at,
+    };
+}
+
+export function createMockRecords(
+    count: number,
+    options: CreateMockRecordOptions = {}
+): WorkRecord[] {
+    return Array.from({ length: count }, () => createMockRecord(options));
+}
+
+// ============================================================================
+// WorkTemplate 팩토리
+// ============================================================================
+
+export interface CreateMockTemplateOptions {
+    id?: string;
+    project_code?: string;
+    work_name?: string;
+    task_name?: string;
+    deal_name?: string;
+    category_name?: string;
+    note?: string;
+    color?: string;
+    created_at?: string;
+}
+
+const TEMPLATE_COLORS = [
+    "#1890ff",
+    "#52c41a",
+    "#faad14",
+    "#f5222d",
+    "#722ed1",
+    "#13c2c2",
+    "#eb2f96",
+    "#fa8c16",
+    "#a0d911",
+    "#2f54eb",
+];
+
+export function createMockTemplate(
+    overrides: CreateMockTemplateOptions = {}
+): WorkTemplate {
+    return {
+        id: overrides.id ?? faker.string.uuid(),
+        project_code:
+            overrides.project_code ?? faker.helpers.arrayElement(PROJECT_CODES),
+        work_name:
+            overrides.work_name ?? faker.helpers.arrayElement(WORK_NAMES),
+        task_name:
+            overrides.task_name ?? faker.helpers.arrayElement(TASK_NAMES),
+        deal_name: overrides.deal_name ?? "",
+        category_name:
+            overrides.category_name ??
+            faker.helpers.arrayElement(CATEGORY_NAMES),
+        note: overrides.note ?? "",
+        color: overrides.color ?? faker.helpers.arrayElement(TEMPLATE_COLORS),
+        created_at: overrides.created_at ?? faker.date.past().toISOString(),
+    };
+}
+
+export function createMockTemplates(
+    count: number,
+    options: CreateMockTemplateOptions = {}
+): WorkTemplate[] {
+    return Array.from({ length: count }, () => createMockTemplate(options));
+}
+
+// ============================================================================
+// 시나리오 데이터
+// ============================================================================
+
+export const SCENARIOS = {
+    /** 빈 하루 */
+    emptyDay: () => [] as WorkRecord[],
+
+    /** 바쁜 하루 (10개 레코드) */
+    busyDay: (date?: string) => createMockRecords(10, { date }),
+
+    /** 시간 충돌이 있는 레코드들 */
+    withConflicts: (date?: string) => {
+        const base_date = date ?? new Date().toISOString().split("T")[0];
+        return [
+            createMockRecord({
+                date: base_date,
+                sessions: [
+                    createMockSession({
+                        date: base_date,
+                        start_time: "09:00",
+                        end_time: "10:00",
+                        duration_minutes: 60,
+                    }),
+                ],
+            }),
+            createMockRecord({
+                date: base_date,
+                sessions: [
+                    createMockSession({
+                        date: base_date,
+                        start_time: "09:30",
+                        end_time: "10:30",
+                        duration_minutes: 60,
+                    }),
+                ],
+            }),
+        ];
+    },
+
+    /** 완료된 레코드들 */
+    completedRecords: (count = 5) =>
+        createMockRecords(count, {
+            is_completed: true,
+            completed_at: new Date().toISOString(),
+        }),
+
+    /** 삭제된 레코드들 (휴지통) */
+    deletedRecords: (count = 3) =>
+        createMockRecords(count, {
+            is_deleted: true,
+            deleted_at: new Date().toISOString(),
+        }),
+
+    /** 긴 세션을 가진 레코드 */
+    longSession: (date?: string) =>
+        createMockRecord({
+            date,
+            sessions: [createMockSession({ duration_minutes: 480 })],
+            duration_minutes: 480,
+        }),
+
+    /** 다중 세션을 가진 레코드 */
+    multiSession: (date?: string, sessionCount = 3) => {
+        const base_date = date ?? new Date().toISOString().split("T")[0];
+        const sessions = createMockSessions(sessionCount, { date: base_date });
+        return createMockRecord({
+            date: base_date,
+            sessions,
+            duration_minutes: sessions.reduce(
+                (sum, s) => sum + s.duration_minutes,
+                0
+            ),
+        });
+    },
+};
+
+// ============================================================================
+// 유틸리티
+// ============================================================================
+
+/** 특정 날짜 범위의 레코드 생성 */
+export function createMockRecordsForDateRange(
+    startDate: Date,
+    endDate: Date,
+    recordsPerDay = 3
+): WorkRecord[] {
+    const records: WorkRecord[] = [];
+    const current = new Date(startDate);
+
+    while (current <= endDate) {
+        const date = current.toISOString().split("T")[0];
+        records.push(...createMockRecords(recordsPerDay, { date }));
+        current.setDate(current.getDate() + 1);
+    }
+
+    return records;
+}
+
+/** 주간 레코드 생성 (월~금) */
+export function createMockWeeklyRecords(weekStartDate?: Date): WorkRecord[] {
+    const start = weekStartDate ?? getMonday(new Date());
+    const end = new Date(start);
+    end.setDate(end.getDate() + 4); // 금요일까지
+
+    return createMockRecordsForDateRange(start, end, 3);
+}
+
+function getMonday(date: Date): Date {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(d.setDate(diff));
 }
