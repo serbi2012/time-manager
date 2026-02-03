@@ -46,7 +46,29 @@ export {
     type AutoCompleteOption,
     TimeRangeInput,
     type TimeRangeInputProps,
+    WorkFormFields,
+    useWorkForm,
+    workFormSchema,
+    DEFAULT_WORK_FORM_DATA,
+    type WorkFormData,
+    type WorkFormFieldName,
+    type WorkFormLayout,
+    type WorkFormFieldsProps,
+    type UseWorkFormOptions,
 } from "./form";
+
+// 테이블 컴포넌트
+export {
+    DataTable,
+    useDataTable,
+    createDataTableColumnHelper,
+    type DataTableProps,
+    type DataTableRef,
+    type UseDataTableOptions,
+    type ColumnDef,
+    type SortingState,
+    type RowSelectionState,
+} from "./table";
 
 // 모달 컴포넌트
 export {

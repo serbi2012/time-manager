@@ -1664,7 +1664,7 @@ shared/ui/table/
 -   [x] `shared/ui/form/` 컴포넌트 생성
     -   [x] SelectWithAdd.tsx
     -   [x] AutoCompleteWithHide.tsx
-    -   [ ] WorkFormFields.tsx (Phase 5에서 useAutoCompleteOptions 훅과 함께 구현)
+    -   [x] WorkFormFields.tsx (Phase 8 Step 1에서 완료)
     -   [x] TimeRangeInput.tsx
 -   [x] `shared/ui/modal/` 컴포넌트 생성
     -   [x] BaseModal.tsx
@@ -1673,10 +1673,10 @@ shared/ui/table/
 -   [x] `shared/ui/layout/` 컴포넌트 생성
     -   [x] LoadingOverlay.tsx
     -   [x] EmptyState.tsx
--   [ ] `shared/ui/table/` 컴포넌트 생성 (Phase 8에서 구현)
-    -   [ ] DataTable.tsx (@tanstack/react-table 기반)
--   [x] 모든 공통 UI에 대한 테스트 작성 (75개 테스트 케이스)
--   [x] 모든 공통 UI에 대한 Storybook 스토리 작성 (8개 파일)
+-   [x] `shared/ui/table/` 컴포넌트 생성 (Phase 8 Step 1에서 완료)
+    -   [x] DataTable.tsx (@tanstack/react-table 기반)
+-   [x] 모든 공통 UI에 대한 테스트 작성 (75개 + 37개 = 112개 테스트 케이스)
+-   [x] 모든 공통 UI에 대한 Storybook 스토리 작성 (8개 + 2개 = 10개 파일)
 
 ---
 
@@ -2769,23 +2769,27 @@ src/
 
 ## 진행 상황 추적
 
-| Phase | 항목                  | 상태 | 담당 | 완료일     |
-| ----- | --------------------- | ---- | ---- | ---------- |
-| 1     | 라이브러리 설치       | ✅   | AI   | 2026-02-03 |
-| 2     | 테스트 환경 강화      | ✅   | AI   | 2026-02-03 |
-| 3     | 애니메이션 시스템     | ✅   | AI   | 2026-02-03 |
-| 4     | 공통 UI 추출          | ✅   | AI   | 2026-02-03 |
-| 5     | 공통 훅 추출          | ✅   | AI   | 2026-02-03 |
-| 6     | 순수 함수 통합        | ✅   | AI   | 2026-02-03 |
-| 7     | 스토어 분리           | ⬜   | -    | -          |
-| 8-1   | DailyGanttChart 분리  | ⬜   | -    | -          |
-| 8-2   | WorkRecordTable 분리  | ⬜   | -    | -          |
-| 8-3   | AdminSessionGrid 분리 | ⬜   | -    | -          |
-| 8-4   | 기타 컴포넌트 분리    | ⬜   | -    | -          |
-| 9     | 플랫폼 완전 분리      | ⬜   | -    | -          |
-| 10    | 정리 및 문서화        | ⬜   | -    | -          |
+| Phase   | 항목                 | 상태 | 담당 | 완료일     |
+| ------- | -------------------- | ---- | ---- | ---------- |
+| 1       | 라이브러리 설치      | ✅   | AI   | 2026-02-03 |
+| 2       | 테스트 환경 강화     | ✅   | AI   | 2026-02-03 |
+| 3       | 애니메이션 시스템    | ✅   | AI   | 2026-02-03 |
+| 4       | 공통 UI 추출         | ✅   | AI   | 2026-02-03 |
+| 5       | 공통 훅 추출         | ✅   | AI   | 2026-02-03 |
+| 6       | 순수 함수 통합       | ✅   | AI   | 2026-02-03 |
+| 7       | 스토어 분리          | ✅   | AI   | 2026-02-03 |
+| 7.5     | 상수 통합 관리       | ✅   | AI   | 2026-02-03 |
+| 8       | **계획 수립**        | ✅   | AI   | 2026-02-03 |
+| 8-Step1 | 공통 컴포넌트 추가   | ✅   | AI   | 2026-02-03 |
+| 8-Step2 | 거대 컴포넌트 분리   | ⬜   | -    | -          |
+| 8-Step3 | 중소형 컴포넌트 분리 | ⬜   | -    | -          |
+| 8-Step4 | 기타 컴포넌트 정리   | ⬜   | -    | -          |
+| 9       | 플랫폼 완전 분리     | ⬜   | -    | -          |
+| 10      | 정리 및 문서화       | ⬜   | -    | -          |
 
 **범례**: ⬜ 미시작 / 🔄 진행중 / ✅ 완료
+
+> 📋 **Phase 8 상세 계획**: [docs/phase8/](./phase8/) 폴더 참조
 
 > 📋 **상세 진행 기록**: [REFACTORING_PROGRESS.md](./REFACTORING_PROGRESS.md)
 
