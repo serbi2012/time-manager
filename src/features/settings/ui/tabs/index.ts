@@ -6,3 +6,4 @@ export { DataTab } from "./DataTab";
 export { ThemeTab } from "./ThemeTab";
 export { ShortcutsTab } from "./ShortcutsTab";
 export { AutoCompleteTab } from "./AutoCompleteTab";
+export { AnimationTab } from "./AnimationTab";

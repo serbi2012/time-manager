@@ -17,7 +17,6 @@ import {
     Collapse,
     TimePicker,
     Card,
-    Select,
 } from "antd";
 import {
     DownloadOutlined,
@@ -52,10 +51,9 @@ import {
     APP_THEME_COLORS,
     APP_THEME_LABELS,
     type AppTheme,
-    type TransitionSpeed,
 } from "../store/useWorkStore";
-import { TRANSITION_SPEED_LABELS } from "../shared/ui";
 import { useResponsive } from "../hooks/useResponsive";
+import { AnimationTab } from "../features/settings/ui/tabs";
 
 const { Text } = Typography;
 
@@ -70,32 +68,32 @@ interface SettingsModalProps {
 // 키 입력을 키 문자열로 변환
 function keyEventToKeyString(e: React.KeyboardEvent): string | null {
     const key = e.key;
-    
+
     // 단독 수정자 키만 누른 경우 무시
     if (["Control", "Alt", "Shift", "Meta"].includes(key)) {
         return null;
     }
-    
+
     // Escape 키는 취소용으로 사용
     if (key === "Escape") {
         return null;
     }
-    
+
     const parts: string[] = [];
-    
+
     // 수정자 키 추가 (순서 통일: Ctrl → Alt → Shift)
     if (e.ctrlKey || e.metaKey) parts.push("Ctrl");
     if (e.altKey) parts.push("Alt");
     if (e.shiftKey) parts.push("Shift");
-    
+
     // 수정자 키 없이 단독 키 입력은 허용하지 않음 (일반 타이핑과 충돌)
     if (parts.length === 0) {
         return null;
     }
-    
+
     // 메인 키 추가
     let main_key = key;
-    
+
     // 특수 키 이름 정규화
     if (key === "ArrowLeft") main_key = "Left";
     else if (key === "ArrowRight") main_key = "Right";
@@ -103,9 +101,9 @@ function keyEventToKeyString(e: React.KeyboardEvent): string | null {
     else if (key === "ArrowDown") main_key = "Down";
     else if (key === " ") main_key = "Space";
     else if (key.length === 1) main_key = key.toUpperCase();
-    
+
     parts.push(main_key);
-    
+
     return parts.join("+");
 }
 
@@ -120,16 +118,16 @@ function ShortcutKeyEditor({ shortcut, onClose }: ShortcutKeyEditorProps) {
     const isKeysDuplicate = useShortcutStore((state) => state.isKeysDuplicate);
     const [pending_keys, setPendingKeys] = useState<string | null>(null);
     const [error_message, setErrorMessage] = useState<string | null>(null);
-    
+
     const handleKeyDown = (e: React.KeyboardEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         if (e.key === "Escape") {
             onClose();
             return;
         }
-        
+
         const key_string = keyEventToKeyString(e);
         if (key_string) {
             // 중복 검사
@@ -142,7 +140,7 @@ function ShortcutKeyEditor({ shortcut, onClose }: ShortcutKeyEditorProps) {
             }
         }
     };
-    
+
     const handleSave = () => {
         if (pending_keys) {
             const result = setShortcutKeys(shortcut.id, pending_keys);
@@ -154,7 +152,7 @@ function ShortcutKeyEditor({ shortcut, onClose }: ShortcutKeyEditorProps) {
             }
         }
     };
-    
+
     return (
         <Modal
             title={`단축키 설정: ${shortcut.name}`}
@@ -176,7 +174,10 @@ function ShortcutKeyEditor({ shortcut, onClose }: ShortcutKeyEditorProps) {
             width={400}
         >
             <div style={{ textAlign: "center", padding: "20px 0" }}>
-                <Text type="secondary" style={{ display: "block", marginBottom: 16 }}>
+                <Text
+                    type="secondary"
+                    style={{ display: "block", marginBottom: 16 }}
+                >
                     새로운 단축키 조합을 입력하세요
                 </Text>
                 <div
@@ -184,11 +185,11 @@ function ShortcutKeyEditor({ shortcut, onClose }: ShortcutKeyEditorProps) {
                     onKeyDown={handleKeyDown}
                     style={{
                         padding: "24px 16px",
-                        border: error_message 
-                            ? "2px dashed #ff4d4f" 
-                            : pending_keys 
-                                ? "2px solid #52c41a" 
-                                : "2px dashed #d9d9d9",
+                        border: error_message
+                            ? "2px dashed #ff4d4f"
+                            : pending_keys
+                            ? "2px solid #52c41a"
+                            : "2px dashed #d9d9d9",
                         borderRadius: 8,
                         background: "#fafafa",
                         cursor: "text",
@@ -213,23 +214,31 @@ function ShortcutKeyEditor({ shortcut, onClose }: ShortcutKeyEditorProps) {
                         </Text>
                     )}
                 </div>
-                
+
                 {error_message && (
-                    <Text type="danger" style={{ display: "block", marginTop: 12 }}>
+                    <Text
+                        type="danger"
+                        style={{ display: "block", marginTop: 12 }}
+                    >
                         {error_message}
                     </Text>
                 )}
-                
+
                 <div style={{ marginTop: 16 }}>
                     <Text type="secondary" style={{ fontSize: 12 }}>
-                        현재: <Tag style={{ fontFamily: "monospace" }}>
+                        현재:{" "}
+                        <Tag style={{ fontFamily: "monospace" }}>
                             {formatShortcutKeyForPlatform(shortcut.keys)}
                         </Tag>
                     </Text>
                 </div>
-                
-                <Text type="secondary" style={{ display: "block", marginTop: 12, fontSize: 12 }}>
-                    Ctrl/Alt/Shift + 키 조합만 사용 가능합니다. ESC로 취소합니다.
+
+                <Text
+                    type="secondary"
+                    style={{ display: "block", marginTop: 12, fontSize: 12 }}
+                >
+                    Ctrl/Alt/Shift + 키 조합만 사용 가능합니다. ESC로
+                    취소합니다.
                 </Text>
             </div>
         </Modal>
@@ -243,8 +252,9 @@ function ShortcutsTab({ is_mobile }: { is_mobile?: boolean }) {
     const resetToDefault = useShortcutStore((state) => state.resetToDefault);
     const app_theme = useWorkStore((state) => state.app_theme);
     const theme_color = APP_THEME_COLORS[app_theme].primary;
-    
-    const [editing_shortcut, setEditingShortcut] = useState<ShortcutDefinition | null>(null);
+
+    const [editing_shortcut, setEditingShortcut] =
+        useState<ShortcutDefinition | null>(null);
 
     const columns = [
         {
@@ -328,7 +338,13 @@ function ShortcutsTab({ is_mobile }: { is_mobile?: boolean }) {
                         userSelect: "none",
                     }}
                 >
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <div
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 8,
+                        }}
+                    >
                         {shortcuts.slice(0, 3).map((shortcut) => (
                             <div
                                 key={shortcut.id}
@@ -339,8 +355,15 @@ function ShortcutsTab({ is_mobile }: { is_mobile?: boolean }) {
                                     border: "1px solid #f0f0f0",
                                 }}
                             >
-                                <Text strong style={{ fontSize: 13, display: "block" }}>{shortcut.name}</Text>
-                                <Text type="secondary" style={{ fontSize: 11 }}>{shortcut.description}</Text>
+                                <Text
+                                    strong
+                                    style={{ fontSize: 13, display: "block" }}
+                                >
+                                    {shortcut.name}
+                                </Text>
+                                <Text type="secondary" style={{ fontSize: 11 }}>
+                                    {shortcut.description}
+                                </Text>
                             </div>
                         ))}
                     </div>
@@ -364,12 +387,29 @@ function ShortcutsTab({ is_mobile }: { is_mobile?: boolean }) {
                         textAlign: "center",
                     }}
                 >
-                    <KeyOutlined style={{ fontSize: 40, color: "#bfbfbf", marginBottom: 16 }} />
-                    <Text strong style={{ fontSize: 16, marginBottom: 8, color: "#595959" }}>
+                    <KeyOutlined
+                        style={{
+                            fontSize: 40,
+                            color: "#bfbfbf",
+                            marginBottom: 16,
+                        }}
+                    />
+                    <Text
+                        strong
+                        style={{
+                            fontSize: 16,
+                            marginBottom: 8,
+                            color: "#595959",
+                        }}
+                    >
                         PC에서만 사용 가능
                     </Text>
-                    <Text type="secondary" style={{ fontSize: 13, lineHeight: 1.5 }}>
-                        단축키 설정은 키보드가 있는<br />
+                    <Text
+                        type="secondary"
+                        style={{ fontSize: 13, lineHeight: 1.5 }}
+                    >
+                        단축키 설정은 키보드가 있는
+                        <br />
                         PC 환경에서만 변경할 수 있습니다.
                     </Text>
                 </div>
@@ -389,7 +429,8 @@ function ShortcutsTab({ is_mobile }: { is_mobile?: boolean }) {
                 }}
             >
                 <Text type="secondary">
-                    단축키를 활성화/비활성화하거나 원하는 키 조합으로 변경할 수 있습니다.
+                    단축키를 활성화/비활성화하거나 원하는 키 조합으로 변경할 수
+                    있습니다.
                 </Text>
                 <Popconfirm
                     title="단축키 초기화"
@@ -412,7 +453,7 @@ function ShortcutsTab({ is_mobile }: { is_mobile?: boolean }) {
                 size="small"
                 style={{ marginTop: 8 }}
             />
-            
+
             {/* 단축키 편집 모달 */}
             {editing_shortcut && (
                 <ShortcutKeyEditor
@@ -781,7 +822,9 @@ function ThemeTab() {
                         boxShadow: `0 8px 24px ${APP_THEME_COLORS[app_theme].primary}33`,
                     }}
                 >
-                    <BgColorsOutlined style={{ fontSize: 28, color: "white" }} />
+                    <BgColorsOutlined
+                        style={{ fontSize: 28, color: "white" }}
+                    />
                 </div>
                 <Text strong style={{ fontSize: 16, display: "block" }}>
                     테마 색상
@@ -822,7 +865,8 @@ function ThemeTab() {
                                 style={{
                                     height: 56,
                                     borderRadius: 8,
-                                    background: APP_THEME_COLORS[theme].gradient,
+                                    background:
+                                        APP_THEME_COLORS[theme].gradient,
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
@@ -846,7 +890,8 @@ function ThemeTab() {
                                     >
                                         <CheckOutlined
                                             style={{
-                                                color: APP_THEME_COLORS[theme].primary,
+                                                color: APP_THEME_COLORS[theme]
+                                                    .primary,
                                                 fontSize: 14,
                                             }}
                                         />
@@ -882,7 +927,8 @@ function ThemeTab() {
                 }}
             >
                 <Text style={{ fontSize: 12, color: "#595959" }}>
-                    테마는 자동 저장됩니다. 로그인하면 모든 기기에 동일하게 적용됩니다.
+                    테마는 자동 저장됩니다. 로그인하면 모든 기기에 동일하게
+                    적용됩니다.
                 </Text>
             </div>
         </div>
@@ -898,7 +944,13 @@ interface SettingItemProps {
     is_mobile?: boolean;
 }
 
-function SettingItem({ icon, title, description, action, is_mobile }: SettingItemProps) {
+function SettingItem({
+    icon,
+    title,
+    description,
+    action,
+    is_mobile,
+}: SettingItemProps) {
     // 모바일: 세로 레이아웃 (아이콘 제거, 제목+설명 위, 액션 아래)
     if (is_mobile) {
         return (
@@ -909,11 +961,21 @@ function SettingItem({ icon, title, description, action, is_mobile }: SettingIte
                 }}
             >
                 <div style={{ marginBottom: 8 }}>
-                    <Text strong style={{ fontSize: 14, display: "block", marginBottom: 2 }}>
+                    <Text
+                        strong
+                        style={{
+                            fontSize: 14,
+                            display: "block",
+                            marginBottom: 2,
+                        }}
+                    >
                         {title}
                     </Text>
                     {description && (
-                        <Text type="secondary" style={{ fontSize: 12, lineHeight: 1.4 }}>
+                        <Text
+                            type="secondary"
+                            style={{ fontSize: 12, lineHeight: 1.4 }}
+                        >
                             {description}
                         </Text>
                     )}
@@ -937,7 +999,14 @@ function SettingItem({ icon, title, description, action, is_mobile }: SettingIte
                 borderBottom: "1px solid #f0f0f0",
             }}
         >
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 12, flex: 1 }}>
+            <div
+                style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 12,
+                    flex: 1,
+                }}
+            >
                 <div
                     style={{
                         width: 36,
@@ -982,7 +1051,9 @@ function DataTab({
     isAuthenticated: boolean;
     is_mobile?: boolean;
 }) {
-    const use_postfix = useWorkStore((state) => state.use_postfix_on_preset_add);
+    const use_postfix = useWorkStore(
+        (state) => state.use_postfix_on_preset_add
+    );
     const setUsePostfix = useWorkStore(
         (state) => state.setUsePostfixOnPresetAdd
     );
@@ -991,16 +1062,6 @@ function DataTab({
     const setLunchTime = useWorkStore((state) => state.setLunchTime);
     const app_theme = useWorkStore((state) => state.app_theme);
     const theme_color = APP_THEME_COLORS[app_theme].primary;
-
-    // 트랜지션 설정
-    const transition_enabled = useWorkStore((state) => state.transition_enabled);
-    const transition_speed = useWorkStore((state) => state.transition_speed);
-    const setTransitionEnabled = useWorkStore(
-        (state) => state.setTransitionEnabled
-    );
-    const setTransitionSpeed = useWorkStore(
-        (state) => state.setTransitionSpeed
-    );
 
     // 점심시간 핸들러
     const handleLunchTimeChange = (
@@ -1015,7 +1076,13 @@ function DataTab({
     };
 
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: is_mobile ? 16 : 24 }}>
+        <div
+            style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: is_mobile ? 16 : 24,
+            }}
+        >
             {/* 시간 설정 섹션 */}
             <Card
                 size="small"
@@ -1074,62 +1141,6 @@ function DataTab({
                 />
             </Card>
 
-            {/* 트랜지션 설정 섹션 */}
-            <Card
-                size="small"
-                title={
-                    <Space>
-                        <ThunderboltOutlined style={{ color: theme_color }} />
-                        <span>트랜지션 효과</span>
-                    </Space>
-                }
-                styles={{ body: { padding: is_mobile ? "0 12px" : "0 16px" } }}
-            >
-                <SettingItem
-                    icon={<ThunderboltOutlined />}
-                    title="페이지 진입 애니메이션"
-                    description="페이지 로딩 후 UI가 슬라이드되며 나타납니다"
-                    is_mobile={is_mobile}
-                    action={
-                        <Switch
-                            checked={transition_enabled}
-                            onChange={setTransitionEnabled}
-                        />
-                    }
-                />
-                <SettingItem
-                    icon={<ThunderboltOutlined />}
-                    title="애니메이션 속도"
-                    description="트랜지션 효과의 속도를 조절합니다"
-                    is_mobile={is_mobile}
-                    action={
-                        <Select
-                            value={transition_speed}
-                            onChange={(value) =>
-                                setTransitionSpeed(value as TransitionSpeed)
-                            }
-                            options={[
-                                {
-                                    value: "slow",
-                                    label: TRANSITION_SPEED_LABELS.slow,
-                                },
-                                {
-                                    value: "normal",
-                                    label: TRANSITION_SPEED_LABELS.normal,
-                                },
-                                {
-                                    value: "fast",
-                                    label: TRANSITION_SPEED_LABELS.fast,
-                                },
-                            ]}
-                            size="small"
-                            style={{ width: is_mobile ? "100%" : 100 }}
-                            disabled={!transition_enabled}
-                        />
-                    }
-                />
-            </Card>
-
             {/* 데이터 관리 섹션 */}
             <Card
                 size="small"
@@ -1164,9 +1175,12 @@ function DataTab({
                         가져오기
                     </Button>
                 </div>
-                <Text type="secondary" style={{ fontSize: is_mobile ? 11 : 12 }}>
-                    JSON 파일로 데이터를 백업하거나 복원할 수 있습니다.
-                    가져오기 시 기존 데이터가 대체됩니다.
+                <Text
+                    type="secondary"
+                    style={{ fontSize: is_mobile ? 11 : 12 }}
+                >
+                    JSON 파일로 데이터를 백업하거나 복원할 수 있습니다. 가져오기
+                    시 기존 데이터가 대체됩니다.
                 </Text>
             </Card>
 
@@ -1183,9 +1197,21 @@ function DataTab({
             >
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     {isAuthenticated ? (
-                        <CheckCircleFilled style={{ color: "#52c41a", fontSize: 32, flexShrink: 0 }} />
+                        <CheckCircleFilled
+                            style={{
+                                color: "#52c41a",
+                                fontSize: 32,
+                                flexShrink: 0,
+                            }}
+                        />
                     ) : (
-                        <CloudOutlined style={{ color: "#1677ff", fontSize: 32, flexShrink: 0 }} />
+                        <CloudOutlined
+                            style={{
+                                color: "#1677ff",
+                                fontSize: 32,
+                                flexShrink: 0,
+                            }}
+                        />
                     )}
                     <div style={{ flex: 1 }}>
                         <Text strong style={{ display: "block", fontSize: 14 }}>
@@ -1221,6 +1247,15 @@ export default function SettingsModal({
                 </span>
             ),
             children: <ThemeTab />,
+        },
+        {
+            key: "animation",
+            label: (
+                <span>
+                    <ThunderboltOutlined /> 애니메이션
+                </span>
+            ),
+            children: <AnimationTab is_mobile={is_mobile} />,
         },
         {
             key: "data",
@@ -1300,7 +1335,7 @@ export default function SettingsModal({
                 footer={null}
                 width="calc(100% - 24px)"
                 centered
-                style={{ 
+                style={{
                     maxWidth: 400,
                     margin: "0 auto",
                 }}
