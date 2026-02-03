@@ -6,6 +6,7 @@ import { useCallback } from "react";
 import { message } from "antd";
 import { useWorkStore } from "../../../store/useWorkStore";
 import type { WorkRecord } from "../../../shared/types";
+import { SUCCESS_MESSAGES } from "../../../shared/constants";
 
 export interface UseRecordActionsReturn {
     /** 레코드 삭제 (휴지통) */
@@ -56,7 +57,7 @@ export function useRecordActions(): UseRecordActionsReturn {
     const deleteRecord = useCallback(
         (record_id: string) => {
             softDeleteRecord(record_id);
-            message.success("작업이 휴지통으로 이동되었습니다");
+            message.success(SUCCESS_MESSAGES.recordTrashed);
         },
         [softDeleteRecord]
     );
@@ -64,7 +65,7 @@ export function useRecordActions(): UseRecordActionsReturn {
     const restoreRecord = useCallback(
         (record_id: string) => {
             storeRestoreRecord(record_id);
-            message.success("작업이 복원되었습니다");
+            message.success(SUCCESS_MESSAGES.recordRestored);
         },
         [storeRestoreRecord]
     );
@@ -72,7 +73,7 @@ export function useRecordActions(): UseRecordActionsReturn {
     const permanentlyDeleteRecord = useCallback(
         (record_id: string) => {
             storePermanentlyDelete(record_id);
-            message.success("작업이 영구 삭제되었습니다");
+            message.success(SUCCESS_MESSAGES.recordPermanentlyDeleted);
         },
         [storePermanentlyDelete]
     );
@@ -80,7 +81,7 @@ export function useRecordActions(): UseRecordActionsReturn {
     const markAsCompleted = useCallback(
         (record_id: string) => {
             storeMarkCompleted(record_id);
-            message.success("작업이 완료 처리되었습니다");
+            message.success(SUCCESS_MESSAGES.recordCompleted);
         },
         [storeMarkCompleted]
     );
@@ -88,7 +89,7 @@ export function useRecordActions(): UseRecordActionsReturn {
     const markAsIncomplete = useCallback(
         (record_id: string) => {
             storeMarkIncomplete(record_id);
-            message.success("작업이 미완료 처리되었습니다");
+            message.success(SUCCESS_MESSAGES.recordUncompleted);
         },
         [storeMarkIncomplete]
     );
@@ -107,7 +108,7 @@ export function useRecordActions(): UseRecordActionsReturn {
             };
 
             storeAddRecord(new_record);
-            message.success("작업이 복제되었습니다");
+            message.success(SUCCESS_MESSAGES.recordCloned);
         },
         [storeAddRecord, selected_date]
     );

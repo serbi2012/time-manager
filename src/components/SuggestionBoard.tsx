@@ -30,6 +30,7 @@ import {
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/ko";
+import { SUGGESTION_MESSAGES } from "../shared/constants";
 import { useAuth } from "../firebase/useAuth";
 import {
     subscribeToSuggestions,
@@ -41,7 +42,11 @@ import {
     updateSuggestion,
     deleteSuggestion,
 } from "../firebase/suggestionService";
-import type { SuggestionPost, SuggestionReply, SuggestionStatus } from "../types";
+import type {
+    SuggestionPost,
+    SuggestionReply,
+    SuggestionStatus,
+} from "../types";
 import { useResponsive } from "../hooks/useResponsive";
 import type { User } from "firebase/auth";
 
@@ -55,7 +60,10 @@ const { Text, Paragraph } = Typography;
 const ADMIN_EMAIL = "rlaxo0306@gmail.com";
 const GUEST_ID_KEY = "suggestion_guest_id";
 
-const STATUS_CONFIG: Record<SuggestionStatus, { label: string; color: string }> = {
+const STATUS_CONFIG: Record<
+    SuggestionStatus,
+    { label: string; color: string }
+> = {
     pending: { label: "대기중", color: "default" },
     reviewing: { label: "검토중", color: "blue" },
     in_progress: { label: "진행중", color: "orange" },
@@ -84,18 +92,22 @@ interface ReplyFormProps {
     author_id: string;
 }
 
-function ReplyForm({ post_id, default_author = "", author_id }: ReplyFormProps) {
+function ReplyForm({
+    post_id,
+    default_author = "",
+    author_id,
+}: ReplyFormProps) {
     const [author_name, setAuthorName] = useState(default_author);
     const [content, setContent] = useState("");
     const [is_submitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async () => {
         if (!author_name.trim()) {
-            message.warning("닉네임을 입력해주세요");
+            message.warning(SUGGESTION_MESSAGES.nicknameRequired);
             return;
         }
         if (!content.trim()) {
-            message.warning("답글 내용을 입력해주세요");
+            message.warning(SUGGESTION_MESSAGES.replyContentRequired);
             return;
         }
 
@@ -110,9 +122,9 @@ function ReplyForm({ post_id, default_author = "", author_id }: ReplyFormProps) 
             };
             await addReply(post_id, reply);
             setContent("");
-            message.success("답글이 등록되었습니다");
+            message.success(SUGGESTION_MESSAGES.replyRegistered);
         } catch {
-            message.error("답글 등록에 실패했습니다");
+            message.error(SUGGESTION_MESSAGES.replyRegisterFailed);
         } finally {
             setIsSubmitting(false);
         }
@@ -160,7 +172,9 @@ interface AdminControlsProps {
 
 function AdminControls({ post }: AdminControlsProps) {
     const [status, setStatus] = useState<SuggestionStatus>(post.status);
-    const [resolved_version, setResolvedVersion] = useState(post.resolved_version || "");
+    const [resolved_version, setResolvedVersion] = useState(
+        post.resolved_version || ""
+    );
     const [is_saving, setIsSaving] = useState(false);
 
     useEffect(() => {
@@ -176,9 +190,9 @@ function AdminControls({ post }: AdminControlsProps) {
                 status,
                 status === "completed" ? resolved_version : undefined
             );
-            message.success("상태가 업데이트되었습니다");
+            message.success(SUGGESTION_MESSAGES.statusUpdated);
         } catch {
-            message.error("상태 업데이트에 실패했습니다");
+            message.error(SUGGESTION_MESSAGES.statusUpdateFailed);
         } finally {
             setIsSaving(false);
         }
@@ -186,7 +200,8 @@ function AdminControls({ post }: AdminControlsProps) {
 
     const has_changes =
         status !== post.status ||
-        (status === "completed" && resolved_version !== (post.resolved_version || ""));
+        (status === "completed" &&
+            resolved_version !== (post.resolved_version || ""));
 
     return (
         <div className="suggestion-admin-controls">
@@ -203,10 +218,12 @@ function AdminControls({ post }: AdminControlsProps) {
                     value={status}
                     onChange={setStatus}
                     style={{ width: 120 }}
-                    options={Object.entries(STATUS_CONFIG).map(([value, config]) => ({
-                        value,
-                        label: config.label,
-                    }))}
+                    options={Object.entries(STATUS_CONFIG).map(
+                        ([value, config]) => ({
+                            value,
+                            label: config.label,
+                        })
+                    )}
                 />
                 {status === "completed" && (
                     <Input
@@ -236,12 +253,17 @@ export default function SuggestionBoard() {
     const [posts, setPosts] = useState<SuggestionPost[]>([]);
     const [is_write_modal_open, setIsWriteModalOpen] = useState(false);
     const [is_edit_modal_open, setIsEditModalOpen] = useState(false);
-    const [editing_post, setEditingPost] = useState<SuggestionPost | null>(null);
+    const [editing_post, setEditingPost] = useState<SuggestionPost | null>(
+        null
+    );
     const [is_submitting, setIsSubmitting] = useState(false);
     const [form] = Form.useForm();
     const [edit_form] = Form.useForm();
 
-    const [editing_reply, setEditingReply] = useState<{ post_id: string; reply_id: string } | null>(null);
+    const [editing_reply, setEditingReply] = useState<{
+        post_id: string;
+        reply_id: string;
+    } | null>(null);
     const [edit_reply_content, setEditReplyContent] = useState("");
 
     const is_admin = user?.email === ADMIN_EMAIL;
@@ -294,34 +316,38 @@ export default function SuggestionBoard() {
     };
 
     const canEditReply = (reply: SuggestionReply) => {
-        return is_admin || (reply.author_id && reply.author_id === my_author_id);
+        return (
+            is_admin || (reply.author_id && reply.author_id === my_author_id)
+        );
     };
 
     const canDeleteReply = (reply: SuggestionReply) => {
-        return is_admin || (reply.author_id && reply.author_id === my_author_id);
+        return (
+            is_admin || (reply.author_id && reply.author_id === my_author_id)
+        );
     };
 
     const handleEditReply = async (post_id: string, reply_id: string) => {
         if (!edit_reply_content.trim()) {
-            message.warning("답글 내용을 입력해주세요");
+            message.warning(SUGGESTION_MESSAGES.replyContentRequired);
             return;
         }
         try {
             await updateReply(post_id, reply_id, edit_reply_content.trim());
-            message.success("답글이 수정되었습니다");
+            message.success(SUGGESTION_MESSAGES.replyUpdated);
             setEditingReply(null);
             setEditReplyContent("");
         } catch {
-            message.error("답글 수정에 실패했습니다");
+            message.error(SUGGESTION_MESSAGES.replyUpdateFailed);
         }
     };
 
     const handleDeleteReply = async (post_id: string, reply_id: string) => {
         try {
             await deleteReply(post_id, reply_id);
-            message.success("답글이 삭제되었습니다");
+            message.success(SUGGESTION_MESSAGES.replyDeleted);
         } catch {
-            message.error("답글 삭제에 실패했습니다");
+            message.error(SUGGESTION_MESSAGES.replyDeleteFailed);
         }
     };
 
@@ -352,7 +378,7 @@ export default function SuggestionBoard() {
             };
 
             await addSuggestion(new_post);
-            message.success("건의사항이 등록되었습니다");
+            message.success(SUGGESTION_MESSAGES.suggestionRegistered);
             form.resetFields();
             setIsWriteModalOpen(false);
         } catch {
@@ -374,12 +400,12 @@ export default function SuggestionBoard() {
                 values.title.trim(),
                 values.content.trim()
             );
-            message.success("게시글이 수정되었습니다");
+            message.success(SUGGESTION_MESSAGES.postUpdated);
             edit_form.resetFields();
             setIsEditModalOpen(false);
             setEditingPost(null);
         } catch {
-            message.error("수정에 실패했습니다");
+            message.error(SUGGESTION_MESSAGES.postUpdateFailed);
         } finally {
             setIsSubmitting(false);
         }
@@ -388,9 +414,9 @@ export default function SuggestionBoard() {
     const handleDeletePost = async (post_id: string) => {
         try {
             await deleteSuggestion(post_id);
-            message.success("게시글이 삭제되었습니다");
+            message.success(SUGGESTION_MESSAGES.postDeleted);
         } catch {
-            message.error("삭제에 실패했습니다");
+            message.error(SUGGESTION_MESSAGES.postDeleteFailed);
         }
     };
 
@@ -413,11 +439,15 @@ export default function SuggestionBoard() {
                             <Tag color={STATUS_CONFIG[post.status].color}>
                                 {STATUS_CONFIG[post.status].label}
                             </Tag>
-                            {post.status === "completed" && post.resolved_version && (
-                                <Tag color="green" icon={<CheckCircleOutlined />}>
-                                    {post.resolved_version}
-                                </Tag>
-                            )}
+                            {post.status === "completed" &&
+                                post.resolved_version && (
+                                    <Tag
+                                        color="green"
+                                        icon={<CheckCircleOutlined />}
+                                    >
+                                        {post.resolved_version}
+                                    </Tag>
+                                )}
                         </Space>
                     </div>
                     <div className="suggestion-item-meta">
@@ -454,10 +484,15 @@ export default function SuggestionBoard() {
                                     <Popconfirm
                                         title="게시글 삭제"
                                         description="정말 이 게시글을 삭제하시겠습니까?"
-                                        onConfirm={() => handleDeletePost(post.id)}
+                                        onConfirm={() =>
+                                            handleDeletePost(post.id)
+                                        }
                                         okText="삭제"
                                         cancelText="취소"
-                                        okButtonProps={{ danger: true, autoFocus: true }}
+                                        okButtonProps={{
+                                            danger: true,
+                                            autoFocus: true,
+                                        }}
                                     >
                                         <Button
                                             size="small"
@@ -495,7 +530,9 @@ export default function SuggestionBoard() {
                             }}
                         >
                             <Space>
-                                <CheckCircleOutlined style={{ color: "#52c41a" }} />
+                                <CheckCircleOutlined
+                                    style={{ color: "#52c41a" }}
+                                />
                                 <Text style={{ color: "#52c41a" }}>
                                     {post.resolved_version}에서 해결됨
                                 </Text>
@@ -507,7 +544,11 @@ export default function SuggestionBoard() {
                         <div className="suggestion-replies">
                             <Text
                                 type="secondary"
-                                style={{ fontSize: 13, marginBottom: 8, display: "block" }}
+                                style={{
+                                    fontSize: 13,
+                                    marginBottom: 8,
+                                    display: "block",
+                                }}
                             >
                                 답글 {post.replies.length}개
                             </Text>
@@ -525,34 +566,58 @@ export default function SuggestionBoard() {
                                             {is_editing ? (
                                                 <div style={{ width: "100%" }}>
                                                     <TextArea
-                                                        value={edit_reply_content}
-                                                        onChange={(e) =>
-                                                            setEditReplyContent(e.target.value)
+                                                        value={
+                                                            edit_reply_content
                                                         }
-                                                        autoSize={{ minRows: 1, maxRows: 4 }}
+                                                        onChange={(e) =>
+                                                            setEditReplyContent(
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        autoSize={{
+                                                            minRows: 1,
+                                                            maxRows: 4,
+                                                        }}
                                                         onKeyDown={(e) => {
-                                                            if (e.key === "Enter" && !e.shiftKey) {
+                                                            if (
+                                                                e.key ===
+                                                                    "Enter" &&
+                                                                !e.shiftKey
+                                                            ) {
                                                                 e.preventDefault();
-                                                                handleEditReply(post.id, reply.id);
-                                                            } else if (e.key === "Escape") {
+                                                                handleEditReply(
+                                                                    post.id,
+                                                                    reply.id
+                                                                );
+                                                            } else if (
+                                                                e.key ===
+                                                                "Escape"
+                                                            ) {
                                                                 cancelEditReply();
                                                             }
                                                         }}
                                                         autoFocus
                                                     />
-                                                    <Space style={{ marginTop: 8 }}>
+                                                    <Space
+                                                        style={{ marginTop: 8 }}
+                                                    >
                                                         <Button
                                                             size="small"
                                                             type="primary"
                                                             onClick={() =>
-                                                                handleEditReply(post.id, reply.id)
+                                                                handleEditReply(
+                                                                    post.id,
+                                                                    reply.id
+                                                                )
                                                             }
                                                         >
                                                             저장
                                                         </Button>
                                                         <Button
                                                             size="small"
-                                                            onClick={cancelEditReply}
+                                                            onClick={
+                                                                cancelEditReply
+                                                            }
                                                         >
                                                             취소
                                                         </Button>
@@ -561,7 +626,12 @@ export default function SuggestionBoard() {
                                             ) : (
                                                 <>
                                                     <div className="suggestion-reply-content">
-                                                        <Text style={{ whiteSpace: "pre-wrap" }}>
+                                                        <Text
+                                                            style={{
+                                                                whiteSpace:
+                                                                    "pre-wrap",
+                                                            }}
+                                                        >
                                                             {reply.content}
                                                         </Text>
                                                     </div>
@@ -569,18 +639,26 @@ export default function SuggestionBoard() {
                                                         className="suggestion-reply-meta"
                                                         style={{
                                                             display: "flex",
-                                                            justifyContent: "space-between",
-                                                            alignItems: "center",
+                                                            justifyContent:
+                                                                "space-between",
+                                                            alignItems:
+                                                                "center",
                                                         }}
                                                     >
                                                         <Text
                                                             type="secondary"
-                                                            style={{ fontSize: 12 }}
+                                                            style={{
+                                                                fontSize: 12,
+                                                            }}
                                                         >
-                                                            {reply.author_name} ·{" "}
-                                                            {formatRelativeTime(reply.created_at)}
+                                                            {reply.author_name}{" "}
+                                                            ·{" "}
+                                                            {formatRelativeTime(
+                                                                reply.created_at
+                                                            )}
                                                         </Text>
-                                                        {(can_edit || can_delete) && (
+                                                        {(can_edit ||
+                                                            can_delete) && (
                                                             <Space size="small">
                                                                 {can_edit && (
                                                                     <Button
@@ -615,7 +693,8 @@ export default function SuggestionBoard() {
                                                                         cancelText="취소"
                                                                         okButtonProps={{
                                                                             danger: true,
-                                                                            autoFocus: true,
+                                                                            autoFocus:
+                                                                                true,
                                                                         }}
                                                                     >
                                                                         <Button
@@ -721,14 +800,16 @@ export default function SuggestionBoard() {
                     okText={
                         <>
                             등록{" "}
-                            <span style={{
-                                fontSize: 11,
-                                opacity: 0.85,
-                                marginLeft: 4,
-                                padding: "1px 4px",
-                                background: "rgba(255,255,255,0.2)",
-                                borderRadius: 3,
-                            }}>
+                            <span
+                                style={{
+                                    fontSize: 11,
+                                    opacity: 0.85,
+                                    marginLeft: 4,
+                                    padding: "1px 4px",
+                                    background: "rgba(255,255,255,0.2)",
+                                    borderRadius: 3,
+                                }}
+                            >
                                 F8
                             </span>
                         </>
@@ -737,11 +818,20 @@ export default function SuggestionBoard() {
                     confirmLoading={is_submitting}
                     destroyOnClose
                 >
-                    <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
+                    <Form
+                        form={form}
+                        layout="vertical"
+                        style={{ marginTop: 16 }}
+                    >
                         <Form.Item
                             name="author_name"
                             label="닉네임"
-                            rules={[{ required: true, message: "닉네임을 입력해주세요" }]}
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "닉네임을 입력해주세요",
+                                },
+                            ]}
                         >
                             <Input
                                 prefix={<UserOutlined />}
@@ -752,14 +842,27 @@ export default function SuggestionBoard() {
                         <Form.Item
                             name="title"
                             label="제목"
-                            rules={[{ required: true, message: "제목을 입력해주세요" }]}
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "제목을 입력해주세요",
+                                },
+                            ]}
                         >
-                            <Input placeholder="제목을 입력하세요" maxLength={100} />
+                            <Input
+                                placeholder="제목을 입력하세요"
+                                maxLength={100}
+                            />
                         </Form.Item>
                         <Form.Item
                             name="content"
                             label="내용"
-                            rules={[{ required: true, message: "내용을 입력해주세요" }]}
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "내용을 입력해주세요",
+                                },
+                            ]}
                         >
                             <TextArea
                                 placeholder="건의사항 내용을 입력하세요"
@@ -784,14 +887,16 @@ export default function SuggestionBoard() {
                     okText={
                         <>
                             수정{" "}
-                            <span style={{
-                                fontSize: 11,
-                                opacity: 0.85,
-                                marginLeft: 4,
-                                padding: "1px 4px",
-                                background: "rgba(255,255,255,0.2)",
-                                borderRadius: 3,
-                            }}>
+                            <span
+                                style={{
+                                    fontSize: 11,
+                                    opacity: 0.85,
+                                    marginLeft: 4,
+                                    padding: "1px 4px",
+                                    background: "rgba(255,255,255,0.2)",
+                                    borderRadius: 3,
+                                }}
+                            >
                                 F8
                             </span>
                         </>
@@ -800,18 +905,35 @@ export default function SuggestionBoard() {
                     confirmLoading={is_submitting}
                     destroyOnClose
                 >
-                    <Form form={edit_form} layout="vertical" style={{ marginTop: 16 }}>
+                    <Form
+                        form={edit_form}
+                        layout="vertical"
+                        style={{ marginTop: 16 }}
+                    >
                         <Form.Item
                             name="title"
                             label="제목"
-                            rules={[{ required: true, message: "제목을 입력해주세요" }]}
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "제목을 입력해주세요",
+                                },
+                            ]}
                         >
-                            <Input placeholder="제목을 입력하세요" maxLength={100} />
+                            <Input
+                                placeholder="제목을 입력하세요"
+                                maxLength={100}
+                            />
                         </Form.Item>
                         <Form.Item
                             name="content"
                             label="내용"
-                            rules={[{ required: true, message: "내용을 입력해주세요" }]}
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "내용을 입력해주세요",
+                                },
+                            ]}
                         >
                             <TextArea
                                 placeholder="건의사항 내용을 입력하세요"

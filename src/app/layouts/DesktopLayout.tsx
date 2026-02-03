@@ -25,6 +25,7 @@ import { useWorkStore } from "../../store/useWorkStore";
 import { useSyncStatus } from "../../features/sync";
 import { useShortcuts } from "../../hooks/useShortcuts";
 import { useAuthHandlers, useDataImportExport } from "../../shared/hooks";
+import { INFO_MESSAGES, WARNING_MESSAGES } from "../../shared/constants";
 import { CURRENT_VERSION } from "../../constants/changelog";
 import SettingsModal from "../../components/SettingsModal";
 import ChangelogModal from "../../components/ChangelogModal";
@@ -98,20 +99,20 @@ export function DesktopLayout() {
             const timer = useWorkStore.getState().timer;
             if (timer.is_running) {
                 useWorkStore.getState().stopTimer();
-                message.info("타이머가 중지되었습니다");
+                message.info(INFO_MESSAGES.timerStopped);
             } else {
-                message.warning("먼저 작업을 선택하세요");
+                message.warning(WARNING_MESSAGES.selectWorkFirst);
             }
         },
         resetTimer: () => {
             useWorkStore.getState().resetTimer();
-            message.info("타이머가 초기화되었습니다");
+            message.info(INFO_MESSAGES.timerReset);
         },
         goToday: () => {
             useWorkStore
                 .getState()
                 .setSelectedDate(dayjs().format("YYYY-MM-DD"));
-            message.info("오늘 날짜로 이동했습니다");
+            message.info(INFO_MESSAGES.movedToToday);
         },
         prevDay: () => {
             const current = useWorkStore.getState().selected_date;

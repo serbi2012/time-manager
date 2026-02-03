@@ -15,6 +15,8 @@ import {
     GANTT_LABEL_DELETE_SESSION,
     GANTT_LABEL_DELETE_SESSION_TITLE,
     GANTT_LABEL_DELETE_SESSION_DESC,
+    GANTT_BUTTON_DELETE,
+    GANTT_BUTTON_CANCEL,
 } from "../../constants";
 import type { WorkRecord, WorkSession } from "../../../../shared/types";
 
@@ -87,8 +89,8 @@ export function SessionContextMenu({
                         session.end_time
                     )}
                     onConfirm={on_delete}
-                    okText="삭제"
-                    cancelText="취소"
+                    okText={GANTT_BUTTON_DELETE}
+                    cancelText={GANTT_BUTTON_CANCEL}
                     okButtonProps={{ danger: true }}
                 >
                     <Button

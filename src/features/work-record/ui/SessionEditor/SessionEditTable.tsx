@@ -1,6 +1,6 @@
 /**
  * 세션 편집 테이블 컴포넌트
- * 
+ *
  * 레코드의 세션 목록을 표시하고 편집할 수 있는 테이블
  * 타이머 리렌더링과 독립적으로 동작
  */
@@ -16,6 +16,7 @@ import { TimeInput, DateInput } from "../../../../shared/ui";
 import { formatDuration } from "../../../../shared/lib/time";
 import { getSessionMinutes } from "../../../../shared/lib/session";
 import { APP_THEME_COLORS } from "../../../../shared/config";
+import { SUCCESS_MESSAGES, ERROR_MESSAGES } from "../../../../shared/constants";
 
 const { Text } = Typography;
 
@@ -38,7 +39,9 @@ export function SessionEditTable({ record_id }: SessionEditTableProps) {
     const theme_color = APP_THEME_COLORS[app_theme].primary;
 
     // 선택 삭제를 위한 상태
-    const [selected_session_keys, setSelectedSessionKeys] = useState<React.Key[]>([]);
+    const [selected_session_keys, setSelectedSessionKeys] = useState<
+        React.Key[]
+    >([]);
 
     // 시간 변경 핸들러
     const handleUpdateTime = useCallback(
@@ -55,10 +58,12 @@ export function SessionEditTable({ record_id }: SessionEditTableProps) {
                         result.message || "시간이 자동 조정되었습니다."
                     );
                 } else {
-                    message.success("시간이 수정되었습니다.");
+                    message.success(SUCCESS_MESSAGES.sessionUpdated);
                 }
             } else {
-                message.error(result.message || "시간 수정에 실패했습니다.");
+                message.error(
+                    result.message || ERROR_MESSAGES.timeUpdateFailed
+                );
             }
         },
         [record_id, updateSession]
@@ -75,9 +80,11 @@ export function SessionEditTable({ record_id }: SessionEditTableProps) {
                 new_date
             );
             if (result.success) {
-                message.success("날짜가 수정되었습니다.");
+                message.success(SUCCESS_MESSAGES.dateUpdated);
             } else {
-                message.error(result.message || "날짜 수정에 실패했습니다.");
+                message.error(
+                    result.message || ERROR_MESSAGES.dateUpdateFailed
+                );
             }
         },
         [record_id, updateSession]
@@ -87,7 +94,7 @@ export function SessionEditTable({ record_id }: SessionEditTableProps) {
     const handleDeleteSession = useCallback(
         (session_id: string) => {
             deleteSession(record_id, session_id);
-            message.success("세션이 삭제되었습니다.");
+            message.success(SUCCESS_MESSAGES.sessionDeleted);
         },
         [record_id, deleteSession]
     );
@@ -98,7 +105,9 @@ export function SessionEditTable({ record_id }: SessionEditTableProps) {
             deleteSession(record_id, key as string);
         });
         setSelectedSessionKeys([]);
-        message.success(`${selected_session_keys.length}개 세션이 삭제되었습니다.`);
+        message.success(
+            SUCCESS_MESSAGES.sessionsDeleted(selected_session_keys.length)
+        );
     }, [record_id, deleteSession, selected_session_keys]);
 
     if (!record) return null;
@@ -144,7 +153,11 @@ export function SessionEditTable({ record_id }: SessionEditTableProps) {
                     <TimeInput
                         value={session.end_time}
                         onSave={(new_time) =>
-                            handleUpdateTime(session.id, session.start_time, new_time)
+                            handleUpdateTime(
+                                session.id,
+                                session.start_time,
+                                new_time
+                            )
                         }
                     />
                 ),
@@ -198,7 +211,9 @@ export function SessionEditTable({ record_id }: SessionEditTableProps) {
     return (
         <div className="session-history">
             <div className="session-header">
-                <HistoryOutlined style={{ marginRight: 8, color: theme_color }} />
+                <HistoryOutlined
+                    style={{ marginRight: 8, color: theme_color }}
+                />
                 <Text strong>세션 이력 ({sessions.length}개)</Text>
                 {selected_session_keys.length > 0 && (
                     <Popconfirm

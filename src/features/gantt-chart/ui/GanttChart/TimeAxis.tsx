@@ -4,6 +4,7 @@
 
 import { Typography } from "antd";
 import type { TimeAxisProps } from "../../lib/types";
+import { GANTT_FONT_XSMALL } from "../../constants";
 
 const { Text } = Typography;
 
@@ -11,10 +12,10 @@ const { Text } = Typography;
  * 시간 축 컴포넌트
  * 시간 라벨과 눈금을 표시
  */
-export function TimeAxis({ 
-    start_hour, 
-    end_hour, 
-    pixels_per_hour 
+export function TimeAxis({
+    start_hour,
+    end_hour,
+    pixels_per_hour,
 }: TimeAxisProps) {
     const hours: number[] = [];
     for (let h = start_hour; h <= end_hour; h++) {
@@ -32,7 +33,10 @@ export function TimeAxis({
                         width: pixels_per_hour,
                     }}
                 >
-                    <Text type="secondary" style={{ fontSize: 11 }}>
+                    <Text
+                        type="secondary"
+                        style={{ fontSize: GANTT_FONT_XSMALL }}
+                    >
                         {h}:00
                     </Text>
                 </div>

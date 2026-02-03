@@ -60,6 +60,12 @@ import {
 import { HighlightText } from "../shared/ui/HighlightText";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { formatDuration, formatTimer } from "../shared/lib/time";
+import {
+    SUCCESS_MESSAGES,
+    ERROR_MESSAGES,
+    WARNING_MESSAGES,
+    INFO_MESSAGES,
+} from "../shared/constants";
 
 const { Text } = Typography;
 
@@ -330,13 +336,15 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
             if (result.success) {
                 if (result.adjusted) {
                     message.warning(
-                        result.message || "시간이 자동 조정되었습니다."
+                        result.message || WARNING_MESSAGES.timeAdjusted
                     );
                 } else {
-                    message.success("시간이 수정되었습니다.");
+                    message.success(SUCCESS_MESSAGES.sessionUpdated);
                 }
             } else {
-                message.error(result.message || "시간 수정에 실패했습니다.");
+                message.error(
+                    result.message || ERROR_MESSAGES.timeUpdateFailed
+                );
             }
         },
         [record_id, updateSession]
@@ -353,9 +361,11 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                 new_date
             );
             if (result.success) {
-                message.success("날짜가 변경되었습니다.");
+                message.success(SUCCESS_MESSAGES.dateChanged);
             } else {
-                message.error(result.message || "날짜 변경에 실패했습니다.");
+                message.error(
+                    result.message || ERROR_MESSAGES.dateChangeFailed
+                );
             }
         },
         [record_id, updateSession]
@@ -378,7 +388,7 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
         });
 
         message.success(
-            `${selected_session_keys.length}개 세션이 삭제되었습니다`
+            SUCCESS_MESSAGES.sessionsDeleted(selected_session_keys.length)
         );
         setSelectedSessionKeys([]);
     }, [selected_session_keys, record_id, deleteSession]);
@@ -387,7 +397,7 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
     const handleAddSession = useCallback(() => {
         if (!record) return;
         if (!new_session_start || !new_session_end) {
-            message.error("시작 시간과 종료 시간을 모두 입력하세요.");
+            message.error(ERROR_MESSAGES.timeRequired);
             return;
         }
 
@@ -400,7 +410,7 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
             dayjs(`2000-01-01 ${new_session_end}`).minute();
 
         if (start_minutes >= end_minutes) {
-            message.error("종료 시간은 시작 시간보다 늦어야 합니다.");
+            message.error(ERROR_MESSAGES.invalidEndTime);
             return;
         }
 
@@ -441,7 +451,7 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
             end_time: last_session?.end_time || record.end_time,
         });
 
-        message.success("세션이 추가되었습니다.");
+        message.success(SUCCESS_MESSAGES.sessionAdded);
 
         // 상태 초기화
         setIsAddingSession(false);
@@ -1285,7 +1295,7 @@ export default function WorkRecordTable() {
             };
 
             addRecord(new_record);
-            message.success("작업이 추가되었습니다");
+            message.success(SUCCESS_MESSAGES.workAdded);
 
             form.resetFields();
             setIsModalOpen(false);
@@ -1453,7 +1463,7 @@ export default function WorkRecordTable() {
                         onClick={(e) => {
                             e.stopPropagation();
                             hideAutoCompleteOption("project_code", opt.value);
-                            message.info(`"${opt.label}" 항목이 숨겨졌습니다`);
+                            message.info(INFO_MESSAGES.optionHidden(opt.label));
                         }}
                     />
                 </div>
@@ -3007,7 +3017,7 @@ export default function WorkRecordTable() {
                                             onClick={() => {
                                                 restoreRecord(record.id);
                                                 message.success(
-                                                    "작업이 복원되었습니다"
+                                                    SUCCESS_MESSAGES.recordRestored
                                                 );
                                             }}
                                         />
@@ -3018,7 +3028,7 @@ export default function WorkRecordTable() {
                                         onConfirm={() => {
                                             permanentlyDeleteRecord(record.id);
                                             message.success(
-                                                "작업이 완전히 삭제되었습니다"
+                                                SUCCESS_MESSAGES.recordFullyDeleted
                                             );
                                         }}
                                         okText="삭제"

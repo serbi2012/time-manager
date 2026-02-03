@@ -42,6 +42,7 @@ import {
 } from "@ant-design/icons";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import dayjs from "dayjs";
+import { SUCCESS_MESSAGES } from "../shared/constants";
 import { useWorkStore } from "../store/useWorkStore";
 import { useAuth } from "../firebase/useAuth";
 import type { WorkRecord, WorkSession } from "../types";
@@ -488,7 +489,7 @@ function AdminSessionGridContent() {
         const json_data = JSON.stringify(selected_records, null, 2);
         navigator.clipboard.writeText(json_data);
         message.success(
-            `${selected_records.length}개 레코드 데이터가 클립보드에 복사되었습니다`
+            SUCCESS_MESSAGES.recordsCopiedToClipboard(selected_records.length)
         );
     };
 
@@ -556,7 +557,11 @@ function AdminSessionGridContent() {
         });
 
         message.success(
-            `${merge_target_group.records.length}개 레코드가 1개로 병합되었습니다 (세션 ${all_sessions.length}개, 총 ${total_duration}분)`
+            SUCCESS_MESSAGES.recordsMergedDetail(
+                merge_target_group.records.length,
+                all_sessions.length,
+                total_duration
+            )
         );
         setMergeModalOpen(false);
         setMergeTargetGroup(null);
@@ -574,7 +579,9 @@ function AdminSessionGridContent() {
             }
         });
 
-        message.success(`${selected_row_keys.length}개 세션이 삭제되었습니다`);
+        message.success(
+            SUCCESS_MESSAGES.sessionsDeleted(selected_row_keys.length)
+        );
         setSelectedRowKeys([]);
     };
 
@@ -699,8 +706,7 @@ function AdminSessionGridContent() {
             dataIndex: "duration_minutes",
             width: 90,
             align: "right",
-            render: (mins: number) =>
-                formatDuration(mins || 0, time_format),
+            render: (mins: number) => formatDuration(mins || 0, time_format),
             sorter: (a, b) => a.duration_minutes - b.duration_minutes,
         },
         {
@@ -954,8 +960,7 @@ function AdminSessionGridContent() {
             dataIndex: "duration_minutes",
             width: 90,
             align: "right",
-            render: (mins: number) =>
-                formatDuration(mins || 0, time_format),
+            render: (mins: number) => formatDuration(mins || 0, time_format),
             sorter: (a, b) => a.duration_minutes - b.duration_minutes,
         },
         {
@@ -1105,9 +1110,7 @@ function AdminSessionGridContent() {
                                 <Radio.Button value="hours">
                                     시간 분
                                 </Radio.Button>
-                                <Radio.Button value="minutes">
-                                    분
-                                </Radio.Button>
+                                <Radio.Button value="minutes">분</Radio.Button>
                             </Radio.Group>
                         </Space>
                     }
@@ -1937,7 +1940,9 @@ function AdminSessionGridContent() {
                                                             }
                                                         );
                                                         message.success(
-                                                            `${selected_record_keys.length}개 레코드가 삭제되었습니다`
+                                                            SUCCESS_MESSAGES.recordsDeleted(
+                                                                selected_record_keys.length
+                                                            )
                                                         );
                                                         setSelectedRecordKeys(
                                                             []

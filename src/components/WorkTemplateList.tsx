@@ -26,6 +26,7 @@ import {
     HolderOutlined,
 } from "@ant-design/icons";
 import { Tag } from "antd";
+import { SUCCESS_MESSAGES, INFO_MESSAGES } from "../shared/constants";
 import {
     DndContext,
     closestCenter,
@@ -213,9 +214,9 @@ export default function WorkTemplateList({
 
     // 단축키 설정
     const new_preset_shortcut = useShortcutStore((state) =>
-        state.shortcuts.find(s => s.id === 'new-preset')
+        state.shortcuts.find((s) => s.id === "new-preset")
     );
-    const new_preset_keys = new_preset_shortcut?.keys || 'Alt+P';
+    const new_preset_keys = new_preset_shortcut?.keys || "Alt+P";
 
     // dnd-kit 센서 설정 (모바일에서는 터치 센서 추가)
     const sensors = useSensors(
@@ -255,7 +256,10 @@ export default function WorkTemplateList({
     const [project_code_search, setProjectCodeSearch] = useState("");
     const [work_name_search, setWorkNameSearch] = useState("");
     const [deal_name_search, setDealNameSearch] = useState("");
-    const debounced_project_code_search = useDebouncedValue(project_code_search, 150);
+    const debounced_project_code_search = useDebouncedValue(
+        project_code_search,
+        150
+    );
     const debounced_work_name_search = useDebouncedValue(work_name_search, 150);
     const debounced_deal_name_search = useDebouncedValue(deal_name_search, 150);
 
@@ -266,7 +270,12 @@ export default function WorkTemplateList({
     // 프로젝트 코드 자동완성 옵션 (원본)
     const raw_project_code_options = useMemo(() => {
         return getProjectCodeOptions();
-    }, [records, templates, hidden_autocomplete_options, getProjectCodeOptions]);
+    }, [
+        records,
+        templates,
+        hidden_autocomplete_options,
+        getProjectCodeOptions,
+    ]);
 
     // 프로젝트 코드 선택 시 코드와 작업명 자동 채우기 핸들러
     const handleProjectCodeSelect = useCallback(
@@ -293,7 +302,12 @@ export default function WorkTemplateList({
                         alignItems: "center",
                     }}
                 >
-                    <span><HighlightText text={opt.label} search={debounced_project_code_search} /></span>
+                    <span>
+                        <HighlightText
+                            text={opt.label}
+                            search={debounced_project_code_search}
+                        />
+                    </span>
                     <CloseOutlined
                         style={{
                             fontSize: 10,
@@ -303,13 +317,17 @@ export default function WorkTemplateList({
                         onClick={(e) => {
                             e.stopPropagation();
                             hideAutoCompleteOption("project_code", opt.value);
-                            message.info(`"${opt.label}" 항목이 숨겨졌습니다`);
+                            message.info(INFO_MESSAGES.optionHidden(opt.label));
                         }}
                     />
                 </div>
             ),
         }));
-    }, [raw_project_code_options, debounced_project_code_search, hideAutoCompleteOption]);
+    }, [
+        raw_project_code_options,
+        debounced_project_code_search,
+        hideAutoCompleteOption,
+    ]);
 
     // 작업명/거래명 자동완성 옵션 (삭제 버튼 포함, 검색어 하이라이트)
     const work_name_options = useMemo(() => {
@@ -323,7 +341,12 @@ export default function WorkTemplateList({
                         alignItems: "center",
                     }}
                 >
-                    <span><HighlightText text={v} search={debounced_work_name_search} /></span>
+                    <span>
+                        <HighlightText
+                            text={v}
+                            search={debounced_work_name_search}
+                        />
+                    </span>
                     <CloseOutlined
                         style={{
                             fontSize: 10,
@@ -333,7 +356,7 @@ export default function WorkTemplateList({
                         onClick={(e) => {
                             e.stopPropagation();
                             hideAutoCompleteOption("work_name", v);
-                            message.info(`"${v}" 옵션이 숨겨졌습니다`);
+                            message.info(INFO_MESSAGES.optionHiddenV(v));
                         }}
                     />
                 </div>
@@ -359,7 +382,12 @@ export default function WorkTemplateList({
                         alignItems: "center",
                     }}
                 >
-                    <span><HighlightText text={v} search={debounced_deal_name_search} /></span>
+                    <span>
+                        <HighlightText
+                            text={v}
+                            search={debounced_deal_name_search}
+                        />
+                    </span>
                     <CloseOutlined
                         style={{
                             fontSize: 10,
@@ -369,7 +397,7 @@ export default function WorkTemplateList({
                         onClick={(e) => {
                             e.stopPropagation();
                             hideAutoCompleteOption("deal_name", v);
-                            message.info(`"${v}" 옵션이 숨겨졌습니다`);
+                            message.info(INFO_MESSAGES.optionHiddenV(v));
                         }}
                     />
                 </div>
@@ -475,7 +503,7 @@ export default function WorkTemplateList({
                     note: values.note || "",
                     color,
                 });
-                message.success("프리셋이 수정되었습니다");
+                message.success(SUCCESS_MESSAGES.templateUpdated);
             } else {
                 // 추가
                 addTemplate({
@@ -487,7 +515,7 @@ export default function WorkTemplateList({
                     note: values.note || "",
                     color,
                 });
-                message.success("프리셋이 추가되었습니다");
+                message.success(SUCCESS_MESSAGES.templateAdded);
             }
 
             handleCloseModal();
@@ -502,7 +530,7 @@ export default function WorkTemplateList({
             addCustomTaskOption(new_task_input.trim());
             setNewTaskInput("");
             message.success(
-                `"${new_task_input.trim()}" 업무명이 추가되었습니다`
+                SUCCESS_MESSAGES.taskOptionAdded(new_task_input.trim())
             );
         }
     };
@@ -513,7 +541,7 @@ export default function WorkTemplateList({
             addCustomCategoryOption(new_category_input.trim());
             setNewCategoryInput("");
             message.success(
-                `"${new_category_input.trim()}" 카테고리가 추가되었습니다`
+                SUCCESS_MESSAGES.categoryOptionAdded(new_category_input.trim())
             );
         }
     };
@@ -556,7 +584,9 @@ export default function WorkTemplateList({
                                         borderRadius: 3,
                                     }}
                                 >
-                                    {formatShortcutKeyForPlatform(new_preset_keys)}
+                                    {formatShortcutKeyForPlatform(
+                                        new_preset_keys
+                                    )}
                                 </span>
                             </span>
                         )}

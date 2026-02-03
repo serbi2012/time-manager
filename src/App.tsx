@@ -41,6 +41,12 @@ import {
     Link,
 } from "react-router-dom";
 import dayjs from "dayjs";
+import {
+    SUCCESS_MESSAGES,
+    ERROR_MESSAGES,
+    WARNING_MESSAGES,
+    INFO_MESSAGES,
+} from "./shared/constants";
 import WorkRecordTable from "./components/WorkRecordTable";
 import WorkTemplateList from "./components/WorkTemplateList";
 import { DailyGanttChart } from "@/features/gantt-chart";
@@ -151,7 +157,9 @@ function MainPage() {
         };
 
         useWorkStore.getState().addRecord(new_record);
-        message.success(`"${template.work_name}" 작업이 추가되었습니다`);
+        message.success(
+            SUCCESS_MESSAGES.workAddedFromTemplate(template.work_name)
+        );
 
         // 모바일에서 드로어 닫기
         if (is_mobile) {
@@ -262,20 +270,20 @@ function AppLayout() {
                 const timer = useWorkStore.getState().timer;
                 if (timer.is_running) {
                     useWorkStore.getState().stopTimer();
-                    message.info("타이머가 중지되었습니다");
+                    message.info(INFO_MESSAGES.timerStopped);
                 } else {
-                    message.warning("먼저 작업을 선택하세요");
+                    message.warning(WARNING_MESSAGES.selectWorkFirst);
                 }
             },
             resetTimer: () => {
                 useWorkStore.getState().resetTimer();
-                message.info("타이머가 초기화되었습니다");
+                message.info(INFO_MESSAGES.timerReset);
             },
             goToday: () => {
                 useWorkStore
                     .getState()
                     .setSelectedDate(dayjs().format("YYYY-MM-DD"));
-                message.info("오늘 날짜로 이동했습니다");
+                message.info(INFO_MESSAGES.movedToToday);
             },
             prevDay: () => {
                 const current = useWorkStore.getState().selected_date;
@@ -331,21 +339,23 @@ function AppLayout() {
                         const merge_result = autoMergeDuplicateRecords();
                         if (merge_result.merged_count > 0) {
                             message.info(
-                                `중복 레코드 ${merge_result.deleted_count}개가 자동으로 병합되었습니다`
+                                SUCCESS_MESSAGES.duplicateRecordsMerged(
+                                    merge_result.deleted_count
+                                )
                             );
                         }
                         setSyncStatus("synced");
                         showSyncCheckAnimation();
                     } else {
                         setSyncStatus("error");
-                        message.error("데이터 로드에 실패했습니다");
+                        message.error(ERROR_MESSAGES.dataLoadFailed);
                     }
                     setInitialLoadDone(true);
                 })
                 .catch(() => {
                     setSyncStatus("error");
                     setInitialLoadDone(true); // 에러가 나도 로딩 완료 처리
-                    message.error("데이터 동기화에 실패했습니다");
+                    message.error(ERROR_MESSAGES.syncFailedMessage);
                 });
         } else {
             clearSyncState();
@@ -380,10 +390,10 @@ function AppLayout() {
         try {
             const success = await refreshFromFirebase(user);
             if (success) {
-                message.success("서버에서 데이터를 새로고침했습니다");
+                message.success(SUCCESS_MESSAGES.dataRefreshed);
                 showSyncCheckAnimation();
             } else {
-                message.error("새로고침 실패");
+                message.error(ERROR_MESSAGES.refreshFailed);
             }
         } catch {
             message.error("새로고침 실패");
@@ -397,7 +407,7 @@ function AppLayout() {
         try {
             await signInWithGoogle();
         } catch {
-            message.error("로그인에 실패했습니다");
+            message.error(ERROR_MESSAGES.loginFailed);
         }
     };
 
@@ -405,9 +415,9 @@ function AppLayout() {
     const handleLogout = async () => {
         try {
             await logout();
-            message.success("로그아웃되었습니다");
+            message.success(SUCCESS_MESSAGES.loggedOut);
         } catch {
-            message.error("로그아웃에 실패했습니다");
+            message.error(ERROR_MESSAGES.logoutFailed);
         }
     };
 
@@ -510,7 +520,7 @@ function AppLayout() {
         };
 
         if (state.records.length === 0 && state.templates.length === 0) {
-            message.warning("내보낼 데이터가 없습니다");
+            message.warning(WARNING_MESSAGES.noDataToExport);
             return;
         }
 
@@ -527,7 +537,7 @@ function AppLayout() {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-        message.success("데이터가 내보내졌습니다");
+        message.success(SUCCESS_MESSAGES.dataExportedSuccess);
     };
 
     // 데이터 가져오기 (게스트 모드에서도 사용 가능)
@@ -552,7 +562,7 @@ function AppLayout() {
 
                 // 데이터 유효성 검사
                 if (!data.records) {
-                    message.error("유효하지 않은 데이터 형식입니다");
+                    message.error(ERROR_MESSAGES.invalidImportFormat);
                     return;
                 }
 
@@ -590,19 +600,17 @@ function AppLayout() {
                             custom_category_options:
                                 data.custom_category_options || [],
                         });
-                        message.success(
-                            "데이터를 가져오고 클라우드에 동기화했습니다"
-                        );
+                        message.success(SUCCESS_MESSAGES.dataImportedAndSynced);
                     } catch {
                         message.warning(
-                            "데이터를 가져왔지만 클라우드 동기화에 실패했습니다"
+                            WARNING_MESSAGES.dataImportedSyncFailed
                         );
                     }
                 } else {
-                    message.success("데이터를 성공적으로 가져왔습니다");
+                    message.success(SUCCESS_MESSAGES.dataImportedSuccess);
                 }
             } catch {
-                message.error("파일을 읽는 중 오류가 발생했습니다");
+                message.error(ERROR_MESSAGES.fileReadFailed);
             }
         };
         reader.readAsText(file);

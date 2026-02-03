@@ -6,6 +6,7 @@ import { useCallback } from "react";
 import { message } from "antd";
 import { useWorkStore } from "../../../store/useWorkStore";
 import type { WorkRecord } from "../../../shared/types";
+import { SUCCESS_MESSAGES, ERROR_MESSAGES } from "../../../shared/constants";
 
 export interface UseAdminActionsReturn {
     /** 세션 삭제 */
@@ -53,7 +54,7 @@ export function useAdminActions(): UseAdminActionsReturn {
     const deleteSession = useCallback(
         (record_id: string, session_id: string) => {
             storeDeleteSession(record_id, session_id);
-            message.success("세션이 삭제되었습니다");
+            message.success(SUCCESS_MESSAGES.sessionDeleted);
         },
         [storeDeleteSession]
     );
@@ -61,7 +62,7 @@ export function useAdminActions(): UseAdminActionsReturn {
     const softDeleteRecord = useCallback(
         (record_id: string) => {
             storeSoftDelete(record_id);
-            message.success("레코드가 휴지통으로 이동되었습니다");
+            message.success(SUCCESS_MESSAGES.recordMovedToTrashAdmin);
         },
         [storeSoftDelete]
     );
@@ -69,7 +70,7 @@ export function useAdminActions(): UseAdminActionsReturn {
     const restoreRecord = useCallback(
         (record_id: string) => {
             storeRestore(record_id);
-            message.success("레코드가 복원되었습니다");
+            message.success(SUCCESS_MESSAGES.recordRestoredAdmin);
         },
         [storeRestore]
     );
@@ -77,7 +78,7 @@ export function useAdminActions(): UseAdminActionsReturn {
     const permanentlyDeleteRecord = useCallback(
         (record_id: string) => {
             storePermanentDelete(record_id);
-            message.success("레코드가 영구 삭제되었습니다");
+            message.success(SUCCESS_MESSAGES.recordPermanentlyDeletedAdmin);
         },
         [storePermanentDelete]
     );
@@ -107,7 +108,7 @@ export function useAdminActions(): UseAdminActionsReturn {
             const target = records.find((r) => r.id === target_id);
 
             if (!source || !target) {
-                message.error("병합할 레코드를 찾을 수 없습니다");
+                message.error(ERROR_MESSAGES.mergeNotFound);
                 return;
             }
 
@@ -140,7 +141,7 @@ export function useAdminActions(): UseAdminActionsReturn {
             // 소스 레코드 삭제
             storeSoftDelete(source_id);
 
-            message.success("레코드가 병합되었습니다");
+            message.success(SUCCESS_MESSAGES.recordMerged);
         },
         [records, storeUpdateRecord, storeSoftDelete]
     );
@@ -151,7 +152,7 @@ export function useAdminActions(): UseAdminActionsReturn {
                 storeSoftDelete(id);
             });
             message.success(
-                `${record_ids.length}개 레코드가 휴지통으로 이동되었습니다`
+                SUCCESS_MESSAGES.recordsBulkTrashMoved(record_ids.length)
             );
         },
         [storeSoftDelete]
@@ -162,7 +163,9 @@ export function useAdminActions(): UseAdminActionsReturn {
         record_ids.forEach((id) => {
             markAsCompleted(id);
         });
-        message.success(`${record_ids.length}개 레코드가 완료 처리되었습니다`);
+        message.success(
+            SUCCESS_MESSAGES.recordsBulkCompleted(record_ids.length)
+        );
     }, []);
 
     const emptyTrash = useCallback(() => {
@@ -170,9 +173,7 @@ export function useAdminActions(): UseAdminActionsReturn {
         deleted.forEach((r) => {
             storePermanentDelete(r.id);
         });
-        message.success(
-            `휴지통이 비워졌습니다 (${deleted.length}개 영구 삭제)`
-        );
+        message.success(SUCCESS_MESSAGES.trashEmptiedWithCount(deleted.length));
     }, [records, storePermanentDelete]);
 
     return {
