@@ -44,7 +44,7 @@ interface StaggerAnimationResult {
 export function useStaggerAnimation(
     options: StaggerOptions = {}
 ): StaggerAnimationResult {
-    const { enabled, getDuration, getDelay } = useAnimationConfig();
+    const { enabled, getDelay } = useAnimationConfig();
 
     const {
         stagger = STAGGER.normal,

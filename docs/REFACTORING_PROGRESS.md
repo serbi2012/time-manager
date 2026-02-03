@@ -1,7 +1,7 @@
 # 리팩토링 진행 상황
 
 > **시작일**: 2026-02-03
-> **현재 상태**: Phase 1~3 완료, Phase 4~10 대기
+> **현재 상태**: Phase 1~6 완료, Phase 7~10 대기
 
 ---
 
@@ -229,33 +229,322 @@ const { containerVariants, itemVariants } = useStaggerAnimation({
 
 ---
 
+### Phase 4: 공통 UI 컴포넌트 추출 ✅
+
+**완료일**: 2026-02-03
+
+#### 생성된 구조
+
+```
+src/shared/ui/
+├── form/
+│   ├── index.ts
+│   ├── SelectWithAdd.tsx           # Select + 새 옵션 추가 + 숨기기 버튼
+│   ├── AutoCompleteWithHide.tsx    # AutoComplete + 옵션 숨기기 버튼
+│   ├── TimeRangeInput.tsx          # 시작~종료 시간 입력
+│   ├── *.stories.tsx               # Storybook 스토리
+├── modal/
+│   ├── index.ts
+│   ├── BaseModal.tsx               # 애니메이션 통합 기본 모달
+│   ├── FormModal.tsx               # 폼 제출/취소 로직 통합 모달
+│   ├── RecordListModal.tsx         # 테이블 목록 표시 모달
+│   ├── *.stories.tsx               # Storybook 스토리
+├── layout/
+│   ├── index.ts
+│   ├── LoadingOverlay.tsx          # 전체 화면 로딩 오버레이
+│   ├── EmptyState.tsx              # 빈 상태 표시 컴포넌트
+│   ├── *.stories.tsx               # Storybook 스토리
+└── index.ts                        # 업데이트됨
+```
+
+#### 주요 컴포넌트 및 사용법
+
+**SelectWithAdd** - Select + 새 옵션 추가 + 숨기기 버튼
+
+```tsx
+import { SelectWithAdd } from "@/shared/ui";
+
+<SelectWithAdd
+    options={taskOptions}
+    placeholder="업무 선택"
+    onAddOption={(value) => addTaskOption(value)}
+    onHideOption={(value) => hideOption("task", value)}
+    addPlaceholder="새 업무명"
+/>;
+```
+
+**AutoCompleteWithHide** - AutoComplete + 옵션 숨기기 버튼
+
+```tsx
+import { AutoCompleteWithHide } from "@/shared/ui";
+
+<AutoCompleteWithHide
+    options={projectOptions}
+    placeholder="프로젝트 코드"
+    onHideOption={(value) => hideOption("project", value)}
+    searchValue={searchText}
+/>;
+```
+
+**TimeRangeInput** - 시작~종료 시간 입력
+
+```tsx
+import { TimeRangeInput } from "@/shared/ui";
+
+<TimeRangeInput
+    startTime="09:00"
+    endTime="18:00"
+    onStartChange={setStartTime}
+    onEndChange={setEndTime}
+/>;
+```
+
+**BaseModal** - 애니메이션 통합 기본 모달
+
+```tsx
+import { BaseModal } from "@/shared/ui";
+
+<BaseModal title="설정" open={isOpen} onCancel={handleClose}>
+    <Content />
+</BaseModal>;
+```
+
+**FormModal** - 폼 제출/취소 로직 통합 모달
+
+```tsx
+import { FormModal } from "@/shared/ui";
+
+<FormModal
+    title="새 작업"
+    open={isOpen}
+    form={form}
+    onSubmit={handleSubmit}
+    onCancel={handleCancel}
+    submitText="등록"
+    submitShortcut="F8"
+>
+    <Form.Item name="work_name">
+        <Input />
+    </Form.Item>
+</FormModal>;
+```
+
+**RecordListModal** - 테이블 목록 표시 모달
+
+```tsx
+import { RecordListModal } from "@/shared/ui";
+
+<RecordListModal
+    title="완료된 작업"
+    open={isOpen}
+    onClose={handleClose}
+    records={completedRecords}
+    columns={columns}
+    emptyText="완료된 작업이 없습니다"
+/>;
+```
+
+**LoadingOverlay** - 전체 화면 로딩 오버레이
+
+```tsx
+import { LoadingOverlay } from "@/shared/ui";
+
+<LoadingOverlay loading={isLoading} message="데이터를 불러오는 중..." />;
+```
+
+**EmptyState** - 빈 상태 표시 컴포넌트
+
+```tsx
+import { EmptyState } from "@/shared/ui";
+
+<EmptyState
+    description="작업 기록이 없습니다"
+    subDescription="드래그하여 작업 추가"
+    action={<Button type="primary">추가하기</Button>}
+/>;
+```
+
+#### 중복 제거 효과
+
+| 패턴                  | 중복 제거 대상                                     | 예상 절감 |
+| --------------------- | -------------------------------------------------- | --------- |
+| SelectWithAdd         | DailyGanttChart, WorkRecordTable, WorkTemplateList | ~744줄    |
+| AutoCompleteWithHide  | 위와 동일                                          | ~252줄    |
+| FormModal             | SuggestionBoard, WorkRecordTable, SettingsModal    | ~400줄    |
+| RecordListModal       | CompletedModal, TrashModal, WorkRecordTable        | ~300줄    |
+| LoadingOverlay        | MobileLayout, DesktopLayout, App.tsx               | ~90줄     |
+| EmptyState            | 20+ 파일                                           | ~200줄    |
+| **총 예상 중복 제거** |                                                    | ~2,000줄  |
+
+#### 테스트 및 스토리
+
+-   **테스트 파일**: 8개 (75개 테스트 케이스)
+-   **Storybook 스토리**: 8개 파일
+
+---
+
 ## 테스트 결과
 
--   **총 테스트 수**: 685개
--   **통과**: 685개 (100%)
--   **테스트 파일**: 44개
+-   **총 테스트 수**: 838개
+-   **통과**: 838개 (100%)
+-   **테스트 파일**: 59개
+
+---
+
+### Phase 5: 공통 훅 추출 ✅
+
+**완료일**: 2026-02-03
+
+#### 생성된 순수 함수 (shared/lib/)
+
+```
+src/shared/lib/
+├── record/                        # 레코드 관련 유틸리티
+│   ├── index.ts
+│   ├── deal_name_generator.ts     # deal_name 생성 로직
+│   └── record_creator.ts          # 레코드 객체 생성
+└── data/                          # 데이터 내보내기/가져오기
+    ├── index.ts
+    ├── export.ts                  # JSON 내보내기
+    └── import.ts                  # JSON 가져오기
+```
+
+#### 생성된 훅 (shared/hooks/)
+
+| 훅                       | 용도                              | 중복 제거 대상                    |
+| ------------------------ | --------------------------------- | --------------------------------- |
+| `useRecordCreation`      | 템플릿에서 레코드 생성            | DesktopDailyPage, MobileDailyPage |
+| `useAuthHandlers`        | 로그인/로그아웃 처리              | DesktopLayout, MobileLayout       |
+| `useDataImportExport`    | 데이터 내보내기/가져오기          | DesktopLayout, MobileLayout       |
+| `useAutoCompleteOptions` | 자동완성 옵션 관리                | 폼 컴포넌트들                     |
+| `useDebouncedValue`      | 값 디바운스 (shared/hooks로 이동) | -                                 |
+
+#### 주요 함수 및 사용법
+
+**generateDealName** - deal_name 생성
+
+```typescript
+import { generateDealName } from "@/shared/lib/record";
+
+const deal_name = generateDealName({
+    template,
+    existing_records,
+    use_postfix: true, // 타임스탬프 or 순차 번호
+});
+```
+
+**useRecordCreation** - 레코드 생성 훅
+
+```typescript
+import { useRecordCreation } from "@/shared/hooks";
+
+const { createFromTemplate, createEmpty } = useRecordCreation();
+createFromTemplate(template_id);
+```
+
+**useAuthHandlers** - 인증 핸들러 훅
+
+```typescript
+import { useAuthHandlers } from "@/shared/hooks";
+
+const { user, handleLogin, handleLogout } = useAuthHandlers();
+```
+
+**useDataImportExport** - 데이터 내보내기/가져오기 훅
+
+```typescript
+import { useDataImportExport } from "@/shared/hooks";
+
+const { fileInputRef, handleExport, handleImport, handleFileChange } =
+    useDataImportExport();
+```
+
+**useAutoCompleteOptions** - 자동완성 옵션 훅
+
+```typescript
+import { useAutoCompleteOptions } from "@/shared/hooks";
+
+const {
+    projectOptions,
+    workNameOptions,
+    taskSelectOptions,
+    hideOption,
+    addTaskOption,
+} = useAutoCompleteOptions();
+```
+
+#### 적용된 파일
+
+| 파일                   | 변경 내용                                       |
+| ---------------------- | ----------------------------------------------- |
+| `DesktopDailyPage.tsx` | handleAddRecordOnly → useRecordCreation         |
+| `MobileDailyPage.tsx`  | handleAddRecordOnly → useRecordCreation         |
+| `DesktopLayout.tsx`    | handleLogin/Logout/Export/Import → 공통 훅 사용 |
+| `MobileLayout.tsx`     | handleLogin/Logout/Export/Import → 공통 훅 사용 |
+
+#### 중복 제거 효과
+
+| 항목                     | 제거된 중복 코드 |
+| ------------------------ | ---------------- |
+| handleAddRecordOnly      | ~140줄           |
+| handleLogin/handleLogout | ~30줄            |
+| handleExport/Import      | ~200줄           |
+| **총 중복 제거**         | **~370줄**       |
+
+#### 테스트
+
+-   **순수 함수 테스트**: 49개 (deal_name_generator, record_creator, export, import)
+-   **훅 테스트**: 29개 (useRecordCreation, useAuthHandlers, useAutoCompleteOptions)
+-   **총 추가 테스트**: 78개
+
+---
+
+### Phase 6: 순수 함수 통합 ✅
+
+**완료일**: 2026-02-03
+
+#### 중복 함수 제거
+
+| 파일                  | 제거된 함수                                                            | 대체                                    |
+| --------------------- | ---------------------------------------------------------------------- | --------------------------------------- |
+| `DailyGanttChart.tsx` | `timeToMinutes`, `minutesToTime`, `getSessionMinutes`, `formatMinutes` | `shared/lib/time`, `shared/lib/session` |
+| `WorkRecordTable.tsx` | `formatDuration`, `formatTimer`                                        | `shared/lib/time`                       |
+| `DemoComponents.tsx`  | `formatDuration`                                                       | `shared/lib/time`                       |
+
+#### 레거시 파일 마이그레이션
+
+| 원본                           | 마이그레이션 위치               | 함수                                                                          |
+| ------------------------------ | ------------------------------- | ----------------------------------------------------------------------------- |
+| `utils/time_utils.ts` (삭제됨) | `shared/lib/time/overlap.ts`    | `isTimeRangeOverlapping`, `getOverlapType`, `adjustTimeRangeToAvoidConflicts` |
+|                                | `shared/lib/time/date_utils.ts` | `isSameDate`, `isDateBefore`, `isDateAfter`, `isDateInRange`                  |
+
+#### 생성된 파일
+
+```
+src/shared/lib/time/
+├── overlap.ts        # 시간 범위 충돌 감지 및 조정 함수
+└── date_utils.ts     # 날짜 비교 유틸리티 함수
+```
+
+#### 중복 제거 효과
+
+| 항목                | 제거된 코드        |
+| ------------------- | ------------------ |
+| DailyGanttChart.tsx | ~35줄              |
+| WorkRecordTable.tsx | ~22줄              |
+| DemoComponents.tsx  | ~12줄              |
+| utils/time_utils.ts | ~284줄 (파일 전체) |
+| **총계**            | **~353줄**         |
+
+#### 테스트 결과
+
+-   **총 테스트 수**: 838개
+-   **통과**: 838개 (100%)
+-   **테스트 파일**: 59개
 
 ---
 
 ## 다음 단계
-
-### Phase 4: 공통 UI 추출 (대기)
-
--   SelectWithAdd, AutoCompleteWithHide
--   WorkFormFields
--   LoadingOverlay, BaseModal
-
-### Phase 5: 공통 훅 추출 (대기)
-
--   useRecordCreation
--   useDataImportExport
--   useAuthHandlers
--   useAutoCompleteOptions
-
-### Phase 6: 순수 함수 통합 (대기)
-
--   shared/lib/record, shared/lib/data
--   중복 함수 제거
 
 ### Phase 7: 스토어 분리 (대기)
 
@@ -280,3 +569,6 @@ const { containerVariants, itemVariants } = useStaggerAnimation({
 | 2026-02-03 | Phase 1 완료 - 라이브러리 설치        |
 | 2026-02-03 | Phase 2 완료 - 테스트 환경 강화       |
 | 2026-02-03 | Phase 3 완료 - 애니메이션 시스템 구축 |
+| 2026-02-03 | Phase 4 완료 - 공통 UI 컴포넌트 추출  |
+| 2026-02-03 | Phase 5 완료 - 공통 훅 추출           |
+| 2026-02-03 | Phase 6 완료 - 순수 함수 통합         |

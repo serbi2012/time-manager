@@ -1,7 +1,7 @@
 /**
  * ErrorShake - 에러 흔들림 애니메이션
  */
-import { ReactNode, useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { motion, useAnimation } from "framer-motion";
 
 interface ErrorShakeProps {

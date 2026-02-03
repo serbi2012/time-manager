@@ -2,8 +2,8 @@
  * AnimatedNumber - 숫자 카운팅 애니메이션
  * 토스 스타일의 부드러운 숫자 변화 효과
  */
-import { useEffect, useRef } from "react";
-import { motion, useSpring, useTransform, MotionValue } from "framer-motion";
+import { useEffect } from "react";
+import { motion, useSpring, useTransform } from "framer-motion";
 
 interface AnimatedNumberProps {
     /** 표시할 숫자 값 */

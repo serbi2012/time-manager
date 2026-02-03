@@ -1,21 +1,13 @@
-import { useState, useEffect } from "react";
-
 /**
- * 값의 변경을 디바운스하는 훅
- * 입력이 멈춘 후 지정된 시간이 지나야 값이 업데이트됨
+ * 디바운스 값 훅 - 하위 호환성 유지를 위한 re-export
+ *
+ * @deprecated shared/hooks에서 직접 import하세요
+ * @example
+ * // 이전 방식 (여전히 작동)
+ * import { useDebouncedValue } from '../hooks/useDebouncedValue';
+ *
+ * // 권장 방식
+ * import { useDebouncedValue } from '@/shared/hooks';
  */
-export function useDebouncedValue<T>(value: T, delay: number = 150): T {
-    const [debounced_value, setDebouncedValue] = useState(value);
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedValue(value);
-        }, delay);
-
-        return () => {
-            clearTimeout(timer);
-        };
-    }, [value, delay]);
-
-    return debounced_value;
-}
+export { useDebouncedValue } from "../shared/hooks/useDebouncedValue";

@@ -37,6 +37,7 @@ import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { useShortcutStore } from "../../store/useShortcutStore";
 import { formatShortcutKeyForPlatform } from "../../hooks/useShortcuts";
+import { formatDuration } from "../../shared/lib/time";
 
 const { Text } = Typography;
 
@@ -150,19 +151,6 @@ const getCategoryColor = (category: string): string => {
     return color_map[category] || "default";
 };
 
-// 분을 읽기 쉬운 형식으로 변환
-const formatDuration = (minutes: number): string => {
-    if (minutes < 60) {
-        return `${minutes}분`;
-    }
-    const hrs = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    if (mins === 0) {
-        return `${hrs}시간`;
-    }
-    return `${hrs}시간 ${mins}분`;
-};
-
 // ============================================
 // 데모 컴포넌트들
 // ============================================
@@ -179,9 +167,9 @@ export function DemoWorkRecordTable() {
 
     // 단축키 설정에서 동적으로 가져오기
     const new_work_shortcut = useShortcutStore((state) =>
-        state.shortcuts.find(s => s.id === 'new-work')
+        state.shortcuts.find((s) => s.id === "new-work")
     );
-    const new_work_keys = new_work_shortcut?.keys || 'Alt+N';
+    const new_work_keys = new_work_shortcut?.keys || "Alt+N";
 
     const columns: ColumnsType<DemoRecord> = [
         {
@@ -448,9 +436,9 @@ export function DemoWorkRecordTable() {
 export function DemoWorkTemplateList() {
     // 단축키 설정에서 동적으로 가져오기
     const new_preset_shortcut = useShortcutStore((state) =>
-        state.shortcuts.find(s => s.id === 'new-preset')
+        state.shortcuts.find((s) => s.id === "new-preset")
     );
-    const new_preset_keys = new_preset_shortcut?.keys || 'Alt+P';
+    const new_preset_keys = new_preset_shortcut?.keys || "Alt+P";
 
     return (
         <div className="demo-component">

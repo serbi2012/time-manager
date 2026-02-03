@@ -165,8 +165,8 @@ expect.extend({
             return h * 60 + m;
         };
 
-        const hasConflict = received.sessions.some((session1) =>
-            other.sessions.some((session2) => {
+        const hasConflict = received.sessions.some((session1: WorkSession) =>
+            other.sessions.some((session2: WorkSession) => {
                 if (session1.date !== session2.date) return false;
 
                 const start1 = toMinutes(session1.start_time);

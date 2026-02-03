@@ -3,7 +3,7 @@
  * 토스 스타일의 shimmer 효과
  */
 import { motion } from "framer-motion";
-import { CSSProperties } from "react";
+import type { CSSProperties } from "react";
 
 interface SkeletonLoaderProps {
     /** 너비 */

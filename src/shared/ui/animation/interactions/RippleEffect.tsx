@@ -2,7 +2,12 @@
  * RippleEffect - 리플(물결) 효과 애니메이션
  * Material Design 스타일의 클릭 피드백
  */
-import { useState, useCallback, ReactNode, CSSProperties } from "react";
+import {
+    useState,
+    useCallback,
+    type ReactNode,
+    type CSSProperties,
+} from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Ripple {
