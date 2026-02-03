@@ -72,6 +72,7 @@ export interface HiddenAutoCompleteOptions {
     project_code: string[];
     task_option: string[];      // 업무명 Select 옵션
     category_option: string[];  // 카테고리명 Select 옵션
+    [key: string]: string[];    // Index signature for dynamic access
 }
 
 /**

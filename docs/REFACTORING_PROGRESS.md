@@ -1,7 +1,7 @@
 # 리팩토링 진행 상황
 
 > **시작일**: 2026-02-03
-> **현재 상태**: Phase 1~6 완료, Phase 7~10 대기
+> **현재 상태**: Phase 1~7 완료, Phase 8~10 대기
 
 ---
 
@@ -13,25 +13,25 @@
 
 #### 설치된 라이브러리
 
-| 카테고리     | 패키지                          | 버전     | 용도                             |
-| ------------ | ------------------------------- | -------- | -------------------------------- |
-| **유틸리티** | `lodash-es`                     | ^4.17.23 | 유틸 함수 (groupBy, debounce 등) |
-|              | `@types/lodash-es`              | ^4.17.12 | TypeScript 타입                  |
-|              | `immer`                         | ^11.1.3  | 불변 상태 관리                   |
-|              | `clsx`                          | ^2.1.1   | 조건부 클래스명                  |
-| **폼 관리**  | `react-hook-form`               | ^7.71.1  | 폼 상태 관리                     |
-|              | `zod`                           | ^4.3.6   | 스키마 검증                      |
-|              | `@hookform/resolvers`           | ^5.2.2   | zod 연동                         |
-| **테이블**   | `@tanstack/react-table`         | ^8.21.3  | 테이블 로직                      |
-| **테스트**   | `msw`                           | ^2.12.7  | API 모킹                         |
-|              | `@faker-js/faker`               | ^10.2.0  | 테스트 데이터 생성               |
-|              | `@playwright/test`              | ^1.58.1  | E2E 테스트                       |
-|              | `storybook`                     | ^8.6.14  | 컴포넌트 시각적 테스트           |
-|              | `@storybook/react`              | ^8.6.14  | React 지원                       |
-|              | `@storybook/react-vite`         | ^8.6.14  | Vite 통합                        |
-|              | `@storybook/addon-essentials`   | ^8.6.14  | 필수 애드온                      |
-|              | `@storybook/addon-interactions` | ^8.6.14  | 인터랙션 테스트                  |
-|              | `@storybook/test`               | ^8.6.14  | 테스트 유틸                      |
+| 카테고리     | 패키지                          | 버전     | 용도                                 |
+| ------------ | ------------------------------- | -------- | ------------------------------------ |
+| **유틸리티** | `lodash-es`                     | ^4.17.23 | 유틸 함수 (groupBy, debounce 등)     |
+|              | `@types/lodash-es`              | ^4.17.12 | TypeScript 타입                      |
+|              | `mutative`                      | ^1.3.0   | 불변 상태 관리 (immer 대체, 더 빠름) |
+|              | `clsx`                          | ^2.1.1   | 조건부 클래스명                      |
+| **폼 관리**  | `react-hook-form`               | ^7.71.1  | 폼 상태 관리                         |
+|              | `zod`                           | ^4.3.6   | 스키마 검증                          |
+|              | `@hookform/resolvers`           | ^5.2.2   | zod 연동                             |
+| **테이블**   | `@tanstack/react-table`         | ^8.21.3  | 테이블 로직                          |
+| **테스트**   | `msw`                           | ^2.12.7  | API 모킹                             |
+|              | `@faker-js/faker`               | ^10.2.0  | 테스트 데이터 생성                   |
+|              | `@playwright/test`              | ^1.58.1  | E2E 테스트                           |
+|              | `storybook`                     | ^8.6.14  | 컴포넌트 시각적 테스트               |
+|              | `@storybook/react`              | ^8.6.14  | React 지원                           |
+|              | `@storybook/react-vite`         | ^8.6.14  | Vite 통합                            |
+|              | `@storybook/addon-essentials`   | ^8.6.14  | 필수 애드온                          |
+|              | `@storybook/addon-interactions` | ^8.6.14  | 인터랙션 테스트                      |
+|              | `@storybook/test`               | ^8.6.14  | 테스트 유틸                          |
 
 #### 추가된 스크립트 (package.json)
 
@@ -544,11 +544,116 @@ src/shared/lib/time/
 
 ---
 
+### Phase 7: 스토어 분리 ✅
+
+**완료일**: 2026-02-03
+
+#### 생성된 구조
+
+```
+src/store/
+├── index.ts                    # Public API
+├── useWorkStore.ts             # 슬라이스 조합 (~90줄)
+├── useShortcutStore.ts         # 기존 유지
+├── constants.ts                # 상수 정의
+├── slices/
+│   ├── index.ts
+│   ├── records.ts              # 레코드 CRUD, 세션 관리 (~350줄)
+│   ├── templates.ts            # 템플릿 CRUD (~90줄)
+│   ├── timer.ts                # 타이머 상태/액션 (~500줄)
+│   ├── settings.ts             # 설정 (~160줄)
+│   ├── form.ts                 # 폼 데이터 (~35줄)
+│   └── ui.ts                   # UI 상태 (~120줄)
+├── lib/
+│   ├── index.ts
+│   └── record_merger.ts        # 레코드 병합 순수 함수
+└── types/
+    ├── index.ts
+    └── store.ts                # 스토어 타입 정의
+```
+
+#### 슬라이스별 책임
+
+| 슬라이스      | 상태                                                              | 주요 액션                                                                       |
+| ------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| **records**   | `records`                                                         | addRecord, updateRecord, deleteRecord, softDelete, updateSession, deleteSession |
+| **templates** | `templates`                                                       | addTemplate, updateTemplate, deleteTemplate, reorderTemplates, applyTemplate    |
+| **timer**     | `timer`                                                           | startTimer, stopTimer, resetTimer, switchTemplate, getElapsedSeconds            |
+| **settings**  | custom_options, hidden_options, app_theme, lunch_time, transition | set각종설정, getLunchTimeMinutes                                                |
+| **form**      | `form_data`                                                       | setFormData, resetFormData                                                      |
+| **ui**        | `selected_date`                                                   | setSelectedDate, getFilteredRecords, getIncompleteRecords, getCompletedRecords  |
+
+#### 개선 효과
+
+| 항목          | 이전           | 이후                        |
+| ------------- | -------------- | --------------------------- |
+| useWorkStore  | 2,346줄        | ~90줄 (슬라이스 조합)       |
+| 테스트 용이성 | 단일 파일      | 슬라이스별 독립 테스트 가능 |
+| 유지보수성    | 모든 코드 집중 | 관심사별 분리               |
+| 불변성 관리   | spread 수동    | mutative로 직관적 업데이트  |
+
+#### 테스트 결과
+
+-   **총 테스트 수**: 838개
+-   **통과**: 838개 (100%)
+-   **테스트 파일**: 59개
+
+---
+
+### Phase 7.5: 상수 통합 관리 시스템 ✅
+
+**완료일**: 2026-02-03
+
+#### 생성된 구조
+
+```
+src/shared/constants/
+├── index.ts                 # Public API (단일 진입점)
+├── app/                     # 앱 설정 상수
+│   ├── storage_keys.ts      # LocalStorage 키
+│   ├── admin.ts             # 관리자 정보
+│   └── defaults.ts          # 기본값 (form, timer, options)
+├── enums/                   # 타입 안전 enum
+│   ├── theme.ts             # AppTheme, TransitionSpeed
+│   ├── status.ts            # SuggestionStatus, SyncStatus, FilterStatus
+│   ├── shortcut.ts          # ShortcutCategory
+│   └── ui.ts                # ListAnimationType, HoverType 등
+├── time/                    # 시간 관련 상수
+│   ├── units.ts             # MINUTES_PER_HOUR, MS_PER_SECOND 등
+│   ├── work_hours.ts        # 점심시간, 업무시간
+│   └── durations.ts         # 타이머 간격, 딜레이 값
+├── style/                   # 스타일 토큰
+│   ├── colors.ts            # 시맨틱 색상, 테마 색상, 카테고리 색상
+│   ├── z_index.ts           # 레이어 우선순위
+│   └── spacing.ts           # 폰트 크기, 간격, 브레이크포인트
+└── ui/                      # UI 텍스트 상수
+    ├── buttons.ts           # 버튼 텍스트
+    ├── messages.ts          # 알림 메시지 (success, error, warning, info)
+    ├── labels.ts            # 폼 레이블, 테이블 컬럼, 툴팁
+    ├── modals.ts            # 모달 제목, Popconfirm 텍스트
+    └── placeholders.ts      # Placeholder, 빈 상태 메시지
+```
+
+#### 주요 개선사항
+
+| 항목        | 이전                       | 이후                              |
+| ----------- | -------------------------- | --------------------------------- |
+| 상수 중복   | store ↔ shared/config 중복 | 단일 소스 (shared/constants)      |
+| 타입 안전성 | 문자열 리터럴 유니온       | const 객체 + 타입 패턴            |
+| 매직 넘버   | 60, 1000 등 하드코딩       | 명명된 상수 (MINUTES_PER_HOUR 등) |
+| UI 텍스트   | 컴포넌트에 하드코딩        | 중앙 집중 관리 (UI_TEXT)          |
+| 스타일 값   | 색상, z-index 분산         | 스타일 토큰으로 체계화            |
+| 호환성      | -                          | 기존 import 경로 re-export 지원   |
+
+#### 테스트 결과
+
+-   **총 테스트 수**: 838개
+-   **통과**: 838개 (100%)
+-   **테스트 파일**: 59개
+
+---
+
 ## 다음 단계
-
-### Phase 7: 스토어 분리 (대기)
-
--   useWorkStore → slices
 
 ### Phase 8: 거대 컴포넌트 분리 (대기)
 
@@ -572,3 +677,5 @@ src/shared/lib/time/
 | 2026-02-03 | Phase 4 완료 - 공통 UI 컴포넌트 추출  |
 | 2026-02-03 | Phase 5 완료 - 공통 훅 추출           |
 | 2026-02-03 | Phase 6 완료 - 순수 함수 통합         |
+| 2026-02-03 | Phase 7 완료 - 스토어 분리            |
+| 2026-02-03 | Phase 7.5 완료 - 상수 통합 관리       |
