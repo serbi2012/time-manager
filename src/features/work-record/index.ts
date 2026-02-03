@@ -1,11 +1,13 @@
 /**
  * 작업 기록 기능 모듈
- * 
+ *
  * @example
- * import { 
+ * import {
  *   type RecordSlice,
  *   findExistingRecord,
  *   getRecordDurationMinutes,
+ *   useRecordData,
+ *   useRecordTimer,
  * } from '@/features/work-record';
  */
 
@@ -19,3 +21,6 @@ export type {
 
 // 순수 함수
 export * from "./lib";
+
+// 커스텀 훅
+export * from "./hooks";

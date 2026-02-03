@@ -37,3 +37,29 @@ export {
     snapToGrid,
     calculateMinutesFromMouseEvent,
 } from "./drag_handler";
+
+// 바 계산
+export {
+    type BarStyle,
+    type LunchOverlayStyle,
+    type SelectionStyle,
+    calculateTimeRange,
+    generateTimeLabels,
+    calculateBarStyle,
+    calculateResizingBarStyle,
+    calculateLunchOverlayStyle,
+    calculateSelectionStyle,
+    calculateConflictOverlayStyle,
+    calculateWorkColor,
+    xToMinutes,
+    formatResizeTimeIndicator,
+} from "./bar_calculator";
+
+// 충돌 감지
+export {
+    type ConflictInfo,
+    detectConflicts,
+    isSessionConflicting,
+    isTimeRangeOverlapping,
+    calculateOverlapRange,
+} from "./conflict_detector";

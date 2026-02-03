@@ -43,7 +43,7 @@ import {
 import dayjs from "dayjs";
 import WorkRecordTable from "./components/WorkRecordTable";
 import WorkTemplateList from "./components/WorkTemplateList";
-import DailyGanttChart from "./components/DailyGanttChart";
+import { DailyGanttChart } from "@/features/gantt-chart";
 import WeeklySchedule from "./components/WeeklySchedule";
 import SuggestionBoard from "./components/SuggestionBoard";
 import GuideBook from "./components/GuideBook";
