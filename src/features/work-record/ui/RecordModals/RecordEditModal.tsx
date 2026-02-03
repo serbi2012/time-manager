@@ -29,6 +29,7 @@ import {
 import { HighlightText } from "../../../../shared/ui/HighlightText";
 import { useDebouncedValue } from "../../../../hooks/useDebouncedValue";
 import type { WorkRecord } from "../../../../shared/types";
+import { SUCCESS_MESSAGES, INFO_MESSAGES } from "../../../../shared/constants";
 
 export interface RecordEditModalProps {
     /** 모달 열림 상태 */
@@ -150,7 +151,7 @@ export function RecordEditModal({
                         onClick={(e) => {
                             e.stopPropagation();
                             hideAutoCompleteOption("project_code", opt.value);
-                            message.info(`"${opt.label}" 항목이 숨겨졌습니다`);
+                            message.info(INFO_MESSAGES.optionHidden(opt.label));
                         }}
                     />
                 </div>
@@ -189,7 +190,7 @@ export function RecordEditModal({
                         onClick={(e) => {
                             e.stopPropagation();
                             hideAutoCompleteOption("work_name", v);
-                            message.info(`"${v}" 옵션이 숨겨졌습니다`);
+                            message.info(INFO_MESSAGES.optionHiddenV(v));
                         }}
                     />
                 </div>
@@ -228,7 +229,7 @@ export function RecordEditModal({
                         onClick={(e) => {
                             e.stopPropagation();
                             hideAutoCompleteOption("deal_name", v);
-                            message.info(`"${v}" 옵션이 숨겨졌습니다`);
+                            message.info(INFO_MESSAGES.optionHiddenV(v));
                         }}
                     />
                 </div>
@@ -293,7 +294,7 @@ export function RecordEditModal({
                 }
             }
 
-            message.success("작업이 수정되었습니다");
+            message.success(SUCCESS_MESSAGES.workUpdated);
             handleClose();
         } catch {
             // validation failed

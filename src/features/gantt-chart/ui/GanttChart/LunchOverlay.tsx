@@ -4,26 +4,27 @@
 
 import { Tooltip } from "antd";
 import type { LunchOverlayProps } from "../../lib/types";
-import { 
-    LUNCH_START_MINUTES, 
-    LUNCH_END_MINUTES 
+import {
+    LUNCH_START_MINUTES,
+    LUNCH_END_MINUTES,
 } from "../../../../shared/lib/lunch";
+import { GANTT_LABEL_LUNCH_TIME_RANGE } from "../../constants";
 
 /**
  * 점심시간 오버레이 컴포넌트
  * 점심시간 영역을 시각적으로 표시
  */
-export function LunchOverlay({ 
-    start_hour, 
-    pixels_per_hour 
+export function LunchOverlay({
+    start_hour,
+    pixels_per_hour,
 }: LunchOverlayProps) {
-    const lunch_start_px = 
+    const lunch_start_px =
         ((LUNCH_START_MINUTES - start_hour * 60) / 60) * pixels_per_hour;
-    const lunch_width_px = 
+    const lunch_width_px =
         ((LUNCH_END_MINUTES - LUNCH_START_MINUTES) / 60) * pixels_per_hour;
 
     return (
-        <Tooltip title="점심시간 (11:40 ~ 12:40)">
+        <Tooltip title={GANTT_LABEL_LUNCH_TIME_RANGE}>
             <div
                 className="gantt-lunch-overlay"
                 style={{

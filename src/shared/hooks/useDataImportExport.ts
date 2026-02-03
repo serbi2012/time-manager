@@ -16,6 +16,11 @@ import {
 } from "../../firebase/syncService";
 import { downloadAsJson, hasExportableData, importFromFile } from "../lib/data";
 import type { WorkRecord, WorkTemplate } from "../types";
+import {
+    SUCCESS_MESSAGES,
+    ERROR_MESSAGES,
+    WARNING_MESSAGES,
+} from "../constants";
 
 /**
  * 데이터 내보내기/가져오기 훅 반환 타입
@@ -79,7 +84,7 @@ export function useDataImportExport(): UseDataImportExportReturn {
         }
 
         downloadAsJson(export_data);
-        message.success("데이터가 내보내졌습니다");
+        message.success(SUCCESS_MESSAGES.dataExportedSuccess);
     }, []);
 
     /**
@@ -126,22 +131,20 @@ export function useDataImportExport(): UseDataImportExportReturn {
                             custom_category_options:
                                 data.custom_category_options,
                         });
-                        message.success(
-                            "데이터를 가져오고 클라우드에 동기화했습니다"
-                        );
+                        message.success(SUCCESS_MESSAGES.dataImportedAndSynced);
                     } catch {
                         message.warning(
-                            "데이터를 가져왔지만 클라우드 동기화에 실패했습니다"
+                            WARNING_MESSAGES.dataImportedSyncFailed
                         );
                     }
                 } else {
-                    message.success("데이터를 성공적으로 가져왔습니다");
+                    message.success(SUCCESS_MESSAGES.dataImportedSuccess);
                 }
             } catch (error) {
                 if (error instanceof Error) {
                     message.error(error.message);
                 } else {
-                    message.error("파일을 읽는 중 오류가 발생했습니다");
+                    message.error(ERROR_MESSAGES.fileReadFailed);
                 }
             } finally {
                 // 같은 파일 다시 선택 가능하도록 초기화

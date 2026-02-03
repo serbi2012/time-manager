@@ -6,6 +6,10 @@ import { useState, useCallback } from "react";
 import { message } from "antd";
 import dayjs from "dayjs";
 import { useWorkStore } from "../../../store/useWorkStore";
+import {
+    GANTT_MESSAGE_MIN_1_MINUTE,
+    GANTT_MESSAGE_ACTIVE_SESSION_END_CANNOT_EDIT,
+} from "../constants";
 import { timeToMinutes, minutesToTime } from "../../../shared/lib/time";
 import type { WorkSession, WorkRecord } from "../../../shared/types";
 import type { ResizeState, TimeRange } from "../lib/types";
@@ -105,7 +109,7 @@ export function useGanttResize(
 
         // 유효성 검사 (최소 1분 이상)
         if (new_end - new_start < 1) {
-            message.warning("최소 1분 이상이어야 합니다.");
+            message.warning(GANTT_MESSAGE_MIN_1_MINUTE);
             setResizeState(null);
             return;
         }
@@ -132,7 +136,7 @@ export function useGanttResize(
 
         // 진행 중인 세션의 오른쪽 핸들은 조절 불가
         if (session_id === timer.active_session_id && handle === "right") {
-            message.info("진행 중인 세션의 종료 시간은 수정할 수 없습니다.");
+            message.info(GANTT_MESSAGE_ACTIVE_SESSION_END_CANNOT_EDIT);
             setResizeState(null);
             return;
         }

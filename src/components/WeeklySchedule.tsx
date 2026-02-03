@@ -25,6 +25,7 @@ import isoWeek from "dayjs/plugin/isoWeek";
 import "dayjs/locale/ko";
 import { useWorkStore } from "../store/useWorkStore";
 import type { WorkRecord } from "../types";
+import { SUCCESS_MESSAGES } from "../shared/constants";
 import { useResponsive } from "../hooks/useResponsive";
 
 dayjs.extend(weekday);
@@ -390,7 +391,7 @@ const WeeklySchedule = () => {
     const handleCopy = () => {
         const text = generateCopyText();
         navigator.clipboard.writeText(text).then(() => {
-            message.success("클립보드에 복사되었습니다");
+            message.success(SUCCESS_MESSAGES.clipboardCopied);
         });
     };
 

@@ -8,6 +8,7 @@
 import { useCallback } from "react";
 import { message } from "antd";
 import { useWorkStore } from "../../store/useWorkStore";
+import { SUCCESS_MESSAGES } from "../constants";
 import {
     generateDealName,
     createRecordFromTemplate,
@@ -84,7 +85,9 @@ export function useRecordCreation(): UseRecordCreationReturn {
 
             // 스토어에 추가
             addRecord(new_record);
-            message.success(`"${template.work_name}" 작업이 추가되었습니다`);
+            message.success(
+                SUCCESS_MESSAGES.workAddedFromTemplate(template.work_name)
+            );
 
             return new_record;
         },

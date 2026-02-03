@@ -32,6 +32,44 @@ import { HighlightText } from "../../../../shared/ui/HighlightText";
 import { useDebouncedValue } from "../../../../hooks/useDebouncedValue";
 import { timeToMinutes } from "../../../../shared/lib/time";
 import type { WorkRecord, WorkSession } from "../../../../shared/types";
+import {
+    GANTT_MESSAGE_OPTION_HIDDEN,
+    GANTT_MESSAGE_OPTION_HIDDEN_V,
+    GANTT_MESSAGE_WORK_UPDATED,
+    GANTT_MESSAGE_ACTIVE_SESSION_END_CANNOT_EDIT,
+    GANTT_MODAL_TITLE_EDIT,
+    GANTT_MODAL_BUTTON_ADD,
+    GANTT_MODAL_BUTTON_SAVE,
+    GANTT_MODAL_BUTTON_CANCEL,
+    GANTT_MODAL_SESSION_TIME_HEADER,
+    GANTT_MODAL_ACTIVE_SESSION_HINT,
+    GANTT_FORM_LABEL_START,
+    GANTT_FORM_LABEL_END,
+    GANTT_FORM_PLACEHOLDER_START,
+    GANTT_FORM_PLACEHOLDER_END,
+    GANTT_FORM_LABEL_PROJECT_CODE,
+    GANTT_FORM_PLACEHOLDER_PROJECT_CODE,
+    GANTT_FORM_LABEL_WORK_NAME,
+    GANTT_FORM_PLACEHOLDER_WORK_NAME,
+    GANTT_FORM_LABEL_DEAL_NAME,
+    GANTT_FORM_PLACEHOLDER_DEAL_NAME,
+    GANTT_FORM_LABEL_TASK,
+    GANTT_FORM_PLACEHOLDER_TASK,
+    GANTT_FORM_PLACEHOLDER_NEW_TASK,
+    GANTT_FORM_LABEL_CATEGORY,
+    GANTT_FORM_PLACEHOLDER_CATEGORY,
+    GANTT_FORM_PLACEHOLDER_NEW_CATEGORY,
+    GANTT_FORM_LABEL_NOTE,
+    GANTT_FORM_PLACEHOLDER_NOTE,
+    GANTT_FORM_VALIDATE_WORK_NAME_REQUIRED,
+    GANTT_FORM_VALIDATE_START_REQUIRED,
+    GANTT_FORM_VALIDATE_END_REQUIRED,
+    GANTT_FORM_VALIDATE_TIME_FORMAT,
+    GANTT_INPUT_TIME_WIDTH,
+    GANTT_OPTION_CLOSE_FONT_SIZE,
+    GANTT_OPTION_CLOSE_COLOR,
+    GANTT_FONT_SMALL,
+} from "../../constants";
 
 const { Text } = Typography;
 
@@ -160,14 +198,16 @@ export function GanttEditModal({
                     </span>
                     <CloseOutlined
                         style={{
-                            fontSize: 10,
-                            color: "#999",
+                            fontSize: GANTT_OPTION_CLOSE_FONT_SIZE,
+                            color: GANTT_OPTION_CLOSE_COLOR,
                             cursor: "pointer",
                         }}
                         onClick={(e) => {
                             e.stopPropagation();
                             hideAutoCompleteOption("project_code", opt.value);
-                            message.info(`"${opt.label}" 항목이 숨겨졌습니다`);
+                            message.info(
+                                GANTT_MESSAGE_OPTION_HIDDEN(opt.label)
+                            );
                         }}
                     />
                 </div>
@@ -199,14 +239,14 @@ export function GanttEditModal({
                     </span>
                     <CloseOutlined
                         style={{
-                            fontSize: 10,
-                            color: "#999",
+                            fontSize: GANTT_OPTION_CLOSE_FONT_SIZE,
+                            color: GANTT_OPTION_CLOSE_COLOR,
                             cursor: "pointer",
                         }}
                         onClick={(e) => {
                             e.stopPropagation();
                             hideAutoCompleteOption("work_name", v);
-                            message.info(`"${v}" 옵션이 숨겨졌습니다`);
+                            message.info(GANTT_MESSAGE_OPTION_HIDDEN_V(v));
                         }}
                     />
                 </div>
@@ -238,14 +278,14 @@ export function GanttEditModal({
                     </span>
                     <CloseOutlined
                         style={{
-                            fontSize: 10,
-                            color: "#999",
+                            fontSize: GANTT_OPTION_CLOSE_FONT_SIZE,
+                            color: GANTT_OPTION_CLOSE_COLOR,
                             cursor: "pointer",
                         }}
                         onClick={(e) => {
                             e.stopPropagation();
                             hideAutoCompleteOption("deal_name", v);
-                            message.info(`"${v}" 옵션이 숨겨졌습니다`);
+                            message.info(GANTT_MESSAGE_OPTION_HIDDEN_V(v));
                         }}
                     />
                 </div>
@@ -294,9 +334,7 @@ export function GanttEditModal({
 
             // 진행 중인 세션의 종료 시간 변경 시도 시 경고
             if (is_active_session && new_end !== original_end) {
-                message.warning(
-                    "진행 중인 세션의 종료 시간은 수정할 수 없습니다."
-                );
+                message.warning(GANTT_MESSAGE_ACTIVE_SESSION_END_CANNOT_EDIT);
                 return;
             }
 
@@ -347,7 +385,7 @@ export function GanttEditModal({
                 note: values.note || "",
             });
 
-            message.success("작업이 수정되었습니다.");
+            message.success(GANTT_MESSAGE_WORK_UPDATED);
             handleClose();
         } catch {
             // validation failed
@@ -379,7 +417,7 @@ export function GanttEditModal({
         <Modal
             title={
                 <Space>
-                    <span>작업 수정</span>
+                    <span>{GANTT_MODAL_TITLE_EDIT}</span>
                     {record && (
                         <Text type="secondary" style={{ fontWeight: "normal" }}>
                             ({record.deal_name || record.work_name})
@@ -391,10 +429,11 @@ export function GanttEditModal({
             onCancel={handleClose}
             footer={[
                 <Button key="ok" type="primary" onClick={handleEditWork}>
-                    저장 ({formatShortcutKeyForPlatform(modal_submit_keys)})
+                    {GANTT_MODAL_BUTTON_SAVE} (
+                    {formatShortcutKeyForPlatform(modal_submit_keys)})
                 </Button>,
                 <Button key="cancel" onClick={handleClose}>
-                    취소
+                    {GANTT_MODAL_BUTTON_CANCEL}
                 </Button>,
             ]}
         >
@@ -425,43 +464,51 @@ export function GanttEditModal({
                             color: "#666",
                         }}
                     >
-                        세션 시간
+                        {GANTT_MODAL_SESSION_TIME_HEADER}
                     </div>
                     <Space size="middle">
                         <Form.Item
                             name="session_start_time"
-                            label="시작"
+                            label={GANTT_FORM_LABEL_START}
                             rules={[
-                                { required: true, message: "시작 시간 필수" },
+                                {
+                                    required: true,
+                                    message: GANTT_FORM_VALIDATE_START_REQUIRED,
+                                },
                                 {
                                     pattern: /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
-                                    message: "HH:mm 형식",
+                                    message: GANTT_FORM_VALIDATE_TIME_FORMAT,
                                 },
                             ]}
                             style={{ marginBottom: 0 }}
                         >
                             <Input
-                                placeholder="09:00"
-                                style={{ width: 80 }}
+                                placeholder={GANTT_FORM_PLACEHOLDER_START}
+                                style={{ width: GANTT_INPUT_TIME_WIDTH }}
                                 maxLength={5}
                             />
                         </Form.Item>
-                        <span style={{ color: "#999" }}>~</span>
+                        <span style={{ color: GANTT_OPTION_CLOSE_COLOR }}>
+                            ~
+                        </span>
                         <Form.Item
                             name="session_end_time"
-                            label="종료"
+                            label={GANTT_FORM_LABEL_END}
                             rules={[
-                                { required: true, message: "종료 시간 필수" },
+                                {
+                                    required: true,
+                                    message: GANTT_FORM_VALIDATE_END_REQUIRED,
+                                },
                                 {
                                     pattern: /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
-                                    message: "HH:mm 형식",
+                                    message: GANTT_FORM_VALIDATE_TIME_FORMAT,
                                 },
                             ]}
                             style={{ marginBottom: 0 }}
                         >
                             <Input
-                                placeholder="18:00"
-                                style={{ width: 80 }}
+                                placeholder={GANTT_FORM_PLACEHOLDER_END}
+                                style={{ width: GANTT_INPUT_TIME_WIDTH }}
                                 maxLength={5}
                                 disabled={
                                     session?.id === timer.active_session_id
@@ -473,19 +520,22 @@ export function GanttEditModal({
                         <div
                             style={{
                                 marginTop: 8,
-                                fontSize: 12,
-                                color: "#999",
+                                fontSize: GANTT_FONT_SMALL,
+                                color: GANTT_OPTION_CLOSE_COLOR,
                             }}
                         >
-                            💡 진행 중인 세션은 시작 시간만 수정할 수 있습니다
+                            {GANTT_MODAL_ACTIVE_SESSION_HINT}
                         </div>
                     )}
                 </div>
 
-                <Form.Item name="project_code" label="프로젝트 코드">
+                <Form.Item
+                    name="project_code"
+                    label={GANTT_FORM_LABEL_PROJECT_CODE}
+                >
                     <AutoComplete
                         options={project_code_options}
-                        placeholder="예: A25_01846"
+                        placeholder={GANTT_FORM_PLACEHOLDER_PROJECT_CODE}
                         filterOption={(input, option) =>
                             (option?.value ?? "")
                                 .toLowerCase()
@@ -498,12 +548,17 @@ export function GanttEditModal({
 
                 <Form.Item
                     name="work_name"
-                    label="작업명"
-                    rules={[{ required: true, message: "작업명을 입력하세요" }]}
+                    label={GANTT_FORM_LABEL_WORK_NAME}
+                    rules={[
+                        {
+                            required: true,
+                            message: GANTT_FORM_VALIDATE_WORK_NAME_REQUIRED,
+                        },
+                    ]}
                 >
                     <AutoComplete
                         options={work_name_options}
-                        placeholder="예: 5.6 프레임워크 FE"
+                        placeholder={GANTT_FORM_PLACEHOLDER_WORK_NAME}
                         filterOption={(input, option) =>
                             (option?.value ?? "")
                                 .toLowerCase()
@@ -513,10 +568,10 @@ export function GanttEditModal({
                     />
                 </Form.Item>
 
-                <Form.Item name="deal_name" label="거래명 (상세 작업)">
+                <Form.Item name="deal_name" label={GANTT_FORM_LABEL_DEAL_NAME}>
                     <AutoComplete
                         options={deal_name_options}
-                        placeholder="예: 5.6 테스트 케이스 확인 및 이슈 처리"
+                        placeholder={GANTT_FORM_PLACEHOLDER_DEAL_NAME}
                         filterOption={(input, option) =>
                             (option?.value ?? "")
                                 .toLowerCase()
@@ -529,11 +584,11 @@ export function GanttEditModal({
                 <Space style={{ width: "100%" }} size="middle">
                     <Form.Item
                         name="task_name"
-                        label="업무명"
+                        label={GANTT_FORM_LABEL_TASK}
                         style={{ flex: 1 }}
                     >
                         <Select
-                            placeholder="업무 선택"
+                            placeholder={GANTT_FORM_PLACEHOLDER_TASK}
                             options={task_options}
                             allowClear
                             popupMatchSelectWidth={240}
@@ -548,8 +603,9 @@ export function GanttEditModal({
                                     <span>{option.label}</span>
                                     <CloseOutlined
                                         style={{
-                                            fontSize: 10,
-                                            color: "#999",
+                                            fontSize:
+                                                GANTT_OPTION_CLOSE_FONT_SIZE,
+                                            color: GANTT_OPTION_CLOSE_COLOR,
                                             cursor: "pointer",
                                         }}
                                         onClick={(e) => {
@@ -574,7 +630,9 @@ export function GanttEditModal({
                                     >
                                         <Input
                                             ref={new_task_input_ref}
-                                            placeholder="새 업무명"
+                                            placeholder={
+                                                GANTT_FORM_PLACEHOLDER_NEW_TASK
+                                            }
                                             value={new_task_input}
                                             onChange={(e) =>
                                                 setNewTaskInput(e.target.value)
@@ -591,7 +649,7 @@ export function GanttEditModal({
                                             onClick={handleAddTaskOption}
                                             size="small"
                                         >
-                                            추가
+                                            {GANTT_MODAL_BUTTON_ADD}
                                         </Button>
                                     </Space>
                                 </>
@@ -600,11 +658,11 @@ export function GanttEditModal({
                     </Form.Item>
                     <Form.Item
                         name="category_name"
-                        label="카테고리"
+                        label={GANTT_FORM_LABEL_CATEGORY}
                         style={{ flex: 1 }}
                     >
                         <Select
-                            placeholder="카테고리"
+                            placeholder={GANTT_FORM_PLACEHOLDER_CATEGORY}
                             options={category_options}
                             allowClear
                             popupMatchSelectWidth={240}
@@ -619,8 +677,9 @@ export function GanttEditModal({
                                     <span>{option.label}</span>
                                     <CloseOutlined
                                         style={{
-                                            fontSize: 10,
-                                            color: "#999",
+                                            fontSize:
+                                                GANTT_OPTION_CLOSE_FONT_SIZE,
+                                            color: GANTT_OPTION_CLOSE_COLOR,
                                             cursor: "pointer",
                                         }}
                                         onClick={(e) => {
@@ -645,7 +704,9 @@ export function GanttEditModal({
                                     >
                                         <Input
                                             ref={new_category_input_ref}
-                                            placeholder="새 카테고리"
+                                            placeholder={
+                                                GANTT_FORM_PLACEHOLDER_NEW_CATEGORY
+                                            }
                                             value={new_category_input}
                                             onChange={(e) =>
                                                 setNewCategoryInput(
@@ -664,7 +725,7 @@ export function GanttEditModal({
                                             onClick={handleAddCategoryOption}
                                             size="small"
                                         >
-                                            추가
+                                            {GANTT_MODAL_BUTTON_ADD}
                                         </Button>
                                     </Space>
                                 </>
@@ -673,8 +734,11 @@ export function GanttEditModal({
                     </Form.Item>
                 </Space>
 
-                <Form.Item name="note" label="비고">
-                    <Input.TextArea placeholder="추가 메모" rows={2} />
+                <Form.Item name="note" label={GANTT_FORM_LABEL_NOTE}>
+                    <Input.TextArea
+                        placeholder={GANTT_FORM_PLACEHOLDER_NOTE}
+                        rows={2}
+                    />
                 </Form.Item>
             </Form>
         </Modal>

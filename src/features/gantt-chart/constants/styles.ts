@@ -45,6 +45,15 @@ export const GANTT_TITLE_DATE_COLOR = "#555";
 /** 카드 헤더 요소 간격 (px) */
 export const GANTT_HEADER_GAP = 12;
 
+/** 폼 시간 입력 너비 (px) */
+export const GANTT_INPUT_TIME_WIDTH = 80;
+
+/** 옵션 닫기 아이콘 폰트 크기 */
+export const GANTT_OPTION_CLOSE_FONT_SIZE = 10;
+
+/** 옵션 닫기 아이콘 색상 */
+export const GANTT_OPTION_CLOSE_COLOR = "#999";
+
 /** 간격 - 작음 (px) */
 export const GANTT_SPACING_SM = 4;
 

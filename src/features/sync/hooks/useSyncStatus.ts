@@ -13,6 +13,7 @@ import {
     autoMergeDuplicateRecords,
     clearSyncState,
 } from "../../../firebase/syncService";
+import { SUCCESS_MESSAGES, ERROR_MESSAGES } from "../../../shared/constants";
 
 export type SyncStatus = "idle" | "syncing" | "synced" | "error";
 
@@ -71,21 +72,23 @@ export function useSyncStatus({
                         const merge_result = autoMergeDuplicateRecords();
                         if (merge_result.merged_count > 0) {
                             message.info(
-                                `중복 레코드 ${merge_result.deleted_count}개가 자동으로 병합되었습니다`
+                                SUCCESS_MESSAGES.duplicateRecordsMerged(
+                                    merge_result.deleted_count
+                                )
                             );
                         }
                         setSyncStatus("synced");
                         showSyncCheckAnimation();
                     } else {
                         setSyncStatus("error");
-                        message.error("데이터 로드에 실패했습니다");
+                        message.error(ERROR_MESSAGES.dataLoadFailed);
                     }
                     setInitialLoadDone(true);
                 })
                 .catch(() => {
                     setSyncStatus("error");
                     setInitialLoadDone(true);
-                    message.error("데이터 동기화에 실패했습니다");
+                    message.error(ERROR_MESSAGES.syncFailedMessage);
                 });
         } else {
             clearSyncState();
@@ -117,13 +120,13 @@ export function useSyncStatus({
         try {
             const success = await refreshFromFirebase(user);
             if (success) {
-                message.success("서버에서 데이터를 새로고침했습니다");
+                message.success(SUCCESS_MESSAGES.dataRefreshed);
                 showSyncCheckAnimation();
             } else {
-                message.error("새로고침 실패");
+                message.error(ERROR_MESSAGES.refreshFailed);
             }
         } catch {
-            message.error("새로고침 실패");
+            message.error(ERROR_MESSAGES.refreshFailed);
         } finally {
             setIsSyncing(false);
         }

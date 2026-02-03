@@ -8,6 +8,7 @@
 import { useCallback } from "react";
 import { message } from "antd";
 import { useAuth } from "../../firebase/useAuth";
+import { SUCCESS_MESSAGES, ERROR_MESSAGES } from "../constants";
 import type { User } from "firebase/auth";
 
 /**
@@ -59,7 +60,7 @@ export function useAuthHandlers(): UseAuthHandlersReturn {
         try {
             await signInWithGoogle();
         } catch {
-            message.error("로그인에 실패했습니다");
+            message.error(ERROR_MESSAGES.loginFailed);
         }
     }, [signInWithGoogle]);
 
@@ -69,9 +70,9 @@ export function useAuthHandlers(): UseAuthHandlersReturn {
     const handleLogout = useCallback(async () => {
         try {
             await logout();
-            message.success("로그아웃되었습니다");
+            message.success(SUCCESS_MESSAGES.loggedOut);
         } catch {
-            message.error("로그아웃에 실패했습니다");
+            message.error(ERROR_MESSAGES.logoutFailed);
         }
     }, [logout]);
 

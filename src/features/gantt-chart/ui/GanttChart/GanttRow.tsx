@@ -7,6 +7,7 @@ import type { GanttRowProps } from "../../lib/types";
 import { GanttBar } from "./GanttBar";
 import { timeToMinutes } from "../../../../shared/lib/time";
 import { TEMPLATE_COLORS } from "../../../../shared/config";
+import { GANTT_FONT_SMALL } from "../../constants";
 
 const { Text } = Typography;
 
@@ -26,7 +27,7 @@ export function GanttRow({
     on_edit,
 }: GanttRowProps) {
     const { record, sessions, key } = group;
-    
+
     // 색상 결정 (템플릿 색상 또는 기본 색상)
     const color = record.project_code
         ? TEMPLATE_COLORS[
@@ -40,7 +41,7 @@ export function GanttRow({
             <div className="gantt-row-label">
                 <Text
                     ellipsis={{ tooltip: key }}
-                    style={{ fontSize: 12 }}
+                    style={{ fontSize: GANTT_FONT_SMALL }}
                 >
                     {key}
                 </Text>
@@ -51,24 +52,28 @@ export function GanttRow({
                 {sessions.map((session) => {
                     const start_mins = timeToMinutes(session.start_time);
                     const end_mins = timeToMinutes(session.end_time);
-                    
+
                     // 리사이즈 중이면 현재 값 사용
                     let display_start = start_mins;
                     let display_end = end_mins;
-                    
-                    if (resize_state && resize_state.session_id === session.id) {
+
+                    if (
+                        resize_state &&
+                        resize_state.session_id === session.id
+                    ) {
                         if (resize_state.handle === "left") {
                             display_start = resize_state.current_value;
                         } else {
                             display_end = resize_state.current_value;
                         }
                     }
-                    
+
                     const start_px =
-                        ((display_start - start_hour * 60) / 60) * pixels_per_hour;
+                        ((display_start - start_hour * 60) / 60) *
+                        pixels_per_hour;
                     const width_px =
                         ((display_end - display_start) / 60) * pixels_per_hour;
-                    
+
                     const is_running = session.id === active_session_id;
                     const is_conflicting = conflicting_sessions.has(session.id);
 

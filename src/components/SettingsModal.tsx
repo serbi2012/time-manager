@@ -1,5 +1,6 @@
 // 설정 모달 컴포넌트
 import { useState, useMemo } from "react";
+import { SUCCESS_MESSAGES, ERROR_MESSAGES } from "../shared/constants";
 import {
     Modal,
     Tabs,
@@ -145,10 +146,12 @@ function ShortcutKeyEditor({ shortcut, onClose }: ShortcutKeyEditorProps) {
         if (pending_keys) {
             const result = setShortcutKeys(shortcut.id, pending_keys);
             if (result.success) {
-                message.success("단축키가 변경되었습니다");
+                message.success(SUCCESS_MESSAGES.shortcutChanged);
                 onClose();
             } else {
-                message.error(result.message || "단축키 변경에 실패했습니다");
+                message.error(
+                    result.message || ERROR_MESSAGES.shortcutChangeFailed
+                );
             }
         }
     };
@@ -322,7 +325,7 @@ function ShortcutsTab({ is_mobile }: { is_mobile?: boolean }) {
 
     const handleReset = () => {
         resetToDefault();
-        message.success("단축키 설정이 초기화되었습니다");
+        message.success(SUCCESS_MESSAGES.shortcutResetDone);
     };
 
     // 모바일: 블러 처리 + 사용 불가 메시지
@@ -568,20 +571,20 @@ function AutoCompleteTab() {
     ) => {
         selected.forEach((v) => hideAutoCompleteOption(field, v));
         clearSelection();
-        message.success(`${selected.length}개 항목이 숨겨졌습니다`);
+        message.success(SUCCESS_MESSAGES.itemsHidden(selected.length));
     };
 
     // 숨겨진 항목 복원
     const handleUnhide = (field: FieldType, value: string) => {
         unhideAutoCompleteOption(field, value);
-        message.success(`"${value}" 복원됨`);
+        message.success(SUCCESS_MESSAGES.valueRestored(value));
     };
 
     // 숨겨진 항목 일괄 복원
     const handleBulkUnhide = (field: FieldType) => {
         const hidden_list = hidden_autocomplete_options[field];
         hidden_list.forEach((v) => unhideAutoCompleteOption(field, v));
-        message.success(`${hidden_list.length}개 항목이 복원되었습니다`);
+        message.success(SUCCESS_MESSAGES.allItemsRestored(hidden_list.length));
     };
 
     // 옵션 목록 렌더링
@@ -1071,7 +1074,7 @@ function DataTab({
             const start = times[0].format("HH:mm");
             const end = times[1].format("HH:mm");
             setLunchTime(start, end);
-            message.success("점심시간이 변경되었습니다");
+            message.success(SUCCESS_MESSAGES.lunchTimeChanged);
         }
     };
 
