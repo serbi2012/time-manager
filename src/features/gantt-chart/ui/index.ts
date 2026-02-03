@@ -4,3 +4,7 @@
 
 export { TimeAxis, LunchOverlay, GanttBar, GanttRow } from "./GanttChart";
 export { ResizeHandle } from "./ResizeHandle";
+export { GanttAddModal, type GanttAddModalProps } from "./GanttAddModal";
+export { GanttEditModal, type GanttEditModalProps } from "./GanttEditModal";
+export { GanttStyles } from "./GanttStyles";
+export { DailyGanttChart } from "./DailyGanttChart";

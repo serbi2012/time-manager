@@ -1,7 +1,7 @@
 # 리팩토링 진행 상황
 
 > **시작일**: 2026-02-03
-> **현재 상태**: Phase 1~7 완료, Phase 8~10 대기
+> **현재 상태**: Phase 1~8 (Step 2) 완료, Phase 8 (Step 3-4) 및 9~10 대기
 
 ---
 
@@ -738,19 +738,123 @@ const columns = [
 #### 분리 단계
 
 1. **Step 1**: 공통 컴포넌트 추가 (WorkFormFields, DataTable) ✅
-2. **Step 2**: 거대 컴포넌트 분리 (DailyGanttChart, WorkRecordTable, AdminSessionGrid)
+2. **Step 2**: 거대 컴포넌트 분리 (DailyGanttChart, WorkRecordTable, AdminSessionGrid) ✅
 3. **Step 3**: 중소형 컴포넌트 분리 (SettingsModal, WorkTemplateList, WeeklySchedule)
 4. **Step 4**: 기타 컴포넌트 정리 (SuggestionBoard, GuideBook)
 
 ---
 
+#### Step 2: 거대 컴포넌트 분리 ✅
+
+**완료일**: 2026-02-03
+
+##### DailyGanttChart 리팩토링
+
+**생성된 파일**:
+
+```
+src/features/gantt-chart/
+├── lib/
+│   ├── bar_calculator.ts      # 바 스타일, 시간 범위, 색상 계산 순수 함수
+│   ├── conflict_detector.ts   # 충돌 감지 순수 함수
+│   └── index.ts               # 업데이트
+├── hooks/
+│   ├── index.ts
+│   ├── useGanttData.ts        # 데이터 그룹화, 슬롯 계산, 충돌 감지
+│   ├── useGanttDrag.ts        # 드래그 상태 관리
+│   ├── useGanttResize.ts      # 리사이즈 상태 관리
+│   └── useGanttTime.ts        # 시간/점심시간 관련 상태
+└── ui/
+    ├── DailyGanttChart/       # 리팩토링된 메인 컴포넌트 (~430줄)
+    ├── GanttAddModal/         # 작업 추가 모달
+    ├── GanttEditModal/        # 작업 수정 모달
+    └── GanttStyles/           # 스타일 컴포넌트
+```
+
+##### WorkRecordTable 리팩토링
+
+**생성된 파일**:
+
+```
+src/features/work-record/
+├── lib/
+│   ├── record_filters.ts      # 레코드 필터링/정렬 순수 함수
+│   ├── record_stats.ts        # 통계 계산 순수 함수
+│   └── index.ts               # 업데이트
+├── hooks/
+│   ├── index.ts
+│   ├── useRecordData.ts       # 데이터 필터링, 정렬
+│   ├── useRecordTimer.ts      # 타이머 상태 관리
+│   ├── useRecordActions.ts    # 레코드 액션 (삭제, 완료 등)
+│   └── useRecordStats.ts      # 통계 데이터
+└── ui/
+    ├── RecordModals/
+    │   ├── RecordAddModal.tsx    # 작업 추가 모달
+    │   └── RecordEditModal.tsx   # 작업 수정 모달
+    └── index.ts                  # 업데이트
+```
+
+##### AdminSessionGrid 리팩토링
+
+**생성된 파일**:
+
+```
+src/features/admin/
+├── hooks/
+│   ├── index.ts
+│   ├── useAdminData.ts        # 관리자 데이터 (문제 세션, 충돌, 통계)
+│   └── useAdminActions.ts     # 관리자 액션 (삭제, 병합, 일괄 처리)
+└── index.ts                   # 업데이트
+```
+
+##### 추출된 순수 함수
+
+| 모듈        | 파일                 | 함수                                                                                             |
+| ----------- | -------------------- | ------------------------------------------------------------------------------------------------ |
+| gantt-chart | bar_calculator.ts    | `calculateTimeRange`, `calculateBarStyle`, `calculateLunchOverlayStyle`, `calculateWorkColor` 등 |
+| gantt-chart | conflict_detector.ts | `detectConflicts`, `isSessionConflicting`, `isTimeRangeOverlapping`                              |
+| work-record | record_filters.ts    | `getCategoryColor`, `filterDisplayableRecords`, `sortRecords`, `filterRecordsBySearch`           |
+| work-record | record_stats.ts      | `calculateTodayStats`, `calculateCategoryStats`, `calculateWorkStats`                            |
+
+##### 추출된 커스텀 훅
+
+| 모듈        | 훅                 | 용도                                     |
+| ----------- | ------------------ | ---------------------------------------- |
+| gantt-chart | `useGanttData`     | 데이터 그룹화, 충돌 감지, 시간 범위 계산 |
+| gantt-chart | `useGanttDrag`     | 드래그 선택 상태 관리                    |
+| gantt-chart | `useGanttResize`   | 바 리사이즈 상태 관리                    |
+| gantt-chart | `useGanttTime`     | 시간/점심시간 관련 상태                  |
+| work-record | `useRecordData`    | 레코드 필터링, 정렬, 검색                |
+| work-record | `useRecordTimer`   | 타이머 상태 관리                         |
+| work-record | `useRecordActions` | 레코드 CRUD 액션                         |
+| work-record | `useRecordStats`   | 통계 데이터                              |
+| admin       | `useAdminData`     | 문제 세션, 충돌, 전체 통계               |
+| admin       | `useAdminActions`  | 관리자 액션 (삭제, 병합, 일괄 처리)      |
+
+##### 분리된 UI 컴포넌트
+
+| 모듈        | 컴포넌트          | 용도                        |
+| ----------- | ----------------- | --------------------------- |
+| gantt-chart | `GanttAddModal`   | 간트 차트에서 작업 추가     |
+| gantt-chart | `GanttEditModal`  | 간트 차트에서 작업 수정     |
+| gantt-chart | `GanttStyles`     | 간트 차트 스타일 컴포넌트   |
+| gantt-chart | `DailyGanttChart` | 리팩토링된 메인 컴포넌트    |
+| work-record | `RecordAddModal`  | 레코드 테이블에서 작업 추가 |
+| work-record | `RecordEditModal` | 레코드 테이블에서 작업 수정 |
+
+##### 참고
+
+기존 `components/` 폴더의 대형 컴포넌트들은 유지되며, 새로 생성된 `features/` 모듈의 훅과 컴포넌트들을 점진적으로 적용할 수 있습니다. 완전한 마이그레이션은 별도 작업으로 진행 권장됩니다.
+
+---
+
 ## 다음 단계
 
-### Phase 8 Step 2: 거대 컴포넌트 분리 (대기)
+### Phase 8 Step 3: 중소형 컴포넌트 분리 (대기)
 
--   DailyGanttChart (2,918줄 → ~300줄)
--   WorkRecordTable (2,966줄 → ~300줄)
--   AdminSessionGrid (2,278줄 → ~250줄)
+-   SettingsModal (1,330줄 → ~200줄)
+-   WorkTemplateList (980줄 → ~200줄)
+-   WeeklySchedule (641줄 → ~200줄)
 
 ### Phase 9: 플랫폼 완전 분리 (대기)
 
@@ -760,14 +864,15 @@ const columns = [
 
 ## 변경 이력
 
-| 날짜       | 내용                                                                 |
-| ---------- | -------------------------------------------------------------------- |
-| 2026-02-03 | Phase 1 완료 - 라이브러리 설치                                       |
-| 2026-02-03 | Phase 2 완료 - 테스트 환경 강화                                      |
-| 2026-02-03 | Phase 3 완료 - 애니메이션 시스템 구축                                |
-| 2026-02-03 | Phase 4 완료 - 공통 UI 컴포넌트 추출                                 |
-| 2026-02-03 | Phase 5 완료 - 공통 훅 추출                                          |
-| 2026-02-03 | Phase 6 완료 - 순수 함수 통합                                        |
-| 2026-02-03 | Phase 7 완료 - 스토어 분리                                           |
-| 2026-02-03 | Phase 7.5 완료 - 상수 통합 관리                                      |
-| 2026-02-03 | Phase 8 Step 1 완료 - 공통 컴포넌트 추가 (WorkFormFields, DataTable) |
+| 날짜       | 내용                                                                                          |
+| ---------- | --------------------------------------------------------------------------------------------- |
+| 2026-02-03 | Phase 1 완료 - 라이브러리 설치                                                                |
+| 2026-02-03 | Phase 2 완료 - 테스트 환경 강화                                                               |
+| 2026-02-03 | Phase 3 완료 - 애니메이션 시스템 구축                                                         |
+| 2026-02-03 | Phase 4 완료 - 공통 UI 컴포넌트 추출                                                          |
+| 2026-02-03 | Phase 5 완료 - 공통 훅 추출                                                                   |
+| 2026-02-03 | Phase 6 완료 - 순수 함수 통합                                                                 |
+| 2026-02-03 | Phase 7 완료 - 스토어 분리                                                                    |
+| 2026-02-03 | Phase 7.5 완료 - 상수 통합 관리                                                               |
+| 2026-02-03 | Phase 8 Step 1 완료 - 공통 컴포넌트 추가 (WorkFormFields, DataTable)                          |
+| 2026-02-03 | Phase 8 Step 2 완료 - 거대 컴포넌트 분리 (DailyGanttChart, WorkRecordTable, AdminSessionGrid) |

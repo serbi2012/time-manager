@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 import { Layout } from "antd";
-import DailyGanttChart from "../../components/DailyGanttChart";
+import { DailyGanttChart } from "@/features/gantt-chart";
 import WorkRecordTable from "../../components/WorkRecordTable";
 import { MobilePresetDrawer, MobilePresetFab } from "../../widgets/Navigation";
 import { useWorkStore } from "../../store/useWorkStore";

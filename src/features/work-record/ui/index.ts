@@ -13,3 +13,11 @@ export { CompletedModal, TrashModal } from "./CompletedRecords";
 
 // 모바일
 export { MobileRecordCard } from "./MobileRecordCard";
+
+// 모달
+export {
+    RecordAddModal,
+    RecordEditModal,
+    type RecordAddModalProps,
+    type RecordEditModalProps,
+} from "./RecordModals";

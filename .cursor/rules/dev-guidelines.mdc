@@ -53,10 +53,39 @@ alwaysApply: true
 **규칙:**
 
 -   **한 파일 = 한 책임**
+-   **한 컴포넌트 = 한 파일**: 하나의 React 컴포넌트(함수/클래스)는 반드시 하나의 파일에만 정의합니다. 같은 파일 안에 `function EmptyChart() { ... }`, `function ChartContent() { ... }`처럼 여러 컴포넌트를 두지 않고, 각각 `EmptyChart.tsx`, `ChartContent.tsx`로 분리합니다.
 -   컴포넌트는 **UI 렌더링**만 담당
 -   로직은 **훅** 또는 **lib 함수**로 분리
 -   상태 관리는 **스토어**에서 처리
 -   스타일이 복잡하면 **별도 CSS/styled 파일**로 분리
+
+**인라인 JSX/콘텐츠 분화 (필수):**
+
+-   **Popover `content`**, **Tooltip `title`**, **Modal 본문** 등 **50줄 이상의 JSX 블록**은 **반드시** 별도 컴포넌트로 분리합니다.
+-   한 파일 안에 `content={<div>...</div>}` 형태로 긴 JSX를 두지 않습니다. `content={<SessionContextMenu ... />}` 처럼 **이름 있는 컴포넌트**로 추출합니다.
+-   분리 기준: **역할 단위** (예: 컨텍스트 메뉴, 툴팁 내용, 바 셀, 행 라벨 등).
+
+```
+❌ 금지: 한 파일에 Popover content 100줄 인라인
+content={<div style={{...}}><strong>...</strong>...</div>}
+
+✅ 필수: 별도 컴포넌트로 분리
+content={<SessionContextMenu work_name={...} on_edit={...} />}
+```
+
+**상수 추출 (필수):**
+
+-   **인라인 스타일 객체** (`style={{ minWidth: 160, color: "#666", fontSize: 12 }}`) 중 **2회 이상 사용**하거나 **의미 있는 토큰**은 **반드시** 상수 또는 스타일 모듈로 분리합니다.
+-   색상(`#666`, `#ff4d4f` 등), 폰트 크기(11, 12), 간격(4, 8, 16), 최소 너비(160 등)는 **매직 넘버/문자열 금지**. `constants/` 또는 feature 내 `constants/` 사용.
+
+```
+❌ 금지: 인라인 매직 넘버/색상
+style={{ minWidth: 160, color: "#666", fontSize: 12, marginTop: 4 }}
+
+✅ 필수: 상수 또는 스타일 토큰
+import { GANTT_CONTEXT_MENU_MIN_WIDTH, GANTT_TEXT_SECONDARY, GANTT_FONT_SMALL } from "../constants";
+style={{ minWidth: GANTT_CONTEXT_MENU_MIN_WIDTH, ... }}
+```
 
 **분리 기준:**
 

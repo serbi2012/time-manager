@@ -3,7 +3,7 @@
  */
 
 import { Layout } from "antd";
-import DailyGanttChart from "../../components/DailyGanttChart";
+import { DailyGanttChart } from "@/features/gantt-chart";
 import WorkRecordTable from "../../components/WorkRecordTable";
 import { DesktopSidebar } from "../../widgets/Navigation";
 import { useRecordCreation } from "../../shared/hooks";
