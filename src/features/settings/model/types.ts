@@ -62,6 +62,13 @@ export interface ThemeTabProps {
 }
 
 /**
+ * 애니메이션 탭 Props
+ */
+export interface AnimationTabProps {
+    is_mobile?: boolean;
+}
+
+/**
  * 단축키 편집기 Props
  */
 export interface ShortcutKeyEditorProps {
