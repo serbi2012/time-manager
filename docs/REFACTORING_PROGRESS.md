@@ -653,13 +653,104 @@ src/shared/constants/
 
 ---
 
+### Phase 8: 거대 컴포넌트 분리 (Step 1 완료)
+
+> **상세 계획**: [docs/phase8/](./phase8/) 폴더 참조
+
+#### Step 1: 공통 컴포넌트 추가 ✅
+
+**완료일**: 2026-02-03
+
+##### 생성된 파일
+
+```
+src/shared/ui/form/
+├── WorkFormFields.tsx              # react-hook-form + zod 기반 작업 폼 필드
+├── WorkFormFields.test.tsx         # 16개 테스트 케이스
+└── WorkFormFields.stories.tsx      # Storybook 스토리 (8개 스토리)
+
+src/shared/ui/table/
+├── index.ts                        # Public API
+├── DataTable.tsx                   # @tanstack/react-table 래퍼
+├── DataTable.test.tsx              # 21개 테스트 케이스
+└── DataTable.stories.tsx           # Storybook 스토리 (10개 스토리)
+```
+
+##### WorkFormFields 컴포넌트
+
+-   react-hook-form + zod 스키마 통합
+-   useWorkForm 훅 제공 (폼 초기화 간소화)
+-   3가지 레이아웃: default, compact, inline
+-   필드별 표시/숨김 지원 (visibleFields)
+-   기존 useAutoCompleteOptions 훅 연동
+
+```tsx
+// 사용 예시
+const { control, handleSubmit } = useWorkForm();
+<WorkFormFields control={control} layout="compact" />;
+```
+
+##### DataTable 컴포넌트
+
+-   @tanstack/react-table 래퍼
+-   정렬, 필터링, 페이지네이션 지원
+-   행 선택 (단일/복수) 지원
+-   행 클릭/더블클릭 이벤트 지원
+-   createDataTableColumnHelper 유틸리티 함수 제공
+
+```tsx
+// 사용 예시
+const columns = [
+    columnHelper.accessor("name", { header: "이름" }),
+    columnHelper.accessor("age", { header: "나이" }),
+];
+<DataTable
+    data={records}
+    columns={columns}
+    enableSorting
+    enablePagination
+    pageSize={10}
+/>;
+```
+
+##### 테스트 결과
+
+-   **총 테스트 수**: 875개
+-   **통과**: 875개 (100%)
+-   **테스트 파일**: 61개
+
+---
+
+#### 대상 컴포넌트 (최신 줄 수)
+
+| 컴포넌트         | 줄 수 | 목표 | 계획 문서                                                     |
+| ---------------- | ----- | ---- | ------------------------------------------------------------- |
+| WorkRecordTable  | 2,966 | ~300 | [02_WORK_RECORD_TABLE.md](./phase8/02_WORK_RECORD_TABLE.md)   |
+| DailyGanttChart  | 2,918 | ~300 | [01_DAILY_GANTT_CHART.md](./phase8/01_DAILY_GANTT_CHART.md)   |
+| AdminSessionGrid | 2,278 | ~250 | [03_ADMIN_SESSION_GRID.md](./phase8/03_ADMIN_SESSION_GRID.md) |
+| SettingsModal    | 1,330 | ~200 | [04_SETTINGS_MODAL.md](./phase8/04_SETTINGS_MODAL.md)         |
+| WorkTemplateList | 980   | ~200 | [05_WORK_TEMPLATE_LIST.md](./phase8/05_WORK_TEMPLATE_LIST.md) |
+| StatsDashboard   | 971   | ~200 | (admin에 이미 분리됨)                                         |
+| SuggestionBoard  | 773   | ~200 | [07_OTHERS.md](./phase8/07_OTHERS.md)                         |
+| WeeklySchedule   | 641   | ~200 | [06_WEEKLY_SCHEDULE.md](./phase8/06_WEEKLY_SCHEDULE.md)       |
+| GuideBook        | 574   | ~150 | [07_OTHERS.md](./phase8/07_OTHERS.md)                         |
+
+#### 분리 단계
+
+1. **Step 1**: 공통 컴포넌트 추가 (WorkFormFields, DataTable) ✅
+2. **Step 2**: 거대 컴포넌트 분리 (DailyGanttChart, WorkRecordTable, AdminSessionGrid)
+3. **Step 3**: 중소형 컴포넌트 분리 (SettingsModal, WorkTemplateList, WeeklySchedule)
+4. **Step 4**: 기타 컴포넌트 정리 (SuggestionBoard, GuideBook)
+
+---
+
 ## 다음 단계
 
-### Phase 8: 거대 컴포넌트 분리 (대기)
+### Phase 8 Step 2: 거대 컴포넌트 분리 (대기)
 
--   DailyGanttChart (3,146줄)
--   WorkRecordTable (2,813줄)
--   AdminSessionGrid (2,433줄)
+-   DailyGanttChart (2,918줄 → ~300줄)
+-   WorkRecordTable (2,966줄 → ~300줄)
+-   AdminSessionGrid (2,278줄 → ~250줄)
 
 ### Phase 9: 플랫폼 완전 분리 (대기)
 
@@ -669,13 +760,14 @@ src/shared/constants/
 
 ## 변경 이력
 
-| 날짜       | 내용                                  |
-| ---------- | ------------------------------------- |
-| 2026-02-03 | Phase 1 완료 - 라이브러리 설치        |
-| 2026-02-03 | Phase 2 완료 - 테스트 환경 강화       |
-| 2026-02-03 | Phase 3 완료 - 애니메이션 시스템 구축 |
-| 2026-02-03 | Phase 4 완료 - 공통 UI 컴포넌트 추출  |
-| 2026-02-03 | Phase 5 완료 - 공통 훅 추출           |
-| 2026-02-03 | Phase 6 완료 - 순수 함수 통합         |
-| 2026-02-03 | Phase 7 완료 - 스토어 분리            |
-| 2026-02-03 | Phase 7.5 완료 - 상수 통합 관리       |
+| 날짜       | 내용                                                                 |
+| ---------- | -------------------------------------------------------------------- |
+| 2026-02-03 | Phase 1 완료 - 라이브러리 설치                                       |
+| 2026-02-03 | Phase 2 완료 - 테스트 환경 강화                                      |
+| 2026-02-03 | Phase 3 완료 - 애니메이션 시스템 구축                                |
+| 2026-02-03 | Phase 4 완료 - 공통 UI 컴포넌트 추출                                 |
+| 2026-02-03 | Phase 5 완료 - 공통 훅 추출                                          |
+| 2026-02-03 | Phase 6 완료 - 순수 함수 통합                                        |
+| 2026-02-03 | Phase 7 완료 - 스토어 분리                                           |
+| 2026-02-03 | Phase 7.5 완료 - 상수 통합 관리                                      |
+| 2026-02-03 | Phase 8 Step 1 완료 - 공통 컴포넌트 추가 (WorkFormFields, DataTable) |
