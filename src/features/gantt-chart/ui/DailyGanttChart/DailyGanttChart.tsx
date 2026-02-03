@@ -31,6 +31,18 @@ import { GanttEditModal } from "../GanttEditModal";
 import { GanttStyles } from "../GanttStyles";
 import { EmptyGanttChart } from "./EmptyGanttChart";
 import { GanttChartContent } from "./GanttChartContent";
+import {
+    GANTT_MESSAGE_ACTIVE_SESSION_CANNOT_DELETE,
+    GANTT_MESSAGE_SESSION_DELETED,
+    GANTT_TITLE_DAILY_TIMELINE,
+    GANTT_HINT_DRAG_TO_ADD,
+    GANTT_FONT_SMALL,
+    GANTT_HEADER_FONT_SIZE,
+    GANTT_TITLE_FONT_SIZE,
+    GANTT_TITLE_DIVIDER_COLOR,
+    GANTT_TITLE_DATE_COLOR,
+    GANTT_HEADER_GAP,
+} from "../../constants";
 
 const { Text } = Typography;
 
@@ -166,12 +178,12 @@ export function DailyGanttChart() {
         if (!context_menu) return;
         const { session, record } = context_menu;
         if (session.id === timer.active_session_id) {
-            message.info("진행 중인 세션은 삭제할 수 없습니다.");
+            message.info(GANTT_MESSAGE_ACTIVE_SESSION_CANNOT_DELETE);
             setContextMenu(null);
             return;
         }
         deleteSession(record.id, session.id);
-        message.success("세션이 삭제되었습니다.");
+        message.success(GANTT_MESSAGE_SESSION_DELETED);
         setContextMenu(null);
     }, [context_menu, deleteSession, timer.active_session_id]);
 
@@ -205,15 +217,27 @@ export function DailyGanttChart() {
                         style={{
                             display: "flex",
                             alignItems: "center",
-                            gap: 12,
-                            fontSize: 16,
+                            gap: GANTT_HEADER_GAP,
+                            fontSize: GANTT_HEADER_FONT_SIZE,
                         }}
                     >
-                        <span style={{ fontWeight: 800, fontSize: 17 }}>
-                            일간 타임라인
+                        <span
+                            style={{
+                                fontWeight: 800,
+                                fontSize: GANTT_TITLE_FONT_SIZE,
+                            }}
+                        >
+                            {GANTT_TITLE_DAILY_TIMELINE}
                         </span>
-                        <span style={{ color: "#d9d9d9" }}>|</span>
-                        <span style={{ color: "#555", fontWeight: 500 }}>
+                        <span style={{ color: GANTT_TITLE_DIVIDER_COLOR }}>
+                            |
+                        </span>
+                        <span
+                            style={{
+                                color: GANTT_TITLE_DATE_COLOR,
+                                fontWeight: 500,
+                            }}
+                        >
                             {dayjs(selected_date).format("YYYY년 M월 D일")} (
                             {dayjs(selected_date).format("dd")})
                         </span>
@@ -221,8 +245,11 @@ export function DailyGanttChart() {
                 }
                 size="small"
                 extra={
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                        💡 빈 영역을 드래그하여 작업 추가
+                    <Text
+                        type="secondary"
+                        style={{ fontSize: GANTT_FONT_SMALL }}
+                    >
+                        {GANTT_HINT_DRAG_TO_ADD}
                     </Text>
                 }
             >

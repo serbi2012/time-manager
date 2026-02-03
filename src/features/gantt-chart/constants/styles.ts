@@ -30,6 +30,21 @@ export const GANTT_FONT_SMALL = 12;
 /** 폰트 크기 - 매우 작음 */
 export const GANTT_FONT_XSMALL = 11;
 
+/** 카드 헤더 제목 폰트 크기 */
+export const GANTT_HEADER_FONT_SIZE = 16;
+
+/** 카드 제목(일간 타임라인) 폰트 크기 */
+export const GANTT_TITLE_FONT_SIZE = 17;
+
+/** 카드 제목 구분선 색상 */
+export const GANTT_TITLE_DIVIDER_COLOR = "#d9d9d9";
+
+/** 카드 제목 날짜 텍스트 색상 */
+export const GANTT_TITLE_DATE_COLOR = "#555";
+
+/** 카드 헤더 요소 간격 (px) */
+export const GANTT_HEADER_GAP = 12;
+
 /** 간격 - 작음 (px) */
 export const GANTT_SPACING_SM = 4;
 

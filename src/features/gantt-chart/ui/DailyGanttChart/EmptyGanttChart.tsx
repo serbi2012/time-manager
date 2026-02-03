@@ -5,6 +5,12 @@
 
 import { Empty, Tooltip, Typography } from "antd";
 import { minutesToTime } from "../../../../shared/lib/time";
+import {
+    GANTT_LABEL_LUNCH,
+    GANTT_EMPTY_NO_RECORDS,
+    GANTT_EMPTY_HINT_DRAG,
+    GANTT_FONT_SMALL,
+} from "../../constants";
 
 const { Text } = Typography;
 
@@ -59,7 +65,7 @@ export function EmptyGanttChart({
                 ))}
 
                 {lunch_overlay_style && (
-                    <Tooltip title="점심시간">
+                    <Tooltip title={GANTT_LABEL_LUNCH}>
                         <div
                             className="gantt-lunch-overlay"
                             style={lunch_overlay_style}
@@ -82,10 +88,13 @@ export function EmptyGanttChart({
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
                     description={
                         <span>
-                            작업 기록이 없습니다
+                            {GANTT_EMPTY_NO_RECORDS}
                             <br />
-                            <Text type="secondary" style={{ fontSize: 12 }}>
-                                드래그하여 작업 추가
+                            <Text
+                                type="secondary"
+                                style={{ fontSize: GANTT_FONT_SMALL }}
+                            >
+                                {GANTT_EMPTY_HINT_DRAG}
                             </Text>
                         </span>
                     }
