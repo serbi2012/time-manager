@@ -30,3 +30,28 @@ export const GANTT_LABEL_LUNCH = "점심시간";
 
 /** 충돌 오버레이 라벨 */
 export const GANTT_LABEL_CONFLICT = "충돌";
+
+// ---------- message.* (antd message API) ----------
+
+/** 진행 중인 세션 삭제 불가 안내 */
+export const GANTT_MESSAGE_ACTIVE_SESSION_CANNOT_DELETE =
+    "진행 중인 세션은 삭제할 수 없습니다.";
+
+/** 세션 삭제 완료 */
+export const GANTT_MESSAGE_SESSION_DELETED = "세션이 삭제되었습니다.";
+
+// ---------- 카드/헤더 UI 문구 ----------
+
+/** 일간 타임라인 카드 제목 */
+export const GANTT_TITLE_DAILY_TIMELINE = "일간 타임라인";
+
+/** 빈 영역 드래그 힌트 (extra) */
+export const GANTT_HINT_DRAG_TO_ADD = "💡 빈 영역을 드래그하여 작업 추가";
+
+// ---------- 빈 간트 상태 ----------
+
+/** 작업 기록 없음 문구 */
+export const GANTT_EMPTY_NO_RECORDS = "작업 기록이 없습니다";
+
+/** 빈 상태 하단 힌트 - 드래그하여 추가 */
+export const GANTT_EMPTY_HINT_DRAG = "드래그하여 작업 추가";

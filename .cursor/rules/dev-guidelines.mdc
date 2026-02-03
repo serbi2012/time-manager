@@ -77,6 +77,8 @@ content={<SessionContextMenu work_name={...} on_edit={...} />}
 
 -   **인라인 스타일 객체** (`style={{ minWidth: 160, color: "#666", fontSize: 12 }}`) 중 **2회 이상 사용**하거나 **의미 있는 토큰**은 **반드시** 상수 또는 스타일 모듈로 분리합니다.
 -   색상(`#666`, `#ff4d4f` 등), 폰트 크기(11, 12), 간격(4, 8, 16), 최소 너비(160 등)는 **매직 넘버/문자열 금지**. `constants/` 또는 feature 내 `constants/` 사용.
+-   **사용자에게 보이는 모든 문구는 상수화**: 버튼/라벨/제목/힌트/설명/빈 상태 문구 등 **한 번만 써도** 상수로 정의합니다. 컴포넌트 안에 `"작업 기록이 없습니다"`, `"드래그하여 작업 추가"` 같은 하드코딩 문자열을 두지 않습니다.
+-   **`message.info` / `message.success` / `message.error` / `message.warning`** 인자도 **반드시 상수**로 정의합니다. 예: `message.success("세션이 삭제되었습니다.")` → `message.success(GANTT_MESSAGE_SESSION_DELETED)`.
 
 ```
 ❌ 금지: 인라인 매직 넘버/색상
@@ -85,6 +87,16 @@ style={{ minWidth: 160, color: "#666", fontSize: 12, marginTop: 4 }}
 ✅ 필수: 상수 또는 스타일 토큰
 import { GANTT_CONTEXT_MENU_MIN_WIDTH, GANTT_TEXT_SECONDARY, GANTT_FONT_SMALL } from "../constants";
 style={{ minWidth: GANTT_CONTEXT_MENU_MIN_WIDTH, ... }}
+```
+
+```
+❌ 금지: 인라인 UI/메시지 문구
+message.success("세션이 삭제되었습니다.");
+<Text>💡 빈 영역을 드래그하여 작업 추가</Text>
+
+✅ 필수: constants/labels 또는 feature constants 사용
+message.success(GANTT_MESSAGE_SESSION_DELETED);
+<Text>{GANTT_HINT_DRAG_TO_ADD}</Text>
 ```
 
 **분리 기준:**
