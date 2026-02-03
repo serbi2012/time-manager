@@ -2,7 +2,7 @@
  * 데스크탑 레이아웃
  */
 
-import { useRef, useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState } from "react";
 import { Layout, Spin, message } from "antd";
 import {
     useNavigate,
@@ -22,14 +22,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import dayjs from "dayjs";
 import { DesktopHeader } from "../../widgets/Header";
 import { useWorkStore } from "../../store/useWorkStore";
-import { useAuth } from "../../firebase/useAuth";
 import { useSyncStatus } from "../../features/sync";
 import { useShortcuts } from "../../hooks/useShortcuts";
-import {
-    syncRecord,
-    syncTemplate,
-    syncSettings,
-} from "../../firebase/syncService";
+import { useAuthHandlers, useDataImportExport } from "../../shared/hooks";
 import { CURRENT_VERSION } from "../../constants/changelog";
 import SettingsModal from "../../components/SettingsModal";
 import ChangelogModal from "../../components/ChangelogModal";
@@ -39,9 +34,9 @@ import SuggestionBoard from "../../components/SuggestionBoard";
 import GuideBook from "../../components/GuideBook";
 import AdminSessionGrid from "../../components/AdminSessionGrid";
 import {
-  SlideIn,
-  PageTransitionProvider,
-  DESKTOP_DAILY_DELAYS,
+    SlideIn,
+    PageTransitionProvider,
+    DESKTOP_DAILY_DELAYS,
 } from "../../shared/ui";
 import type { TransitionSpeed } from "../../shared/ui";
 
@@ -55,17 +50,27 @@ export function DesktopLayout() {
     const location = useLocation();
     const [is_settings_open, setIsSettingsOpen] = useState(false);
     const [is_changelog_open, setIsChangelogOpen] = useState(false);
-    const file_input_ref = useRef<HTMLInputElement>(null);
 
+    // 공통 훅 사용
     const {
         user,
         loading: auth_loading,
-        signInWithGoogle,
-        logout,
         isAuthenticated,
-    } = useAuth();
+        handleLogin,
+        handleLogout,
+    } = useAuthHandlers();
+
+    const {
+        fileInputRef: file_input_ref,
+        handleExport,
+        handleImport,
+        handleFileChange,
+    } = useDataImportExport();
+
     const app_theme = useWorkStore((state) => state.app_theme);
-    const transition_enabled = useWorkStore((state) => state.transition_enabled);
+    const transition_enabled = useWorkStore(
+        (state) => state.transition_enabled
+    );
     const transition_speed = useWorkStore(
         (state) => state.transition_speed
     ) as TransitionSpeed;
@@ -120,37 +125,7 @@ export function DesktopLayout() {
         },
         goDaily: () => navigate("/"),
         goWeekly: () => navigate("/weekly"),
-        exportData: () => {
-            const state = useWorkStore.getState();
-            const export_data = {
-                state: {
-                    records: state.records,
-                    templates: state.templates,
-                    timer: state.timer,
-                    custom_task_options: state.custom_task_options,
-                    custom_category_options: state.custom_category_options,
-                },
-                version: 0,
-            };
-            if (state.records.length === 0 && state.templates.length === 0) {
-                message.warning("내보낼 데이터가 없습니다");
-                return;
-            }
-            const blob = new Blob([JSON.stringify(export_data, null, 2)], {
-                type: "application/json",
-            });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = `time-manager-backup-${new Date()
-                .toISOString()
-                .slice(0, 10)}.json`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            message.success("데이터가 내보내졌습니다");
-        },
+        exportData: handleExport,
         syncData: () => handleManualSync(),
     };
 
@@ -213,128 +188,6 @@ export function DesktopLayout() {
         ],
         [is_admin]
     );
-
-    const handleLogin = async () => {
-        try {
-            await signInWithGoogle();
-        } catch {
-            message.error("로그인에 실패했습니다");
-        }
-    };
-
-    const handleLogout = async () => {
-        try {
-            await logout();
-            message.success("로그아웃되었습니다");
-        } catch {
-            message.error("로그아웃에 실패했습니다");
-        }
-    };
-
-    const handleExport = () => {
-        const state = useWorkStore.getState();
-        const export_data = {
-            state: {
-                records: state.records,
-                templates: state.templates,
-                timer: state.timer,
-                custom_task_options: state.custom_task_options,
-                custom_category_options: state.custom_category_options,
-            },
-            version: 0,
-        };
-
-        if (state.records.length === 0 && state.templates.length === 0) {
-            message.warning("내보낼 데이터가 없습니다");
-            return;
-        }
-
-        const blob = new Blob([JSON.stringify(export_data, null, 2)], {
-            type: "application/json",
-        });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `time-manager-backup-${new Date()
-            .toISOString()
-            .slice(0, 10)}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        message.success("데이터가 내보내졌습니다");
-    };
-
-    const handleImport = () => {
-        file_input_ref.current?.click();
-    };
-
-    const handleFileChange = async (
-        event: React.ChangeEvent<HTMLInputElement>
-    ) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            try {
-                const content = e.target?.result as string;
-                const parsed = JSON.parse(content);
-                const data = parsed.state ? parsed.state : parsed;
-
-                if (!data.records) {
-                    message.error("유효하지 않은 데이터 형식입니다");
-                    return;
-                }
-
-                const records = data.records || [];
-                const templates = data.templates || [];
-
-                useWorkStore.setState({
-                    records,
-                    templates,
-                    custom_task_options: data.custom_task_options || [],
-                    custom_category_options: data.custom_category_options || [],
-                });
-
-                if (user && isAuthenticated) {
-                    try {
-                        await Promise.all(
-                            records.map(
-                                (record: import("../../types").WorkRecord) =>
-                                    syncRecord(record)
-                            )
-                        );
-                        await Promise.all(
-                            templates.map(
-                                (
-                                    template: import("../../types").WorkTemplate
-                                ) => syncTemplate(template)
-                            )
-                        );
-                        await syncSettings({
-                            custom_task_options: data.custom_task_options || [],
-                            custom_category_options:
-                                data.custom_category_options || [],
-                        });
-                        message.success(
-                            "데이터를 가져오고 클라우드에 동기화했습니다"
-                        );
-                    } catch {
-                        message.warning(
-                            "데이터를 가져왔지만 클라우드 동기화에 실패했습니다"
-                        );
-                    }
-                } else {
-                    message.success("데이터를 성공적으로 가져왔습니다");
-                }
-            } catch {
-                message.error("파일을 읽는 중 오류가 발생했습니다");
-            }
-        };
-        reader.readAsText(file);
-        event.target.value = "";
-    };
 
     // 트랜지션 준비 상태: 로딩이 완료되었을 때
     const is_transition_ready = !auth_loading && initial_load_done;

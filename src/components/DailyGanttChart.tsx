@@ -40,43 +40,13 @@ import {
 } from "../hooks/useShortcuts";
 import { HighlightText } from "../shared/ui/HighlightText";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
+import { timeToMinutes, minutesToTime } from "../shared/lib/time";
+import { formatDuration } from "../shared/lib/time";
+import { getSessionMinutes } from "../shared/lib/session";
 
 const { Text } = Typography;
 
 // 점심시간은 store에서 동적으로 가져옴 (getLunchTimeMinutes)
-
-// 시간을 분으로 변환 (예: "09:30" -> 570)
-const timeToMinutes = (time_str: string): number => {
-    const parts = time_str.split(":").map(Number);
-    const hours = parts[0] || 0;
-    const minutes = parts[1] || 0;
-    return hours * 60 + minutes;
-};
-
-// 분을 시간 문자열로 변환 (분 -> HH:mm)
-const minutesToTime = (mins: number): string => {
-    const h = Math.floor(mins / 60);
-    const m = mins % 60;
-    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
-};
-
-// 세션의 duration_minutes 가져오기 (호환성)
-const getSessionMinutes = (session: WorkSession): number => {
-    if (
-        session.duration_minutes !== undefined &&
-        !isNaN(session.duration_minutes)
-    ) {
-        return session.duration_minutes;
-    }
-    const legacy = session as unknown as { duration_seconds?: number };
-    if (
-        legacy.duration_seconds !== undefined &&
-        !isNaN(legacy.duration_seconds)
-    ) {
-        return Math.ceil(legacy.duration_seconds / 60);
-    }
-    return 0;
-};
 
 // 작업별 그룹화된 세션 타입
 interface GroupedWork {
@@ -528,9 +498,7 @@ export default function DailyGanttChart() {
             if (!r.is_completed && r.date <= selected_date) return false;
             if (r.date === selected_date && r.is_completed) return false;
             // 해당 날짜에 세션이 있는지 확인
-            return r.sessions.some(
-                (s) => (s.date || r.date) === selected_date
-            );
+            return r.sessions.some((s) => (s.date || r.date) === selected_date);
         });
 
         // 완료되지 않은 것을 먼저, 날짜 내림차순
@@ -793,15 +761,6 @@ export default function DailyGanttChart() {
             width: `${width}%`,
         };
     }, [time_range, total_minutes, LUNCH_START_DYNAMIC, LUNCH_END_DYNAMIC]);
-
-    // 분을 읽기 쉬운 형식으로
-    const formatMinutes = (minutes: number): string => {
-        if (minutes < 60) return `${minutes}분`;
-        const hrs = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        if (mins === 0) return `${hrs}시간`;
-        return `${hrs}시간 ${mins}분`;
-    };
 
     // 총 소요 시간 계산
     const getTotalDuration = (sessions: WorkSession[]): number => {
@@ -1305,13 +1264,13 @@ export default function DailyGanttChart() {
 
             setEditRecord(record);
             setEditSession(session);
-            
+
             // 진행 중인 세션인 경우 현재 시간을 종료 시간으로 표시
             const is_active_session = session.id === timer.active_session_id;
-            const display_end_time = is_active_session 
-                ? dayjs().format("HH:mm") 
+            const display_end_time = is_active_session
+                ? dayjs().format("HH:mm")
                 : session.end_time;
-            
+
             edit_form.setFieldsValue({
                 project_code: record.project_code,
                 work_name: record.work_name,
@@ -1336,13 +1295,13 @@ export default function DailyGanttChart() {
 
         setEditRecord(record);
         setEditSession(session);
-        
+
         // 진행 중인 세션인 경우 현재 시간을 종료 시간으로 표시
         const is_active_session = session.id === timer.active_session_id;
-        const display_end_time = is_active_session 
-            ? dayjs().format("HH:mm") 
+        const display_end_time = is_active_session
+            ? dayjs().format("HH:mm")
             : session.end_time;
-        
+
         edit_form.setFieldsValue({
             project_code: record.project_code,
             work_name: record.work_name,
@@ -1379,26 +1338,29 @@ export default function DailyGanttChart() {
 
         try {
             const values = await edit_form.validateFields();
-            
+
             // 세션 시간이 변경되었는지 확인
-            const is_active_session = edit_session.id === timer.active_session_id;
+            const is_active_session =
+                edit_session.id === timer.active_session_id;
             const original_start = edit_session.start_time;
-            const original_end = is_active_session 
-                ? dayjs().format("HH:mm") 
+            const original_end = is_active_session
+                ? dayjs().format("HH:mm")
                 : edit_session.end_time;
-            
+
             const new_start = values.session_start_time;
             const new_end = values.session_end_time;
-            
-            const is_time_changed = 
+
+            const is_time_changed =
                 new_start !== original_start || new_end !== original_end;
-            
+
             // 진행 중인 세션의 종료 시간 변경 시도 시 경고
             if (is_active_session && new_end !== original_end) {
-                message.warning("진행 중인 세션의 종료 시간은 수정할 수 없습니다.");
+                message.warning(
+                    "진행 중인 세션의 종료 시간은 수정할 수 없습니다."
+                );
                 return;
             }
-            
+
             // 세션 시간 수정 (시간이 변경된 경우에만)
             if (is_time_changed) {
                 // 진행 중인 세션의 시작 시간 변경
@@ -1411,7 +1373,7 @@ export default function DailyGanttChart() {
                         .second(0)
                         .millisecond(0)
                         .valueOf();
-                    
+
                     const result = updateTimerStartTime(new_start_timestamp);
                     if (!result.success) {
                         message.error(result.message);
@@ -1428,7 +1390,7 @@ export default function DailyGanttChart() {
                         new_start,
                         new_end
                     );
-                    
+
                     if (!result.success) {
                         message.error(result.message);
                         return;
@@ -2015,7 +1977,7 @@ export default function DailyGanttChart() {
                                                                                             }
                                                                                         </div>
                                                                                         <div>
-                                                                                            {formatMinutes(
+                                                                                            {formatDuration(
                                                                                                 getSessionMinutes(
                                                                                                     session
                                                                                                 )
@@ -2069,7 +2031,7 @@ export default function DailyGanttChart() {
                                                                                                     .length
                                                                                             }
                                                                                             회,{" "}
-                                                                                            {formatMinutes(
+                                                                                            {formatDuration(
                                                                                                 getTotalDuration(
                                                                                                     group.sessions
                                                                                                 )
@@ -2978,20 +2940,22 @@ export default function DailyGanttChart() {
                     }}
                 >
                     {/* 세션 시간 수정 */}
-                    <div 
-                        style={{ 
-                            marginBottom: 16, 
-                            padding: 12, 
-                            background: "#f5f5f5", 
-                            borderRadius: 8 
+                    <div
+                        style={{
+                            marginBottom: 16,
+                            padding: 12,
+                            background: "#f5f5f5",
+                            borderRadius: 8,
                         }}
                     >
-                        <div style={{ 
-                            marginBottom: 8, 
-                            fontWeight: 500, 
-                            fontSize: 13, 
-                            color: "#666" 
-                        }}>
+                        <div
+                            style={{
+                                marginBottom: 8,
+                                fontWeight: 500,
+                                fontSize: 13,
+                                color: "#666",
+                            }}
+                        >
                             세션 시간
                         </div>
                         <Space size="middle">
@@ -2999,19 +2963,20 @@ export default function DailyGanttChart() {
                                 name="session_start_time"
                                 label="시작"
                                 rules={[
-                                    { 
-                                        required: true, 
-                                        message: "시작 시간 필수" 
+                                    {
+                                        required: true,
+                                        message: "시작 시간 필수",
                                     },
                                     {
-                                        pattern: /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
-                                        message: "HH:mm 형식"
-                                    }
+                                        pattern:
+                                            /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
+                                        message: "HH:mm 형식",
+                                    },
                                 ]}
                                 style={{ marginBottom: 0 }}
                             >
-                                <Input 
-                                    placeholder="09:00" 
+                                <Input
+                                    placeholder="09:00"
                                     style={{ width: 80 }}
                                     maxLength={5}
                                 />
@@ -3021,34 +2986,37 @@ export default function DailyGanttChart() {
                                 name="session_end_time"
                                 label="종료"
                                 rules={[
-                                    { 
-                                        required: true, 
-                                        message: "종료 시간 필수" 
+                                    {
+                                        required: true,
+                                        message: "종료 시간 필수",
                                     },
                                     {
-                                        pattern: /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
-                                        message: "HH:mm 형식"
-                                    }
+                                        pattern:
+                                            /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
+                                        message: "HH:mm 형식",
+                                    },
                                 ]}
                                 style={{ marginBottom: 0 }}
                             >
-                                <Input 
-                                    placeholder="18:00" 
+                                <Input
+                                    placeholder="18:00"
                                     style={{ width: 80 }}
                                     maxLength={5}
                                     disabled={
-                                        edit_session?.id === 
+                                        edit_session?.id ===
                                         timer.active_session_id
                                     }
                                 />
                             </Form.Item>
                         </Space>
                         {edit_session?.id === timer.active_session_id && (
-                            <div style={{ 
-                                marginTop: 8, 
-                                fontSize: 12, 
-                                color: "#ff9800" 
-                            }}>
+                            <div
+                                style={{
+                                    marginTop: 8,
+                                    fontSize: 12,
+                                    color: "#ff9800",
+                                }}
+                            >
                                 * 진행 중인 세션의 종료 시간은 수정 불가
                             </div>
                         )}

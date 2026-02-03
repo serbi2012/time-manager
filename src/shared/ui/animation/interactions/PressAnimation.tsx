@@ -2,11 +2,11 @@
  * PressAnimation - 눌림 효과 애니메이션
  * 버튼이나 클릭 가능한 요소에 적용
  */
-import { ReactNode, forwardRef } from "react";
-import { motion, HTMLMotionProps } from "framer-motion";
-import { PRESS, PRESS_STRONG } from "../config/presets";
+import { forwardRef, type ReactNode, type CSSProperties } from "react";
+import { motion, type HTMLMotionProps } from "framer-motion";
 
-interface PressAnimationProps extends Omit<HTMLMotionProps<"div">, "whileTap"> {
+interface PressAnimationProps
+    extends Omit<HTMLMotionProps<"div">, "whileTap" | "style"> {
     children: ReactNode;
     /** 비활성화 */
     disabled?: boolean;
@@ -14,6 +14,8 @@ interface PressAnimationProps extends Omit<HTMLMotionProps<"div">, "whileTap"> {
     scale?: number;
     /** 강한 효과 사용 */
     strong?: boolean;
+    /** 스타일 */
+    style?: CSSProperties;
 }
 
 export const PressAnimation = forwardRef<HTMLDivElement, PressAnimationProps>(

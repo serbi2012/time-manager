@@ -2,7 +2,7 @@
  * 애니메이션 프리셋
  * 자주 사용되는 애니메이션 패턴 정의
  */
-import type { Variants, Transition } from "framer-motion";
+import type { Variants } from "framer-motion";
 import { DURATION } from "./timing";
 import { SPRING } from "./easing";
 

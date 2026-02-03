@@ -2,8 +2,8 @@
  * AnimatedList - 리스트 아이템 애니메이션
  * 리스트 아이템이 추가/삭제될 때 순차적으로 애니메이션 적용
  */
-import { ReactNode } from "react";
-import { motion, AnimatePresence, Variants } from "framer-motion";
+import type { ReactNode } from "react";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { LIST_ITEM, LIST_ITEM_SLIDE } from "../config/presets";
 import { STAGGER, SPRING } from "../config";
 
@@ -108,15 +108,8 @@ interface StaggerContainerProps {
     style?: React.CSSProperties;
 }
 
-const containerVariants: Variants = {
-    initial: {},
-    animate: {
-        transition: {
-            staggerChildren: 0.05,
-            delayChildren: 0,
-        },
-    },
-};
+// Note: containerVariants below is not used directly but kept for reference
+// const _containerVariantsRef: Variants = { ... };
 
 const itemVariants: Variants = {
     initial: { opacity: 0, y: 10 },

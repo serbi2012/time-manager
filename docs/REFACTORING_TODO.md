@@ -1660,22 +1660,22 @@ shared/ui/table/
 
 ### 4.5 TODO 체크리스트
 
--   [ ] `shared/ui/form/` 컴포넌트 생성
-    -   [ ] SelectWithAdd.tsx
-    -   [ ] AutoCompleteWithHide.tsx
-    -   [ ] WorkFormFields.tsx
-    -   [ ] TimeRangeInput.tsx
--   [ ] `shared/ui/modal/` 컴포넌트 생성
-    -   [ ] BaseModal.tsx
-    -   [ ] ConfirmModal.tsx
-    -   [ ] RecordListModal.tsx
--   [ ] `shared/ui/layout/` 컴포넌트 생성
-    -   [ ] LoadingOverlay.tsx
-    -   [ ] EmptyState.tsx
--   [ ] `shared/ui/table/` 컴포넌트 생성
+-   [x] `shared/ui/form/` 컴포넌트 생성
+    -   [x] SelectWithAdd.tsx
+    -   [x] AutoCompleteWithHide.tsx
+    -   [ ] WorkFormFields.tsx (Phase 5에서 useAutoCompleteOptions 훅과 함께 구현)
+    -   [x] TimeRangeInput.tsx
+-   [x] `shared/ui/modal/` 컴포넌트 생성
+    -   [x] BaseModal.tsx
+    -   [x] FormModal.tsx (ConfirmModal 대신)
+    -   [x] RecordListModal.tsx
+-   [x] `shared/ui/layout/` 컴포넌트 생성
+    -   [x] LoadingOverlay.tsx
+    -   [x] EmptyState.tsx
+-   [ ] `shared/ui/table/` 컴포넌트 생성 (Phase 8에서 구현)
     -   [ ] DataTable.tsx (@tanstack/react-table 기반)
--   [ ] 모든 공통 UI에 대한 테스트 작성
--   [ ] 모든 공통 UI에 대한 Storybook 스토리 작성
+-   [x] 모든 공통 UI에 대한 테스트 작성 (75개 테스트 케이스)
+-   [x] 모든 공통 UI에 대한 Storybook 스토리 작성 (8개 파일)
 
 ---
 
@@ -1946,13 +1946,13 @@ export function useAutoCompleteOptions() {
 
 ### 5.6 TODO 체크리스트
 
--   [ ] `useRecordCreation.ts` 생성 및 Desktop/MobileDailyPage 적용
--   [ ] `useDataImportExport.ts` 생성 및 Layout 컴포넌트 적용
--   [ ] `useAuthHandlers.ts` 생성 및 Layout 컴포넌트 적용
--   [ ] `useAutoCompleteOptions.ts` 생성 및 폼 컴포넌트 적용
--   [ ] 기존 `useDebouncedValue.ts` → lodash 기반 `useDebounce.ts`로 교체
--   [ ] 모든 훅에 대한 테스트 작성
--   [ ] index.ts에 export 추가
+-   [x] `useRecordCreation.ts` 생성 및 Desktop/MobileDailyPage 적용
+-   [x] `useDataImportExport.ts` 생성 및 Layout 컴포넌트 적용
+-   [x] `useAuthHandlers.ts` 생성 및 Layout 컴포넌트 적용
+-   [x] `useAutoCompleteOptions.ts` 생성 및 폼 컴포넌트 적용
+-   [x] `useDebouncedValue.ts`를 shared/hooks로 이동
+-   [x] 모든 훅에 대한 테스트 작성
+-   [x] index.ts에 export 추가
 
 ---
 
@@ -2047,19 +2047,30 @@ export function extractNumberFromDealName(deal_name: string): number {
 
 ### 6.4 TODO 체크리스트
 
--   [ ] `shared/lib/record/` 폴더 생성
-    -   [ ] deal_name_generator.ts
-    -   [ ] record_creator.ts
-    -   [ ] record_filters.ts
--   [ ] `shared/lib/data/` 폴더 생성
-    -   [ ] export.ts
-    -   [ ] import.ts
--   [ ] `shared/lib/utils/` 폴더 생성 (lodash 래퍼)
--   [ ] DailyGanttChart.tsx에서 중복 함수 제거
--   [ ] AdminSessionGrid.tsx에서 중복 함수 제거
--   [ ] GanttRow.tsx, GanttBar.tsx에서 중복 함수 제거
--   [ ] SessionEditTable.tsx에서 중복 함수 제거
--   [ ] 모든 순수 함수에 대한 유닛 테스트 작성
+-   [x] `shared/lib/record/` 폴더 생성 (Phase 5에서 완료)
+    -   [x] deal_name_generator.ts
+    -   [x] record_creator.ts
+    -   [ ] record_filters.ts (Phase 8에서 필요 시 추가)
+-   [x] `shared/lib/data/` 폴더 생성 (Phase 5에서 완료)
+    -   [x] export.ts
+    -   [x] import.ts
+-   [ ] `shared/lib/utils/` 폴더 생성 (lodash 래퍼) - 필요 시 추가
+-   [x] DailyGanttChart.tsx에서 중복 함수 제거
+    -   [x] timeToMinutes, minutesToTime, getSessionMinutes 제거
+    -   [x] formatMinutes 제거 → formatDuration 사용
+-   [x] WorkRecordTable.tsx에서 중복 함수 제거
+    -   [x] formatDuration, formatTimer 제거
+-   [x] DemoComponents.tsx에서 중복 함수 제거
+    -   [x] formatDuration 제거
+-   [x] AdminSessionGrid.tsx - 이미 shared/lib 사용 중 (변경 불필요)
+-   [x] GanttRow.tsx, GanttBar.tsx - 이미 shared/lib 사용 중 (변경 불필요)
+-   [x] SessionEditTable.tsx - 이미 shared/lib 사용 중 (변경 불필요)
+-   [x] utils/time_utils.ts 레거시 파일 정리
+    -   [x] 충돌 감지 함수 shared/lib/time/overlap.ts로 마이그레이션
+    -   [x] 날짜 비교 함수 shared/lib/time/date_utils.ts로 마이그레이션
+    -   [x] 테스트 파일 업데이트
+    -   [x] 레거시 파일 삭제
+-   [x] 모든 순수 함수에 대한 유닛 테스트 작성 (838개 테스트 통과)
 
 ---
 
@@ -2718,9 +2729,9 @@ src/
 | 1     | 라이브러리 설치       | ✅   | AI   | 2026-02-03 |
 | 2     | 테스트 환경 강화      | ✅   | AI   | 2026-02-03 |
 | 3     | 애니메이션 시스템     | ✅   | AI   | 2026-02-03 |
-| 4     | 공통 UI 추출          | ⬜   | -    | -          |
-| 5     | 공통 훅 추출          | ⬜   | -    | -          |
-| 6     | 순수 함수 통합        | ⬜   | -    | -          |
+| 4     | 공통 UI 추출          | ✅   | AI   | 2026-02-03 |
+| 5     | 공통 훅 추출          | ✅   | AI   | 2026-02-03 |
+| 6     | 순수 함수 통합        | ✅   | AI   | 2026-02-03 |
 | 7     | 스토어 분리           | ⬜   | -    | -          |
 | 8-1   | DailyGanttChart 분리  | ⬜   | -    | -          |
 | 8-2   | WorkRecordTable 분리  | ⬜   | -    | -          |

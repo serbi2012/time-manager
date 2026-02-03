@@ -1,14 +1,14 @@
 /**
  * HoverAnimation - 호버 효과 애니메이션
  */
-import { ReactNode, forwardRef } from "react";
-import { motion, HTMLMotionProps } from "framer-motion";
+import { forwardRef, type ReactNode, type CSSProperties } from "react";
+import { motion, type HTMLMotionProps } from "framer-motion";
 import { SPRING } from "../config/easing";
 
 type HoverType = "scale" | "lift" | "glow" | "card";
 
 interface HoverAnimationProps
-    extends Omit<HTMLMotionProps<"div">, "whileHover"> {
+    extends Omit<HTMLMotionProps<"div">, "whileHover" | "style"> {
     children: ReactNode;
     /** 비활성화 */
     disabled?: boolean;
@@ -16,9 +16,11 @@ interface HoverAnimationProps
     type?: HoverType;
     /** 커스텀 스케일 값 */
     scale?: number;
+    /** 스타일 */
+    style?: CSSProperties;
 }
 
-const HOVER_CONFIGS: Record<HoverType, object> = {
+const HOVER_CONFIGS = {
     scale: { scale: 1.02 },
     lift: { scale: 1.02, y: -2 },
     glow: {
@@ -30,7 +32,7 @@ const HOVER_CONFIGS: Record<HoverType, object> = {
         y: -4,
         boxShadow: "0 10px 30px rgba(0,0,0,0.12)",
     },
-};
+} as const;
 
 export const HoverAnimation = forwardRef<HTMLDivElement, HoverAnimationProps>(
     function HoverAnimation(

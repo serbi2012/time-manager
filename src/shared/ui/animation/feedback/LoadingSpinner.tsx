@@ -2,7 +2,7 @@
  * LoadingSpinner - 로딩 스피너 애니메이션
  */
 import { motion } from "framer-motion";
-import { CSSProperties } from "react";
+import type { CSSProperties } from "react";
 
 interface LoadingSpinnerProps {
     /** 크기 (px) */

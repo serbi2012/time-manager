@@ -2,20 +2,12 @@
  * AnimatedPresence - 조건부 렌더링 애니메이션
  * 요소가 나타나고 사라질 때 애니메이션 적용
  */
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import {
     AnimatePresence as FramerAnimatePresence,
     motion,
-    Variants,
 } from "framer-motion";
-import {
-    FADE,
-    SLIDE,
-    SCALE,
-    FADE_SCALE,
-    getPreset,
-    PresetType,
-} from "../config/presets";
+import { getPreset, type PresetType } from "../config/presets";
 
 export type AnimationType =
     | "fade"

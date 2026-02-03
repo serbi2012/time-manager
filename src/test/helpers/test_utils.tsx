@@ -2,8 +2,13 @@
  * 테스트 유틸리티
  * 커스텀 렌더러 및 유틸리티 함수
  */
-import { ReactElement, ReactNode } from "react";
-import { render, RenderOptions, RenderResult } from "@testing-library/react";
+/* eslint-disable react-refresh/only-export-components */
+import type { ReactElement, ReactNode } from "react";
+import {
+    render,
+    type RenderOptions,
+    type RenderResult,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BrowserRouter, MemoryRouter } from "react-router-dom";
 import { ConfigProvider } from "antd";

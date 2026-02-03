@@ -53,9 +53,13 @@ import {
 import { useShortcutStore } from "../store/useShortcutStore";
 import type { WorkRecord, WorkSession } from "../types";
 import { useResponsive } from "../hooks/useResponsive";
-import { formatShortcutKeyForPlatform, matchShortcutKey } from "../hooks/useShortcuts";
+import {
+    formatShortcutKeyForPlatform,
+    matchShortcutKey,
+} from "../hooks/useShortcuts";
 import { HighlightText } from "../shared/ui/HighlightText";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
+import { formatDuration, formatTimer } from "../shared/lib/time";
 
 const { Text } = Typography;
 
@@ -71,29 +75,6 @@ const getCategoryColor = (category: string): string => {
         기타: "default",
     };
     return color_map[category] || "default";
-};
-
-// 분을 읽기 쉬운 형식으로 변환
-const formatDuration = (minutes: number): string => {
-    if (minutes < 60) {
-        return `${minutes}분`;
-    }
-    const hrs = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    if (mins === 0) {
-        return `${hrs}시간`;
-    }
-    return `${hrs}시간 ${mins}분`;
-};
-
-// 타이머 표시 형식 (HH:MM)
-const formatTimer = (seconds: number): string => {
-    const total_mins = Math.floor(seconds / 60);
-    const hrs = Math.floor(total_mins / 60);
-    const mins = total_mins % 60;
-    return `${hrs.toString().padStart(2, "0")}:${mins
-        .toString()
-        .padStart(2, "0")}`;
 };
 
 // 세션의 duration을 분 단위로 가져오기 (기존 데이터 호환)
@@ -327,7 +308,9 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
     const theme_color = APP_THEME_COLORS[app_theme].primary;
 
     // 선택 삭제를 위한 상태
-    const [selected_session_keys, setSelectedSessionKeys] = useState<React.Key[]>([]);
+    const [selected_session_keys, setSelectedSessionKeys] = useState<
+        React.Key[]
+    >([]);
 
     // 세션 추가를 위한 상태
     const [is_adding_session, setIsAddingSession] = useState(false);
@@ -394,7 +377,9 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
             deleteSession(record_id, key as string);
         });
 
-        message.success(`${selected_session_keys.length}개 세션이 삭제되었습니다`);
+        message.success(
+            `${selected_session_keys.length}개 세션이 삭제되었습니다`
+        );
         setSelectedSessionKeys([]);
     }, [selected_session_keys, record_id, deleteSession]);
 
@@ -407,9 +392,11 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
         }
 
         // 시간 유효성 검사
-        const start_minutes = dayjs(`2000-01-01 ${new_session_start}`).hour() * 60 +
+        const start_minutes =
+            dayjs(`2000-01-01 ${new_session_start}`).hour() * 60 +
             dayjs(`2000-01-01 ${new_session_start}`).minute();
-        const end_minutes = dayjs(`2000-01-01 ${new_session_end}`).hour() * 60 +
+        const end_minutes =
+            dayjs(`2000-01-01 ${new_session_end}`).hour() * 60 +
             dayjs(`2000-01-01 ${new_session_end}`).minute();
 
         if (start_minutes >= end_minutes) {
@@ -428,12 +415,14 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
         };
 
         // 기존 세션과 병합하여 시간순 정렬
-        const updated_sessions = [...(record.sessions || []), new_session].sort((a, b) => {
-            const a_date = a.date || record.date;
-            const b_date = b.date || record.date;
-            if (a_date !== b_date) return a_date.localeCompare(b_date);
-            return (a.start_time || "").localeCompare(b.start_time || "");
-        });
+        const updated_sessions = [...(record.sessions || []), new_session].sort(
+            (a, b) => {
+                const a_date = a.date || record.date;
+                const b_date = b.date || record.date;
+                if (a_date !== b_date) return a_date.localeCompare(b_date);
+                return (a.start_time || "").localeCompare(b.start_time || "");
+            }
+        );
 
         // 총 시간 계산
         const total_minutes = updated_sessions.reduce(
@@ -458,7 +447,14 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
         setIsAddingSession(false);
         setNewSessionStart("");
         setNewSessionEnd("");
-    }, [record, record_id, new_session_date, new_session_start, new_session_end, updateRecord]);
+    }, [
+        record,
+        record_id,
+        new_session_date,
+        new_session_start,
+        new_session_end,
+        updateRecord,
+    ]);
 
     // 세션 추가 취소
     const handleCancelAddSession = useCallback(() => {
@@ -486,25 +482,36 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
         record.sessions && record.sessions.length > 0
             ? record.sessions
             : record.start_time
-              ? [
-                    {
-                        id: record.id,
-                        date: record.date,
-                        start_time: record.start_time,
-                        end_time: record.end_time,
-                        duration_minutes: record.duration_minutes,
-                    },
-                ]
-              : [];
+            ? [
+                  {
+                      id: record.id,
+                      date: record.date,
+                      start_time: record.start_time,
+                      end_time: record.end_time,
+                      duration_minutes: record.duration_minutes,
+                  },
+              ]
+            : [];
 
     if (sessions.length === 0) {
         return (
             <div style={{ padding: "16px" }}>
                 {is_adding_session ? (
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            flexWrap: "wrap",
+                        }}
+                    >
                         <DatePicker
                             value={dayjs(new_session_date)}
-                            onChange={(date) => setNewSessionDate(date?.format("YYYY-MM-DD") || selected_date)}
+                            onChange={(date) =>
+                                setNewSessionDate(
+                                    date?.format("YYYY-MM-DD") || selected_date
+                                )
+                            }
                             size="small"
                             style={{ width: 120 }}
                             allowClear={false}
@@ -541,7 +548,13 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                         </Button>
                     </div>
                 ) : (
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 12,
+                        }}
+                    >
                         <Text type="secondary">세션 이력이 없습니다.</Text>
                         <Button
                             type="dashed"
@@ -641,9 +654,15 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                         title: "종료 시간",
                         key: "end_time",
                         width: 110,
-                        render: (_: unknown, session: WorkSession) => (
+                        render: (_: unknown, session: WorkSession) =>
                             session.end_time === "" ? (
-                                <Text type="secondary" style={{ fontFamily: "monospace", fontSize: 12 }}>
+                                <Text
+                                    type="secondary"
+                                    style={{
+                                        fontFamily: "monospace",
+                                        fontSize: 12,
+                                    }}
+                                >
                                     진행중
                                 </Text>
                             ) : (
@@ -657,8 +676,7 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                                         )
                                     }
                                 />
-                            )
-                        ),
+                            ),
                     },
                     {
                         title: "소요 시간",
@@ -676,7 +694,7 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                         title: "",
                         key: "action",
                         width: 40,
-                        render: (_: unknown, session: WorkSession) => (
+                        render: (_: unknown, session: WorkSession) =>
                             session.end_time === "" ? (
                                 <Tooltip title="진행 중인 세션은 삭제할 수 없습니다">
                                     <Button
@@ -696,7 +714,10 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                                     }
                                     okText="삭제"
                                     cancelText="취소"
-                                    okButtonProps={{ danger: true, autoFocus: true }}
+                                    okButtonProps={{
+                                        danger: true,
+                                        autoFocus: true,
+                                    }}
                                 >
                                     <Button
                                         type="text"
@@ -705,8 +726,7 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
                                         size="small"
                                     />
                                 </Popconfirm>
-                            )
-                        ),
+                            ),
                     },
                 ]}
             />
@@ -714,10 +734,21 @@ function SessionEditTable({ record_id }: SessionEditTableProps) {
             {/* 세션 추가 UI */}
             <div style={{ marginTop: 12 }}>
                 {is_adding_session ? (
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            flexWrap: "wrap",
+                        }}
+                    >
                         <DatePicker
                             value={dayjs(new_session_date)}
-                            onChange={(date) => setNewSessionDate(date?.format("YYYY-MM-DD") || selected_date)}
+                            onChange={(date) =>
+                                setNewSessionDate(
+                                    date?.format("YYYY-MM-DD") || selected_date
+                                )
+                            }
                             size="small"
                             style={{ width: 120 }}
                             allowClear={false}
@@ -828,15 +859,18 @@ export default function WorkRecordTable() {
 
     // 단축키 설정
     const shortcuts = useShortcutStore((state) => state.shortcuts);
-    const getShortcutKeys = useCallback((id: string, fallback: string = '') => {
-        const shortcut = shortcuts.find(s => s.id === id);
-        return shortcut?.keys || fallback;
-    }, [shortcuts]);
-    
-    const modal_submit_keys = getShortcutKeys('modal-submit', 'F8');
-    const new_work_keys = getShortcutKeys('new-work', 'Alt+N');
-    const prev_day_keys = getShortcutKeys('prev-day', 'Alt+Left');
-    const next_day_keys = getShortcutKeys('next-day', 'Alt+Right');
+    const getShortcutKeys = useCallback(
+        (id: string, fallback: string = "") => {
+            const shortcut = shortcuts.find((s) => s.id === id);
+            return shortcut?.keys || fallback;
+        },
+        [shortcuts]
+    );
+
+    const modal_submit_keys = getShortcutKeys("modal-submit", "F8");
+    const new_work_keys = getShortcutKeys("new-work", "Alt+N");
+    const prev_day_keys = getShortcutKeys("prev-day", "Alt+Left");
+    const next_day_keys = getShortcutKeys("next-day", "Alt+Right");
 
     // 타이머 표시를 위한 리렌더링 트리거
     const [, setTick] = useState(0);
@@ -864,7 +898,10 @@ export default function WorkRecordTable() {
     const [project_code_search, setProjectCodeSearch] = useState("");
     const [work_name_search, setWorkNameSearch] = useState("");
     const [deal_name_search, setDealNameSearch] = useState("");
-    const debounced_project_code_search = useDebouncedValue(project_code_search, 150);
+    const debounced_project_code_search = useDebouncedValue(
+        project_code_search,
+        150
+    );
     const debounced_work_name_search = useDebouncedValue(work_name_search, 150);
     const debounced_deal_name_search = useDebouncedValue(deal_name_search, 150);
 
@@ -879,10 +916,25 @@ export default function WorkRecordTable() {
         return getAutoCompleteOptions("work_name").map((v) => ({
             value: v,
             label: (
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span><HighlightText text={v} search={debounced_work_name_search} /></span>
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                    }}
+                >
+                    <span>
+                        <HighlightText
+                            text={v}
+                            search={debounced_work_name_search}
+                        />
+                    </span>
                     <CloseOutlined
-                        style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                        style={{
+                            fontSize: 10,
+                            color: "#999",
+                            cursor: "pointer",
+                        }}
                         onClick={(e) => {
                             e.stopPropagation();
                             hideAutoCompleteOption("work_name", v);
@@ -892,16 +944,38 @@ export default function WorkRecordTable() {
                 </div>
             ),
         }));
-    }, [records, templates, hidden_autocomplete_options, debounced_work_name_search, getAutoCompleteOptions, hideAutoCompleteOption]);
+    }, [
+        records,
+        templates,
+        hidden_autocomplete_options,
+        debounced_work_name_search,
+        getAutoCompleteOptions,
+        hideAutoCompleteOption,
+    ]);
 
     const deal_name_options = useMemo(() => {
         return getAutoCompleteOptions("deal_name").map((v) => ({
             value: v,
             label: (
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span><HighlightText text={v} search={debounced_deal_name_search} /></span>
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                    }}
+                >
+                    <span>
+                        <HighlightText
+                            text={v}
+                            search={debounced_deal_name_search}
+                        />
+                    </span>
                     <CloseOutlined
-                        style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                        style={{
+                            fontSize: 10,
+                            color: "#999",
+                            cursor: "pointer",
+                        }}
                         onClick={(e) => {
                             e.stopPropagation();
                             hideAutoCompleteOption("deal_name", v);
@@ -911,7 +985,14 @@ export default function WorkRecordTable() {
                 </div>
             ),
         }));
-    }, [records, templates, hidden_autocomplete_options, debounced_deal_name_search, getAutoCompleteOptions, hideAutoCompleteOption]);
+    }, [
+        records,
+        templates,
+        hidden_autocomplete_options,
+        debounced_deal_name_search,
+        getAutoCompleteOptions,
+        hideAutoCompleteOption,
+    ]);
 
     // 업무명/카테고리명 옵션 (기본 + 사용자 정의, 숨김 필터링)
     const task_options = useMemo(() => {
@@ -963,9 +1044,15 @@ export default function WorkRecordTable() {
         const handleOpenNewWorkModal = () => {
             setIsModalOpen(true);
         };
-        window.addEventListener("shortcut:openNewWorkModal", handleOpenNewWorkModal);
+        window.addEventListener(
+            "shortcut:openNewWorkModal",
+            handleOpenNewWorkModal
+        );
         return () => {
-            window.removeEventListener("shortcut:openNewWorkModal", handleOpenNewWorkModal);
+            window.removeEventListener(
+                "shortcut:openNewWorkModal",
+                handleOpenNewWorkModal
+            );
         };
     }, []);
 
@@ -994,9 +1081,7 @@ export default function WorkRecordTable() {
             if (!r.is_completed && r.date <= selected_date) return false;
             if (r.date === selected_date && r.is_completed) return false;
             // 해당 날짜에 세션이 있는지 확인
-            return r.sessions.some(
-                (s) => (s.date || r.date) === selected_date
-            );
+            return r.sessions.some((s) => (s.date || r.date) === selected_date);
         });
 
         const all_records = [
@@ -1093,7 +1178,14 @@ export default function WorkRecordTable() {
         );
 
         // 각 컬럼의 최대 너비 계산
-        const columns = ["작업명", "업무명", "거래명", "카테고리명", "시간(분)", "비고"];
+        const columns = [
+            "작업명",
+            "업무명",
+            "거래명",
+            "카테고리명",
+            "시간(분)",
+            "비고",
+        ];
         const data = sorted_records.map((r) => [
             r.work_name || "-",
             r.task_name || "-",
@@ -1134,13 +1226,13 @@ export default function WorkRecordTable() {
             columns.map((col, i) => padString(col, col_widths[i])).join(" | ") +
             " |";
         const separator =
-            "|" +
-            col_widths.map((w) => "-".repeat(w + 2)).join("|") +
-            "|";
+            "|" + col_widths.map((w) => "-".repeat(w + 2)).join("|") + "|";
         const data_rows = data.map(
             (row) =>
                 "| " +
-                row.map((cell, i) => padString(cell, col_widths[i])).join(" | ") +
+                row
+                    .map((cell, i) => padString(cell, col_widths[i]))
+                    .join(" | ") +
                 " |"
         );
 
@@ -1221,7 +1313,7 @@ export default function WorkRecordTable() {
         if (!editing_record) return;
         try {
             const values = await edit_form.validateFields();
-            
+
             const updated_data = {
                 project_code: values.project_code || "",
                 work_name: values.work_name,
@@ -1230,7 +1322,7 @@ export default function WorkRecordTable() {
                 category_name: values.category_name || "",
                 note: values.note || "",
             };
-            
+
             // 레코딩 중인 가상 레코드인 경우
             if (editing_record.id === "__active__") {
                 // timer.active_form_data + form_data 모두 업데이트
@@ -1238,7 +1330,7 @@ export default function WorkRecordTable() {
             } else {
                 // 실제 레코드 업데이트
                 updateRecord(editing_record.id, updated_data);
-                
+
                 // 타이머가 실행 중이고, 현재 수정한 레코드가 타이머 추적 중인 레코드인 경우
                 // timer.active_form_data도 함께 업데이트
                 const active_form = timer.active_form_data;
@@ -1251,7 +1343,7 @@ export default function WorkRecordTable() {
                     updateActiveFormData(updated_data);
                 }
             }
-            
+
             edit_form.resetFields();
             setEditingRecord(null);
             setIsEditModalOpen(false);
@@ -1301,7 +1393,7 @@ export default function WorkRecordTable() {
     // 검색어로 필터링된 삭제된 작업 목록 (삭제일 기준 내림차순 정렬)
     const filtered_deleted_records = useMemo(() => {
         let result = deleted_records;
-        
+
         if (deleted_search_text.trim()) {
             const search_lower = deleted_search_text.toLowerCase().trim();
             result = result.filter((record) => {
@@ -1315,7 +1407,7 @@ export default function WorkRecordTable() {
                 );
             });
         }
-        
+
         // 삭제일 기준 내림차순 정렬 (최신 삭제가 위로)
         return [...result].sort((a, b) => {
             const date_a = a.deleted_at ? new Date(a.deleted_at).getTime() : 0;
@@ -1328,16 +1420,36 @@ export default function WorkRecordTable() {
     // 프로젝트 코드 원본 레이블 저장 (하이라이트용)
     const project_code_raw_options = useMemo(() => {
         return getProjectCodeOptions();
-    }, [records, templates, hidden_autocomplete_options, getProjectCodeOptions]);
+    }, [
+        records,
+        templates,
+        hidden_autocomplete_options,
+        getProjectCodeOptions,
+    ]);
 
     const project_code_options = useMemo(() => {
         return project_code_raw_options.map((opt) => ({
             ...opt,
             label: (
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span><HighlightText text={opt.label} search={debounced_project_code_search} /></span>
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                    }}
+                >
+                    <span>
+                        <HighlightText
+                            text={opt.label}
+                            search={debounced_project_code_search}
+                        />
+                    </span>
                     <CloseOutlined
-                        style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                        style={{
+                            fontSize: 10,
+                            color: "#999",
+                            cursor: "pointer",
+                        }}
                         onClick={(e) => {
                             e.stopPropagation();
                             hideAutoCompleteOption("project_code", opt.value);
@@ -1347,7 +1459,11 @@ export default function WorkRecordTable() {
                 </div>
             ),
         }));
-    }, [project_code_raw_options, debounced_project_code_search, hideAutoCompleteOption]);
+    }, [
+        project_code_raw_options,
+        debounced_project_code_search,
+        hideAutoCompleteOption,
+    ]);
 
     // 프로젝트 코드 선택 시 코드와 작업명 자동 채우기 핸들러
     const handleProjectCodeSelect = useCallback(
@@ -1539,18 +1655,20 @@ export default function WorkRecordTable() {
             width: 120,
             render: (_, record: WorkRecord) => {
                 const is_active = record.id === "__active__";
-                
+
                 return (
                     <Space size={4}>
                         {/* 완료/완료 취소 버튼 (가상 레코드는 불가) */}
-                        {!is_active && (
-                            record.is_completed ? (
+                        {!is_active &&
+                            (record.is_completed ? (
                                 <Tooltip title="완료 취소">
                                     <Button
                                         type="text"
                                         icon={<RollbackOutlined />}
                                         size="small"
-                                        onClick={() => handleMarkIncomplete(record)}
+                                        onClick={() =>
+                                            handleMarkIncomplete(record)
+                                        }
                                     />
                                 </Tooltip>
                             ) : (
@@ -1560,11 +1678,12 @@ export default function WorkRecordTable() {
                                         style={{ color: "#52c41a" }}
                                         icon={<CheckOutlined />}
                                         size="small"
-                                        onClick={() => handleMarkComplete(record)}
+                                        onClick={() =>
+                                            handleMarkComplete(record)
+                                        }
                                     />
                                 </Tooltip>
-                            )
-                        )}
+                            ))}
                         {/* 수정 버튼 (가상 레코드도 가능) */}
                         <Tooltip title="수정">
                             <Button
@@ -1582,7 +1701,10 @@ export default function WorkRecordTable() {
                                 onConfirm={() => softDeleteRecord(record.id)}
                                 okText="삭제"
                                 cancelText="취소"
-                                okButtonProps={{ danger: true, autoFocus: true }}
+                                okButtonProps={{
+                                    danger: true,
+                                    autoFocus: true,
+                                }}
                             >
                                 <Button
                                     type="text"
@@ -1621,7 +1743,11 @@ export default function WorkRecordTable() {
                     <Space size={is_mobile ? 4 : 12} wrap>
                         {/* 날짜 네비게이션 그룹 */}
                         <Space.Compact>
-                            <Tooltip title={`이전 날짜 (${formatShortcutKeyForPlatform(prev_day_keys)})`}>
+                            <Tooltip
+                                title={`이전 날짜 (${formatShortcutKeyForPlatform(
+                                    prev_day_keys
+                                )})`}
+                            >
                                 <Button
                                     icon={<LeftOutlined />}
                                     onClick={() =>
@@ -1643,9 +1769,15 @@ export default function WorkRecordTable() {
                                 }
                                 format="YYYY-MM-DD (dd)"
                                 allowClear={false}
-                                style={is_mobile ? { width: 130 } : { width: 150 }}
+                                style={
+                                    is_mobile ? { width: 130 } : { width: 150 }
+                                }
                             />
-                            <Tooltip title={`다음 날짜 (${formatShortcutKeyForPlatform(next_day_keys)})`}>
+                            <Tooltip
+                                title={`다음 날짜 (${formatShortcutKeyForPlatform(
+                                    next_day_keys
+                                )})`}
+                            >
                                 <Button
                                     icon={<RightOutlined />}
                                     onClick={() =>
@@ -1668,15 +1800,19 @@ export default function WorkRecordTable() {
                             {is_mobile ? null : (
                                 <>
                                     새 작업{" "}
-                                    <span style={{
-                                        fontSize: 11,
-                                        opacity: 0.85,
-                                        marginLeft: 4,
-                                        padding: "1px 4px",
-                                        background: "rgba(255,255,255,0.2)",
-                                        borderRadius: 3,
-                                    }}>
-                                        {formatShortcutKeyForPlatform(new_work_keys)}
+                                    <span
+                                        style={{
+                                            fontSize: 11,
+                                            opacity: 0.85,
+                                            marginLeft: 4,
+                                            padding: "1px 4px",
+                                            background: "rgba(255,255,255,0.2)",
+                                            borderRadius: 3,
+                                        }}
+                                    >
+                                        {formatShortcutKeyForPlatform(
+                                            new_work_keys
+                                        )}
                                     </span>
                                 </>
                             )}
@@ -1685,7 +1821,11 @@ export default function WorkRecordTable() {
                         {/* 보조 액션 버튼들 */}
                         <Tooltip title="완료된 작업 목록">
                             <Button
-                                icon={<CheckCircleOutlined style={{ color: "#52c41a" }} />}
+                                icon={
+                                    <CheckCircleOutlined
+                                        style={{ color: "#52c41a" }}
+                                    />
+                                }
                                 onClick={() => setIsCompletedModalOpen(true)}
                             >
                                 {is_mobile ? null : "완료"}
@@ -1693,7 +1833,11 @@ export default function WorkRecordTable() {
                         </Tooltip>
                         <Tooltip title="삭제된 작업 (복구 가능)">
                             <Button
-                                icon={<DeleteOutlined style={{ color: "#ff4d4f" }} />}
+                                icon={
+                                    <DeleteOutlined
+                                        style={{ color: "#ff4d4f" }}
+                                    />
+                                }
                                 onClick={() => setIsDeletedModalOpen(true)}
                             >
                                 {is_mobile ? null : "휴지통"}
@@ -1748,7 +1892,11 @@ export default function WorkRecordTable() {
                             expandable={{
                                 expandedRowRender,
                                 rowExpandable: () => true,
-                                expandIcon: ({ expanded, onExpand, record }) => (
+                                expandIcon: ({
+                                    expanded,
+                                    onExpand,
+                                    record,
+                                }) => (
                                     <div
                                         className={`expand-icon ${
                                             expanded ? "expanded" : ""
@@ -1760,7 +1908,9 @@ export default function WorkRecordTable() {
                                 ),
                             }}
                             rowClassName={(record) =>
-                                getActiveRecordId() === record.id ? "active-row" : ""
+                                getActiveRecordId() === record.id
+                                    ? "active-row"
+                                    : ""
                             }
                             locale={{
                                 emptyText:
@@ -1780,22 +1930,37 @@ export default function WorkRecordTable() {
                             />
                         ) : (
                             filtered_records.map((record) => {
-                                const is_active = getActiveRecordId() === record.id;
-                                const is_running = timer.is_running && is_active;
-                                const elapsed = is_running ? getElapsedSeconds() : 0;
-                                const duration_for_date = getRecordDurationMinutesForDate(record, selected_date);
-                                const time_range = getTimeRangeForDate(record, selected_date);
-                                const is_expanded = expanded_card_id === record.id;
+                                const is_active =
+                                    getActiveRecordId() === record.id;
+                                const is_running =
+                                    timer.is_running && is_active;
+                                const elapsed = is_running
+                                    ? getElapsedSeconds()
+                                    : 0;
+                                const duration_for_date =
+                                    getRecordDurationMinutesForDate(
+                                        record,
+                                        selected_date
+                                    );
+                                const time_range = getTimeRangeForDate(
+                                    record,
+                                    selected_date
+                                );
+                                const is_expanded =
+                                    expanded_card_id === record.id;
 
                                 return (
                                     <div
                                         key={record.id}
-                                        className={`mobile-record-card ${is_running ? "running" : ""}`}
+                                        className={`mobile-record-card ${
+                                            is_running ? "running" : ""
+                                        }`}
                                     >
                                         {/* 헤더: 거래명 + 타이머 */}
                                         <div className="mobile-record-card-header">
                                             <div className="mobile-record-card-title">
-                                                {record.deal_name || record.work_name}
+                                                {record.deal_name ||
+                                                    record.work_name}
                                             </div>
                                             {is_running && (
                                                 <div className="mobile-record-card-timer">
@@ -1806,17 +1971,25 @@ export default function WorkRecordTable() {
 
                                         {/* 태그 영역 */}
                                         <div className="mobile-record-card-tags">
-                                            <Tag color={theme_color} style={{ margin: 0 }}>
+                                            <Tag
+                                                color={theme_color}
+                                                style={{ margin: 0 }}
+                                            >
                                                 {record.work_name}
                                             </Tag>
                                             {record.task_name && (
-                                                <Tag color="cyan" style={{ margin: 0 }}>
+                                                <Tag
+                                                    color="cyan"
+                                                    style={{ margin: 0 }}
+                                                >
                                                     {record.task_name}
                                                 </Tag>
                                             )}
                                             {record.category_name && (
                                                 <Tag
-                                                    color={getCategoryColor(record.category_name)}
+                                                    color={getCategoryColor(
+                                                        record.category_name
+                                                    )}
                                                     style={{ margin: 0 }}
                                                 >
                                                     {record.category_name}
@@ -1830,13 +2003,23 @@ export default function WorkRecordTable() {
                                                 <ClockCircleOutlined />
                                                 <span>
                                                     {is_running
-                                                        ? formatDuration(duration_for_date + Math.floor(elapsed / 60))
-                                                        : formatDuration(duration_for_date)}
+                                                        ? formatDuration(
+                                                              duration_for_date +
+                                                                  Math.floor(
+                                                                      elapsed /
+                                                                          60
+                                                                  )
+                                                          )
+                                                        : formatDuration(
+                                                              duration_for_date
+                                                          )}
                                                 </span>
                                             </div>
                                             {time_range.start_time && (
                                                 <span>
-                                                    {time_range.start_time} ~ {time_range.end_time || "진행중"}
+                                                    {time_range.start_time} ~{" "}
+                                                    {time_range.end_time ||
+                                                        "진행중"}
                                                 </span>
                                             )}
                                         </div>
@@ -1847,7 +2030,9 @@ export default function WorkRecordTable() {
                                                 <Button
                                                     type="primary"
                                                     danger
-                                                    icon={<PauseCircleOutlined />}
+                                                    icon={
+                                                        <PauseCircleOutlined />
+                                                    }
                                                     onClick={() => stopTimer()}
                                                 >
                                                     정지
@@ -1855,14 +2040,22 @@ export default function WorkRecordTable() {
                                             ) : (
                                                 <Button
                                                     type="primary"
-                                                    icon={<PlayCircleOutlined />}
+                                                    icon={
+                                                        <PlayCircleOutlined />
+                                                    }
                                                     onClick={() => {
                                                         // 완료된 작업이면 시작 시 자동으로 완료 취소
-                                                        if (record.is_completed) {
-                                                            markAsIncomplete(record.id);
+                                                        if (
+                                                            record.is_completed
+                                                        ) {
+                                                            markAsIncomplete(
+                                                                record.id
+                                                            );
                                                         }
                                                         // 기존 레코드에 직접 세션 추가하며 타이머 시작
-                                                        startTimerForRecord(record.id);
+                                                        startTimerForRecord(
+                                                            record.id
+                                                        );
                                                     }}
                                                 >
                                                     시작
@@ -1873,11 +2066,16 @@ export default function WorkRecordTable() {
                                                 onClick={() => {
                                                     setEditingRecord(record);
                                                     edit_form.setFieldsValue({
-                                                        project_code: record.project_code,
-                                                        work_name: record.work_name,
-                                                        task_name: record.task_name,
-                                                        deal_name: record.deal_name,
-                                                        category_name: record.category_name,
+                                                        project_code:
+                                                            record.project_code,
+                                                        work_name:
+                                                            record.work_name,
+                                                        task_name:
+                                                            record.task_name,
+                                                        deal_name:
+                                                            record.deal_name,
+                                                        category_name:
+                                                            record.category_name,
                                                         note: record.note,
                                                     });
                                                     setIsEditModalOpen(true);
@@ -1888,7 +2086,11 @@ export default function WorkRecordTable() {
                                             <Button
                                                 icon={<MoreOutlined />}
                                                 onClick={() => {
-                                                    setExpandedCardId(is_expanded ? null : record.id);
+                                                    setExpandedCardId(
+                                                        is_expanded
+                                                            ? null
+                                                            : record.id
+                                                    );
                                                 }}
                                             />
                                         </div>
@@ -1896,25 +2098,52 @@ export default function WorkRecordTable() {
                                         {/* 확장 영역: 세션 이력 */}
                                         {is_expanded && (
                                             <div style={{ marginTop: 12 }}>
-                                                <SessionEditTable record_id={record.id} />
-                                                <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+                                                <SessionEditTable
+                                                    record_id={record.id}
+                                                />
+                                                <div
+                                                    style={{
+                                                        marginTop: 12,
+                                                        display: "flex",
+                                                        gap: 8,
+                                                    }}
+                                                >
                                                     <Popconfirm
                                                         title="작업 삭제"
                                                         description="휴지통으로 이동합니다"
-                                                        onConfirm={() => softDeleteRecord(record.id)}
+                                                        onConfirm={() =>
+                                                            softDeleteRecord(
+                                                                record.id
+                                                            )
+                                                        }
                                                         okText="삭제"
                                                         cancelText="취소"
-                                                        okButtonProps={{ danger: true, autoFocus: true }}
+                                                        okButtonProps={{
+                                                            danger: true,
+                                                            autoFocus: true,
+                                                        }}
                                                     >
-                                                        <Button danger icon={<DeleteOutlined />} size="small">
+                                                        <Button
+                                                            danger
+                                                            icon={
+                                                                <DeleteOutlined />
+                                                            }
+                                                            size="small"
+                                                        >
                                                             삭제
                                                         </Button>
                                                     </Popconfirm>
                                                     {!record.is_completed && (
                                                         <Button
-                                                            icon={<CheckCircleOutlined />}
+                                                            icon={
+                                                                <CheckCircleOutlined />
+                                                            }
                                                             size="small"
-                                                            onClick={() => markAsCompleted(record.id)}
+                                                            onClick={() =>
+                                                                markAsCompleted(
+                                                                    record.id
+                                                                )
+                                                            }
                                                         >
                                                             완료
                                                         </Button>
@@ -1940,14 +2169,16 @@ export default function WorkRecordTable() {
                 footer={[
                     <Button key="ok" type="primary" onClick={handleAddNewWork}>
                         추가{" "}
-                        <span style={{
-                            fontSize: 11,
-                            opacity: 0.85,
-                            marginLeft: 4,
-                            padding: "1px 4px",
-                            background: "rgba(255,255,255,0.2)",
-                            borderRadius: 3,
-                        }}>
+                        <span
+                            style={{
+                                fontSize: 11,
+                                opacity: 0.85,
+                                marginLeft: 4,
+                                padding: "1px 4px",
+                                background: "rgba(255,255,255,0.2)",
+                                borderRadius: 3,
+                            }}
+                        >
                             F8
                         </span>
                     </Button>,
@@ -2032,13 +2263,26 @@ export default function WorkRecordTable() {
                                 allowClear
                                 popupMatchSelectWidth={240}
                                 optionRender={(option) => (
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                        }}
+                                    >
                                         <span>{option.label}</span>
                                         <CloseOutlined
-                                            style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                                            style={{
+                                                fontSize: 10,
+                                                color: "#999",
+                                                cursor: "pointer",
+                                            }}
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                hideAutoCompleteOption("task_option", option.value as string);
+                                                hideAutoCompleteOption(
+                                                    "task_option",
+                                                    option.value as string
+                                                );
                                             }}
                                         />
                                     </div>
@@ -2121,13 +2365,26 @@ export default function WorkRecordTable() {
                                 allowClear
                                 popupMatchSelectWidth={240}
                                 optionRender={(option) => (
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                        }}
+                                    >
                                         <span>{option.label}</span>
                                         <CloseOutlined
-                                            style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                                            style={{
+                                                fontSize: 10,
+                                                color: "#999",
+                                                cursor: "pointer",
+                                            }}
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                hideAutoCompleteOption("category_option", option.value as string);
+                                                hideAutoCompleteOption(
+                                                    "category_option",
+                                                    option.value as string
+                                                );
                                             }}
                                         />
                                     </div>
@@ -2304,13 +2561,26 @@ export default function WorkRecordTable() {
                                 allowClear
                                 popupMatchSelectWidth={240}
                                 optionRender={(option) => (
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                        }}
+                                    >
                                         <span>{option.label}</span>
                                         <CloseOutlined
-                                            style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                                            style={{
+                                                fontSize: 10,
+                                                color: "#999",
+                                                cursor: "pointer",
+                                            }}
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                hideAutoCompleteOption("task_option", option.value as string);
+                                                hideAutoCompleteOption(
+                                                    "task_option",
+                                                    option.value as string
+                                                );
                                             }}
                                         />
                                     </div>
@@ -2402,13 +2672,26 @@ export default function WorkRecordTable() {
                                 allowClear
                                 popupMatchSelectWidth={240}
                                 optionRender={(option) => (
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                        }}
+                                    >
                                         <span>{option.label}</span>
                                         <CloseOutlined
-                                            style={{ fontSize: 10, color: "#999", cursor: "pointer" }}
+                                            style={{
+                                                fontSize: 10,
+                                                color: "#999",
+                                                cursor: "pointer",
+                                            }}
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                hideAutoCompleteOption("category_option", option.value as string);
+                                                hideAutoCompleteOption(
+                                                    "category_option",
+                                                    option.value as string
+                                                );
                                             }}
                                         />
                                     </div>
@@ -2555,7 +2838,10 @@ export default function WorkRecordTable() {
                             key: "work_name",
                             width: 120,
                             render: (text: string) => (
-                                <Tag color={theme_color} style={{ fontSize: 11 }}>
+                                <Tag
+                                    color={theme_color}
+                                    style={{ fontSize: 11 }}
+                                >
                                     {text}
                                 </Tag>
                             ),
@@ -2611,7 +2897,10 @@ export default function WorkRecordTable() {
                                         }
                                         okText="삭제"
                                         cancelText="취소"
-                                        okButtonProps={{ danger: true, autoFocus: true }}
+                                        okButtonProps={{
+                                            danger: true,
+                                            autoFocus: true,
+                                        }}
                                     >
                                         <Button
                                             type="text"
@@ -2717,7 +3006,9 @@ export default function WorkRecordTable() {
                                             size="small"
                                             onClick={() => {
                                                 restoreRecord(record.id);
-                                                message.success("작업이 복원되었습니다");
+                                                message.success(
+                                                    "작업이 복원되었습니다"
+                                                );
                                             }}
                                         />
                                     </Tooltip>
@@ -2726,11 +3017,16 @@ export default function WorkRecordTable() {
                                         description="이 기록을 완전히 삭제하시겠습니까? 복구할 수 없습니다."
                                         onConfirm={() => {
                                             permanentlyDeleteRecord(record.id);
-                                            message.success("작업이 완전히 삭제되었습니다");
+                                            message.success(
+                                                "작업이 완전히 삭제되었습니다"
+                                            );
                                         }}
                                         okText="삭제"
                                         cancelText="취소"
-                                        okButtonProps={{ danger: true, autoFocus: true }}
+                                        okButtonProps={{
+                                            danger: true,
+                                            autoFocus: true,
+                                        }}
                                     >
                                         <Tooltip title="완전 삭제">
                                             <Button
