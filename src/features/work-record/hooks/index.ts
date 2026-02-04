@@ -9,3 +9,18 @@ export {
     type UseRecordActionsReturn,
 } from "./useRecordActions";
 export { useRecordStats, type UseRecordStatsReturn } from "./useRecordStats";
+export {
+    useRecordFilters,
+    type UseRecordFiltersReturn,
+    type RecordFilters,
+} from "./useRecordFilters";
+export {
+    useRecordModals,
+    type UseRecordModalsReturn,
+    type ModalState,
+} from "./useRecordModals";
+export {
+    useRecordEdit,
+    type UseRecordEditReturn,
+    type EditState,
+} from "./useRecordEdit";

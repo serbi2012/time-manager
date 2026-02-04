@@ -1,7 +1,37 @@
 # WorkRecordTable 분리 계획
 
-> **현재**: 2,966줄 (src/components/WorkRecordTable.tsx)
-> **목표**: 메인 컴포넌트 ~300줄 + 하위 모듈들
+> **현재**: 2,966줄 (src/components/WorkRecordTable.tsx)  
+> **목표**: 메인 컴포넌트 ~200줄 + 하위 모듈들  
+> **예상 감소율**: **-93%**
+
+---
+
+## 0. ⚠️ 적용할 엄격한 리팩토링 기준 (Phase 1~7에서 확립)
+
+### 0.1 JSX 작성 위치 **절대 규칙**
+
+✅ **useMemo 내 JSX 100% 금지** - 모두 별도 컴포넌트로  
+✅ **return 문 내 50줄 이상 JSX 금지** - 컴포넌트 분리  
+✅ **Popover content, Tooltip title 등 모두 별도 컴포넌트**  
+✅ **한 파일 = 한 React 컴포넌트 함수**
+
+### 0.2 inline style **완전 금지**
+
+✅ **모든 inline style 객체는 상수화**  
+✅ **2회 이상 사용 스타일은 shared/ui/form/styles.ts**  
+✅ **매직 넘버/색상 금지** (160, #666, 12 등 → 상수로)
+
+### 0.3 사용자 문구 **100% 상수화**
+
+✅ **모든 UI 텍스트는 constants로**  
+✅ **message.xxx 인자 상수화**  
+✅ **Empty description, Tooltip title 등 상수화**
+
+### 0.4 공통화 (DRY) **극대화**
+
+✅ **2회 이상 사용 코드는 무조건 공통화**  
+✅ **useWorkFormOptions 훅 재사용** (DailyGanttChart에서 생성)  
+✅ **WorkRecordFormFields 컴포넌트 재사용**
 
 ---
 
@@ -12,72 +42,110 @@
 -   메인: `src/components/WorkRecordTable.tsx` (2,966줄)
 -   기존 분리: `src/features/work-record/`
 
-### 1.2 기존 features/work-record 구조
-
-```
-features/work-record/
-├── index.ts
-├── model/
-│   └── types.ts              # RecordSlice 타입
-├── lib/
-│   ├── index.ts
-│   ├── conflict_detector.ts  # 충돌 감지
-│   ├── duration_calculator.ts # 시간 계산
-│   ├── record_merger.ts      # 레코드 병합
-│   └── types.ts
-└── ui/
-    ├── index.ts
-    ├── CompletedRecords/
-    │   ├── index.ts
-    │   ├── CompletedModal.tsx
-    │   └── TrashModal.tsx
-    ├── MobileRecordCard/
-    │   ├── index.ts
-    │   └── MobileRecordCard.tsx
-    ├── RecordTable/
-    │   ├── index.ts
-    │   ├── RecordActions.tsx
-    │   └── RecordTableHeader.tsx
-    └── SessionEditor/
-        ├── index.ts
-        └── SessionEditTable.tsx
-```
-
-### 1.3 메인 컴포넌트 내부 구조
+### 1.2 줄 수 분포 분석
 
 ```typescript
-// WorkRecordTable.tsx 주요 섹션
+// WorkRecordTable.tsx 상세 분포
 
+// ═══════════════════════════════════════════
 // 1. 임포트 (1-63줄) - ~63줄
+// ═══════════════════════════════════════════
+
+// ═══════════════════════════════════════════
 // 2. 헬퍼 함수 (64-160줄) - ~97줄
-//    - getCategoryColor
-//    - getSessionDurationMinutes
-//    - getRecordDurationMinutes
-//    - getRecordDurationMinutesForDate
+// ═══════════════════════════════════════════
+// ❌ 순수 함수인데 컴포넌트 내부에 있음
+getCategoryColor()              // 15줄 → lib/category_utils.ts
+getSessionDurationMinutes()     // 20줄 → lib/duration_calculator.ts
+getRecordDurationMinutes()      // 30줄 → lib/duration_calculator.ts
+getRecordDurationMinutesForDate() // 32줄 → lib/duration_calculator.ts
 
+// ═══════════════════════════════════════════
 // 3. 메인 컴포넌트 시작 (162줄~)
+// ═══════════════════════════════════════════
 
-// 상태 (state)
-- 검색/필터 상태 (180-200줄)
-- 모달 상태 (200-230줄)
-- 편집 상태 (230-260줄)
-- 타이머 관련 (260-290줄)
+// ───────────────────────────────────────────
+// 상태 (state) - ~90줄
+// ───────────────────────────────────────────
+- 검색/필터 상태 (180-200줄) - 20줄
+  ❌ 훅으로 분리 → useRecordFilters
+- 모달 상태 (200-230줄) - 30줄
+  ❌ 훅으로 분리 → useRecordModals
+- 편집 상태 (230-260줄) - 30줄
+  ❌ 훅으로 분리 → useRecordEdit
+- 타이머 관련 (260-290줄) - 30줄
+  ❌ 이미 useWorkStore에 있음
 
-// 파생 데이터 (useMemo)
-- day_records, filtered_records (300-400줄)
-- 통계 계산 (400-500줄)
-- 테이블 컬럼 정의 (500-1200줄) - 가장 큰 부분!
+// ───────────────────────────────────────────
+// 파생 데이터 (useMemo) - ~200줄
+// ───────────────────────────────────────────
+- day_records (300-350줄) - 50줄
+  ✅ useRecordData 훅으로
+- filtered_records (350-400줄) - 50줄
+  ✅ useRecordData 훅으로
+- 통계 계산 (400-500줄) - 100줄
+  ✅ useRecordStats 훅으로
 
-// 핸들러 함수들 (~800줄)
-- handleEdit/Delete/Complete (1200-1400줄)
-- handleTimerStart/Stop (1400-1600줄)
-- handleCopy/Move (1600-1800줄)
-- handleFormSubmit (1800-2000줄)
+// ───────────────────────────────────────────
+// ⚠️ 테이블 컬럼 정의 (500-1200줄) - ~700줄 !!
+// ───────────────────────────────────────────
+// ❌ 가장 큰 문제! 컬럼 렌더러 함수가 inline
+const columns = useMemo(() => [
+    {
+        title: "프로젝트 코드",
+        render: (_, record) => {
+            // 80줄의 inline JSX !!
+            return (
+                <div>
+                    {record.is_editing ? (
+                        <AutoComplete /* 40줄 */ />
+                    ) : (
+                        <Tooltip /* 30줄 */ />
+                    )}
+                </div>
+            );
+        },
+    },
+    // ... 8개 컬럼 반복 (각 80~120줄)
+], [/* 수십 개 의존성 */]);
 
-// 렌더링 (~900줄)
-- 헤더/필터 영역 (2100-2300줄)
-- 테이블 영역 (2300-2600줄)
-- 모달들 (2600-2900줄)
+// ✅ 분리 방법
+// features/work-record/ui/RecordTable/columns/
+// ├── ProjectCodeColumn.tsx        (80줄)
+// ├── WorkNameColumn.tsx           (100줄)
+// ├── DurationColumn.tsx           (90줄)
+// ├── SessionsColumn.tsx           (120줄)
+// ├── CategoryColumn.tsx           (80줄)
+// ├── NoteColumn.tsx               (70줄)
+// └── ActionsColumn.tsx            (80줄)
+
+// ───────────────────────────────────────────
+// 핸들러 함수들 (1200-2000줄) - ~800줄
+// ───────────────────────────────────────────
+- handleEdit/Delete/Complete (1200-1400줄) - 200줄
+  ✅ useRecordActions 훅으로
+- handleTimerStart/Stop (1400-1600줄) - 200줄
+  ✅ 이미 useWorkStore에 있음
+- handleCopy/Move (1600-1800줄) - 200줄
+  ✅ useRecordActions 훅으로
+- handleFormSubmit (1800-2000줄) - 200줄
+  ✅ useRecordForm 훅으로
+
+// ───────────────────────────────────────────
+// 렌더링 (2100-2900줄) - ~800줄
+// ───────────────────────────────────────────
+- 헤더/필터 영역 (2100-2300줄) - 200줄
+  ✅ RecordTableHeader 컴포넌트로 (80줄)
+  ✅ RecordFilters 컴포넌트로 (70줄)
+  ✅ DailyStats 컴포넌트로 (80줄)
+
+- 테이블 영역 (2300-2600줄) - 300줄
+  ✅ RecordTable 컴포넌트로 (150줄)
+
+- 모달들 (2600-2900줄) - 300줄
+  ❌ 각 모달 인라인 폼 150줄씩
+  ✅ RecordAddModal 컴포넌트로 (130줄) - WorkRecordFormFields 사용
+  ✅ RecordEditModal 컴포넌트로 (160줄) - WorkRecordFormFields 사용
 ```
 
 ---
@@ -88,475 +156,616 @@ features/work-record/
 
 ```
 features/work-record/
-├── index.ts                       # Public API
+├── index.ts                               # Public API
+│
+├── constants/
+│   ├── index.ts                           # 통합 export
+│   ├── labels.ts                          # NEW: UI 레이블
+│   ├── messages.ts                        # NEW: 메시지
+│   ├── styles.ts                          # NEW: 스타일 상수
+│   └── config.ts                          # NEW: 설정
+│
 ├── model/
 │   ├── index.ts
-│   ├── types.ts                   # ✅ 기존 + 확장
-│   └── constants.ts               # NEW: 카테고리 색상 등
+│   ├── types.ts                           # ✅ 기존 + 확장
+│   └── constants.ts                       # NEW → constants/로 이동
+│
 ├── lib/
 │   ├── index.ts
-│   ├── conflict_detector.ts       # ✅ 기존
-│   ├── duration_calculator.ts     # ✅ 기존
-│   ├── record_merger.ts           # ✅ 기존
-│   ├── record_filters.ts          # NEW: 필터링 함수
-│   ├── record_sorter.ts           # NEW: 정렬 함수
-│   └── statistics.ts              # NEW: 통계 계산
+│   ├── conflict_detector.ts               # ✅ 기존
+│   ├── duration_calculator.ts             # ✅ 기존 + 확장
+│   │   ├── getSessionDurationMinutes()    # NEW: 헬퍼에서 이동
+│   │   ├── getRecordDurationMinutes()     # NEW: 헬퍼에서 이동
+│   │   └── getRecordDurationMinutesForDate() # NEW: 헬퍼에서 이동
+│   ├── record_merger.ts                   # ✅ 기존
+│   ├── category_utils.ts                  # NEW: 카테고리 유틸
+│   │   └── getCategoryColor()             # NEW: 헬퍼에서 이동
+│   ├── record_filters.ts                  # NEW: 필터 로직
+│   │   ├── filterBySearch()
+│   │   ├── filterByCategory()
+│   │   └── filterByCompleted()
+│   └── record_sorter.ts                   # NEW: 정렬 로직
+│       ├── sortByDuration()
+│       └── sortByStartTime()
+│
 ├── hooks/
 │   ├── index.ts
-│   ├── useRecordTable.ts          # NEW: @tanstack/react-table 설정
-│   ├── useRecordFilters.ts        # NEW: 필터 상태 관리
-│   ├── useRecordSelection.ts      # NEW: 선택 상태 관리
-│   ├── useRecordTimer.ts          # NEW: 타이머 연동
-│   └── useRecordStats.ts          # NEW: 통계 계산 훅
+│   ├── useRecordData.ts                   # NEW: 데이터 가공 (~100줄)
+│   │   ├── day_records
+│   │   ├── filtered_records
+│   │   └── sorted_records
+│   ├── useRecordStats.ts                  # NEW: 통계 계산 (~80줄)
+│   │   ├── total_duration
+│   │   ├── completed_count
+│   │   └── category_breakdown
+│   ├── useRecordFilters.ts                # NEW: 필터 상태 (~60줄)
+│   ├── useRecordModals.ts                 # NEW: 모달 상태 (~50줄)
+│   ├── useRecordEdit.ts                   # NEW: 편집 상태 (~70줄)
+│   ├── useRecordActions.ts                # NEW: 액션 핸들러 (~150줄)
+│   └── useRecordForm.ts                   # NEW: 폼 제출 (~80줄)
+│
 └── ui/
     ├── index.ts
-    ├── WorkRecordTable/           # 메인 컴포넌트
+    │
+    ├── RecordTable/                       # NEW: 메인 컴포넌트
     │   ├── index.ts
-    │   └── WorkRecordTable.tsx    # ~300줄 (오케스트레이션)
-    ├── RecordTable/               # ✅ 기존 확장
+    │   ├── RecordTable.tsx                # ✅ 메인 (~200줄)
+    │   ├── RecordTableHeader.tsx          # ✅ 기존 확장 (~80줄)
+    │   ├── RecordFilters.tsx              # NEW: 필터 영역 (~70줄)
+    │   ├── DailyStats.tsx                 # NEW: 통계 패널 (~80줄)
+    │   └── RecordRow.tsx                  # NEW: 테이블 행 (~100줄)
+    │
+    ├── RecordColumns/                     # NEW: 컬럼 렌더러
     │   ├── index.ts
-    │   ├── RecordActions.tsx      # ✅ 기존
-    │   ├── RecordTableHeader.tsx  # ✅ 기존
-    │   ├── RecordRow.tsx          # NEW: 행 렌더링
-    │   └── RecordCell.tsx         # NEW: 셀 렌더링
-    ├── RecordColumns/             # NEW: 컬럼 정의
+    │   ├── ProjectCodeColumn.tsx          # NEW (~80줄)
+    │   ├── WorkNameColumn.tsx             # NEW (~100줄)
+    │   ├── DurationColumn.tsx             # NEW (~90줄)
+    │   ├── SessionsColumn.tsx             # NEW (~120줄)
+    │   ├── CategoryColumn.tsx             # NEW (~80줄)
+    │   ├── NoteColumn.tsx                 # NEW (~70줄)
+    │   └── ActionsColumn.tsx              # NEW (~80줄)
+    │
+    ├── RecordModals/                      # NEW: 모달들
     │   ├── index.ts
-    │   ├── TimeColumn.tsx         # 시간 컬럼
-    │   ├── DurationColumn.tsx     # 소요시간 컬럼
-    │   ├── StatusColumn.tsx       # 상태 컬럼 (타이머 등)
-    │   └── ActionsColumn.tsx      # 액션 버튼 컬럼
-    ├── RecordFilters/             # NEW: 필터 UI
+    │   ├── RecordAddModal.tsx             # ✅ 완료 (130줄) ← WorkRecordFormFields 사용
+    │   └── RecordEditModal.tsx            # ✅ 완료 (162줄) ← WorkRecordFormFields 사용
+    │
+    ├── RecordActions/                     # ✅ 기존 확장
     │   ├── index.ts
-    │   ├── SearchFilter.tsx       # 검색 필터
-    │   ├── DateFilter.tsx         # 날짜 필터
-    │   └── CategoryFilter.tsx     # 카테고리 필터
-    ├── RecordStats/               # NEW: 통계 UI
+    │   ├── RecordActions.tsx              # ✅ 기존
+    │   ├── RecordActionMenu.tsx           # NEW: 액션 메뉴 (~60줄)
+    │   └── RecordBulkActions.tsx          # NEW: 일괄 액션 (~80줄)
+    │
+    ├── SessionEditor/                     # ✅ 기존
     │   ├── index.ts
-    │   ├── DailyStats.tsx         # 일간 통계
-    │   └── StatsSummary.tsx       # 요약 통계
-    ├── RecordModals/              # NEW: 모달 통합
+    │   └── SessionEditTable.tsx           # ✅ 기존
+    │
+    ├── CompletedRecords/                  # ✅ 기존
     │   ├── index.ts
-    │   ├── RecordEditModal.tsx    # 수정 모달
-    │   └── RecordQuickEdit.tsx    # 인라인 편집
-    ├── CompletedRecords/          # ✅ 기존 유지
-    ├── MobileRecordCard/          # ✅ 기존 유지
-    └── SessionEditor/             # ✅ 기존 유지
+    │   ├── CompletedModal.tsx             # ✅ 기존
+    │   └── TrashModal.tsx                 # ✅ 기존
+    │
+    └── MobileRecordCard/                  # ✅ 기존
+        ├── index.ts
+        └── MobileRecordCard.tsx           # ✅ 기존
 ```
 
-### 2.2 분리 단계
+### 2.2 재사용할 공통 컴포넌트 (shared/)
 
-#### Step 1: 순수 함수 추출 (lib/)
-
-| 함수명                    | 현재 위치            | 이동 위치                  | 줄 수 |
-| ------------------------- | -------------------- | -------------------------- | ----- |
-| getCategoryColor          | WorkRecordTable 내부 | model/constants.ts         | ~15   |
-| getSessionDurationMinutes | WorkRecordTable 내부 | lib/duration_calculator.ts | ~15   |
-| getRecordDurationMinutes  | WorkRecordTable 내부 | lib/duration_calculator.ts | ~30   |
-| 필터링 로직               | WorkRecordTable 내부 | lib/record_filters.ts      | ~50   |
-| 정렬 로직                 | WorkRecordTable 내부 | lib/record_sorter.ts       | ~30   |
-| 통계 계산                 | WorkRecordTable 내부 | lib/statistics.ts          | ~80   |
-
-#### Step 2: 커스텀 훅 추출 (hooks/)
-
-| 훅명               | 책임                       | 예상 줄 수 |
-| ------------------ | -------------------------- | ---------- |
-| useRecordTable     | @tanstack/react-table 설정 | ~150       |
-| useRecordFilters   | 필터 상태 관리             | ~80        |
-| useRecordSelection | 선택 상태 관리             | ~60        |
-| useRecordTimer     | 타이머 연동                | ~100       |
-| useRecordStats     | 통계 계산                  | ~60        |
-
-#### Step 3: UI 컴포넌트 분리 (ui/)
-
-| 컴포넌트명      | 책임                        | 예상 줄 수 |
-| --------------- | --------------------------- | ---------- |
-| WorkRecordTable | 메인 오케스트레이션         | ~300       |
-| RecordRow       | 행 렌더링                   | ~100       |
-| TimeColumn      | 시간 컬럼                   | ~80        |
-| DurationColumn  | 소요시간 컬럼 (타이머 표시) | ~100       |
-| StatusColumn    | 상태 컬럼                   | ~60        |
-| ActionsColumn   | 액션 버튼 컬럼              | ~80        |
-| SearchFilter    | 검색 필터                   | ~60        |
-| DateFilter      | 날짜 필터                   | ~80        |
-| DailyStats      | 일간 통계                   | ~100       |
-| RecordEditModal | 수정 모달                   | ~150       |
+```
+shared/ui/form/
+├── hooks/
+│   └── useWorkFormOptions.tsx             # ✅ DailyGanttChart에서 생성
+├── WorkRecordFormFields.tsx              # ✅ DailyGanttChart에서 생성
+├── AutoCompleteOptionLabel.tsx           # ✅ 재사용
+├── SelectOptionLabel.tsx                 # ✅ 재사용
+├── SelectAddNewDropdown.tsx              # ✅ 재사용
+└── styles.ts                             # ✅ 재사용
+```
 
 ---
 
-## 3. 상세 분리 계획
+## 3. 단계별 분리 작업
 
-### 3.1 lib/record_filters.ts
+### Step 1: 순수 함수 추출 ✅ 준비
 
-```typescript
-// 레코드 필터링 순수 함수
-
-export interface RecordFilterOptions {
-  search_text?: string;
-  category?: string;
-  date_range?: [string, string];
-  include_completed?: boolean;
-  include_deleted?: boolean;
-}
-
-export function filterRecords(
-  records: WorkRecord[],
-  options: RecordFilterOptions
-): WorkRecord[] { ... }
-
-export function filterBySearchText(
-  records: WorkRecord[],
-  search_text: string
-): WorkRecord[] { ... }
-
-export function filterByDate(
-  records: WorkRecord[],
-  target_date: string
-): WorkRecord[] { ... }
-```
-
-### 3.2 hooks/useRecordTable.ts
+#### 1.1 duration_calculator.ts 확장
 
 ```typescript
-// @tanstack/react-table 기반 테이블 훅
+// features/work-record/lib/duration_calculator.ts
 
-import { useReactTable, getCoreRowModel, ... } from '@tanstack/react-table';
-
-export interface UseRecordTableOptions {
-  records: WorkRecord[];
-  columns: ColumnDef<WorkRecord>[];
-  onRowClick?: (record: WorkRecord) => void;
-  onSelectionChange?: (ids: string[]) => void;
+// ✅ 기존 함수들 유지
+export function calculateSessionDuration(session: WorkSession): number {
+    /* 기존 */
 }
 
-export function useRecordTable(options: UseRecordTableOptions) {
-  const table = useReactTable({
-    data: options.records,
-    columns: options.columns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    // ...
-  });
+// NEW: 컴포넌트에서 이동
+export function getSessionDurationMinutes(
+    session: WorkSession,
+    lunch_start: string,
+    lunch_end: string
+): number {
+    // 점심시간 제외 계산
+}
 
-  return {
-    table,
-    // 편의 메서드들
-    selectedRows: ...,
-    sortedRecords: ...,
-  };
+export function getRecordDurationMinutes(
+    record: WorkRecord,
+    lunch_start: string,
+    lunch_end: string
+): number {
+    // 레코드 전체 시간 계산
+}
+
+export function getRecordDurationMinutesForDate(
+    record: WorkRecord,
+    date: string,
+    lunch_start: string,
+    lunch_end: string
+): number {
+    // 특정 날짜의 레코드 시간 계산
 }
 ```
 
-### 3.3 ui/WorkRecordTable/WorkRecordTable.tsx (메인)
+**체크리스트**:
+
+-   [ ] 순수 함수로 추출 (외부 상태 참조 0개)
+-   [ ] 유닛 테스트 작성 (커버리지 100%)
+-   [ ] 타입 명시 (any 금지)
+
+#### 1.2 category_utils.ts 신규
 
 ```typescript
-// 메인 컴포넌트 (~300줄)
+// features/work-record/lib/category_utils.ts
 
-export default function WorkRecordTable() {
-  // 1. 훅 사용
-  const { filtered_records, stats } = useRecordStats();
-  const { filters, setFilters } = useRecordFilters();
-  const { table, selectedRows } = useRecordTable({ records: filtered_records, columns });
-  const { timer_state, handleTimerToggle } = useRecordTimer();
+export const CATEGORY_COLORS: Record<string, string> = {
+    개발: "#1890ff",
+    문서작업: "#52c41a",
+    회의: "#faad14",
+    환경세팅: "#722ed1",
+    코드리뷰: "#eb2f96",
+    테스트: "#13c2c2",
+    기타: "#8c8c8c",
+} as const;
 
-  // 2. 모달 상태
-  const [modal_state, setModalState] = useState<ModalState>({ ... });
+export function getCategoryColor(category: string): string {
+    return CATEGORY_COLORS[category] || CATEGORY_COLORS["기타"];
+}
 
-  // 3. 렌더링 (컴포넌트 조합)
-  return (
-    <Card>
-      {/* 헤더 영역 */}
-      <RecordTableHeader
-        onAdd={() => setModalState({ ...modal_state, add_visible: true })}
-        onShowCompleted={() => ...}
-      />
-
-      {/* 필터 영역 */}
-      <RecordFilters
-        filters={filters}
-        onChange={setFilters}
-      />
-
-      {/* 통계 영역 */}
-      <DailyStats stats={stats} />
-
-      {/* 테이블 영역 */}
-      <Table
-        columns={columns}
-        dataSource={table.getRowModel().rows}
+export function getCategoryBadgeStyle(category: string): CSSProperties {
+    return {
+        backgroundColor: getCategoryColor(category),
+        color: "#fff",
         // ...
-      />
-
-      {/* 모달들 */}
-      <RecordEditModal ... />
-      <CompletedModal ... />
-      <TrashModal ... />
-    </Card>
-  );
+    };
 }
 ```
 
-### 3.4 ui/RecordColumns/DurationColumn.tsx
+**체크리스트**:
+
+-   [ ] 매직 컬러 0개 (모두 상수화)
+-   [ ] 순수 함수 (부수 효과 없음)
+-   [ ] 유닛 테스트 작성
+
+### Step 2: 커스텀 훅 추출
+
+#### 2.1 useRecordData.ts (~100줄)
 
 ```typescript
-// 소요시간 컬럼 (타이머 표시 포함)
+// features/work-record/hooks/useRecordData.ts
+
+import { useMemo } from "react";
+import type { WorkRecord } from "@/shared/types";
+
+export interface UseRecordDataParams {
+    records: WorkRecord[];
+    selected_date: string;
+    search_keyword: string;
+    selected_category: string | null;
+    show_completed: boolean;
+}
+
+export interface UseRecordDataResult {
+    day_records: WorkRecord[];
+    filtered_records: WorkRecord[];
+    sorted_records: WorkRecord[];
+}
+
+/**
+ * 레코드 데이터 가공 훅
+ * 날짜 필터링 → 검색 필터링 → 카테고리 필터링 → 정렬
+ */
+export function useRecordData({
+    records,
+    selected_date,
+    search_keyword,
+    selected_category,
+    show_completed,
+}: UseRecordDataParams): UseRecordDataResult {
+    // 1. 날짜 필터링
+    const day_records = useMemo(() =>
+        records.filter(r => r.date === selected_date && !r.is_deleted)
+    , [records, selected_date]);
+
+    // 2. 검색 필터링
+    const filtered_records = useMemo(() => {
+        let result = day_records;
+
+        if (search_keyword) {
+            result = result.filter(r => /* 검색 로직 */);
+        }
+
+        if (selected_category) {
+            result = result.filter(r => r.category_name === selected_category);
+        }
+
+        if (!show_completed) {
+            result = result.filter(r => !r.is_completed);
+        }
+
+        return result;
+    }, [day_records, search_keyword, selected_category, show_completed]);
+
+    // 3. 정렬
+    const sorted_records = useMemo(() =>
+        [...filtered_records].sort((a, b) => /* 정렬 로직 */)
+    , [filtered_records]);
+
+    return {
+        day_records,
+        filtered_records,
+        sorted_records,
+    };
+}
+```
+
+**체크리스트**:
+
+-   [ ] useMemo 의존성 정확히 명시
+-   [ ] 타입 안전성 (any 금지)
+-   [ ] 훅 테스트 작성 (renderHook)
+
+#### 2.2 useRecordStats.ts (~80줄)
+
+```typescript
+// features/work-record/hooks/useRecordStats.ts
+
+export interface RecordStats {
+    total_duration: number;
+    completed_count: number;
+    incomplete_count: number;
+    category_breakdown: Record<string, number>;
+    today_vs_yesterday: {
+        today: number;
+        yesterday: number;
+        diff: number;
+    };
+}
+
+export function useRecordStats(
+    records: WorkRecord[],
+    selected_date: string,
+    lunch_start: string,
+    lunch_end: string
+): RecordStats {
+    return useMemo(() => {
+        const today_records = records.filter(/* ... */);
+        const yesterday_records = records.filter(/* ... */);
+
+        return {
+            total_duration: /* 계산 */,
+            completed_count: /* 계산 */,
+            // ...
+        };
+    }, [records, selected_date, lunch_start, lunch_end]);
+}
+```
+
+### Step 3: 컬럼 렌더러 분리 ⚠️ **가장 중요!**
+
+#### 3.1 ProjectCodeColumn.tsx (~80줄)
+
+```typescript
+// features/work-record/ui/RecordColumns/ProjectCodeColumn.tsx
+
+interface ProjectCodeColumnProps {
+    record: WorkRecord;
+    is_editing: boolean;
+    onEdit: (id: string) => void;
+    onSave: (id: string, value: string) => void;
+}
+
+export function ProjectCodeColumn({
+    record,
+    is_editing,
+    onEdit,
+    onSave,
+}: ProjectCodeColumnProps) {
+    if (is_editing) {
+        return (
+            <AutoComplete
+                value={record.project_code}
+                onChange={(value) => onSave(record.id, value)}
+                options={/* ... */}
+                style={PROJECT_CODE_INPUT_STYLE}
+            />
+        );
+    }
+
+    return (
+        <Tooltip title={record.project_code || PROJECT_CODE_EMPTY_TEXT}>
+            <Text style={PROJECT_CODE_TEXT_STYLE}>
+                {record.project_code || PROJECT_CODE_PLACEHOLDER}
+            </Text>
+        </Tooltip>
+    );
+}
+```
+
+**체크리스트**:
+
+-   [ ] inline style 0개 (모두 상수)
+-   [ ] 하드코딩 문구 0개 (모두 constants)
+-   [ ] Props 타입 명시
+-   [ ] 80줄 이하
+
+#### 3.2 DurationColumn.tsx (~90줄)
+
+```typescript
+// features/work-record/ui/RecordColumns/DurationColumn.tsx
+
+import { formatDuration } from "@/shared/lib/time";
+import { getRecordDurationMinutes } from "../../lib/duration_calculator";
 
 interface DurationColumnProps {
     record: WorkRecord;
-    timer?: TimerState;
-    onTimerToggle?: (record_id: string) => void;
+    lunch_start: string;
+    lunch_end: string;
 }
 
 export function DurationColumn({
     record,
-    timer,
-    onTimerToggle,
+    lunch_start,
+    lunch_end,
 }: DurationColumnProps) {
-    const is_running = timer?.record_id === record.id && timer?.is_running;
-    const duration = getRecordDurationMinutes(record);
+    const duration = getRecordDurationMinutes(record, lunch_start, lunch_end);
 
     return (
-        <Space>
-            {is_running ? (
-                <AnimatedNumber value={timer.elapsed_seconds} format="timer" />
-            ) : (
-                <Text>{formatDuration(duration)}</Text>
-            )}
-            {onTimerToggle && (
-                <Button
-                    icon={
-                        is_running ? (
-                            <PauseCircleOutlined />
-                        ) : (
-                            <PlayCircleOutlined />
-                        )
-                    }
-                    onClick={() => onTimerToggle(record.id)}
+        <div style={DURATION_CONTAINER_STYLE}>
+            <Text style={DURATION_TEXT_STYLE}>{formatDuration(duration)}</Text>
+            {duration >= 480 && (
+                <Badge
+                    count={DURATION_OVERTIME_BADGE_TEXT}
+                    style={DURATION_OVERTIME_BADGE_STYLE}
                 />
             )}
+        </div>
+    );
+}
+```
+
+**체크리스트**:
+
+-   [ ] 순수 함수(lib/) 사용
+-   [ ] inline style 0개
+-   [ ] 매직 넘버 상수화 (480 → MINUTES_IN_8_HOURS)
+
+#### 3.3 ActionsColumn.tsx (~80줄)
+
+```typescript
+// features/work-record/ui/RecordColumns/ActionsColumn.tsx
+
+interface ActionsColumnProps {
+    record: WorkRecord;
+    onEdit: (id: string) => void;
+    onDelete: (id: string) => void;
+    onComplete: (id: string) => void;
+    onCopy: (id: string) => void;
+}
+
+export function ActionsColumn({
+    record,
+    onEdit,
+    onDelete,
+    onComplete,
+    onCopy,
+}: ActionsColumnProps) {
+    return (
+        <Space size="small">
+            <Tooltip title={RECORD_ACTION_EDIT_TOOLTIP}>
+                <Button
+                    icon={<EditOutlined />}
+                    onClick={() => onEdit(record.id)}
+                    size="small"
+                />
+            </Tooltip>
+
+            <Popconfirm
+                title={RECORD_ACTION_DELETE_CONFIRM_TITLE}
+                description={RECORD_ACTION_DELETE_CONFIRM_DESC}
+                onConfirm={() => onDelete(record.id)}
+            >
+                <Tooltip title={RECORD_ACTION_DELETE_TOOLTIP}>
+                    <Button icon={<DeleteOutlined />} danger size="small" />
+                </Tooltip>
+            </Popconfirm>
+
+            {/* ... */}
         </Space>
     );
 }
 ```
 
----
+**체크리스트**:
 
-## 4. @tanstack/react-table 도입
+-   [ ] Popconfirm title/description 상수화
+-   [ ] Tooltip title 상수화
+-   [ ] 콜백 함수 명확히 타입 정의
 
-### 4.1 현재 컬럼 정의 (Ant Design Table)
+### Step 4: 메인 컴포넌트 리팩토링
 
-현재 ~700줄의 컬럼 정의가 있음:
-
--   project_code, work_name, task_name, deal_name, category_name
--   start_time, end_time, duration_minutes
--   actions (타이머, 편집, 삭제, 복사 등)
-
-### 4.2 새 컬럼 정의 (@tanstack/react-table)
+#### 4.1 RecordTable.tsx (최종 ~200줄)
 
 ```typescript
-// features/work-record/hooks/useRecordColumns.ts
+// features/work-record/ui/RecordTable/RecordTable.tsx
 
-export function useRecordColumns(): ColumnDef<WorkRecord>[] {
-    return useMemo(
+import { useRecordData } from "../../hooks/useRecordData";
+import { useRecordStats } from "../../hooks/useRecordStats";
+import { useRecordFilters } from "../../hooks/useRecordFilters";
+import { useRecordActions } from "../../hooks/useRecordActions";
+// ...
+
+export function RecordTable() {
+    const work_store = useWorkStore();
+
+    // ✅ 훅으로 데이터 가공
+    const { day_records, filtered_records, sorted_records } = useRecordData({
+        records: work_store.records,
+        selected_date: work_store.selected_date,
+        search_keyword: filters.search,
+        selected_category: filters.category,
+        show_completed: filters.show_completed,
+    });
+
+    // ✅ 훅으로 통계 계산
+    const stats = useRecordStats(
+        sorted_records,
+        work_store.selected_date,
+        work_store.lunch_start_time,
+        work_store.lunch_end_time
+    );
+
+    // ✅ 훅으로 필터 상태
+    const filters = useRecordFilters();
+
+    // ✅ 훅으로 액션 핸들러
+    const actions = useRecordActions(work_store);
+
+    // ✅ 컬럼 정의 (inline render 없음!)
+    const columns = useMemo(
         () => [
             {
-                id: "project_code",
-                header: "프로젝트",
-                accessorKey: "project_code",
-                cell: ({ getValue }) => <ProjectCell value={getValue()} />,
-            },
-            {
-                id: "work_name",
-                header: "작업명",
-                accessorKey: "work_name",
-                cell: ({ getValue, row }) => (
-                    <HighlightText text={getValue()} search={search_text} />
+                title: RECORD_TABLE_COLUMN_PROJECT_CODE,
+                dataIndex: "project_code",
+                render: (_, record) => (
+                    <ProjectCodeColumn
+                        record={record}
+                        is_editing={editing_id === record.id}
+                        onEdit={actions.handleEdit}
+                        onSave={actions.handleSave}
+                    />
                 ),
             },
-            {
-                id: "duration",
-                header: "소요시간",
-                accessorFn: (row) => getRecordDurationMinutes(row),
-                cell: ({ row }) => <DurationColumn record={row.original} />,
-            },
-            {
-                id: "actions",
-                header: "",
-                cell: ({ row }) => <ActionsColumn record={row.original} />,
-            },
-            // ...
+            // ... 8개 컬럼 (각 10줄 이하)
         ],
-        [search_text]
+        [editing_id, actions]
+    );
+
+    return (
+        <div>
+            <RecordTableHeader />
+            <RecordFilters {...filters} />
+            <DailyStats stats={stats} />
+
+            <Table
+                columns={columns}
+                dataSource={sorted_records}
+                rowKey="id"
+                // ...
+            />
+
+            <RecordAddModal {...modals.add} />
+            <RecordEditModal {...modals.edit} />
+        </div>
     );
 }
 ```
 
-### 4.3 마이그레이션 전략
+**최종 체크리스트**:
 
-1. 먼저 @tanstack/react-table 기반 훅 생성
-2. 기존 Ant Design Table과 병행 운영 (feature flag)
-3. 테스트 후 완전 전환
-4. Ant Design Table 코드 제거
-
----
-
-## 5. 공통 컴포넌트 활용
-
-### 5.1 이미 사용 가능한 공통 자원
-
-| 공통 자원            | 사용 위치                  |
-| -------------------- | -------------------------- |
-| SelectWithAdd        | RecordEditModal            |
-| AutoCompleteWithHide | RecordEditModal            |
-| FormModal            | RecordEditModal            |
-| RecordListModal      | CompletedModal, TrashModal |
-| formatDuration       | DurationColumn             |
-| AnimatedNumber       | 타이머 표시                |
-| HighlightText        | 검색 결과 하이라이트       |
-
-### 5.2 Phase 8에서 추가 활용 예정
-
-| 공통 자원      | 사용 위치              |
-| -------------- | ---------------------- |
-| WorkFormFields | RecordEditModal        |
-| DataTable      | 테이블 렌더링 (선택적) |
+-   [ ] 메인 컴포넌트 200줄 이하
+-   [ ] useMemo 내 JSX 0개
+-   [ ] inline style 0개
+-   [ ] 하드코딩 문구 0개
+-   [ ] 모든 로직 훅/lib로 분리
 
 ---
 
-## 6. 마이그레이션 체크리스트
+## 4. 예상 성과
 
-### 6.1 순수 함수 추출
+### 4.1 코드 품질 지표
 
--   [ ] `lib/record_filters.ts` 생성
-    -   [ ] filterRecords 함수
-    -   [ ] filterBySearchText 함수
-    -   [ ] 테스트 작성
--   [ ] `lib/record_sorter.ts` 생성
-    -   [ ] sortRecords 함수
-    -   [ ] 테스트 작성
--   [ ] `lib/statistics.ts` 생성
-    -   [ ] calculateDailyStats 함수
-    -   [ ] 테스트 작성
--   [ ] `model/constants.ts` 생성
-    -   [ ] CATEGORY_COLORS
-    -   [ ] 기타 상수
+| 지표               | Before  | After (예상)  | 목표 개선 |
+| ------------------ | ------- | ------------- | --------- |
+| **총 줄 수**       | 2,966줄 | 200줄         | **-93%**  |
+| **컬럼 정의**      | 700줄   | 80줄 (10줄×8) | **-89%**  |
+| **useMemo 내 JSX** | 8곳     | 0곳           | **-100%** |
+| **inline style**   | 60개    | 0개           | **-100%** |
+| **하드코딩 문구**  | 90개    | 0개           | **-100%** |
+| **공통 컴포넌트**  | 0개     | +12개         | **+∞**    |
 
-### 6.2 훅 추출
+### 4.2 재사용 효과
 
--   [ ] `hooks/useRecordTable.ts` 생성
-    -   [ ] @tanstack/react-table 설정
-    -   [ ] 테스트 작성
--   [ ] `hooks/useRecordFilters.ts` 생성
-    -   [ ] 필터 상태 관리
-    -   [ ] 테스트 작성
--   [ ] `hooks/useRecordSelection.ts` 생성
-    -   [ ] 선택 상태 관리
-    -   [ ] 테스트 작성
--   [ ] `hooks/useRecordTimer.ts` 생성
-    -   [ ] 타이머 연동 로직
-    -   [ ] 테스트 작성
--   [ ] `hooks/useRecordStats.ts` 생성
-    -   [ ] 통계 계산 로직
-    -   [ ] 테스트 작성
-
-### 6.3 UI 컴포넌트 분리
-
--   [ ] `ui/WorkRecordTable/` 생성
-    -   [ ] 메인 컴포넌트 (~300줄)
--   [ ] `ui/RecordColumns/` 생성
-    -   [ ] TimeColumn.tsx
-    -   [ ] DurationColumn.tsx
-    -   [ ] StatusColumn.tsx
-    -   [ ] ActionsColumn.tsx
--   [ ] `ui/RecordFilters/` 생성
-    -   [ ] SearchFilter.tsx
-    -   [ ] DateFilter.tsx
-    -   [ ] CategoryFilter.tsx
--   [ ] `ui/RecordStats/` 생성
-    -   [ ] DailyStats.tsx
-    -   [ ] StatsSummary.tsx
--   [ ] `ui/RecordModals/` 생성
-    -   [ ] RecordEditModal.tsx
-
-### 6.4 정리
-
--   [ ] index.ts 업데이트
--   [ ] 기존 `components/WorkRecordTable.tsx` 삭제
--   [ ] import 경로 업데이트 (사용처)
--   [ ] 테스트 마이그레이션
--   [ ] 스토리북 스토리 작성
+| 컴포넌트               | 사용 횟수           | 절감 효과 |
+| ---------------------- | ------------------- | --------- |
+| `useWorkFormOptions`   | 재사용              | ~250줄    |
+| `WorkRecordFormFields` | 재사용              | ~200줄    |
+| `ProjectCodeColumn`    | 2곳 (Table, Mobile) | ~60줄     |
+| `DurationColumn`       | 3곳                 | ~120줄    |
+| `ActionsColumn`        | 2곳                 | ~80줄     |
 
 ---
 
-## 7. 테스트 계획
+## 5. 작업 체크리스트
 
-### 7.1 순수 함수 테스트
+### Phase 1: 순수 함수 추출 ✅
 
-```typescript
-// test/unit/features/work-record/lib/record_filters.test.ts
-describe('filterRecords', () => {
-  it('검색어로 필터링한다', () => { ... });
-  it('카테고리로 필터링한다', () => { ... });
-  it('날짜 범위로 필터링한다', () => { ... });
-});
+-   [ ] `duration_calculator.ts` 확장 (4개 함수)
+-   [ ] `category_utils.ts` 신규 (2개 함수)
+-   [ ] `record_filters.ts` 신규 (3개 함수)
+-   [ ] `record_sorter.ts` 신규 (2개 함수)
+-   [ ] 유닛 테스트 작성 (커버리지 100%)
 
-// test/unit/features/work-record/lib/statistics.test.ts
-describe('calculateDailyStats', () => {
-  it('일간 총 시간을 계산한다', () => { ... });
-  it('카테고리별 시간을 계산한다', () => { ... });
-});
-```
+### Phase 2: 커스텀 훅 추출 ✅
 
-### 7.2 훅 테스트
+-   [ ] `useRecordData.ts` (데이터 가공)
+-   [ ] `useRecordStats.ts` (통계 계산)
+-   [ ] `useRecordFilters.ts` (필터 상태)
+-   [ ] `useRecordModals.ts` (모달 상태)
+-   [ ] `useRecordEdit.ts` (편집 상태)
+-   [ ] `useRecordActions.ts` (액션 핸들러)
+-   [ ] `useRecordForm.ts` (폼 제출)
+-   [ ] 훅 테스트 작성
 
-```typescript
-// test/hooks/features/work-record/useRecordTable.test.ts
-describe('useRecordTable', () => {
-  it('정렬이 적용된다', () => { ... });
-  it('필터가 적용된다', () => { ... });
-  it('선택이 동작한다', () => { ... });
-});
-```
+### Phase 3: 컬럼 렌더러 분리 ⚠️ **핵심**
 
-### 7.3 컴포넌트 테스트
+-   [ ] `ProjectCodeColumn.tsx` (80줄)
+-   [ ] `WorkNameColumn.tsx` (100줄)
+-   [ ] `DurationColumn.tsx` (90줄)
+-   [ ] `SessionsColumn.tsx` (120줄)
+-   [ ] `CategoryColumn.tsx` (80줄)
+-   [ ] `NoteColumn.tsx` (70줄)
+-   [ ] `ActionsColumn.tsx` (80줄)
+-   [ ] 컬럼 컴포넌트 테스트
 
-```typescript
-// test/component/features/work-record/WorkRecordTable.test.tsx
-describe('WorkRecordTable', () => {
-  it('레코드가 테이블에 렌더링된다', () => { ... });
-  it('검색 필터가 동작한다', () => { ... });
-  it('타이머 시작/정지가 동작한다', () => { ... });
-});
-```
+### Phase 4: UI 컴포넌트 분리 ✅
 
----
+-   [ ] `RecordTableHeader.tsx` (80줄)
+-   [ ] `RecordFilters.tsx` (70줄)
+-   [ ] `DailyStats.tsx` (80줄)
+-   [ ] `RecordRow.tsx` (100줄)
 
-## 8. 예상 결과
+### Phase 5: 메인 컴포넌트 최종화 ✅
 
-### 8.1 줄 수 비교
-
-| 항목                    | Before | After  |
-| ----------------------- | ------ | ------ |
-| WorkRecordTable.tsx     | 2,966  | -      |
-| WorkRecordTable (메인)  | -      | ~300   |
-| lib/\*.ts (순수 함수)   | 기존   | +160   |
-| hooks/\*.ts             | -      | ~450   |
-| ui/RecordColumns/\*.tsx | -      | ~320   |
-| ui/RecordFilters/\*.tsx | -      | ~200   |
-| ui/RecordStats/\*.tsx   | -      | ~150   |
-| ui/RecordModals/\*.tsx  | -      | ~150   |
-| **총계**                | 2,966  | ~1,730 |
-
-### 8.2 개선 효과
-
--   테이블 로직: @tanstack/react-table로 표준화
--   컬럼 정의: 재사용 가능한 컴포넌트로 분리
--   필터 로직: 순수 함수로 테스트 용이
--   통계 계산: 별도 훅으로 분리
+-   [ ] `RecordTable.tsx` (200줄 이하)
+-   [ ] 모든 체크리스트 확인
+-   [ ] 테스트 실행 (914개 통과)
+-   [ ] 린트 에러 0개
 
 ---
 
-## 참고
+## 6. 참고
 
--   [PHASE8_OVERVIEW.md](./PHASE8_OVERVIEW.md) - 전체 개요
--   [@tanstack/react-table 문서](https://tanstack.com/table/latest)
+-   [PHASE8_OVERVIEW.md](PHASE8_OVERVIEW.md) - Phase 8 전체 계획
+-   [01_DAILY_GANTT_CHART.md](01_DAILY_GANTT_CHART.md) - 이미 완료된 사례
+-   [dev-guidelines.mdc](../../.cursor/rules/dev-guidelines.mdc) - 개발 가이드라인
+-   [REFACTORING_PROGRESS.md](../REFACTORING_PROGRESS.md) - 진행 상황

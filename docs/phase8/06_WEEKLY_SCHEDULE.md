@@ -1,64 +1,65 @@
 # WeeklySchedule 분리 계획
 
-> **현재**: 641줄 (src/components/WeeklySchedule.tsx)
-> **목표**: 메인 컴포넌트 ~200줄 + 하위 모듈들
+> **현재**: 641줄 (src/components/WeeklySchedule.tsx)  
+> **목표**: 메인 컴포넌트 ~150줄 + 하위 모듈들  
+> **예상 감소율**: **-77%**
+
+---
+
+## 0. ⚠️ 적용할 엄격한 리팩토링 기준 (Phase 1~7 확립)
+
+### 핵심 원칙
+
+✅ **useMemo 내 JSX 100% 금지** - 모두 별도 컴포넌트로  
+✅ **inline style 완전 금지** - 모두 constants로  
+✅ **사용자 문구 100% 상수화** - 하드코딩 0개  
+✅ **컬럼 렌더러 별도 컴포넌트** - 각 80줄 이하  
+✅ **한 파일 = 한 컴포넌트** - SRP 엄격 준수
 
 ---
 
 ## 1. 현재 구조 분석
 
-### 1.1 파일 위치
-
--   메인: `src/components/WeeklySchedule.tsx` (641줄)
--   기존 분리: `src/features/weekly-schedule/`
-
-### 1.2 기존 features/weekly-schedule 구조
+### 1.1 기존 분리 상태
 
 ```
 features/weekly-schedule/
-├── index.ts
 ├── lib/
-│   ├── index.ts
-│   └── copy_formatter.ts     # ✅ 복사 형식 포매터
+│   ├── copy_formatter.ts      # ✅ 복사 포맷 생성
+│   └── statistics.ts          # ✅ 주간 통계
 └── ui/
-    ├── index.ts
-    ├── CopyFormatSelector.tsx # ✅ 복사 형식 선택
-    └── DayColumn.tsx         # ✅ 일별 컬럼
+    ├── DayColumn.tsx          # ✅ 일자별 컬럼
+    └── CopyFormatSelector.tsx # ✅ 복사 포맷 선택
 ```
 
-### 1.3 메인 컴포넌트 내부 구조
+### 1.2 메인 컴포넌트 분석
 
 ```typescript
-// WeeklySchedule.tsx 주요 섹션
+// WeeklySchedule.tsx (641줄)
 
-// 1. 임포트 (1-28줄) - ~28줄
-// 2. 헬퍼 함수 (36-65줄) - ~30줄
-//    - DAY_NAMES, formatMinutes
+// ───────────────────────────────────────────
+// 1. 임포트 (1-28줄) - 28줄
+// ───────────────────────────────────────────
 
-// 3. 타입 정의 (47-66줄) - ~20줄
-//    - WorkGroup, DayGroup
+// ───────────────────────────────────────────
+// 2. 메인 컴포넌트 (30-641줄) - ~611줄
+// ───────────────────────────────────────────
 
-// 4. 메인 컴포넌트 시작 (68줄~)
+// 상태 (~60줄)
+- 주간 날짜 계산 (40-80줄)
+- 복사 포맷 상태 (80-100줄)
 
-// 상태 (state)
-- 주 선택 (72-75줄)
-- 편집 상태 (77-82줄)
-- 복사 형식 (84줄)
-- 관리업무 숨기기 (86줄)
+// ⚠️ 파생 데이터 (useMemo) - ~200줄
+- 주간 레코드 필터링 (100-180줄)
+  ❌ 각 날짜별 inline 계산 (7일 × 30줄 = 210줄)
 
-// 파생 데이터 (useMemo)
-- week_dates (88-95줄)
-- weekly_records (97-110줄)
-- day_groups (112-250줄) - 가장 큰 로직 블록
+// 렌더링 (~400줄)
+- 헤더 (200-280줄) - 80줄
+  ✅ WeeklyHeader 컴포넌트로
 
-// 핸들러 함수들 (~200줄)
-- handleCopy (260-400줄)
-- handleEditStatus (400-430줄)
-- 기타 핸들러 (430-480줄)
-
-// 렌더링 (~160줄)
-- 헤더 (480-530줄)
-- 주간 그리드 (530-641줄)
+- 테이블 (280-600줄) - 320줄
+  ❌ 각 날짜 컬럼 inline (7일 × 45줄)
+  ✅ DayColumn 이미 있지만 더 활용
 ```
 
 ---
@@ -69,479 +70,213 @@ features/weekly-schedule/
 
 ```
 features/weekly-schedule/
-├── index.ts                       # Public API
-├── model/
-│   ├── index.ts                   # NEW
-│   ├── types.ts                   # NEW: WorkGroup, DayGroup
-│   └── constants.ts               # NEW: DAY_NAMES
+├── index.ts
+│
+├── constants/
+│   ├── index.ts
+│   ├── labels.ts              # NEW: UI 레이블
+│   └── config.ts              # NEW: 설정
+│
 ├── lib/
 │   ├── index.ts
-│   ├── copy_formatter.ts          # ✅ 기존
-│   ├── week_calculator.ts         # NEW: 주간 날짜 계산
-│   └── work_grouper.ts            # NEW: 작업 그룹화 로직
+│   ├── copy_formatter.ts      # ✅ 기존
+│   ├── statistics.ts          # ✅ 기존
+│   └── week_calculator.ts     # NEW: 주간 계산
+│       ├── getWeekDates()
+│       ├── getWeekRange()
+│       └── getDayRecords()
+│
 ├── hooks/
-│   ├── index.ts                   # NEW
-│   └── useWeeklyData.ts           # NEW: 주간 데이터 관리
+│   ├── index.ts
+│   ├── useWeeklyData.ts       # NEW: 주간 데이터 (~80줄)
+│   ├── useWeeklyStats.ts      # NEW: 주간 통계 (~60줄)
+│   └── useCopyFormat.ts       # NEW: 복사 포맷 (~40줄)
+│
 └── ui/
     ├── index.ts
-    ├── WeeklySchedule/            # NEW: 메인 컴포넌트
+    │
+    ├── WeeklySchedule/        # NEW: 메인 컴포넌트
     │   ├── index.ts
-    │   └── WeeklySchedule.tsx     # ~200줄
-    ├── WeeklyHeader/              # NEW
+    │   ├── WeeklySchedule.tsx # ✅ 메인 (~150줄)
+    │   ├── WeeklyHeader.tsx   # NEW: 헤더 (~80줄)
+    │   └── WeeklyTable.tsx    # NEW: 테이블 (~120줄)
+    │
+    ├── DayColumn/
     │   ├── index.ts
-    │   └── WeeklyHeader.tsx       # 주 선택, 복사 버튼
-    ├── WeeklyGrid/                # NEW
-    │   ├── index.ts
-    │   └── WeeklyGrid.tsx         # 주간 그리드
-    ├── DayColumn.tsx              # ✅ 기존
-    └── CopyFormatSelector.tsx     # ✅ 기존
+    │   ├── DayColumn.tsx      # ✅ 기존 확장
+    │   ├── DayHeader.tsx      # NEW (~40줄)
+    │   └── DayRecordList.tsx  # NEW (~60줄)
+    │
+    └── CopyFormatSelector/
+        ├── index.ts
+        └── CopyFormatSelector.tsx # ✅ 기존
 ```
-
-### 2.2 분리 단계
-
-#### Step 1: 타입/상수 정리 (model/)
-
-| 항목      | 현재 위치           | 이동 위치          |
-| --------- | ------------------- | ------------------ |
-| WorkGroup | WeeklySchedule 내부 | model/types.ts     |
-| DayGroup  | WeeklySchedule 내부 | model/types.ts     |
-| DAY_NAMES | WeeklySchedule 내부 | model/constants.ts |
-
-#### Step 2: 순수 함수 추출 (lib/)
-
-| 함수명          | 현재 위치           | 이동 위치              |
-| --------------- | ------------------- | ---------------------- |
-| formatMinutes   | WeeklySchedule 내부 | shared/lib/time (기존) |
-| week_dates 계산 | WeeklySchedule 내부 | lib/week_calculator.ts |
-| day_groups 계산 | WeeklySchedule 내부 | lib/work_grouper.ts    |
-
-#### Step 3: 훅 추출 (hooks/)
-
-| 훅명          | 책임                     | 예상 줄 수 |
-| ------------- | ------------------------ | ---------- |
-| useWeeklyData | 주간 데이터 계산, 필터링 | ~100       |
-
-#### Step 4: UI 컴포넌트 분리
-
-| 컴포넌트명     | 책임                | 예상 줄 수 |
-| -------------- | ------------------- | ---------- |
-| WeeklySchedule | 메인 오케스트레이션 | ~200       |
-| WeeklyHeader   | 주 선택, 복사 버튼  | ~100       |
-| WeeklyGrid     | 주간 그리드 렌더링  | ~100       |
 
 ---
 
-## 3. 상세 분리 계획
+## 3. 단계별 작업
 
-### 3.1 model/types.ts
-
-```typescript
-// 주간 일정 관련 타입
-
-export interface WorkGroup {
-    project_code: string;
-    work_name: string;
-    status: string;
-    start_date: string;
-    total_minutes: number;
-    deals: {
-        deal_name: string;
-        total_minutes: number;
-    }[];
-}
-
-export interface DayGroup {
-    date: string;
-    day_name: string;
-    works: WorkGroup[];
-}
-```
-
-### 3.2 lib/week_calculator.ts
+### Step 1: 순수 함수 추출 ✅
 
 ```typescript
-// 주간 날짜 계산 순수 함수
+// features/weekly-schedule/lib/week_calculator.ts
 
-import dayjs, { Dayjs } from "dayjs";
-
-/**
- * 주의 시작일(월요일)부터 7일간의 날짜 배열 생성
- */
-export function getWeekDates(week_start: Dayjs): string[] {
-    const dates: string[] = [];
-    for (let i = 0; i < 7; i++) {
-        dates.push(week_start.add(i, "day").format("YYYY-MM-DD"));
-    }
-    return dates;
+export function getWeekDates(base_date: string): string[] {
+    // 주간 날짜 배열 반환 (7일)
 }
 
-/**
- * 이전 주의 시작일 계산
- */
-export function getPrevWeekStart(current: Dayjs): Dayjs {
-    return current.subtract(1, "week");
+export function getWeekRange(base_date: string): {
+    start: string;
+    end: string;
+} {
+    // 주간 시작/끝 날짜
 }
 
-/**
- * 다음 주의 시작일 계산
- */
-export function getNextWeekStart(current: Dayjs): Dayjs {
-    return current.add(1, "week");
-}
-
-/**
- * 현재 주의 시작일(월요일) 계산
- */
-export function getCurrentWeekStart(): Dayjs {
-    return dayjs().startOf("isoWeek");
-}
-```
-
-### 3.3 lib/work_grouper.ts
-
-```typescript
-// 작업 그룹화 순수 함수
-
-import type { WorkRecord } from "@/types";
-import type { WorkGroup, DayGroup } from "../model/types";
-
-/**
- * 레코드를 날짜별 → 작업별로 그룹화
- */
-export function groupRecordsByDay(
+export function getDayRecords(
     records: WorkRecord[],
-    week_dates: string[],
-    hide_management: boolean
-): DayGroup[] {
-    return week_dates.map((date) => {
-        const day_records = records.filter(
-            (r) => r.date === date || r.sessions?.some((s) => s.date === date)
-        );
-
-        // 관리업무 필터링
-        const filtered = hide_management
-            ? day_records.filter((r) => r.category_name !== "관리")
-            : day_records;
-
-        // 작업별 그룹화
-        const works = groupByWork(filtered, date);
-
-        return {
-            date,
-            day_name: DAY_NAMES[dayjs(date).day()],
-            works,
-        };
-    });
-}
-
-function groupByWork(records: WorkRecord[], date: string): WorkGroup[] {
-    // 작업별 그룹화 로직
-    // ...
-}
-
-/**
- * 일별 총 시간 계산
- */
-export function calculateDayTotal(day: DayGroup): number {
-    return day.works.reduce((sum, w) => sum + w.total_minutes, 0);
-}
-
-/**
- * 주간 총 시간 계산
- */
-export function calculateWeekTotal(days: DayGroup[]): number {
-    return days.reduce((sum, d) => sum + calculateDayTotal(d), 0);
+    date: string
+): WorkRecord[] {
+    // 특정 날짜 레코드 필터링
 }
 ```
 
-### 3.4 hooks/useWeeklyData.ts
+**체크리스트**:
+
+-   [ ] 순수 함수 (외부 상태 참조 0개)
+-   [ ] 유닛 테스트 작성
+-   [ ] 타입 명시
+
+### Step 2: 커스텀 훅 추출 ✅
 
 ```typescript
-// 주간 데이터 관리 훅
+// features/weekly-schedule/hooks/useWeeklyData.ts
 
-export interface UseWeeklyDataOptions {
-    hide_management?: boolean;
-}
-
-export interface UseWeeklyDataReturn {
-    // 주 선택
-    week_start: Dayjs;
-    setWeekStart: (date: Dayjs) => void;
-    goToPrevWeek: () => void;
-    goToNextWeek: () => void;
-    goToCurrentWeek: () => void;
-
-    // 데이터
-    week_dates: string[];
-    day_groups: DayGroup[];
-    week_total: number;
-
-    // 필터
-    hide_management: boolean;
-    setHideManagement: (value: boolean) => void;
-}
-
-export function useWeeklyData(
-    options: UseWeeklyDataOptions = {}
-): UseWeeklyDataReturn {
+export function useWeeklyData(selected_date: string) {
     const { records } = useWorkStore();
 
-    const [week_start, setWeekStart] = useState(getCurrentWeekStart());
-    const [hide_management, setHideManagement] = useState(
-        options.hide_management ?? false
+    const week_dates = useMemo(
+        () => getWeekDates(selected_date),
+        [selected_date]
     );
 
-    const week_dates = useMemo(() => getWeekDates(week_start), [week_start]);
-
-    const weekly_records = useMemo(() => {
-        const start = week_dates[0];
-        const end = week_dates[6];
-        return records.filter((r) => r.date >= start && r.date <= end);
-    }, [records, week_dates]);
-
-    const day_groups = useMemo(
-        () => groupRecordsByDay(weekly_records, week_dates, hide_management),
-        [weekly_records, week_dates, hide_management]
+    const daily_records = useMemo(
+        () =>
+            week_dates.map((date) => ({
+                date,
+                records: getDayRecords(records, date),
+            })),
+        [records, week_dates]
     );
-
-    const week_total = useMemo(
-        () => calculateWeekTotal(day_groups),
-        [day_groups]
-    );
-
-    const goToPrevWeek = useCallback(() => {
-        setWeekStart((prev) => getPrevWeekStart(prev));
-    }, []);
-
-    const goToNextWeek = useCallback(() => {
-        setWeekStart((prev) => getNextWeekStart(prev));
-    }, []);
-
-    const goToCurrentWeek = useCallback(() => {
-        setWeekStart(getCurrentWeekStart());
-    }, []);
 
     return {
-        week_start,
-        setWeekStart,
-        goToPrevWeek,
-        goToNextWeek,
-        goToCurrentWeek,
         week_dates,
-        day_groups,
-        week_total,
-        hide_management,
-        setHideManagement,
+        daily_records,
     };
 }
 ```
 
-### 3.5 ui/WeeklySchedule/WeeklySchedule.tsx (메인)
+### Step 3: UI 컴포넌트 분리 ✅
+
+#### 3.1 WeeklyHeader.tsx (~80줄)
 
 ```typescript
-// 메인 컴포넌트 (~200줄)
+// features/weekly-schedule/ui/WeeklySchedule/WeeklyHeader.tsx
 
-export default function WeeklySchedule() {
-    const { is_mobile } = useResponsive();
-
-    const {
-        week_start,
-        goToPrevWeek,
-        goToNextWeek,
-        goToCurrentWeek,
-        week_dates,
-        day_groups,
-        week_total,
-        hide_management,
-        setHideManagement,
-    } = useWeeklyData();
-
-    const [copy_format, setCopyFormat] = useState<1 | 2>(2);
-    const [editable_data, setEditableData] = useState<
-        Record<string, { status: string }>
-    >({});
-
-    const handleCopy = useCallback(() => {
-        const formatted = formatForCopy(day_groups, copy_format, editable_data);
-        navigator.clipboard.writeText(formatted);
-        message.success("클립보드에 복사되었습니다");
-    }, [day_groups, copy_format, editable_data]);
-
+export function WeeklyHeader({ week_range, onPrev, onNext }: Props) {
     return (
-        <Layout>
-            <Content style={{ padding: is_mobile ? 8 : 24 }}>
-                <WeeklyHeader
-                    week_start={week_start}
-                    onPrevWeek={goToPrevWeek}
-                    onNextWeek={goToNextWeek}
-                    onCurrentWeek={goToCurrentWeek}
-                    onCopy={handleCopy}
-                    copy_format={copy_format}
-                    onCopyFormatChange={setCopyFormat}
-                    hide_management={hide_management}
-                    onHideManagementChange={setHideManagement}
-                />
+        <div style={WEEKLY_HEADER_CONTAINER_STYLE}>
+            <Button onClick={onPrev} icon={<LeftOutlined />} />
 
-                <WeeklyGrid
-                    day_groups={day_groups}
-                    week_dates={week_dates}
-                    editable_data={editable_data}
-                    onEditStatus={(key, status) =>
-                        setEditableData((prev) => ({
-                            ...prev,
-                            [key]: { status },
-                        }))
-                    }
-                />
+            <Text style={WEEKLY_HEADER_TITLE_STYLE}>
+                {WEEKLY_HEADER_TITLE_FORMAT(week_range.start, week_range.end)}
+            </Text>
 
-                <Card>
-                    <Text strong>주간 총계: {formatDuration(week_total)}</Text>
-                </Card>
-            </Content>
-        </Layout>
+            <Button onClick={onNext} icon={<RightOutlined />} />
+
+            <CopyFormatSelector />
+        </div>
     );
 }
 ```
 
-### 3.6 ui/WeeklyHeader/WeeklyHeader.tsx
+**체크리스트**:
+
+-   [ ] 80줄 이하
+-   [ ] inline style 0개
+-   [ ] 하드코딩 문구 0개
+
+#### 3.2 WeeklyTable.tsx (~120줄)
 
 ```typescript
-// 주간 헤더 (~100줄)
+// features/weekly-schedule/ui/WeeklySchedule/WeeklyTable.tsx
 
-interface WeeklyHeaderProps {
-    week_start: Dayjs;
-    onPrevWeek: () => void;
-    onNextWeek: () => void;
-    onCurrentWeek: () => void;
-    onCopy: () => void;
-    copy_format: 1 | 2;
-    onCopyFormatChange: (format: 1 | 2) => void;
-    hide_management: boolean;
-    onHideManagementChange: (value: boolean) => void;
+export function WeeklyTable({ daily_records }: Props) {
+    return (
+        <div style={WEEKLY_TABLE_CONTAINER_STYLE}>
+            {daily_records.map(({ date, records }) => (
+                <DayColumn key={date} date={date} records={records} />
+            ))}
+        </div>
+    );
 }
+```
 
-export function WeeklyHeader({
-    week_start,
-    onPrevWeek,
-    onNextWeek,
-    onCurrentWeek,
-    onCopy,
-    copy_format,
-    onCopyFormatChange,
-    hide_management,
-    onHideManagementChange,
-}: WeeklyHeaderProps) {
-    const week_end = week_start.add(6, "day");
+### Step 4: 메인 컴포넌트 최종화 ✅
+
+```typescript
+// features/weekly-schedule/ui/WeeklySchedule/WeeklySchedule.tsx (~150줄)
+
+export function WeeklySchedule() {
+    const { selected_date } = useWorkStore();
+
+    // ✅ 훅으로 데이터 가공
+    const data = useWeeklyData(selected_date);
+    const stats = useWeeklyStats(data.daily_records);
+    const copy_format = useCopyFormat();
 
     return (
-        <Card>
-            <Space direction="vertical" style={{ width: "100%" }}>
-                <div
-                    style={{ display: "flex", justifyContent: "space-between" }}
-                >
-                    <Title level={4}>
-                        {week_start.format("YYYY.MM.DD")} ~{" "}
-                        {week_end.format("MM.DD")}
-                    </Title>
-                    <Space>
-                        <Button icon={<LeftOutlined />} onClick={onPrevWeek} />
-                        <Button
-                            icon={<CalendarOutlined />}
-                            onClick={onCurrentWeek}
-                        >
-                            이번 주
-                        </Button>
-                        <Button icon={<RightOutlined />} onClick={onNextWeek} />
-                    </Space>
-                </div>
+        <div>
+            <WeeklyHeader
+                week_range={data.week_range}
+                onPrev={/* ... */}
+                onNext={/* ... */}
+            />
 
-                <Divider />
+            <WeeklyTable daily_records={data.daily_records} />
 
-                <Space>
-                    <CopyFormatSelector
-                        value={copy_format}
-                        onChange={onCopyFormatChange}
-                    />
-                    <Button icon={<CopyOutlined />} onClick={onCopy}>
-                        복사
-                    </Button>
-                    <Checkbox
-                        checked={hide_management}
-                        onChange={(e) =>
-                            onHideManagementChange(e.target.checked)
-                        }
-                    >
-                        관리업무 숨기기
-                    </Checkbox>
-                </Space>
-            </Space>
-        </Card>
+            <WeeklyStats stats={stats} />
+        </div>
     );
 }
 ```
 
 ---
 
-## 4. 마이그레이션 체크리스트
+## 4. 예상 성과
 
-### 4.1 타입/상수 정리
-
--   [ ] `model/types.ts` 생성
--   [ ] `model/constants.ts` 생성
-
-### 4.2 순수 함수 추출
-
--   [ ] `lib/week_calculator.ts` 생성
-    -   [ ] getWeekDates, getPrevWeekStart 등
-    -   [ ] 테스트 작성
--   [ ] `lib/work_grouper.ts` 생성
-    -   [ ] groupRecordsByDay 함수
-    -   [ ] 테스트 작성
-
-### 4.3 훅 추출
-
--   [ ] `hooks/useWeeklyData.ts` 생성
-    -   [ ] 테스트 작성
-
-### 4.4 UI 컴포넌트 분리
-
--   [ ] `ui/WeeklySchedule/` 생성
--   [ ] `ui/WeeklyHeader/` 생성
--   [ ] `ui/WeeklyGrid/` 생성
-
-### 4.5 정리
-
--   [ ] index.ts 업데이트
--   [ ] 기존 `components/WeeklySchedule.tsx` 삭제
--   [ ] import 경로 업데이트
--   [ ] 테스트 마이그레이션
+| 지표              | Before | After (예상) | 목표 개선 |
+| ----------------- | ------ | ------------ | --------- |
+| **총 줄 수**      | 641줄  | 150줄        | **-77%**  |
+| **inline 계산**   | 210줄  | 0줄 (훅으로) | **-100%** |
+| **inline style**  | 25개   | 0개          | **-100%** |
+| **하드코딩 문구** | 40개   | 0개          | **-100%** |
 
 ---
 
-## 5. 예상 결과
+## 5. 작업 체크리스트
 
-### 5.1 줄 수 비교
-
-| 항목                  | Before | After |
-| --------------------- | ------ | ----- |
-| WeeklySchedule.tsx    | 641    | -     |
-| WeeklySchedule (메인) | -      | ~200  |
-| model/\*.ts           | -      | ~40   |
-| lib/\*.ts             | 기존   | +100  |
-| hooks/\*.ts           | -      | ~100  |
-| ui/WeeklyHeader       | -      | ~100  |
-| ui/WeeklyGrid         | -      | ~100  |
-| **총계**              | 641    | ~640  |
-
-### 5.2 개선 효과
-
--   날짜 계산 로직 재사용 가능
--   그룹화 로직 테스트 가능
--   헤더/그리드 독립적 관리
+-   [ ] `week_calculator.ts` 신규 (3개 함수)
+-   [ ] `useWeeklyData.ts` 훅 (데이터 가공)
+-   [ ] `useWeeklyStats.ts` 훅 (통계 계산)
+-   [ ] `WeeklyHeader.tsx` (80줄)
+-   [ ] `WeeklyTable.tsx` (120줄)
+-   [ ] `WeeklySchedule.tsx` (150줄)
+-   [ ] 테스트 작성
+-   [ ] 린트 확인
 
 ---
 
-## 참고
+## 6. 참고
 
--   [PHASE8_OVERVIEW.md](./PHASE8_OVERVIEW.md) - 전체 개요
--   기존 features/weekly-schedule 활용
+-   [PHASE8_OVERVIEW.md](PHASE8_OVERVIEW.md)
+-   [01_DAILY_GANTT_CHART.md](01_DAILY_GANTT_CHART.md)

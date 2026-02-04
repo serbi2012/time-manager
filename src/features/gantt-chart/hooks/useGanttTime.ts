@@ -4,16 +4,16 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useWorkStore } from "../../../store/useWorkStore";
+import {
+    calculateDurationExcludingLunch as calcDuration,
+    type LunchTimeRange,
+} from "../lib/lunch_calculator";
 
 export interface UseGanttTimeReturn {
     /** 간트 틱 (1분마다 업데이트) */
     gantt_tick: number;
     /** 점심시간 정보 */
-    lunch_time: {
-        start: number;
-        end: number;
-        duration: number;
-    };
+    lunch_time: LunchTimeRange;
     /** 점심시간을 제외한 시간 계산 */
     calculateDurationExcludingLunch: (
         start_mins: number,
@@ -46,41 +46,10 @@ export function useGanttTime(): UseGanttTimeReturn {
         [getLunchTimeMinutes]
     );
 
-    // 점심시간을 제외한 실제 작업 시간 계산
+    // 점심시간을 제외한 실제 작업 시간 계산 (순수 함수 사용)
     const calculateDurationExcludingLunch = useCallback(
         (start_mins: number, end_mins: number): number => {
-            const {
-                start: LUNCH_START,
-                end: LUNCH_END,
-                duration: LUNCH_DURATION,
-            } = lunch_time;
-
-            // 점심시간 전에 끝나거나 점심시간 후에 시작하는 경우
-            if (end_mins <= LUNCH_START || start_mins >= LUNCH_END) {
-                return end_mins - start_mins;
-            }
-
-            // 점심시간 내에 완전히 포함되는 경우
-            if (start_mins >= LUNCH_START && end_mins <= LUNCH_END) {
-                return 0;
-            }
-
-            // 점심시간을 포함하는 경우
-            if (start_mins < LUNCH_START && end_mins > LUNCH_END) {
-                return end_mins - start_mins - LUNCH_DURATION;
-            }
-
-            // 점심시간 시작 전부터 점심시간 중간까지
-            if (start_mins < LUNCH_START && end_mins <= LUNCH_END) {
-                return LUNCH_START - start_mins;
-            }
-
-            // 점심시간 중간부터 점심시간 종료 후까지
-            if (start_mins >= LUNCH_START && end_mins > LUNCH_END) {
-                return end_mins - LUNCH_END;
-            }
-
-            return end_mins - start_mins;
+            return calcDuration(start_mins, end_mins, lunch_time);
         },
         [lunch_time]
     );

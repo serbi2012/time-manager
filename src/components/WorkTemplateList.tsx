@@ -1,32 +1,22 @@
-import { useState, useMemo, useRef, useEffect, useCallback } from "react";
-import type { InputRef } from "antd";
+import { useState, useEffect } from "react";
 import {
     Card,
     Button,
-    Modal,
     Form,
-    Input,
-    Select,
-    ColorPicker,
     Space,
     Typography,
     Popconfirm,
     Empty,
     Tooltip,
-    message,
-    AutoComplete,
-    Divider,
 } from "antd";
 import {
     PlusOutlined,
     DeleteOutlined,
     EditOutlined,
     FolderOutlined,
-    CloseOutlined,
     HolderOutlined,
 } from "@ant-design/icons";
 import { Tag } from "antd";
-import { SUCCESS_MESSAGES, INFO_MESSAGES } from "../shared/constants";
 import {
     DndContext,
     closestCenter,
@@ -44,18 +34,12 @@ import {
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import {
-    useWorkStore,
-    TEMPLATE_COLORS,
-    DEFAULT_TASK_OPTIONS,
-    DEFAULT_CATEGORY_OPTIONS,
-} from "../store/useWorkStore";
+import { useWorkStore } from "../store/useWorkStore";
 import type { WorkTemplate } from "../types";
 import { useResponsive } from "../hooks/useResponsive";
 import { useShortcutStore } from "../store/useShortcutStore";
 import { formatShortcutKeyForPlatform } from "../hooks/useShortcuts";
-import { HighlightText } from "../shared/ui/HighlightText";
-import { useDebouncedValue } from "../hooks/useDebouncedValue";
+import { TemplateModal } from "../features/work-template/ui/TemplateModal";
 
 const { Text } = Typography;
 
@@ -195,6 +179,7 @@ export default function WorkTemplateList({
 }: WorkTemplateListProps) {
     const { is_mobile } = useResponsive();
 
+    const work_store = useWorkStore();
     const {
         templates,
         records,
@@ -202,15 +187,7 @@ export default function WorkTemplateList({
         updateTemplate,
         deleteTemplate,
         reorderTemplates,
-        getAutoCompleteOptions,
-        getProjectCodeOptions,
-        custom_task_options,
-        custom_category_options,
-        hidden_autocomplete_options,
-        addCustomTaskOption,
-        addCustomCategoryOption,
-        hideAutoCompleteOption,
-    } = useWorkStore();
+    } = work_store;
 
     // 단축키 설정
     const new_preset_shortcut = useShortcutStore((state) =>
@@ -249,193 +226,12 @@ export default function WorkTemplateList({
     const [editing_template, setEditingTemplate] =
         useState<WorkTemplate | null>(null);
     const [form] = Form.useForm();
-    const [new_task_input, setNewTaskInput] = useState("");
-    const [new_category_input, setNewCategoryInput] = useState("");
-
-    // AutoComplete 검색어 상태 (하이라이트용) - 디바운스 적용
-    const [project_code_search, setProjectCodeSearch] = useState("");
-    const [work_name_search, setWorkNameSearch] = useState("");
-    const [deal_name_search, setDealNameSearch] = useState("");
-    const debounced_project_code_search = useDebouncedValue(
-        project_code_search,
-        150
-    );
-    const debounced_work_name_search = useDebouncedValue(work_name_search, 150);
-    const debounced_deal_name_search = useDebouncedValue(deal_name_search, 150);
-
-    // Input refs for focus management
-    const new_task_input_ref = useRef<InputRef>(null);
-    const new_category_input_ref = useRef<InputRef>(null);
-
-    // 프로젝트 코드 자동완성 옵션 (원본)
-    const raw_project_code_options = useMemo(() => {
-        return getProjectCodeOptions();
-    }, [
-        records,
-        templates,
-        hidden_autocomplete_options,
-        getProjectCodeOptions,
-    ]);
-
-    // 프로젝트 코드 선택 시 코드와 작업명 자동 채우기 핸들러
-    const handleProjectCodeSelect = useCallback(
-        (value: string) => {
-            // value는 "코드::작업명" 형태
-            const [code, work_name] = value.split("::");
-            form.setFieldsValue({
-                project_code: code, // 실제 코드만 저장
-                ...(work_name ? { work_name } : {}),
-            });
-        },
-        [form]
-    );
-
-    // 프로젝트 코드 자동완성 옵션 (삭제 버튼 포함, 검색어 하이라이트)
-    const project_code_options = useMemo(() => {
-        return raw_project_code_options.map((opt) => ({
-            ...opt,
-            label: (
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                    }}
-                >
-                    <span>
-                        <HighlightText
-                            text={opt.label}
-                            search={debounced_project_code_search}
-                        />
-                    </span>
-                    <CloseOutlined
-                        style={{
-                            fontSize: 10,
-                            color: "#999",
-                            cursor: "pointer",
-                        }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            hideAutoCompleteOption("project_code", opt.value);
-                            message.info(INFO_MESSAGES.optionHidden(opt.label));
-                        }}
-                    />
-                </div>
-            ),
-        }));
-    }, [
-        raw_project_code_options,
-        debounced_project_code_search,
-        hideAutoCompleteOption,
-    ]);
-
-    // 작업명/거래명 자동완성 옵션 (삭제 버튼 포함, 검색어 하이라이트)
-    const work_name_options = useMemo(() => {
-        return getAutoCompleteOptions("work_name").map((v) => ({
-            value: v,
-            label: (
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                    }}
-                >
-                    <span>
-                        <HighlightText
-                            text={v}
-                            search={debounced_work_name_search}
-                        />
-                    </span>
-                    <CloseOutlined
-                        style={{
-                            fontSize: 10,
-                            color: "#999",
-                            cursor: "pointer",
-                        }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            hideAutoCompleteOption("work_name", v);
-                            message.info(INFO_MESSAGES.optionHiddenV(v));
-                        }}
-                    />
-                </div>
-            ),
-        }));
-    }, [
-        records,
-        templates,
-        hidden_autocomplete_options,
-        debounced_work_name_search,
-        getAutoCompleteOptions,
-        hideAutoCompleteOption,
-    ]);
-
-    const deal_name_options = useMemo(() => {
-        return getAutoCompleteOptions("deal_name").map((v) => ({
-            value: v,
-            label: (
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                    }}
-                >
-                    <span>
-                        <HighlightText
-                            text={v}
-                            search={debounced_deal_name_search}
-                        />
-                    </span>
-                    <CloseOutlined
-                        style={{
-                            fontSize: 10,
-                            color: "#999",
-                            cursor: "pointer",
-                        }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            hideAutoCompleteOption("deal_name", v);
-                            message.info(INFO_MESSAGES.optionHiddenV(v));
-                        }}
-                    />
-                </div>
-            ),
-        }));
-    }, [
-        records,
-        templates,
-        hidden_autocomplete_options,
-        debounced_deal_name_search,
-        getAutoCompleteOptions,
-        hideAutoCompleteOption,
-    ]);
-
-    // 업무명/카테고리명 옵션 (기본 + 사용자 정의, 숨김 필터링)
-    const task_options = useMemo(() => {
-        const all = [...DEFAULT_TASK_OPTIONS, ...custom_task_options];
-        const hidden = hidden_autocomplete_options.task_option || [];
-        return [...new Set(all)]
-            .filter((v) => !hidden.includes(v))
-            .map((v) => ({ value: v, label: v }));
-    }, [custom_task_options, hidden_autocomplete_options]);
-
-    const category_options = useMemo(() => {
-        const all = [...DEFAULT_CATEGORY_OPTIONS, ...custom_category_options];
-        const hidden = hidden_autocomplete_options.category_option || [];
-        return [...new Set(all)]
-            .filter((v) => !hidden.includes(v))
-            .map((v) => ({ value: v, label: v }));
-    }, [custom_category_options, hidden_autocomplete_options]);
 
     // 단축키 이벤트 리스너: 새 프리셋 모달 열기
     useEffect(() => {
         const handleOpenNewPresetModal = () => {
             setIsEditMode(false);
             setEditingTemplate(null);
-            form.resetFields();
-            form.setFieldsValue({ color: TEMPLATE_COLORS[0] });
             setIsModalOpen(true);
         };
         window.addEventListener(
@@ -448,14 +244,12 @@ export default function WorkTemplateList({
                 handleOpenNewPresetModal
             );
         };
-    }, [form]);
+    }, []);
 
     // 모달 열기 (추가)
     const handleOpenAddModal = () => {
         setIsEditMode(false);
         setEditingTemplate(null);
-        form.resetFields();
-        form.setFieldsValue({ color: TEMPLATE_COLORS[0] });
         setIsModalOpen(true);
     };
 
@@ -463,15 +257,6 @@ export default function WorkTemplateList({
     const handleOpenEditModal = (template: WorkTemplate) => {
         setIsEditMode(true);
         setEditingTemplate(template);
-        form.setFieldsValue({
-            project_code: template.project_code || "",
-            work_name: template.work_name,
-            deal_name: template.deal_name,
-            task_name: template.task_name,
-            category_name: template.category_name,
-            note: template.note,
-            color: template.color,
-        });
         setIsModalOpen(true);
     };
 
@@ -484,65 +269,37 @@ export default function WorkTemplateList({
     };
 
     // 프리셋 추가/수정 처리
-    const handleSubmit = async () => {
-        try {
-            const values = await form.validateFields();
-            const color =
-                typeof values.color === "string"
-                    ? values.color
-                    : values.color?.toHexString() || TEMPLATE_COLORS[0];
-
-            if (is_edit_mode && editing_template) {
-                // 수정
-                updateTemplate(editing_template.id, {
-                    project_code: values.project_code || "",
-                    work_name: values.work_name,
-                    task_name: values.task_name || "",
-                    deal_name: values.deal_name || "",
-                    category_name: values.category_name || "",
-                    note: values.note || "",
-                    color,
-                });
-                message.success(SUCCESS_MESSAGES.templateUpdated);
-            } else {
-                // 추가
-                addTemplate({
-                    project_code: values.project_code || "",
-                    work_name: values.work_name,
-                    task_name: values.task_name || "",
-                    deal_name: values.deal_name || "",
-                    category_name: values.category_name || "",
-                    note: values.note || "",
-                    color,
-                });
-                message.success(SUCCESS_MESSAGES.templateAdded);
-            }
-
-            handleCloseModal();
-        } catch {
-            // validation failed
-        }
-    };
-
-    // 업무명 추가
-    const handleAddTaskOption = () => {
-        if (new_task_input.trim()) {
-            addCustomTaskOption(new_task_input.trim());
-            setNewTaskInput("");
-            message.success(
-                SUCCESS_MESSAGES.taskOptionAdded(new_task_input.trim())
-            );
-        }
-    };
-
-    // 카테고리명 추가
-    const handleAddCategoryOption = () => {
-        if (new_category_input.trim()) {
-            addCustomCategoryOption(new_category_input.trim());
-            setNewCategoryInput("");
-            message.success(
-                SUCCESS_MESSAGES.categoryOptionAdded(new_category_input.trim())
-            );
+    const handleSubmit = async (values: {
+        project_code?: string;
+        work_name: string;
+        deal_name?: string;
+        task_name?: string;
+        category_name?: string;
+        note?: string;
+        color: string;
+    }) => {
+        if (is_edit_mode && editing_template) {
+            // 수정
+            updateTemplate(editing_template.id, {
+                project_code: values.project_code || "",
+                work_name: values.work_name,
+                task_name: values.task_name || "",
+                deal_name: values.deal_name || "",
+                category_name: values.category_name || "",
+                note: values.note || "",
+                color: values.color,
+            });
+        } else {
+            // 추가
+            addTemplate({
+                project_code: values.project_code || "",
+                work_name: values.work_name,
+                task_name: values.task_name || "",
+                deal_name: values.deal_name || "",
+                category_name: values.category_name || "",
+                note: values.note || "",
+                color: values.color,
+            });
         }
     };
 
@@ -632,318 +389,26 @@ export default function WorkTemplateList({
                 )}
             </Card>
 
-            <Modal
-                title={is_edit_mode ? "프리셋 수정" : "새 프리셋 추가"}
+            <TemplateModal
                 open={is_modal_open}
-                onCancel={handleCloseModal}
-                footer={[
-                    <Button key="ok" type="primary" onClick={handleSubmit}>
-                        {is_edit_mode ? "수정" : "추가"}{" "}
-                        <span
-                            style={{
-                                fontSize: 11,
-                                opacity: 0.85,
-                                marginLeft: 4,
-                                padding: "1px 4px",
-                                background: "rgba(255,255,255,0.2)",
-                                borderRadius: 3,
-                            }}
-                        >
-                            F8
-                        </span>
-                    </Button>,
-                    <Button key="cancel" onClick={handleCloseModal}>
-                        취소
-                    </Button>,
-                ]}
-            >
-                <Form
-                    form={form}
-                    layout="vertical"
-                    onKeyDown={(e) => {
-                        if (e.key === "F8") {
-                            e.preventDefault();
-                            handleSubmit();
-                        }
-                    }}
-                >
-                    <Form.Item name="project_code" label="프로젝트 코드">
-                        <AutoComplete
-                            options={project_code_options}
-                            placeholder="예: A25_01846 (미입력 시 A00_00000)"
-                            filterOption={(input, option) =>
-                                (option?.value ?? "")
-                                    .toLowerCase()
-                                    .includes(input.toLowerCase())
-                            }
-                            onSearch={setProjectCodeSearch}
-                            onSelect={(value: string) =>
-                                handleProjectCodeSelect(value)
-                            }
-                        />
-                    </Form.Item>
-
-                    <Form.Item
-                        name="work_name"
-                        label="작업명"
-                        rules={[
-                            { required: true, message: "작업명을 입력하세요" },
-                        ]}
-                    >
-                        <AutoComplete
-                            options={work_name_options}
-                            placeholder="예: 5.6 프레임워크 FE"
-                            filterOption={(input, option) =>
-                                (option?.value ?? "")
-                                    .toLowerCase()
-                                    .includes(input.toLowerCase())
-                            }
-                            onSearch={setWorkNameSearch}
-                        />
-                    </Form.Item>
-
-                    <Form.Item name="deal_name" label="거래명 (상세 작업)">
-                        <AutoComplete
-                            options={deal_name_options}
-                            placeholder="예: 5.6 테스트 케이스 확인 및 이슈 처리"
-                            filterOption={(input, option) =>
-                                (option?.value ?? "")
-                                    .toLowerCase()
-                                    .includes(input.toLowerCase())
-                            }
-                            onSearch={setDealNameSearch}
-                        />
-                    </Form.Item>
-
-                    <Space style={{ width: "100%" }} size="middle">
-                        <Form.Item
-                            name="task_name"
-                            label="업무명"
-                            style={{ flex: 1 }}
-                        >
-                            <Select
-                                placeholder="업무 선택"
-                                options={task_options}
-                                allowClear
-                                popupMatchSelectWidth={240}
-                                optionRender={(option) => (
-                                    <div
-                                        style={{
-                                            display: "flex",
-                                            justifyContent: "space-between",
-                                            alignItems: "center",
-                                        }}
-                                    >
-                                        <span>{option.label}</span>
-                                        <CloseOutlined
-                                            style={{
-                                                fontSize: 10,
-                                                color: "#999",
-                                                cursor: "pointer",
-                                            }}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                hideAutoCompleteOption(
-                                                    "task_option",
-                                                    option.value as string
-                                                );
-                                            }}
-                                        />
-                                    </div>
-                                )}
-                                dropdownRender={(menu) => (
-                                    <>
-                                        {menu}
-                                        <Divider style={{ margin: "8px 0" }} />
-                                        <Space
-                                            style={{
-                                                padding: "0 8px 4px",
-                                                width: "100%",
-                                            }}
-                                            onMouseDown={(e) =>
-                                                e.stopPropagation()
-                                            }
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setTimeout(
-                                                    () =>
-                                                        new_task_input_ref.current?.focus(),
-                                                    0
-                                                );
-                                            }}
-                                        >
-                                            <Input
-                                                ref={new_task_input_ref}
-                                                placeholder="새 업무명"
-                                                value={new_task_input}
-                                                onChange={(e) =>
-                                                    setNewTaskInput(
-                                                        e.target.value
-                                                    )
-                                                }
-                                                onKeyDown={(e) =>
-                                                    e.stopPropagation()
-                                                }
-                                                onMouseDown={(e) => {
-                                                    e.stopPropagation();
-                                                    setTimeout(
-                                                        () =>
-                                                            new_task_input_ref.current?.focus(),
-                                                        0
-                                                    );
-                                                }}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    new_task_input_ref.current?.focus();
-                                                }}
-                                                onFocus={(e) =>
-                                                    e.stopPropagation()
-                                                }
-                                                size="small"
-                                                style={{ width: 130 }}
-                                            />
-                                            <Button
-                                                type="text"
-                                                icon={<PlusOutlined />}
-                                                onClick={handleAddTaskOption}
-                                                onMouseDown={(e) =>
-                                                    e.stopPropagation()
-                                                }
-                                                size="small"
-                                            >
-                                                추가
-                                            </Button>
-                                        </Space>
-                                    </>
-                                )}
-                            />
-                        </Form.Item>
-                        <Form.Item
-                            name="category_name"
-                            label="카테고리명"
-                            style={{ flex: 1 }}
-                        >
-                            <Select
-                                placeholder="카테고리 선택"
-                                options={category_options}
-                                allowClear
-                                popupMatchSelectWidth={240}
-                                optionRender={(option) => (
-                                    <div
-                                        style={{
-                                            display: "flex",
-                                            justifyContent: "space-between",
-                                            alignItems: "center",
-                                        }}
-                                    >
-                                        <span>{option.label}</span>
-                                        <CloseOutlined
-                                            style={{
-                                                fontSize: 10,
-                                                color: "#999",
-                                                cursor: "pointer",
-                                            }}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                hideAutoCompleteOption(
-                                                    "category_option",
-                                                    option.value as string
-                                                );
-                                            }}
-                                        />
-                                    </div>
-                                )}
-                                dropdownRender={(menu) => (
-                                    <>
-                                        {menu}
-                                        <Divider style={{ margin: "8px 0" }} />
-                                        <Space
-                                            style={{
-                                                padding: "0 8px 4px",
-                                                width: "100%",
-                                            }}
-                                            onMouseDown={(e) =>
-                                                e.stopPropagation()
-                                            }
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setTimeout(
-                                                    () =>
-                                                        new_category_input_ref.current?.focus(),
-                                                    0
-                                                );
-                                            }}
-                                        >
-                                            <Input
-                                                ref={new_category_input_ref}
-                                                placeholder="새 카테고리"
-                                                value={new_category_input}
-                                                onChange={(e) =>
-                                                    setNewCategoryInput(
-                                                        e.target.value
-                                                    )
-                                                }
-                                                onKeyDown={(e) =>
-                                                    e.stopPropagation()
-                                                }
-                                                onMouseDown={(e) => {
-                                                    e.stopPropagation();
-                                                    setTimeout(
-                                                        () =>
-                                                            new_category_input_ref.current?.focus(),
-                                                        0
-                                                    );
-                                                }}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    new_category_input_ref.current?.focus();
-                                                }}
-                                                onFocus={(e) =>
-                                                    e.stopPropagation()
-                                                }
-                                                size="small"
-                                                style={{ width: 130 }}
-                                            />
-                                            <Button
-                                                type="text"
-                                                icon={<PlusOutlined />}
-                                                onClick={
-                                                    handleAddCategoryOption
-                                                }
-                                                onMouseDown={(e) =>
-                                                    e.stopPropagation()
-                                                }
-                                                size="small"
-                                            >
-                                                추가
-                                            </Button>
-                                        </Space>
-                                    </>
-                                )}
-                            />
-                        </Form.Item>
-                    </Space>
-
-                    <Form.Item name="note" label="비고">
-                        <Input.TextArea placeholder="추가 메모" rows={2} />
-                    </Form.Item>
-
-                    <Form.Item
-                        name="color"
-                        label="구분 색상"
-                        initialValue={TEMPLATE_COLORS[0]}
-                    >
-                        <ColorPicker
-                            presets={[
-                                {
-                                    label: "추천 색상",
-                                    colors: TEMPLATE_COLORS,
-                                },
-                            ]}
-                        />
-                    </Form.Item>
-                </Form>
-            </Modal>
+                is_edit_mode={is_edit_mode}
+                editing_template={editing_template}
+                form={form}
+                records={records}
+                templates={templates}
+                getAutoCompleteOptions={work_store.getAutoCompleteOptions}
+                getProjectCodeOptions={work_store.getProjectCodeOptions}
+                custom_task_options={work_store.custom_task_options}
+                custom_category_options={work_store.custom_category_options}
+                hidden_autocomplete_options={
+                    work_store.hidden_autocomplete_options
+                }
+                addCustomTaskOption={work_store.addCustomTaskOption}
+                addCustomCategoryOption={work_store.addCustomCategoryOption}
+                hideAutoCompleteOption={work_store.hideAutoCompleteOption}
+                onSubmit={handleSubmit}
+                onClose={handleCloseModal}
+            />
 
             <style>{`
                 .template-list-card {

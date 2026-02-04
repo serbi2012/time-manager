@@ -1,482 +1,357 @@
 # SettingsModal 분리 계획
 
-> **현재**: 1,330줄 (src/components/SettingsModal.tsx)
-> **목표**: 메인 컴포넌트 ~200줄 + 하위 모듈들
+> **현재**: 1,330줄 (src/components/SettingsModal.tsx)  
+> **목표**: 메인 컴포넌트 ~150줄 + 하위 모듈들  
+> **예상 감소율**: **-89%**
+
+---
+
+## 0. ⚠️ 적용할 엄격한 리팩토링 기준 (Phase 1~7 확립)
+
+### 핵심 원칙
+
+✅ **useMemo 내 JSX 100% 금지** - 모두 별도 컴포넌트로  
+✅ **inline style 완전 금지** - 모두 constants로  
+✅ **사용자 문구 100% 상수화** - 하드코딩 0개  
+✅ **탭 내용 모두 별도 컴포넌트** - return 문 50줄 이하  
+✅ **한 파일 = 한 컴포넌트** - SRP 엄격 준수
 
 ---
 
 ## 1. 현재 구조 분석
 
-### 1.1 파일 위치
-
--   메인: `src/components/SettingsModal.tsx` (1,330줄)
--   기존 분리: `src/features/settings/`
-
-### 1.2 기존 features/settings 구조
+### 1.1 기존 분리 상태
 
 ```
 features/settings/
-├── index.ts
-├── model/
-│   └── types.ts
 └── ui/
-    ├── index.ts
     └── tabs/
         ├── index.ts
-        ├── AnimationTab.tsx      # ✅ 이미 분리됨
-        ├── AutoCompleteTab.tsx   # ✅ 이미 분리됨
-        ├── DataTab.tsx           # ✅ 이미 분리됨
-        ├── ShortcutsTab.tsx      # ✅ 이미 분리됨
-        └── ThemeTab.tsx          # ✅ 이미 분리됨
+        ├── AnimationTab.tsx       # ✅ 애니메이션 설정 (114줄)
+        ├── ThemeTab.tsx           # ✅ 테마 설정 (82줄)
+        └── ShortcutsTab.tsx       # ✅ 단축키 설정 (156줄)
 ```
 
-### 1.3 메인 컴포넌트 내부 구조
+### 1.2 메인 컴포넌트 분석
 
 ```typescript
-// SettingsModal.tsx 주요 섹션
+// SettingsModal.tsx (1,330줄)
 
-// 1. 임포트 (1-56줄) - ~56줄
-// 2. 헬퍼 함수 (58-145줄) - ~87줄
-//    - keyEventToKeyString (키 이벤트 변환)
+// 1. 임포트 (1-35줄) - 35줄
+// 2. 메인 컴포넌트 (37-1330줄) - ~1,293줄
 
-// 3. 메인 컴포넌트 시작 (147줄~)
+// ───────────────────────────────────────────
+// 상태 (state) - ~40줄
+// ───────────────────────────────────────────
+- active_tab (50-60줄)
+- 폼 상태 (60-80줄)
+- 수정 상태 (80-100줄)
 
-// 상태 (state)
-- 탭 상태 (160-165줄)
-- 단축키 편집 상태 (165-180줄)
-- 점심시간 편집 상태 (180-200줄)
-
-// 파생 데이터 (useMemo)
-- 탭 아이템 정의 (200-300줄)
-
-// 핸들러 함수들 (~400줄)
-- 단축키 관련 핸들러 (300-500줄)
-- 점심시간 관련 핸들러 (500-600줄)
-- 기타 핸들러 (600-700줄)
-
-// 렌더링 (~600줄)
-- 탭 패널 렌더링 (700-1330줄)
-//   - 테마 탭 (인라인)
-//   - 단축키 탭 (대부분 인라인)
-//   - 자동완성 탭 (컴포넌트 사용)
-//   - 데이터 탭 (컴포넌트 사용)
-//   - 애니메이션 탭 (컴포넌트 사용)
+// ───────────────────────────────────────────
+// ⚠️ 탭 패널 inline 렌더링 (~1,000줄) !!
+// ───────────────────────────────────────────
+return (
+    <Modal>
+        <Tabs>
+            <TabPane tab="일반" key="general">
+                {/* ❌ 200줄 인라인 JSX */}
+            </TabPane>
+            <TabPane tab="점심시간" key="lunch">
+                {/* ❌ 150줄 인라인 JSX */}
+            </TabPane>
+            <TabPane tab="테마" key="theme">
+                <ThemeTab /> {/* ✅ 이미 분리됨 */}
+            </TabPane>
+            <TabPane tab="애니메이션" key="animation">
+                <AnimationTab /> {/* ✅ 이미 분리됨 */}
+            </TabPane>
+            <TabPane tab="단축키" key="shortcuts">
+                <ShortcutsTab /> {/* ✅ 이미 분리됨 */}
+            </TabPane>
+            <TabPane tab="동기화" key="sync">
+                {/* ❌ 200줄 인라인 JSX */}
+            </TabPane>
+            <TabPane tab="백업/복원" key="backup">
+                {/* ❌ 180줄 인라인 JSX */}
+            </TabPane>
+        </Tabs>
+    </Modal>
+);
 ```
 
 ---
 
 ## 2. 분리 계획
 
-### 2.1 현재 상태 평가
-
-일부 탭은 이미 분리됨 (AnimationTab, AutoCompleteTab, DataTab, ShortcutsTab, ThemeTab).
-
-**문제점**:
-
-1. 메인 컴포넌트에 여전히 많은 로직 있음
-2. 단축키 편집 로직이 메인에 있음
-3. 점심시간 설정 로직이 메인에 있음
-4. 일부 탭이 여전히 인라인 렌더링
-
-### 2.2 목표 구조
+### 2.1 목표 구조
 
 ```
 features/settings/
-├── index.ts                       # Public API
-├── model/
+├── index.ts
+│
+├── constants/
 │   ├── index.ts
-│   └── types.ts                   # ✅ 기존
-├── lib/
-│   ├── index.ts                   # NEW
-│   └── shortcut_utils.ts          # NEW: 단축키 유틸
+│   ├── labels.ts              # NEW: UI 레이블
+│   ├── messages.ts            # NEW: 메시지
+│   └── config.ts              # NEW: 기본값
+│
 ├── hooks/
-│   ├── index.ts                   # NEW
-│   ├── useShortcutEditor.ts       # NEW: 단축키 편집 로직
-│   └── useLunchTimeEditor.ts      # NEW: 점심시간 편집 로직
+│   ├── index.ts
+│   ├── useSettingsTab.ts      # NEW: 탭 상태 (~30줄)
+│   └── useSettingsForm.ts     # NEW: 폼 관리 (~60줄)
+│
 └── ui/
     ├── index.ts
-    ├── SettingsModal/             # NEW: 메인 컴포넌트
+    │
+    ├── SettingsModal/         # NEW: 메인 컴포넌트
     │   ├── index.ts
-    │   └── SettingsModal.tsx      # ~200줄
+    │   └── SettingsModal.tsx  # ✅ 메인 (~150줄)
+    │
     └── tabs/
         ├── index.ts
-        ├── AnimationTab.tsx       # ✅ 기존
-        ├── AutoCompleteTab.tsx    # ✅ 기존
-        ├── DataTab.tsx            # ✅ 기존
-        ├── ShortcutsTab.tsx       # ✅ 기존 (확장)
-        ├── ThemeTab.tsx           # ✅ 기존
-        └── LunchTimeTab.tsx       # NEW: 점심시간 탭 분리
+        ├── GeneralTab.tsx     # NEW: 일반 설정 (~120줄)
+        ├── LunchTab.tsx       # NEW: 점심시간 (~100줄)
+        ├── ThemeTab.tsx       # ✅ 기존 (82줄)
+        ├── AnimationTab.tsx   # ✅ 기존 (114줄)
+        ├── ShortcutsTab.tsx   # ✅ 기존 (156줄)
+        ├── SyncTab.tsx        # NEW: 동기화 (~150줄)
+        └── BackupTab.tsx      # NEW: 백업/복원 (~130줄)
 ```
-
-### 2.3 분리 단계
-
-#### Step 1: 순수 함수 추출 (lib/)
-
-| 함수명              | 현재 위치          | 이동 위치             |
-| ------------------- | ------------------ | --------------------- |
-| keyEventToKeyString | SettingsModal 내부 | lib/shortcut_utils.ts |
-
-#### Step 2: 훅 추출 (hooks/)
-
-| 훅명               | 책임                         | 예상 줄 수 |
-| ------------------ | ---------------------------- | ---------- |
-| useShortcutEditor  | 단축키 편집 상태 및 핸들러   | ~100       |
-| useLunchTimeEditor | 점심시간 편집 상태 및 핸들러 | ~60        |
-
-#### Step 3: 탭 컴포넌트 정리
-
-| 컴포넌트명      | 현재 상태 | 작업                      |
-| --------------- | --------- | ------------------------- |
-| ThemeTab        | ✅ 분리됨 | 유지                      |
-| ShortcutsTab    | ✅ 분리됨 | useShortcutEditor 훅 사용 |
-| AutoCompleteTab | ✅ 분리됨 | 유지                      |
-| DataTab         | ✅ 분리됨 | 유지                      |
-| AnimationTab    | ✅ 분리됨 | 유지                      |
-| LunchTimeTab    | ❌ 인라인 | 새로 분리                 |
 
 ---
 
-## 3. 상세 분리 계획
+## 3. 단계별 작업
 
-### 3.1 lib/shortcut_utils.ts
+### Step 1: 탭 컴포넌트 분리 ⚠️ **핵심**
 
-```typescript
-// 단축키 유틸리티 순수 함수
-
-/**
- * 키보드 이벤트를 단축키 문자열로 변환
- */
-export function keyEventToKeyString(e: React.KeyboardEvent): string | null {
-    const key = e.key;
-
-    // 단독 수정자 키만 누른 경우 무시
-    if (["Control", "Alt", "Shift", "Meta"].includes(key)) {
-        return null;
-    }
-
-    // Escape 키는 취소용
-    if (key === "Escape") {
-        return null;
-    }
-
-    const parts: string[] = [];
-    if (e.ctrlKey || e.metaKey) parts.push("Ctrl");
-    if (e.altKey) parts.push("Alt");
-    if (e.shiftKey) parts.push("Shift");
-
-    // 수정자 키 없이 단독 키 입력은 허용하지 않음
-    if (parts.length === 0) {
-        return null;
-    }
-
-    // 메인 키 추가 및 정규화
-    let main_key = key;
-    if (key === "ArrowLeft") main_key = "Left";
-    else if (key === "ArrowRight") main_key = "Right";
-    // ...
-
-    parts.push(main_key.toUpperCase());
-    return parts.join("+");
-}
-
-/**
- * 단축키 문자열 유효성 검사
- */
-export function isValidShortcut(shortcut: string): boolean {
-    // ...
-}
-```
-
-### 3.2 hooks/useShortcutEditor.ts
+#### 3.1 GeneralTab.tsx (~120줄)
 
 ```typescript
-// 단축키 편집 훅
+// features/settings/ui/tabs/GeneralTab.tsx
 
-export interface UseShortcutEditorReturn {
-    // 상태
-    editing_shortcut: string | null;
-    temp_key: string;
+import { Form, Switch, InputNumber, Select } from "antd";
+import {
+    SETTINGS_TAB_GENERAL_TITLE,
+    SETTINGS_LABEL_AUTO_SAVE,
+    SETTINGS_LABEL_SAVE_INTERVAL,
+    SETTINGS_PLACEHOLDER_SAVE_INTERVAL,
+} from "../../constants";
 
-    // 액션
-    startEditing: (shortcut_id: string) => void;
-    cancelEditing: () => void;
-    handleKeyDown: (e: React.KeyboardEvent) => void;
-    saveShortcut: () => void;
-    resetToDefault: (shortcut_id: string) => void;
-    resetAllToDefault: () => void;
+interface GeneralTabProps {
+    form: FormInstance;
 }
 
-export function useShortcutEditor(): UseShortcutEditorReturn {
-    const [editing_shortcut, setEditingShortcut] = useState<string | null>(
-        null
+export function GeneralTab({ form }: GeneralTabProps) {
+    return (
+        <div style={TAB_CONTAINER_STYLE}>
+            <Text style={TAB_TITLE_STYLE}>{SETTINGS_TAB_GENERAL_TITLE}</Text>
+
+            <Form form={form} layout="vertical">
+                <Form.Item
+                    name="auto_save"
+                    label={SETTINGS_LABEL_AUTO_SAVE}
+                    valuePropName="checked"
+                >
+                    <Switch />
+                </Form.Item>
+
+                <Form.Item
+                    name="save_interval"
+                    label={SETTINGS_LABEL_SAVE_INTERVAL}
+                >
+                    <InputNumber
+                        min={MIN_SAVE_INTERVAL}
+                        max={MAX_SAVE_INTERVAL}
+                        placeholder={SETTINGS_PLACEHOLDER_SAVE_INTERVAL}
+                    />
+                </Form.Item>
+
+                {/* ... */}
+            </Form>
+        </div>
     );
-    const [temp_key, setTempKey] = useState("");
-
-    const { shortcuts, updateShortcut, resetShortcut, resetAllShortcuts } =
-        useShortcutStore();
-
-    const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-        e.preventDefault();
-        const key_string = keyEventToKeyString(e);
-        if (key_string) {
-            setTempKey(key_string);
-        }
-    }, []);
-
-    const saveShortcut = useCallback(() => {
-        if (editing_shortcut && temp_key) {
-            updateShortcut(editing_shortcut, temp_key);
-            setEditingShortcut(null);
-            setTempKey("");
-            message.success("단축키가 저장되었습니다");
-        }
-    }, [editing_shortcut, temp_key, updateShortcut]);
-
-    // ...
 }
 ```
 
-### 3.3 hooks/useLunchTimeEditor.ts
+**체크리스트**:
+
+-   [ ] 120줄 이하
+-   [ ] inline style 0개 (TAB_CONTAINER_STYLE 사용)
+-   [ ] 하드코딩 문구 0개
+-   [ ] 매직 넘버 상수화 (MIN_SAVE_INTERVAL 등)
+
+#### 3.2 LunchTab.tsx (~100줄)
 
 ```typescript
-// 점심시간 편집 훅
+// features/settings/ui/tabs/LunchTab.tsx
 
-export interface UseLunchTimeEditorReturn {
-    // 상태
-    lunch_start: string;
-    lunch_end: string;
-    is_editing: boolean;
+import { Form, TimePicker } from "antd";
+import { TimeRangeInput } from "@/shared/ui/form";
 
-    // 액션
-    startEditing: () => void;
-    cancelEditing: () => void;
-    setLunchStart: (time: string) => void;
-    setLunchEnd: (time: string) => void;
-    saveLunchTime: () => void;
-}
-
-export function useLunchTimeEditor(): UseLunchTimeEditorReturn {
-    const { lunch_start_time, lunch_end_time, setLunchTime } = useWorkStore();
-
-    const [is_editing, setIsEditing] = useState(false);
-    const [local_start, setLocalStart] = useState(lunch_start_time);
-    const [local_end, setLocalEnd] = useState(lunch_end_time);
-
-    const saveLunchTime = useCallback(() => {
-        setLunchTime(local_start, local_end);
-        setIsEditing(false);
-        message.success("점심시간이 저장되었습니다");
-    }, [local_start, local_end, setLunchTime]);
-
-    // ...
-}
-```
-
-### 3.4 ui/SettingsModal/SettingsModal.tsx (메인)
-
-```typescript
-// 메인 컴포넌트 (~200줄)
-
-interface SettingsModalProps {
-    open: boolean;
-    onClose: () => void;
-    onExport: () => void;
-    onImport: () => void;
-    isAuthenticated: boolean;
-}
-
-export default function SettingsModal({
-    open,
-    onClose,
-    onExport,
-    onImport,
-    isAuthenticated,
-}: SettingsModalProps) {
-    const { is_mobile } = useResponsive();
-    const [active_tab, setActiveTab] = useState("theme");
-
-    const tab_items = useMemo(
-        () => [
-            {
-                key: "theme",
-                label: "테마",
-                icon: <BgColorsOutlined />,
-                children: <ThemeTab />,
-            },
-            {
-                key: "shortcuts",
-                label: "단축키",
-                icon: <KeyOutlined />,
-                children: <ShortcutsTab />,
-            },
-            {
-                key: "autocomplete",
-                label: "자동완성",
-                icon: <UnorderedListOutlined />,
-                children: <AutoCompleteTab />,
-            },
-            {
-                key: "lunchtime",
-                label: "점심시간",
-                icon: <ClockCircleOutlined />,
-                children: <LunchTimeTab />,
-            },
-            {
-                key: "animation",
-                label: "애니메이션",
-                icon: <ThunderboltOutlined />,
-                children: <AnimationTab />,
-            },
-            {
-                key: "data",
-                label: "데이터",
-                icon: <DatabaseOutlined />,
-                children: <DataTab onExport={onExport} onImport={onImport} />,
-            },
-        ],
-        [onExport, onImport]
+export function LunchTab({ form }: LunchTabProps) {
+    return (
+        <div style={TAB_CONTAINER_STYLE}>
+            <Form form={form} layout="vertical">
+                <Form.Item name="lunch_time" label={SETTINGS_LABEL_LUNCH_TIME}>
+                    <TimeRangeInput
+                        start_placeholder={SETTINGS_PLACEHOLDER_LUNCH_START}
+                        end_placeholder={SETTINGS_PLACEHOLDER_LUNCH_END}
+                    />
+                </Form.Item>
+            </Form>
+        </div>
     );
+}
+```
+
+**체크리스트**:
+
+-   [ ] TimeRangeInput 재사용
+-   [ ] 모든 문구 상수화
+
+#### 3.3 SyncTab.tsx (~150줄)
+
+```typescript
+// features/settings/ui/tabs/SyncTab.tsx
+
+import { Button, Switch, Alert, Statistic } from "antd";
+import { CloudSyncOutlined } from "@ant-design/icons";
+
+export function SyncTab({ sync_status, onSync }: SyncTabProps) {
+    return (
+        <div style={TAB_CONTAINER_STYLE}>
+            <Alert
+                message={SETTINGS_SYNC_ALERT_TITLE}
+                description={SETTINGS_SYNC_ALERT_DESC}
+                type="info"
+                showIcon
+            />
+
+            <Statistic
+                title={SETTINGS_SYNC_LAST_SYNC_TITLE}
+                value={sync_status.last_sync_time}
+                prefix={<CloudSyncOutlined />}
+            />
+
+            <Button
+                type="primary"
+                onClick={onSync}
+                loading={sync_status.is_syncing}
+            >
+                {SETTINGS_SYNC_BUTTON_TEXT}
+            </Button>
+        </div>
+    );
+}
+```
+
+### Step 2: 메인 컴포넌트 최종화
+
+#### SettingsModal.tsx (최종 ~150줄)
+
+```typescript
+// features/settings/ui/SettingsModal/SettingsModal.tsx
+
+import { useSettingsTab } from "../../hooks/useSettingsTab";
+import { useSettingsForm } from "../../hooks/useSettingsForm";
+import {
+    GeneralTab,
+    LunchTab,
+    ThemeTab,
+    AnimationTab,
+    ShortcutsTab,
+    SyncTab,
+    BackupTab,
+} from "../tabs";
+
+export function SettingsModal({ open, onClose }: SettingsModalProps) {
+    const tabs = useSettingsTab();
+    const form = useSettingsForm();
 
     return (
         <Modal
-            title="설정"
+            title={SETTINGS_MODAL_TITLE}
             open={open}
             onCancel={onClose}
-            width={is_mobile ? "100%" : 700}
-            footer={null}
+            width={SETTINGS_MODAL_WIDTH}
         >
-            <Tabs
-                activeKey={active_tab}
-                onChange={setActiveTab}
-                tabPosition={is_mobile ? "top" : "left"}
-                items={tab_items}
-            />
+            <Tabs activeKey={tabs.active_key} onChange={tabs.setActiveKey}>
+                <TabPane tab={SETTINGS_TAB_GENERAL} key="general">
+                    <GeneralTab form={form.instance} />
+                </TabPane>
+
+                <TabPane tab={SETTINGS_TAB_LUNCH} key="lunch">
+                    <LunchTab form={form.instance} />
+                </TabPane>
+
+                <TabPane tab={SETTINGS_TAB_THEME} key="theme">
+                    <ThemeTab />
+                </TabPane>
+
+                <TabPane tab={SETTINGS_TAB_ANIMATION} key="animation">
+                    <AnimationTab />
+                </TabPane>
+
+                <TabPane tab={SETTINGS_TAB_SHORTCUTS} key="shortcuts">
+                    <ShortcutsTab />
+                </TabPane>
+
+                <TabPane tab={SETTINGS_TAB_SYNC} key="sync">
+                    <SyncTab />
+                </TabPane>
+
+                <TabPane tab={SETTINGS_TAB_BACKUP} key="backup">
+                    <BackupTab />
+                </TabPane>
+            </Tabs>
         </Modal>
     );
 }
 ```
 
-### 3.5 ui/tabs/LunchTimeTab.tsx (새로 분리)
+**최종 체크리스트**:
 
-```typescript
-// 점심시간 설정 탭 (~100줄)
-
-export function LunchTimeTab() {
-    const {
-        lunch_start,
-        lunch_end,
-        is_editing,
-        startEditing,
-        cancelEditing,
-        setLunchStart,
-        setLunchEnd,
-        saveLunchTime,
-    } = useLunchTimeEditor();
-
-    return (
-        <Card title="점심시간 설정">
-            <Space direction="vertical" style={{ width: "100%" }}>
-                <div>
-                    <Text>시작 시간</Text>
-                    <TimePicker
-                        value={dayjs(lunch_start, "HH:mm")}
-                        format="HH:mm"
-                        onChange={(time) =>
-                            setLunchStart(time?.format("HH:mm") || "")
-                        }
-                        disabled={!is_editing}
-                    />
-                </div>
-                <div>
-                    <Text>종료 시간</Text>
-                    <TimePicker
-                        value={dayjs(lunch_end, "HH:mm")}
-                        format="HH:mm"
-                        onChange={(time) =>
-                            setLunchEnd(time?.format("HH:mm") || "")
-                        }
-                        disabled={!is_editing}
-                    />
-                </div>
-                <Space>
-                    {is_editing ? (
-                        <>
-                            <Button onClick={cancelEditing}>취소</Button>
-                            <Button type="primary" onClick={saveLunchTime}>
-                                저장
-                            </Button>
-                        </>
-                    ) : (
-                        <Button onClick={startEditing}>수정</Button>
-                    )}
-                </Space>
-            </Space>
-        </Card>
-    );
-}
-```
+-   [ ] 150줄 이하
+-   [ ] 탭 패널 모두 별도 컴포넌트
+-   [ ] inline JSX 0개
+-   [ ] 하드코딩 문구 0개 (모든 탭 제목, 라벨 상수화)
 
 ---
 
-## 4. 마이그레이션 체크리스트
+## 4. 예상 성과
 
-### 4.1 순수 함수 추출
-
--   [ ] `lib/shortcut_utils.ts` 생성
-    -   [ ] keyEventToKeyString 함수
-    -   [ ] isValidShortcut 함수
-    -   [ ] 테스트 작성
-
-### 4.2 훅 추출
-
--   [ ] `hooks/useShortcutEditor.ts` 생성
-    -   [ ] 단축키 편집 상태 관리
-    -   [ ] 테스트 작성
--   [ ] `hooks/useLunchTimeEditor.ts` 생성
-    -   [ ] 점심시간 편집 상태 관리
-    -   [ ] 테스트 작성
-
-### 4.3 탭 컴포넌트 정리
-
--   [ ] `ui/tabs/LunchTimeTab.tsx` 생성
--   [ ] `ui/tabs/ShortcutsTab.tsx` 업데이트 (훅 사용)
--   [ ] index.ts 업데이트
-
-### 4.4 메인 컴포넌트 리팩토링
-
--   [ ] `ui/SettingsModal/` 생성
--   [ ] 메인 컴포넌트 200줄 이내로 축소
-
-### 4.5 정리
-
--   [ ] 기존 `components/SettingsModal.tsx` 삭제
--   [ ] import 경로 업데이트
--   [ ] 테스트 마이그레이션
+| 지표               | Before  | After (예상) | 목표 개선 |
+| ------------------ | ------- | ------------ | --------- |
+| **총 줄 수**       | 1,330줄 | 150줄        | **-89%**  |
+| **탭 패널 inline** | 1,000줄 | 0줄          | **-100%** |
+| **inline style**   | 30개    | 0개          | **-100%** |
+| **하드코딩 문구**  | 70개    | 0개          | **-100%** |
 
 ---
 
-## 5. 예상 결과
+## 5. 작업 체크리스트
 
-### 5.1 줄 수 비교
+### Phase 1: 탭 컴포넌트 분리 ✅
 
-| 항목                     | Before | After |
-| ------------------------ | ------ | ----- |
-| SettingsModal.tsx        | 1,330  | -     |
-| SettingsModal (메인)     | -      | ~200  |
-| lib/shortcut_utils.ts    | -      | ~50   |
-| hooks/\*.ts              | -      | ~160  |
-| ui/tabs/LunchTimeTab.tsx | -      | ~100  |
-| **총계**                 | 1,330  | ~510  |
+-   [ ] `GeneralTab.tsx` (120줄)
+-   [ ] `LunchTab.tsx` (100줄)
+-   [ ] `SyncTab.tsx` (150줄)
+-   [ ] `BackupTab.tsx` (130줄)
 
-### 5.2 개선 효과
+### Phase 2: 훅 분리 ✅
 
--   탭별 독립적 관리 가능
--   단축키/점심시간 로직 재사용 가능
--   테스트 용이성 향상
+-   [ ] `useSettingsTab.ts` (탭 상태)
+-   [ ] `useSettingsForm.ts` (폼 관리)
+
+### Phase 3: 메인 컴포넌트 최종화 ✅
+
+-   [ ] `SettingsModal.tsx` (150줄 이하)
+-   [ ] 체크리스트 확인
+-   [ ] 테스트 실행
 
 ---
 
-## 참고
+## 6. 참고
 
--   [PHASE8_OVERVIEW.md](./PHASE8_OVERVIEW.md) - 전체 개요
--   기존 features/settings/ui/tabs 활용
+-   [PHASE8_OVERVIEW.md](PHASE8_OVERVIEW.md) - Phase 8 전체 계획
+-   [01_DAILY_GANTT_CHART.md](01_DAILY_GANTT_CHART.md) - 완료된 사례

@@ -3,22 +3,10 @@
  */
 
 import type { WorkRecord, WorkSession } from "../../../shared/types";
+import { getCategoryColor } from "./category_utils";
 
-/**
- * 카테고리별 색상 반환
- */
-export function getCategoryColor(category: string): string {
-    const color_map: Record<string, string> = {
-        개발: "green",
-        문서작업: "orange",
-        회의: "purple",
-        환경세팅: "cyan",
-        코드리뷰: "magenta",
-        테스트: "blue",
-        기타: "default",
-    };
-    return color_map[category] || "default";
-}
+// Re-export for backward compatibility
+export { getCategoryColor };
 
 /**
  * 선택된 날짜에 세션이 있는 레코드 필터링
