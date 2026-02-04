@@ -10,6 +10,10 @@ import {
     countProblemSessions,
 } from "../lib/problem_detector";
 import { findConflicts, countConflicts } from "../lib/conflict_finder";
+import {
+    findDuplicateRecords,
+    type DuplicateGroup,
+} from "../lib/duplicate_finder";
 import type { WorkRecord, WorkSession } from "../../../shared/types";
 
 /**
@@ -58,6 +62,12 @@ export interface UseAdminDataReturn {
         completed_records: number;
         incomplete_records: number;
     };
+    /** 중복 의심 레코드 그룹 */
+    duplicate_groups: DuplicateGroup[];
+    /** 삭제 제외 전체 레코드 (정렬됨) */
+    all_records: WorkRecord[];
+    /** 종료 시간 없는 세션 (진행 중) */
+    open_end_sessions: SessionWithMeta[];
 }
 
 /**
@@ -165,6 +175,24 @@ export function useAdminData(): UseAdminDataReturn {
         };
     }, [records]);
 
+    const duplicate_groups = useMemo(() => {
+        return findDuplicateRecords(records);
+    }, [records]);
+
+    const all_records = useMemo(() => {
+        return records
+            .filter((r) => !r.is_deleted)
+            .sort((a, b) => {
+                const date_cmp = b.date.localeCompare(a.date);
+                if (date_cmp !== 0) return date_cmp;
+                return (b.start_time || "").localeCompare(a.start_time || "");
+            });
+    }, [records]);
+
+    const open_end_sessions = useMemo(() => {
+        return all_sessions.filter((s) => s.end_time === "");
+    }, [all_sessions]);
+
     return {
         records,
         problem_sessions,
@@ -175,5 +203,8 @@ export function useAdminData(): UseAdminDataReturn {
         getSessionsByDateRange,
         running_sessions,
         stats_summary,
+        duplicate_groups,
+        all_records,
+        open_end_sessions,
     };
 }

@@ -4,48 +4,75 @@
 
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { ConfigProvider } from "antd";
+import koKR from "antd/locale/ko_KR";
 import { DataTab } from "../../../../features/settings/ui/tabs/DataTab";
+
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+    <ConfigProvider locale={koKR}>{children}</ConfigProvider>
+);
 
 describe("DataTab", () => {
     const default_props = {
-        on_export: vi.fn(),
-        on_import: vi.fn(),
-        is_logged_in: false,
+        onExport: vi.fn(),
+        onImport: vi.fn(),
+        isAuthenticated: false,
     };
 
     it("렌더링되어야 함", () => {
-        render(<DataTab {...default_props} />);
+        render(
+            <TestWrapper>
+                <DataTab {...default_props} />
+            </TestWrapper>
+        );
 
-        expect(screen.getByText("데이터 저장 위치")).toBeInTheDocument();
-        expect(screen.getByText("데이터 내보내기")).toBeInTheDocument();
-        expect(screen.getByText("데이터 가져오기")).toBeInTheDocument();
+        expect(screen.getByText("시간 설정")).toBeInTheDocument();
+        expect(screen.getByText("데이터 관리")).toBeInTheDocument();
+        expect(screen.getByText("내보내기")).toBeInTheDocument();
+        expect(screen.getByText("가져오기")).toBeInTheDocument();
     });
 
-    it("로그아웃 상태에서 LocalStorage 태그 표시", () => {
-        render(<DataTab {...default_props} is_logged_in={false} />);
+    it("로그아웃 상태에서 로컬 저장 표시", () => {
+        render(
+            <TestWrapper>
+                <DataTab {...default_props} isAuthenticated={false} />
+            </TestWrapper>
+        );
 
-        expect(screen.getByText(/LocalStorage/)).toBeInTheDocument();
+        expect(screen.getByText("로컬 저장")).toBeInTheDocument();
     });
 
-    it("로그인 상태에서 Firebase Cloud 태그 표시", () => {
-        render(<DataTab {...default_props} is_logged_in={true} />);
+    it("로그인 상태에서 클라우드 연결됨 표시", () => {
+        render(
+            <TestWrapper>
+                <DataTab {...default_props} isAuthenticated={true} />
+            </TestWrapper>
+        );
 
-        expect(screen.getByText(/Firebase Cloud/)).toBeInTheDocument();
+        expect(screen.getByText("클라우드 연결됨")).toBeInTheDocument();
     });
 
-    it("로그아웃 상태에서 경고 메시지 표시", () => {
-        render(<DataTab {...default_props} is_logged_in={false} />);
+    it("점심시간 섹션 표시", () => {
+        render(
+            <TestWrapper>
+                <DataTab {...default_props} />
+            </TestWrapper>
+        );
 
-        expect(screen.getByText(/브라우저 데이터 삭제 시/)).toBeInTheDocument();
+        expect(screen.getByText("점심시간")).toBeInTheDocument();
     });
 
-    it("내보내기 버튼 클릭 시 on_export 호출", () => {
-        const on_export = vi.fn();
-        render(<DataTab {...default_props} on_export={on_export} />);
+    it("내보내기 버튼 클릭 시 onExport 호출", () => {
+        const onExport = vi.fn();
+        render(
+            <TestWrapper>
+                <DataTab {...default_props} onExport={onExport} />
+            </TestWrapper>
+        );
 
         const export_button = screen.getByText("내보내기");
         fireEvent.click(export_button);
 
-        expect(on_export).toHaveBeenCalled();
+        expect(onExport).toHaveBeenCalled();
     });
 });

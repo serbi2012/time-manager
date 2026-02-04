@@ -333,21 +333,23 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
 
 ### Phase 1: 탭 컴포넌트 분리 ✅
 
--   [ ] `GeneralTab.tsx` (120줄)
--   [ ] `LunchTab.tsx` (100줄)
--   [ ] `SyncTab.tsx` (150줄)
--   [ ] `BackupTab.tsx` (130줄)
+-   [x] `ThemeTab.tsx` (테마 그리드 UI, 상수화)
+-   [x] `DataTab.tsx` (시간/프리셋/내보내기·가져오기/저장소 상태)
+-   [x] `AutoCompleteTab.tsx` + `AutoCompleteOptionList.tsx`
+-   [x] `ShortcutsTab.tsx` + `ShortcutKeyEditor.tsx`
+-   [x] `SettingItem.tsx` (공통 설정 항목 레이아웃)
+-   [x] `AnimationTab.tsx` (기존 유지)
 
-### Phase 2: 훅 분리 ✅
+### Phase 2: 훅·상수 분리 ✅
 
--   [ ] `useSettingsTab.ts` (탭 상태)
--   [ ] `useSettingsForm.ts` (폼 관리)
+-   [x] `useSettingsTab.ts` (탭 상태)
+-   [x] `constants/labels.ts`, `constants/styles.ts`
 
 ### Phase 3: 메인 컴포넌트 최종화 ✅
 
--   [ ] `SettingsModal.tsx` (150줄 이하)
--   [ ] 체크리스트 확인
--   [ ] 테스트 실행
+-   [x] `SettingsModal.tsx` (features/settings/ui/SettingsModal, ~190줄)
+-   [x] `src/components/SettingsModal.tsx` → feature re-export
+-   [x] 테스트 실행 및 스냅샷 갱신
 
 ---
 

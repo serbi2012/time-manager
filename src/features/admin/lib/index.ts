@@ -29,6 +29,9 @@ export {
     countConflicts,
 } from "./conflict_finder";
 
+// 중복 레코드 감지
+export { type DuplicateGroup, findDuplicateRecords } from "./duplicate_finder";
+
 // 통계 계산
 export {
     type DailyStat,

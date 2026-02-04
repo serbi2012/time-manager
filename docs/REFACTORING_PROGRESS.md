@@ -894,11 +894,59 @@ src/features/work-record/
 
 ---
 
+### Phase 8 Step 3: SettingsModal 리팩토링 ✅
+
+**완료일**: 2026-02-04
+
+#### 생성된 구조
+
+```
+src/features/settings/
+├── constants/
+│   ├── index.ts
+│   ├── labels.ts          # UI 레이블 (~90줄)
+│   └── styles.ts          # 스타일 상수 (~90줄)
+├── hooks/
+│   ├── index.ts
+│   └── useSettingsTab.ts  # 탭 상태 (~25줄)
+├── lib/
+│   ├── index.ts
+│   └── shortcut_key.ts    # keyEventToKeyString 순수 함수
+└── ui/
+    ├── SettingsModal/
+    │   ├── index.ts
+    │   └── SettingsModal.tsx   # 메인 (~190줄)
+    └── tabs/
+        ├── ThemeTab.tsx         # 테마 (그리드 UI)
+        ├── AnimationTab.tsx     # 기존 유지
+        ├── DataTab.tsx          # 시간/프리셋/내보내기·가져오기/저장소 상태
+        ├── AutoCompleteTab.tsx  # 자동완성 옵션 관리
+        ├── AutoCompleteOptionList.tsx  # 옵션 목록 섹션
+        ├── ShortcutsTab.tsx     # 단축키 (스토어 연동)
+        ├── ShortcutKeyEditor.tsx # 단축키 편집 모달
+        ├── SettingItem.tsx      # 설정 항목 레이아웃
+        └── index.ts
+```
+
+#### 변경 사항
+
+-   **src/components/SettingsModal.tsx**: 1,330줄 → re-export만 (~6줄). 실제 구현은 `features/settings`로 이전.
+-   탭 패널 인라인 JSX 제거: ThemeTab, DataTab, AutoCompleteTab, ShortcutsTab, ShortcutKeyEditor를 각각 별도 파일로 분리.
+-   사용자 문구·스타일 상수화: `features/settings/constants` (labels, styles).
+-   Ant Design Tabs: `tabPosition` → `tabPlacement` 적용.
+
+#### 테스트
+
+-   DataTab, ThemeTab, ShortcutsTab 단위 테스트: 스토어 연동으로 수정.
+-   스냅샷 테스트: ShortcutsTab, ThemeTab 스냅샷 갱신.
+-   SettingsModal 통합 테스트: 5개 탭(테마, 애니메이션, 데이터, 자동완성, 단축키) 검증.
+
+---
+
 ## 다음 단계
 
-### Phase 8 Step 3: 중소형 컴포넌트 분리 (대기)
+### Phase 8 Step 3 계속: 중소형 컴포넌트 분리 (대기)
 
--   SettingsModal (1,330줄 → ~200줄)
 -   WorkTemplateList (980줄 → ~200줄)
 -   WeeklySchedule (641줄 → ~200줄)
 
@@ -910,16 +958,18 @@ src/features/work-record/
 
 ## 변경 이력
 
-| 날짜       | 내용                                                                         |
-| ---------- | ---------------------------------------------------------------------------- |
-| 2026-02-03 | Phase 1 완료 - 라이브러리 설치                                               |
-| 2026-02-03 | Phase 2 완료 - 테스트 환경 강화                                              |
-| 2026-02-03 | Phase 3 완료 - 애니메이션 시스템 구축                                        |
-| 2026-02-03 | Phase 4 완료 - 공통 UI 컴포넌트 추출                                         |
-| 2026-02-03 | Phase 5 완료 - 공통 훅 추출                                                  |
-| 2026-02-03 | Phase 6 완료 - 순수 함수 통합                                                |
-| 2026-02-03 | Phase 7 완료 - 스토어 분리                                                   |
-| 2026-02-03 | Phase 7.5 완료 - 상수 통합 관리                                              |
-| 2026-02-03 | Phase 8 Step 1 완료 - 공통 컴포넌트 추가 (WorkFormFields, DataTable)         |
-| 2026-02-03 | Phase 8 Step 2 완료 - 거대 컴포넌트 분리 (DailyGanttChart, AdminSessionGrid) |
-| 2026-02-04 | Phase 8 Step 2 완료 - WorkRecordTable 리팩토링 (3,119줄 → 488줄, -84.4%)     |
+| 날짜       | 내용                                                                                                      |
+| ---------- | --------------------------------------------------------------------------------------------------------- |
+| 2026-02-03 | Phase 1 완료 - 라이브러리 설치                                                                            |
+| 2026-02-03 | Phase 2 완료 - 테스트 환경 강화                                                                           |
+| 2026-02-03 | Phase 3 완료 - 애니메이션 시스템 구축                                                                     |
+| 2026-02-03 | Phase 4 완료 - 공통 UI 컴포넌트 추출                                                                      |
+| 2026-02-03 | Phase 5 완료 - 공통 훅 추출                                                                               |
+| 2026-02-03 | Phase 6 완료 - 순수 함수 통합                                                                             |
+| 2026-02-03 | Phase 7 완료 - 스토어 분리                                                                                |
+| 2026-02-03 | Phase 7.5 완료 - 상수 통합 관리                                                                           |
+| 2026-02-03 | Phase 8 Step 1 완료 - 공통 컴포넌트 추가 (WorkFormFields, DataTable)                                      |
+| 2026-02-03 | Phase 8 Step 2 완료 - 거대 컴포넌트 분리 (DailyGanttChart, AdminSessionGrid)                              |
+| 2026-02-04 | Phase 8 Step 2 완료 - WorkRecordTable 리팩토링 (3,119줄 → 488줄, -84.4%)                                  |
+| 2026-02-04 | Phase 8 Step 2 완료 - AdminSessionGrid 리팩토링 (2,278줄 제거, features/admin으로 이전, 메인 ~280줄)      |
+| 2026-02-04 | Phase 8 Step 3 완료 - SettingsModal 리팩토링 (1,330줄 → feature 분리, 메인 ~190줄, 상수·탭 컴포넌트 분리) |

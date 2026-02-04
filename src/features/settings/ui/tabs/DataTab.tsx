@@ -1,98 +1,252 @@
 /**
- * 데이터 탭 컴포넌트
+ * 데이터 탭 컴포넌트 (시간 설정, 프리셋, 내보내기/가져오기, 저장소 상태)
  */
 
-import { Button, Typography, Tag, Upload, Alert } from "antd";
+import { Card, Space, Switch, Button, Typography, TimePicker } from "antd";
 import {
-    ExportOutlined,
-    ImportOutlined,
+    ClockCircleOutlined,
+    AppstoreOutlined,
+    SaveOutlined,
+    DownloadOutlined,
+    UploadOutlined,
+    CheckCircleFilled,
     CloudOutlined,
-    DatabaseOutlined,
 } from "@ant-design/icons";
-import type { DataTabProps } from "../../model/types";
+import dayjs from "dayjs";
+import { useWorkStore } from "@/store/useWorkStore";
+import { APP_THEME_COLORS } from "@/shared/constants";
+import { SUCCESS_MESSAGES } from "@/shared/constants/ui/messages";
+import { message } from "antd";
+import {
+    SETTINGS_DATA_TIME_TITLE,
+    SETTINGS_DATA_LUNCH_TITLE,
+    SETTINGS_DATA_LUNCH_DESC,
+    SETTINGS_DATA_PRESET_TITLE,
+    SETTINGS_DATA_POSTFIX_TITLE,
+    SETTINGS_DATA_POSTFIX_DESC,
+    SETTINGS_DATA_MANAGEMENT_TITLE,
+    SETTINGS_DATA_EXPORT,
+    SETTINGS_DATA_IMPORT,
+    SETTINGS_DATA_IMPORT_DESC,
+    SETTINGS_DATA_STORAGE_CONNECTED,
+    SETTINGS_DATA_STORAGE_CONNECTED_DESC,
+    SETTINGS_DATA_STORAGE_LOCAL,
+    SETTINGS_DATA_STORAGE_LOCAL_DESC,
+} from "../../constants";
+import {
+    TAB_CONTAINER_STYLE,
+    TAB_CONTAINER_STYLE_MOBILE,
+} from "../../constants";
+import { SettingItem } from "./SettingItem";
 
-const { Text, Paragraph } = Typography;
+const { Text } = Typography;
 
-/**
- * 데이터 탭 컴포넌트
- * 데이터 내보내기/가져오기 기능 제공
- */
+const CARD_BODY_MOBILE = { padding: "0 12px" as const };
+const CARD_BODY_DESKTOP = { padding: "0 16px" as const };
+const CARD_BODY_MANAGEMENT_MOBILE = { padding: 12 };
+const CARD_BODY_MANAGEMENT_DESKTOP = { padding: 16 };
+
+const GRID_STYLE_MOBILE: React.CSSProperties = {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 8,
+    marginBottom: 12,
+};
+
+const GRID_STYLE_DESKTOP: React.CSSProperties = {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 12,
+    marginBottom: 16,
+};
+
+const STORAGE_AUTH_BG = "#f6ffed";
+const STORAGE_LOCAL_BG = "#e6f4ff";
+
+export interface DataTabProps {
+    onExport: () => void;
+    onImport: () => void;
+    isAuthenticated: boolean;
+    is_mobile?: boolean;
+}
+
 export function DataTab({
-    on_export,
-    on_import,
-    is_logged_in,
+    onExport,
+    onImport,
+    isAuthenticated,
+    is_mobile,
 }: DataTabProps) {
+    const use_postfix = useWorkStore(
+        (state) => state.use_postfix_on_preset_add
+    );
+    const setUsePostfix = useWorkStore(
+        (state) => state.setUsePostfixOnPresetAdd
+    );
+    const lunch_start_time = useWorkStore((state) => state.lunch_start_time);
+    const lunch_end_time = useWorkStore((state) => state.lunch_end_time);
+    const setLunchTime = useWorkStore((state) => state.setLunchTime);
+    const app_theme = useWorkStore((state) => state.app_theme);
+    const theme_color = APP_THEME_COLORS[app_theme].primary;
+
+    const handleLunchTimeChange = (
+        times: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null
+    ) => {
+        if (times && times[0] && times[1]) {
+            const start = times[0].format("HH:mm");
+            const end = times[1].format("HH:mm");
+            setLunchTime(start, end);
+            message.success(SUCCESS_MESSAGES.lunchTimeChanged);
+        }
+    };
+
+    const container_style = is_mobile
+        ? TAB_CONTAINER_STYLE_MOBILE
+        : TAB_CONTAINER_STYLE;
+
     return (
-        <div className="data-tab">
-            {/* 저장 위치 표시 */}
-            <div style={{ marginBottom: 24 }}>
-                <Text strong>데이터 저장 위치</Text>
-                <div style={{ marginTop: 8 }}>
-                    {is_logged_in ? (
-                        <Tag icon={<CloudOutlined />} color="blue">
-                            Firebase Cloud
-                        </Tag>
-                    ) : (
-                        <Tag icon={<DatabaseOutlined />} color="default">
-                            LocalStorage (브라우저)
-                        </Tag>
-                    )}
-                </div>
-                {!is_logged_in && (
-                    <Alert
-                        type="warning"
-                        message="브라우저 데이터 삭제 시 데이터가 손실될 수 있습니다. 주기적으로 백업하세요."
-                        style={{ marginTop: 8 }}
-                        showIcon
-                    />
-                )}
-            </div>
-
-            {/* 내보내기 */}
-            <div style={{ marginBottom: 24 }}>
-                <Text strong>데이터 내보내기</Text>
-                <Paragraph type="secondary" style={{ marginTop: 4 }}>
-                    모든 작업 기록과 설정을 JSON 파일로 저장합니다.
-                </Paragraph>
-                <Button
-                    icon={<ExportOutlined />}
-                    onClick={on_export}
-                >
-                    내보내기
-                </Button>
-            </div>
-
-            {/* 가져오기 */}
-            <div>
-                <Text strong>데이터 가져오기</Text>
-                <Paragraph type="secondary" style={{ marginTop: 4 }}>
-                    JSON 파일에서 데이터를 가져옵니다.
-                </Paragraph>
-                <Alert
-                    type="warning"
-                    message="주의: 가져오기 시 현재 데이터가 덮어씌워집니다."
-                    style={{ marginBottom: 8 }}
-                    showIcon
-                />
-                <Upload
-                    accept=".json"
-                    showUploadList={false}
-                    beforeUpload={(file) => {
-                        on_import(file);
-                        return false;
-                    }}
-                >
-                    <Button icon={<ImportOutlined />}>
-                        가져오기
-                    </Button>
-                </Upload>
-            </div>
-
-            <style>{`
-                .data-tab {
-                    padding: 16px 0;
+        <div style={container_style}>
+            <Card
+                size="small"
+                title={
+                    <Space>
+                        <ClockCircleOutlined style={{ color: theme_color }} />
+                        <span>{SETTINGS_DATA_TIME_TITLE}</span>
+                    </Space>
                 }
-            `}</style>
+                styles={{
+                    body: is_mobile ? CARD_BODY_MOBILE : CARD_BODY_DESKTOP,
+                }}
+            >
+                <SettingItem
+                    icon={<ClockCircleOutlined />}
+                    title={SETTINGS_DATA_LUNCH_TITLE}
+                    description={SETTINGS_DATA_LUNCH_DESC}
+                    is_mobile={is_mobile}
+                    action={
+                        <TimePicker.RangePicker
+                            value={[
+                                dayjs(lunch_start_time, "HH:mm"),
+                                dayjs(lunch_end_time, "HH:mm"),
+                            ]}
+                            onChange={handleLunchTimeChange}
+                            format="HH:mm"
+                            minuteStep={5}
+                            size="small"
+                            style={{ width: is_mobile ? "100%" : 180 }}
+                            allowClear={false}
+                        />
+                    }
+                />
+            </Card>
+
+            <Card
+                size="small"
+                title={
+                    <Space>
+                        <AppstoreOutlined style={{ color: theme_color }} />
+                        <span>{SETTINGS_DATA_PRESET_TITLE}</span>
+                    </Space>
+                }
+                styles={{
+                    body: is_mobile ? CARD_BODY_MOBILE : CARD_BODY_DESKTOP,
+                }}
+            >
+                <SettingItem
+                    icon={<AppstoreOutlined />}
+                    title={SETTINGS_DATA_POSTFIX_TITLE}
+                    description={SETTINGS_DATA_POSTFIX_DESC}
+                    is_mobile={is_mobile}
+                    action={
+                        <Switch
+                            checked={use_postfix}
+                            onChange={setUsePostfix}
+                        />
+                    }
+                />
+            </Card>
+
+            <Card
+                size="small"
+                title={
+                    <Space>
+                        <SaveOutlined style={{ color: theme_color }} />
+                        <span>{SETTINGS_DATA_MANAGEMENT_TITLE}</span>
+                    </Space>
+                }
+                styles={{
+                    body: is_mobile
+                        ? CARD_BODY_MANAGEMENT_MOBILE
+                        : CARD_BODY_MANAGEMENT_DESKTOP,
+                }}
+            >
+                <div style={is_mobile ? GRID_STYLE_MOBILE : GRID_STYLE_DESKTOP}>
+                    <Button
+                        icon={<DownloadOutlined />}
+                        onClick={onExport}
+                        style={{ height: is_mobile ? 40 : 48 }}
+                    >
+                        {SETTINGS_DATA_EXPORT}
+                    </Button>
+                    <Button
+                        icon={<UploadOutlined />}
+                        onClick={onImport}
+                        style={{ height: is_mobile ? 40 : 48 }}
+                    >
+                        {SETTINGS_DATA_IMPORT}
+                    </Button>
+                </div>
+                <Text
+                    type="secondary"
+                    style={{ fontSize: is_mobile ? 11 : 12 }}
+                >
+                    {SETTINGS_DATA_IMPORT_DESC}
+                </Text>
+            </Card>
+
+            <Card
+                size="small"
+                styles={{
+                    body: {
+                        padding: is_mobile ? 12 : 16,
+                        background: isAuthenticated
+                            ? STORAGE_AUTH_BG
+                            : STORAGE_LOCAL_BG,
+                        borderRadius: 8,
+                    },
+                }}
+            >
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    {isAuthenticated ? (
+                        <CheckCircleFilled
+                            style={{
+                                color: "#52c41a",
+                                fontSize: 32,
+                                flexShrink: 0,
+                            }}
+                        />
+                    ) : (
+                        <CloudOutlined
+                            style={{
+                                color: "#1677ff",
+                                fontSize: 32,
+                                flexShrink: 0,
+                            }}
+                        />
+                    )}
+                    <div style={{ flex: 1 }}>
+                        <Text strong style={{ display: "block", fontSize: 14 }}>
+                            {isAuthenticated
+                                ? SETTINGS_DATA_STORAGE_CONNECTED
+                                : SETTINGS_DATA_STORAGE_LOCAL}
+                        </Text>
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                            {isAuthenticated
+                                ? SETTINGS_DATA_STORAGE_CONNECTED_DESC
+                                : SETTINGS_DATA_STORAGE_LOCAL_DESC}
+                        </Text>
+                    </div>
+                </div>
+            </Card>
         </div>
     );
 }
