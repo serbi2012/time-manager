@@ -38,8 +38,10 @@ export const RECORD_BUTTON = {
     CONFIRM: "확인",
     START_TIMER: "시작",
     STOP_TIMER: "정지",
-    VIEW_COMPLETED: "완료 기록",
+    VIEW_COMPLETED: "완료",
     VIEW_TRASH: "휴지통",
+    COPY_RECORDS: "내역 복사",
+    NEW_WORK: "새 작업",
     FILTER: "필터",
     SEARCH: "검색",
 } as const;
@@ -74,18 +76,23 @@ export const RECORD_PLACEHOLDER = {
 // 툴팁
 // ========================================
 export const RECORD_TOOLTIP = {
-    EDIT: "편집",
+    EDIT: "수정",
     DELETE: "삭제",
-    COMPLETE: "완료 처리",
+    COMPLETE: "완료",
+    UNCOMPLETE: "완료 취소",
     RESTORE: "복원",
     COPY: "복사",
-    START_TIMER: "타이머 시작",
-    STOP_TIMER: "타이머 정지",
+    START_TIMER: "시작",
+    STOP_TIMER: "정지",
+    SWITCH_TIMER: "전환",
     VIEW_SESSIONS: "세션 보기",
     ADD_SESSION: "세션 추가",
-    PREVIOUS_DATE: "이전 날짜",
-    NEXT_DATE: "다음 날짜",
+    PREVIOUS_DATE: (key: string) => `이전 날짜 (${key})`,
+    NEXT_DATE: (key: string) => `다음 날짜 (${key})`,
     TODAY: "오늘",
+    COMPLETED_LIST: "완료된 작업 목록",
+    TRASH_LIST: "삭제된 작업 (복구 가능)",
+    COPY_RECORDS: "시간 관리 양식으로 복사",
 } as const;
 
 // ========================================
@@ -106,6 +113,7 @@ export const RECORD_STATS = {
     TOTAL_DURATION: "총 시간",
     COMPLETED_COUNT: "완료",
     INCOMPLETE_COUNT: "진행 중",
+    COUNT_UNIT: "건",
     TODAY: "오늘",
     YESTERDAY: "어제",
     DIFFERENCE: "차이",
@@ -138,4 +146,30 @@ export const RECORD_FORM_LABEL = {
     END_TIME: "종료 시간",
     DATE: "날짜",
     DURATION: "소요 시간",
+} as const;
+
+// ========================================
+// UI 텍스트
+// ========================================
+export const RECORD_UI_TEXT = {
+    CARD_TITLE: "작업 기록",
+    TIMER_RUNNING_SUFFIX: "진행 중",
+    EMPTY_VALUE: "-",
+    TIME_SEPARATOR: " ~ ",
+    MINUTE_UNIT: "분",
+    TODAY_TEXT: "오늘",
+} as const;
+
+// ========================================
+// 마크다운 복사 관련
+// ========================================
+export const MARKDOWN_COPY = {
+    COLUMNS: ["거래명", "작업명", "시간", "카테고리", "비고"],
+    CELL_PREFIX: "| ",
+    CELL_SEPARATOR: " | ",
+    CELL_SUFFIX: " |",
+    ROW_SEPARATOR: "|",
+    HEADER_SEPARATOR: "-",
+    LINE_BREAK: "\n",
+    PADDING_WIDTH: 2,
 } as const;

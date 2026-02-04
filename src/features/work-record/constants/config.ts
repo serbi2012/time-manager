@@ -27,6 +27,9 @@ export const TIME_FORMAT = "HH:mm";
 /** 날짜 입력 형식 */
 export const DATE_FORMAT = "YYYY-MM-DD";
 
+/** 날짜 표시 형식 (요일 포함) */
+export const DATE_FORMAT_WITH_DAY = "YYYY-MM-DD (dd)";
+
 // ========================================
 // 테이블 관련
 // ========================================
@@ -120,3 +123,18 @@ export const TIMER_UPDATE_INTERVAL_MS = 1000;
 
 /** 최대 세션 개수 */
 export const MAX_SESSIONS_PER_RECORD = 50;
+
+/** 한글/영문 구분 임계값 (charCodeAt) */
+export const CHAR_CODE_THRESHOLD = 127;
+
+/** 한글 문자 너비 (바이트) */
+export const HANGUL_CHAR_WIDTH = 2;
+
+/** 영문 문자 너비 (바이트) */
+export const ASCII_CHAR_WIDTH = 1;
+
+/** 날짜 슬라이스 시작 인덱스 (MM-DD 추출) */
+export const DATE_SLICE_START = 5;
+
+/** 시간 슬라이스 끝 인덱스 (HH:mm 추출) */
+export const TIME_SLICE_END = 5;

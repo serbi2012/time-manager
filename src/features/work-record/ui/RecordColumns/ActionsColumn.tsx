@@ -10,6 +10,12 @@ import {
     RollbackOutlined,
 } from "@ant-design/icons";
 import type { WorkRecord } from "../../../../shared/types";
+import {
+    RECORD_TOOLTIP,
+    RECORD_CONFIRM,
+    RECORD_SPACING,
+    RECORD_COLORS,
+} from "../../constants";
 
 interface ActionsColumnProps {
     record: WorkRecord;
@@ -29,11 +35,11 @@ export function ActionsColumn({
     onDelete,
 }: ActionsColumnProps) {
     return (
-        <Space size={4}>
+        <Space size={RECORD_SPACING.TINY}>
             {/* 완료/완료 취소 버튼 (가상 레코드는 불가) */}
             {!is_active &&
                 (record.is_completed ? (
-                    <Tooltip title="완료 취소">
+                    <Tooltip title={RECORD_TOOLTIP.UNCOMPLETE}>
                         <Button
                             type="text"
                             icon={<RollbackOutlined />}
@@ -42,10 +48,10 @@ export function ActionsColumn({
                         />
                     </Tooltip>
                 ) : (
-                    <Tooltip title="완료">
+                    <Tooltip title={RECORD_TOOLTIP.COMPLETE}>
                         <Button
                             type="text"
-                            style={{ color: "#52c41a" }}
+                            style={{ color: RECORD_COLORS.SUCCESS }}
                             icon={<CheckOutlined />}
                             size="small"
                             onClick={() => onComplete(record)}
@@ -54,7 +60,7 @@ export function ActionsColumn({
                 ))}
 
             {/* 수정 버튼 (가상 레코드도 가능) */}
-            <Tooltip title="수정">
+            <Tooltip title={RECORD_TOOLTIP.EDIT}>
                 <Button
                     type="text"
                     icon={<EditOutlined />}
@@ -66,11 +72,11 @@ export function ActionsColumn({
             {/* 삭제 버튼 (가상 레코드는 불가) */}
             {!is_active && (
                 <Popconfirm
-                    title="삭제 확인"
-                    description="이 기록을 휴지통으로 이동하시겠습니까?"
+                    title={RECORD_CONFIRM.DELETE.TITLE}
+                    description={RECORD_CONFIRM.DELETE.DESCRIPTION}
                     onConfirm={() => onDelete(record.id)}
-                    okText="삭제"
-                    cancelText="취소"
+                    okText={RECORD_CONFIRM.DELETE.OK_TEXT}
+                    cancelText={RECORD_CONFIRM.DELETE.CANCEL_TEXT}
                     okButtonProps={{
                         danger: true,
                         autoFocus: true,

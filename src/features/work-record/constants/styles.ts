@@ -31,13 +31,34 @@ export const RECORD_SIZE = {
     ICON_SIZE_SMALL: 12,
     ICON_SIZE_DEFAULT: 14,
     ICON_SIZE_LARGE: 16,
+    FONT_SIZE_SMALL: 11,
+    FONT_SIZE_DEFAULT: 12,
+    FONT_SIZE_STATS: 20,
+} as const;
+
+// ========================================
+// 테이블 컬럼 너비
+// ========================================
+export const RECORD_COLUMN_WIDTH = {
+    TIMER_ACTION: 50,
+    DEAL_NAME: 200,
+    WORK_NAME: 120,
+    TASK_NAME: 80,
+    CATEGORY: 90,
+    DURATION: 60,
+    TIME_RANGE: 120,
+    DATE: 90,
+    ACTIONS: 120,
 } as const;
 
 // ========================================
 // 간격
 // ========================================
 export const RECORD_SPACING = {
+    NONE: 0,
+    TINY: 4,
     SMALL: 8,
+    MEDIUM: 12,
     DEFAULT: 16,
     LARGE: 24,
 } as const;
@@ -158,4 +179,46 @@ export const RECORD_EMPTY_STYLE: CSSProperties = {
     padding: "40px 0",
     textAlign: "center",
     color: RECORD_COLORS.TEXT_SECONDARY,
+} as const;
+
+/** 작은 폰트 스타일 */
+export const RECORD_FONT_SMALL_STYLE: CSSProperties = {
+    fontSize: RECORD_SIZE.FONT_SIZE_SMALL,
+} as const;
+
+/** 완료된 텍스트 스타일 */
+export const RECORD_COMPLETED_TEXT_STYLE: CSSProperties = {
+    color: RECORD_COLORS.GRAY,
+    textDecoration: "line-through",
+} as const;
+
+/** 타이머 태그 스타일 */
+export const RECORD_TIMER_TAG_STYLE: CSSProperties = {
+    marginLeft: RECORD_SPACING.TINY,
+} as const;
+
+/** 통계 카드 여백 스타일 */
+export const RECORD_STATS_MARGIN_STYLE: CSSProperties = {
+    marginBottom: RECORD_SPACING.DEFAULT,
+} as const;
+
+/** 통계 값 스타일 */
+export const RECORD_STATS_VALUE_STYLE: CSSProperties = {
+    fontSize: RECORD_SIZE.FONT_SIZE_STATS,
+} as const;
+
+/** 날짜 선택기 너비 (모바일) */
+export const RECORD_DATE_PICKER_MOBILE_WIDTH = 130;
+
+/** 날짜 선택기 너비 (데스크탑) */
+export const RECORD_DATE_PICKER_DESKTOP_WIDTH = 150;
+
+/** 단축키 힌트 스타일 */
+export const RECORD_SHORTCUT_HINT_STYLE: CSSProperties = {
+    fontSize: RECORD_SIZE.FONT_SIZE_SMALL,
+    opacity: 0.85,
+    marginLeft: RECORD_SPACING.TINY,
+    padding: "1px 4px",
+    background: "rgba(255,255,255,0.2)",
+    borderRadius: 3,
 } as const;

@@ -12,6 +12,7 @@ export const RECORD_SUCCESS = {
     COMPLETED: "작업이 완료 처리되었습니다",
     RESTORED: "작업이 복원되었습니다",
     COPIED: "작업이 복사되었습니다",
+    COPIED_TO_CLIPBOARD: "클립보드에 복사되었습니다",
     MOVED: "작업이 이동되었습니다",
     SESSION_ADDED: "세션이 추가되었습니다",
     SESSION_UPDATED: "세션이 수정되었습니다",
@@ -44,6 +45,7 @@ export const RECORD_WARNING = {
     TIME_CONFLICT: "다른 작업과 시간이 겹칩니다",
     NO_SESSIONS: "세션이 없습니다",
     INCOMPLETE_SESSION: "완료되지 않은 세션이 있습니다",
+    NO_RECORDS_TO_COPY: "복사할 작업이 없습니다",
 } as const;
 
 // ========================================
@@ -61,8 +63,10 @@ export const RECORD_INFO = {
 // ========================================
 export const RECORD_CONFIRM = {
     DELETE: {
-        TITLE: "작업 삭제",
-        DESCRIPTION: "정말 이 작업을 삭제하시겠습니까?",
+        TITLE: "삭제 확인",
+        DESCRIPTION: "이 기록을 휴지통으로 이동하시겠습니까?",
+        OK_TEXT: "삭제",
+        CANCEL_TEXT: "취소",
     },
     COMPLETE: {
         TITLE: "작업 완료",

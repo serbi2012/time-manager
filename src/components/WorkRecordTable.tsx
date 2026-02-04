@@ -83,6 +83,23 @@ import { SessionEditTable } from "../features/work-record/ui/SessionEditor";
 import {
     RECORD_SUCCESS,
     RECORD_EMPTY,
+    RECORD_WARNING,
+    RECORD_TABLE_COLUMN,
+    RECORD_TOOLTIP,
+    RECORD_BUTTON,
+    RECORD_UI_TEXT,
+    MARKDOWN_COPY,
+    RECORD_COLUMN_WIDTH,
+    RECORD_SPACING,
+    DATE_FORMAT,
+    DATE_FORMAT_WITH_DAY,
+    CHAR_CODE_THRESHOLD,
+    HANGUL_CHAR_WIDTH,
+    ASCII_CHAR_WIDTH,
+    RECORD_DATE_PICKER_MOBILE_WIDTH,
+    RECORD_DATE_PICKER_DESKTOP_WIDTH,
+    RECORD_SHORTCUT_HINT_STYLE,
+    RECORD_COLORS,
 } from "../features/work-record/constants";
 
 /**
@@ -176,25 +193,28 @@ export default function WorkRecordTable() {
         const filtered = display_records.filter((r) => !r.is_deleted);
 
         if (filtered.length === 0) {
-            message.warning("복사할 작업이 없습니다");
+            message.warning(RECORD_WARNING.NO_RECORDS_TO_COPY);
             return;
         }
 
         // 마크다운 표 형식으로 복사
-        const columns = ["거래명", "작업명", "시간", "카테고리", "비고"];
+        const columns = MARKDOWN_COPY.COLUMNS;
         const data = filtered.map((r) => [
             r.deal_name || r.work_name,
             r.work_name,
-            `${r.duration_minutes}분`,
+            `${r.duration_minutes}${RECORD_UI_TEXT.MINUTE_UNIT}`,
             r.category_name || "",
             r.note || "",
         ]);
 
-        // 문자열 디스플레이 너비 계산 (한글 2바이트, 영문 1바이트)
+        // 문자열 디스플레이 너비 계산
         const getDisplayWidth = (str: string) => {
             let width = 0;
             for (const char of str) {
-                width += char.charCodeAt(0) > 127 ? 2 : 1;
+                width +=
+                    char.charCodeAt(0) > CHAR_CODE_THRESHOLD
+                        ? HANGUL_CHAR_WIDTH
+                        : ASCII_CHAR_WIDTH;
             }
             return width;
         };
@@ -217,41 +237,51 @@ export default function WorkRecordTable() {
 
         // 마크다운 표 생성
         const header_row =
-            "| " +
-            columns.map((col, i) => padString(col, col_widths[i])).join(" | ") +
-            " |";
+            MARKDOWN_COPY.CELL_PREFIX +
+            columns
+                .map((col, i) => padString(col, col_widths[i]))
+                .join(MARKDOWN_COPY.CELL_SEPARATOR) +
+            MARKDOWN_COPY.CELL_SUFFIX;
         const separator =
-            "|" + col_widths.map((w) => "-".repeat(w + 2)).join("|") + "|";
+            MARKDOWN_COPY.ROW_SEPARATOR +
+            col_widths
+                .map((w) =>
+                    MARKDOWN_COPY.HEADER_SEPARATOR.repeat(
+                        w + MARKDOWN_COPY.PADDING_WIDTH
+                    )
+                )
+                .join(MARKDOWN_COPY.ROW_SEPARATOR) +
+            MARKDOWN_COPY.ROW_SEPARATOR;
         const data_rows = data.map(
             (row) =>
-                "| " +
+                MARKDOWN_COPY.CELL_PREFIX +
                 row
                     .map((cell, i) => padString(cell, col_widths[i]))
-                    .join(" | ") +
-                " |"
+                    .join(MARKDOWN_COPY.CELL_SEPARATOR) +
+                MARKDOWN_COPY.CELL_SUFFIX
         );
 
-        const text = [header_row, separator, ...data_rows].join("\n");
+        const text = [header_row, separator, ...data_rows].join(
+            MARKDOWN_COPY.LINE_BREAK
+        );
         navigator.clipboard.writeText(text);
-        message.success("클립보드에 복사되었습니다");
+        message.success(RECORD_SUCCESS.COPIED_TO_CLIPBOARD);
     }, [display_records]);
 
     const handlePrevDay = useCallback(() => {
         setSelectedDate(
-            dayjs(selected_date).subtract(1, "day").format("YYYY-MM-DD")
+            dayjs(selected_date).subtract(1, "day").format(DATE_FORMAT)
         );
     }, [selected_date, setSelectedDate]);
 
     const handleNextDay = useCallback(() => {
-        setSelectedDate(
-            dayjs(selected_date).add(1, "day").format("YYYY-MM-DD")
-        );
+        setSelectedDate(dayjs(selected_date).add(1, "day").format(DATE_FORMAT));
     }, [selected_date, setSelectedDate]);
 
     const handleDateChange = useCallback(
         (date: dayjs.Dayjs | null) => {
             setSelectedDate(
-                date?.format("YYYY-MM-DD") || dayjs().format("YYYY-MM-DD")
+                date?.format(DATE_FORMAT) || dayjs().format(DATE_FORMAT)
             );
         },
         [setSelectedDate]
@@ -265,7 +295,7 @@ export default function WorkRecordTable() {
             {
                 title: "",
                 key: "timer_action",
-                width: 50,
+                width: RECORD_COLUMN_WIDTH.TIMER_ACTION,
                 align: "center",
                 render: (_, record) => (
                     <TimerActionColumn
@@ -277,10 +307,10 @@ export default function WorkRecordTable() {
                 ),
             },
             {
-                title: "거래명",
+                title: RECORD_TABLE_COLUMN.DEAL_NAME,
                 dataIndex: "deal_name",
                 key: "deal_name",
-                width: 200,
+                width: RECORD_COLUMN_WIDTH.DEAL_NAME,
                 render: (_, record) => (
                     <DealNameColumn
                         record={record}
@@ -292,33 +322,33 @@ export default function WorkRecordTable() {
                 ),
             },
             {
-                title: "작업명",
+                title: RECORD_TABLE_COLUMN.WORK_NAME,
                 dataIndex: "work_name",
                 key: "work_name",
-                width: 120,
+                width: RECORD_COLUMN_WIDTH.WORK_NAME,
                 render: (_, record) => (
                     <WorkNameColumn record={record} theme_color={theme_color} />
                 ),
             },
             {
-                title: "업무명",
+                title: RECORD_TABLE_COLUMN.TASK_NAME,
                 dataIndex: "task_name",
                 key: "task_name",
-                width: 80,
+                width: RECORD_COLUMN_WIDTH.TASK_NAME,
                 render: (_, record) => <TaskNameColumn record={record} />,
             },
             {
-                title: "카테고리",
+                title: RECORD_TABLE_COLUMN.CATEGORY,
                 dataIndex: "category_name",
                 key: "category_name",
-                width: 90,
+                width: RECORD_COLUMN_WIDTH.CATEGORY,
                 render: (_, record) => <CategoryColumn record={record} />,
             },
             {
-                title: "시간",
+                title: RECORD_TABLE_COLUMN.TIME,
                 dataIndex: "duration_minutes",
                 key: "duration_minutes",
-                width: 60,
+                width: RECORD_COLUMN_WIDTH.DURATION,
                 align: "center",
                 render: (_, record) => (
                     <DurationColumn
@@ -329,9 +359,9 @@ export default function WorkRecordTable() {
                 ),
             },
             {
-                title: "시작-종료",
+                title: RECORD_TABLE_COLUMN.TIME_RANGE,
                 key: "time_range",
-                width: 120,
+                width: RECORD_COLUMN_WIDTH.TIME_RANGE,
                 render: (_, record) => (
                     <TimeRangeColumn
                         record={record}
@@ -340,16 +370,16 @@ export default function WorkRecordTable() {
                 ),
             },
             {
-                title: "날짜",
+                title: RECORD_TABLE_COLUMN.DATE,
                 dataIndex: "date",
                 key: "date",
-                width: 90,
+                width: RECORD_COLUMN_WIDTH.DATE,
                 render: (date: string) => <DateColumn date={date} />,
             },
             {
                 title: "",
                 key: "action",
-                width: 120,
+                width: RECORD_COLUMN_WIDTH.ACTIONS,
                 render: (_, record) => (
                     <ActionsColumn
                         record={record}
@@ -400,7 +430,7 @@ export default function WorkRecordTable() {
                 title={
                     <Space>
                         <ClockCircleOutlined />
-                        <span>작업 기록</span>
+                        <span>{RECORD_UI_TEXT.CARD_TITLE}</span>
                         {timer.is_running && timer.active_form_data && (
                             <Tag
                                 color={theme_color}
@@ -408,19 +438,26 @@ export default function WorkRecordTable() {
                             >
                                 {timer.active_form_data.deal_name ||
                                     timer.active_form_data.work_name}{" "}
-                                진행 중
+                                {RECORD_UI_TEXT.TIMER_RUNNING_SUFFIX}
                             </Tag>
                         )}
                     </Space>
                 }
                 extra={
-                    <Space size={is_mobile ? 4 : 12} wrap>
+                    <Space
+                        size={
+                            is_mobile
+                                ? RECORD_SPACING.TINY
+                                : RECORD_SPACING.MEDIUM
+                        }
+                        wrap
+                    >
                         {/* 날짜 네비게이션 */}
                         <Space.Compact>
                             <Tooltip
-                                title={`이전 날짜 (${formatShortcutKeyForPlatform(
-                                    prev_day_keys
-                                )})`}
+                                title={RECORD_TOOLTIP.PREVIOUS_DATE(
+                                    formatShortcutKeyForPlatform(prev_day_keys)
+                                )}
                             >
                                 <Button
                                     icon={<LeftOutlined />}
@@ -430,16 +467,18 @@ export default function WorkRecordTable() {
                             <DatePicker
                                 value={dayjs(selected_date)}
                                 onChange={handleDateChange}
-                                format="YYYY-MM-DD (dd)"
+                                format={DATE_FORMAT_WITH_DAY}
                                 allowClear={false}
-                                style={
-                                    is_mobile ? { width: 130 } : { width: 150 }
-                                }
+                                style={{
+                                    width: is_mobile
+                                        ? RECORD_DATE_PICKER_MOBILE_WIDTH
+                                        : RECORD_DATE_PICKER_DESKTOP_WIDTH,
+                                }}
                             />
                             <Tooltip
-                                title={`다음 날짜 (${formatShortcutKeyForPlatform(
-                                    next_day_keys
-                                )})`}
+                                title={RECORD_TOOLTIP.NEXT_DATE(
+                                    formatShortcutKeyForPlatform(next_day_keys)
+                                )}
                             >
                                 <Button
                                     icon={<RightOutlined />}
@@ -456,17 +495,8 @@ export default function WorkRecordTable() {
                         >
                             {!is_mobile && (
                                 <>
-                                    새 작업{" "}
-                                    <span
-                                        style={{
-                                            fontSize: 11,
-                                            opacity: 0.85,
-                                            marginLeft: 4,
-                                            padding: "1px 4px",
-                                            background: "rgba(255,255,255,0.2)",
-                                            borderRadius: 3,
-                                        }}
-                                    >
+                                    {RECORD_BUTTON.NEW_WORK}{" "}
+                                    <span style={RECORD_SHORTCUT_HINT_STYLE}>
                                         {formatShortcutKeyForPlatform(
                                             new_work_keys
                                         )}
@@ -476,39 +506,39 @@ export default function WorkRecordTable() {
                         </Button>
 
                         {/* 보조 액션 버튼들 */}
-                        <Tooltip title="완료된 작업 목록">
+                        <Tooltip title={RECORD_TOOLTIP.COMPLETED_LIST}>
                             <Button
                                 icon={
                                     <CheckCircleOutlined
-                                        style={{ color: "#52c41a" }}
+                                        style={{ color: RECORD_COLORS.SUCCESS }}
                                     />
                                 }
                                 onClick={openCompletedModal}
                             >
-                                {!is_mobile && "완료"}
+                                {!is_mobile && RECORD_BUTTON.VIEW_COMPLETED}
                             </Button>
                         </Tooltip>
 
-                        <Tooltip title="삭제된 작업 (복구 가능)">
+                        <Tooltip title={RECORD_TOOLTIP.TRASH_LIST}>
                             <Button
                                 icon={
                                     <DeleteOutlined
-                                        style={{ color: "#ff4d4f" }}
+                                        style={{ color: RECORD_COLORS.ERROR }}
                                     />
                                 }
                                 onClick={openTrashModal}
                             >
-                                {!is_mobile && "휴지통"}
+                                {!is_mobile && RECORD_BUTTON.VIEW_TRASH}
                             </Button>
                         </Tooltip>
 
-                        <Tooltip title="시간 관리 양식으로 복사">
+                        <Tooltip title={RECORD_TOOLTIP.COPY_RECORDS}>
                             <Button
                                 icon={<CopyOutlined />}
                                 onClick={handleCopyToClipboard}
                                 disabled={display_records.length === 0}
                             >
-                                {!is_mobile && "내역 복사"}
+                                {!is_mobile && RECORD_BUTTON.COPY_RECORDS}
                             </Button>
                         </Tooltip>
                     </Space>

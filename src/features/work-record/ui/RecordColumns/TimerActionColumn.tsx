@@ -5,6 +5,7 @@
 import { Button, Tooltip } from "antd";
 import { PlayCircleOutlined, PauseCircleOutlined } from "@ant-design/icons";
 import type { WorkRecord } from "../../../../shared/types";
+import { RECORD_TOOLTIP } from "../../constants";
 
 interface TimerActionColumnProps {
     record: WorkRecord;
@@ -20,10 +21,10 @@ export function TimerActionColumn({
     onToggle,
 }: TimerActionColumnProps) {
     const tooltip_title = is_active
-        ? "정지"
+        ? RECORD_TOOLTIP.STOP_TIMER
         : is_timer_running
-        ? "전환"
-        : "시작";
+        ? RECORD_TOOLTIP.SWITCH_TIMER
+        : RECORD_TOOLTIP.START_TIMER;
 
     return (
         <Tooltip title={tooltip_title}>
