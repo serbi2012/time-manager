@@ -1,160 +1,227 @@
 /**
- * 자동완성 탭 컴포넌트
+ * 자동완성 옵션 관리 탭
  */
 
-import { Collapse, List, Tag, Button, Typography, Empty } from "antd";
-import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
-import type { AutoCompleteTabProps } from "../../model/types";
+import { useState, useMemo } from "react";
+import { Divider, Typography } from "antd";
+import { useWorkStore } from "@/store/useWorkStore";
+import {
+    DEFAULT_TASK_OPTIONS,
+    DEFAULT_CATEGORY_OPTIONS,
+} from "@/store/constants";
+import { message } from "antd";
+import { SUCCESS_MESSAGES } from "@/shared/constants/ui/messages";
+import {
+    SETTINGS_AUTOCOMPLETE_DESC,
+    SETTINGS_AUTOCOMPLETE_WORK_NAME,
+    SETTINGS_AUTOCOMPLETE_TASK_NAME,
+    SETTINGS_AUTOCOMPLETE_DEAL_NAME,
+    SETTINGS_AUTOCOMPLETE_PROJECT_CODE,
+    SETTINGS_AUTOCOMPLETE_TASK_OPTION,
+    SETTINGS_AUTOCOMPLETE_CATEGORY_OPTION,
+} from "../../constants";
+import {
+    AutoCompleteOptionList,
+    type AutoCompleteFieldType,
+} from "./AutoCompleteOptionList";
 
 const { Text } = Typography;
 
-// 필드 라벨은 fields 배열에서 직접 정의
+export function AutoCompleteTab() {
+    const {
+        records,
+        templates,
+        custom_task_options,
+        custom_category_options,
+        hidden_autocomplete_options,
+        hideAutoCompleteOption,
+        unhideAutoCompleteOption,
+    } = useWorkStore();
 
-/**
- * 자동완성 탭 컴포넌트
- * 자동완성 옵션 표시/숨김 관리
- */
-export function AutoCompleteTab({
-    work_names,
-    deal_names,
-    task_names,
-    project_codes,
-    hidden_options,
-    on_hide,
-    on_unhide,
-}: AutoCompleteTabProps) {
-    const fields = [
-        { key: "work_name", label: "작업명", values: work_names },
-        { key: "deal_name", label: "거래명", values: deal_names },
-        { key: "task_name", label: "업무명", values: task_names },
-        { key: "project_code", label: "프로젝트 코드", values: project_codes },
-    ];
-
-    const collapse_items = fields.map((field) => ({
-        key: field.key,
-        label: (
-            <span>
-                {field.label}
-                <Tag style={{ marginLeft: 8 }}>{field.values.length}개</Tag>
-            </span>
-        ),
-        children: (
-            <OptionList
-                field={field.key}
-                values={field.values}
-                hidden={hidden_options[field.key as keyof typeof hidden_options] || []}
-                on_hide={on_hide}
-                on_unhide={on_unhide}
-            />
-        ),
-    }));
-
-    return (
-        <div className="autocomplete-tab">
-            <Text type="secondary" style={{ display: "block", marginBottom: 16 }}>
-                레코드에서 추출된 자동완성 옵션들입니다. 
-                숨김 처리하면 자동완성 목록에서 제외됩니다.
-            </Text>
-
-            <Collapse items={collapse_items} />
-
-            <style>{`
-                .autocomplete-tab {
-                    padding: 16px 0;
-                }
-            `}</style>
-        </div>
+    const [selected_work_names, setSelectedWorkNames] = useState<string[]>([]);
+    const [selected_task_names, setSelectedTaskNames] = useState<string[]>([]);
+    const [selected_deal_names, setSelectedDealNames] = useState<string[]>([]);
+    const [selected_project_codes, setSelectedProjectCodes] = useState<
+        string[]
+    >([]);
+    const [selected_task_options, setSelectedTaskOptions] = useState<string[]>(
+        []
     );
-}
+    const [selected_category_options, setSelectedCategoryOptions] = useState<
+        string[]
+    >([]);
 
-/**
- * 옵션 목록 컴포넌트
- */
-interface OptionListProps {
-    field: string;
-    values: string[];
-    hidden: string[];
-    on_hide: (field: string, value: string) => void;
-    on_unhide: (field: string, value: string) => void;
-}
+    const all_options = useMemo(() => {
+        const work_names = new Set<string>();
+        const task_names = new Set<string>();
+        const deal_names = new Set<string>();
+        const project_codes = new Set<string>();
 
-function OptionList({
-    field,
-    values,
-    hidden,
-    on_hide,
-    on_unhide,
-}: OptionListProps) {
-    if (values.length === 0) {
-        return <Empty description="옵션이 없습니다." />;
-    }
+        records.forEach((r) => {
+            if (r.work_name?.trim()) work_names.add(r.work_name);
+            if (r.task_name?.trim()) task_names.add(r.task_name);
+            if (r.deal_name?.trim()) deal_names.add(r.deal_name);
+            if (r.project_code?.trim()) project_codes.add(r.project_code);
+        });
 
-    // 숨김/표시 옵션 분리
-    const visible_values = values.filter((v) => !hidden.includes(v));
-    const hidden_values = values.filter((v) => hidden.includes(v));
+        templates.forEach((t) => {
+            if (t.work_name?.trim()) work_names.add(t.work_name);
+            if (t.task_name?.trim()) task_names.add(t.task_name);
+            if (t.deal_name?.trim()) deal_names.add(t.deal_name);
+            if (t.project_code?.trim()) project_codes.add(t.project_code);
+        });
+
+        const task_options = [
+            ...new Set([...DEFAULT_TASK_OPTIONS, ...custom_task_options]),
+        ];
+        const category_options = [
+            ...new Set([
+                ...DEFAULT_CATEGORY_OPTIONS,
+                ...custom_category_options,
+            ]),
+        ];
+
+        return {
+            work_names: Array.from(work_names).sort(),
+            task_names: Array.from(task_names).sort(),
+            deal_names: Array.from(deal_names).sort(),
+            project_codes: Array.from(project_codes).sort(),
+            task_options: task_options.sort(),
+            category_options: category_options.sort(),
+        };
+    }, [records, templates, custom_task_options, custom_category_options]);
+
+    const visible_work_names = all_options.work_names.filter(
+        (v) => !hidden_autocomplete_options.work_name.includes(v)
+    );
+    const visible_task_names = all_options.task_names.filter(
+        (v) => !hidden_autocomplete_options.task_name.includes(v)
+    );
+    const visible_deal_names = all_options.deal_names.filter(
+        (v) => !hidden_autocomplete_options.deal_name.includes(v)
+    );
+    const visible_project_codes = all_options.project_codes.filter(
+        (v) => !hidden_autocomplete_options.project_code.includes(v)
+    );
+    const visible_task_options = all_options.task_options.filter(
+        (v) => !(hidden_autocomplete_options.task_option || []).includes(v)
+    );
+    const visible_category_options = all_options.category_options.filter(
+        (v) => !(hidden_autocomplete_options.category_option || []).includes(v)
+    );
+
+    const handleBulkHide = (
+        field: AutoCompleteFieldType,
+        selected: string[],
+        clearSelection: () => void
+    ) => {
+        selected.forEach((v) => hideAutoCompleteOption(field, v));
+        clearSelection();
+        message.success(SUCCESS_MESSAGES.itemsHidden(selected.length));
+    };
+
+    const handleUnhide = (field: AutoCompleteFieldType, value: string) => {
+        unhideAutoCompleteOption(field, value);
+        message.success(SUCCESS_MESSAGES.valueRestored(value));
+    };
+
+    const handleBulkUnhide = (field: AutoCompleteFieldType) => {
+        const hidden_list = (
+            hidden_autocomplete_options as Record<string, string[]>
+        )[field];
+        if (hidden_list?.length) {
+            hidden_list.forEach((v) => unhideAutoCompleteOption(field, v));
+            message.success(
+                SUCCESS_MESSAGES.allItemsRestored(hidden_list.length)
+            );
+        }
+    };
+
+    const hidden = (field: string) =>
+        (hidden_autocomplete_options as Record<string, string[]>)[field] || [];
 
     return (
         <div>
-            {/* 표시 중인 옵션 */}
-            {visible_values.length > 0 && (
-                <div style={{ marginBottom: 16 }}>
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                        표시 중 ({visible_values.length})
-                    </Text>
-                    <List
-                        size="small"
-                        dataSource={visible_values}
-                        renderItem={(item) => (
-                            <List.Item
-                                actions={[
-                                    <Button
-                                        key="hide"
-                                        type="text"
-                                        icon={<EyeInvisibleOutlined />}
-                                        onClick={() => on_hide(field, item)}
-                                        size="small"
-                                    >
-                                        숨김
-                                    </Button>,
-                                ]}
-                            >
-                                {item}
-                            </List.Item>
-                        )}
-                    />
-                </div>
-            )}
+            <Text
+                type="secondary"
+                style={{ display: "block", marginBottom: 16 }}
+            >
+                {SETTINGS_AUTOCOMPLETE_DESC}
+            </Text>
 
-            {/* 숨김 처리된 옵션 */}
-            {hidden_values.length > 0 && (
-                <div>
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                        숨김 ({hidden_values.length})
-                    </Text>
-                    <List
-                        size="small"
-                        dataSource={hidden_values}
-                        renderItem={(item) => (
-                            <List.Item
-                                style={{ opacity: 0.5 }}
-                                actions={[
-                                    <Button
-                                        key="show"
-                                        type="text"
-                                        icon={<EyeOutlined />}
-                                        onClick={() => on_unhide(field, item)}
-                                        size="small"
-                                    >
-                                        표시
-                                    </Button>,
-                                ]}
-                            >
-                                {item}
-                            </List.Item>
-                        )}
-                    />
-                </div>
-            )}
+            <AutoCompleteOptionList
+                title={SETTINGS_AUTOCOMPLETE_WORK_NAME}
+                field="work_name"
+                visible_options={visible_work_names}
+                selected={selected_work_names}
+                set_selected={setSelectedWorkNames}
+                hidden_list={hidden("work_name")}
+                on_bulk_hide={handleBulkHide}
+                on_unhide={handleUnhide}
+                on_bulk_unhide={handleBulkUnhide}
+            />
+
+            <AutoCompleteOptionList
+                title={SETTINGS_AUTOCOMPLETE_TASK_NAME}
+                field="task_name"
+                visible_options={visible_task_names}
+                selected={selected_task_names}
+                set_selected={setSelectedTaskNames}
+                hidden_list={hidden("task_name")}
+                on_bulk_hide={handleBulkHide}
+                on_unhide={handleUnhide}
+                on_bulk_unhide={handleBulkUnhide}
+            />
+
+            <AutoCompleteOptionList
+                title={SETTINGS_AUTOCOMPLETE_DEAL_NAME}
+                field="deal_name"
+                visible_options={visible_deal_names}
+                selected={selected_deal_names}
+                set_selected={setSelectedDealNames}
+                hidden_list={hidden("deal_name")}
+                on_bulk_hide={handleBulkHide}
+                on_unhide={handleUnhide}
+                on_bulk_unhide={handleBulkUnhide}
+            />
+
+            <AutoCompleteOptionList
+                title={SETTINGS_AUTOCOMPLETE_PROJECT_CODE}
+                field="project_code"
+                visible_options={visible_project_codes}
+                selected={selected_project_codes}
+                set_selected={setSelectedProjectCodes}
+                hidden_list={hidden("project_code")}
+                on_bulk_hide={handleBulkHide}
+                on_unhide={handleUnhide}
+                on_bulk_unhide={handleBulkUnhide}
+            />
+
+            <Divider />
+
+            <AutoCompleteOptionList
+                title={SETTINGS_AUTOCOMPLETE_TASK_OPTION}
+                field="task_option"
+                visible_options={visible_task_options}
+                selected={selected_task_options}
+                set_selected={setSelectedTaskOptions}
+                hidden_list={hidden("task_option")}
+                on_bulk_hide={handleBulkHide}
+                on_unhide={handleUnhide}
+                on_bulk_unhide={handleBulkUnhide}
+            />
+
+            <AutoCompleteOptionList
+                title={SETTINGS_AUTOCOMPLETE_CATEGORY_OPTION}
+                field="category_option"
+                visible_options={visible_category_options}
+                selected={selected_category_options}
+                set_selected={setSelectedCategoryOptions}
+                hidden_list={hidden("category_option")}
+                on_bulk_hide={handleBulkHide}
+                on_unhide={handleUnhide}
+                on_bulk_unhide={handleBulkUnhide}
+            />
         </div>
     );
 }

@@ -53,7 +53,7 @@ import { DailyGanttChart } from "@/features/gantt-chart";
 import WeeklySchedule from "./components/WeeklySchedule";
 import SuggestionBoard from "./components/SuggestionBoard";
 import GuideBook from "./components/GuideBook";
-import AdminSessionGrid from "./components/AdminSessionGrid";
+import { AdminSessionGrid } from "./features/admin";
 import SettingsModal from "./components/SettingsModal";
 import ChangelogModal from "./components/ChangelogModal";
 import { CURRENT_VERSION } from "./constants/changelog";

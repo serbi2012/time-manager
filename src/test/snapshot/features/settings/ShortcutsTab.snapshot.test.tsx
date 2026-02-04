@@ -8,7 +8,9 @@ import { render } from "@testing-library/react";
 import { ConfigProvider } from "antd";
 import koKR from "antd/locale/ko_KR";
 import { ShortcutsTab } from "../../../../features/settings/ui/tabs/ShortcutsTab";
-import type { ShortcutDefinition } from "../../../../shared/types";
+import { useShortcutStore } from "../../../../store/useShortcutStore";
+import { useWorkStore } from "../../../../store/useWorkStore";
+import type { ShortcutDefinition } from "../../../../store/useShortcutStore";
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
     <ConfigProvider locale={koKR}>{children}</ConfigProvider>
@@ -34,41 +36,28 @@ describe("ShortcutsTab 스냅샷", () => {
             enabled: true,
             action: "toggleTimer",
         },
-        {
-            id: "disabled-shortcut",
-            name: "비활성 단축키",
-            description: "비활성화된 단축키입니다",
-            keys: "Alt+X",
-            category: "navigation",
-            enabled: false,
-            action: "disabledAction",
-        },
     ];
 
-    const default_props = {
-        shortcuts: mock_shortcuts,
-        on_toggle: vi.fn(),
-        on_edit: vi.fn(),
-        on_reset: vi.fn(),
-    };
-
     beforeEach(() => {
+        useWorkStore.setState({ app_theme: "blue" });
         vi.clearAllMocks();
     });
 
     it("기본 렌더링 구조가 유지됨", () => {
+        useShortcutStore.setState({ shortcuts: mock_shortcuts });
         const { container } = render(
             <TestWrapper>
-                <ShortcutsTab {...default_props} />
+                <ShortcutsTab />
             </TestWrapper>
         );
         expect(container.firstChild).toMatchSnapshot();
     });
 
     it("빈 단축키 목록 구조가 유지됨", () => {
+        useShortcutStore.setState({ shortcuts: [] });
         const { container } = render(
             <TestWrapper>
-                <ShortcutsTab {...default_props} shortcuts={[]} />
+                <ShortcutsTab />
             </TestWrapper>
         );
         expect(container.firstChild).toMatchSnapshot();

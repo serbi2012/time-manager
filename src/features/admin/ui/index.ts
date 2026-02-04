@@ -2,6 +2,9 @@
  * 관리자 UI 컴포넌트 모음
  */
 
+// 메인 그리드 (관리자 패널)
+export { AdminSessionGrid } from "./AdminSessionGrid";
+
 // 대시보드
 export { StatsOverview } from "./AdminDashboard";
 
@@ -16,11 +19,11 @@ export { RecordsExplorer, SessionsExplorer } from "./DataExplorer";
 
 // 통계 대시보드
 export {
-  StatsDashboard,
-  TimeChart,
-  CategoryAnalysis,
-  CategoryChart,
-  WorkNameTable,
+    StatsDashboard,
+    TimeChart,
+    CategoryAnalysis,
+    CategoryChart,
+    WorkNameTable,
 } from "./Statistics";
 
 // 삭제된 데이터 관리

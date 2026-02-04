@@ -33,7 +33,7 @@ import { DailyPage } from "../../pages/DailyPage/index";
 import WeeklySchedule from "../../components/WeeklySchedule";
 import SuggestionBoard from "../../components/SuggestionBoard";
 import GuideBook from "../../components/GuideBook";
-import AdminSessionGrid from "../../components/AdminSessionGrid";
+import { AdminSessionGrid } from "../../features/admin";
 import {
     SlideIn,
     PageTransitionProvider,
