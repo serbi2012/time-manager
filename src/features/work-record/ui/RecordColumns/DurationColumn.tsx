@@ -5,6 +5,7 @@
 import { Typography } from "antd";
 import type { WorkRecord } from "../../../../shared/types";
 import { getRecordDurationForDate } from "../../lib/duration_calculator";
+import { RECORD_UI_TEXT } from "../../constants";
 
 const { Text } = Typography;
 
@@ -23,7 +24,8 @@ export function DurationColumn({
 
     return (
         <Text strong style={{ color: theme_color }}>
-            {date_minutes}분
+            {date_minutes}
+            {RECORD_UI_TEXT.MINUTE_UNIT}
         </Text>
     );
 }

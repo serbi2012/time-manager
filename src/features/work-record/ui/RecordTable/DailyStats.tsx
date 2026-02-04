@@ -6,6 +6,13 @@ import { Card, Row, Col, Statistic } from "antd";
 import { ClockCircleOutlined } from "@ant-design/icons";
 import type { TodayStats } from "../../lib/record_stats";
 import { formatDuration } from "../../../../shared/lib/time";
+import {
+    RECORD_STATS,
+    RECORD_STATS_MARGIN_STYLE,
+    RECORD_STATS_VALUE_STYLE,
+    RECORD_COLORS,
+    RECORD_SPACING,
+} from "../../constants";
 
 interface DailyStatsProps {
     stats: TodayStats;
@@ -13,30 +20,36 @@ interface DailyStatsProps {
 
 export function DailyStats({ stats }: DailyStatsProps) {
     return (
-        <Card size="small" style={{ marginBottom: 16 }}>
-            <Row gutter={16}>
+        <Card size="small" style={RECORD_STATS_MARGIN_STYLE}>
+            <Row gutter={RECORD_SPACING.DEFAULT}>
                 <Col span={8}>
                     <Statistic
-                        title="총 시간"
+                        title={RECORD_STATS.TOTAL_DURATION}
                         value={formatDuration(stats.total_minutes)}
                         prefix={<ClockCircleOutlined />}
-                        valueStyle={{ fontSize: 20 }}
+                        valueStyle={RECORD_STATS_VALUE_STYLE}
                     />
                 </Col>
                 <Col span={8}>
                     <Statistic
-                        title="완료"
+                        title={RECORD_STATS.COMPLETED_COUNT}
                         value={stats.completed_count}
-                        suffix="건"
-                        valueStyle={{ color: "#52c41a", fontSize: 20 }}
+                        suffix={RECORD_STATS.COUNT_UNIT}
+                        valueStyle={{
+                            color: RECORD_COLORS.SUCCESS,
+                            ...RECORD_STATS_VALUE_STYLE,
+                        }}
                     />
                 </Col>
                 <Col span={8}>
                     <Statistic
-                        title="진행 중"
+                        title={RECORD_STATS.INCOMPLETE_COUNT}
                         value={stats.incomplete_count}
-                        suffix="건"
-                        valueStyle={{ color: "#1890ff", fontSize: 20 }}
+                        suffix={RECORD_STATS.COUNT_UNIT}
+                        valueStyle={{
+                            color: RECORD_COLORS.PRIMARY,
+                            ...RECORD_STATS_VALUE_STYLE,
+                        }}
                     />
                 </Col>
             </Row>

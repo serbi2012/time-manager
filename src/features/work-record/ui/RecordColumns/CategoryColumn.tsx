@@ -5,6 +5,7 @@
 import { Tag } from "antd";
 import type { WorkRecord } from "../../../../shared/types";
 import { getCategoryColor } from "../../lib/category_utils";
+import { RECORD_UI_TEXT } from "../../constants";
 
 interface CategoryColumnProps {
     record: WorkRecord;
@@ -12,7 +13,7 @@ interface CategoryColumnProps {
 
 export function CategoryColumn({ record }: CategoryColumnProps) {
     if (!record.category_name) {
-        return <>-</>;
+        return <>{RECORD_UI_TEXT.EMPTY_VALUE}</>;
     }
 
     return (
