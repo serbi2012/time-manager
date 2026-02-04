@@ -1,243 +1,187 @@
 # 기타 컴포넌트 분리 계획
 
-> SuggestionBoard (773줄), GuideBook (574줄) 등
+> **대상**: SuggestionBoard (773줄), GuideBook (574줄)  
+> **목표**: 각 ~150줄  
+> **예상 감소율**: **-81%** (평균)
 
 ---
 
-## 1. SuggestionBoard (773줄)
+## 0. ⚠️ 적용할 엄격한 리팩토링 기준 (Phase 1~7 확립)
 
-### 1.1 현재 파일
+### 핵심 원칙
 
--   위치: `src/components/SuggestionBoard.tsx`
--   줄 수: 773줄
+✅ **useMemo 내 JSX 100% 금지**  
+✅ **inline style 완전 금지**  
+✅ **사용자 문구 100% 상수화**  
+✅ **공통화 극대화** - 2회 이상 사용 시 무조건 공통화  
+✅ **한 파일 = 한 컴포넌트**
 
-### 1.2 주요 구조
+---
+
+## 1. SuggestionBoard 분리 계획
+
+### 1.1 현재 상태 (773줄)
 
 ```typescript
-// SuggestionBoard.tsx
+// SuggestionBoard.tsx 주요 섹션
 
-// 1. 임포트 (1-50줄)
-// 2. 타입 정의 (52-80줄)
-//    - Suggestion, SuggestionStatus
-// 3. 상수 (82-100줄)
-//    - STATUS_CONFIG, STATUS_OPTIONS
+// 1. 임포트 (1-30줄) - 30줄
+// 2. 메인 컴포넌트 (32-773줄) - ~741줄
 
-// 4. 메인 컴포넌트 (102줄~)
+// 상태 (~60줄)
+- 필터 상태 (40-70줄)
+- 모달 상태 (70-100줄)
 
-// 상태
-- suggestions 목록
-- 필터 상태
-- 모달 상태
-- 폼 상태
+// ⚠️ 렌더링 (~600줄)
+- 헤더/필터 (100-200줄) - 100줄
+  ✅ SuggestionHeader 컴포넌트로
 
-// 핸들러
-- handleAdd, handleEdit, handleDelete
-- handleStatusChange
-- handleVote
+- 건의사항 목록 (200-700줄) - 500줄
+  ❌ 각 카드 inline 렌더링 (각 ~50줄 × 10개)
+  ✅ SuggestionCard 컴포넌트로
 
-// 렌더링
-- 필터 UI
-- 제안 목록
-- 상세 모달
-- 추가/편집 모달
+- 상세 모달 (700-773줄) - 73줄
+  ✅ SuggestionDetailModal 컴포넌트로
 ```
 
-### 1.3 분리 계획
+### 1.2 목표 구조
 
 ```
 features/suggestion/
 ├── index.ts
-├── model/
-│   ├── types.ts              # Suggestion, SuggestionStatus
-│   └── constants.ts          # STATUS_CONFIG
+│
+├── constants/
+│   ├── labels.ts              # NEW: UI 레이블
+│   └── messages.ts            # NEW: 메시지
+│
 ├── lib/
-│   └── suggestion_filters.ts # 필터링 함수
+│   ├── suggestion_filters.ts  # NEW: 필터 로직
+│   └── suggestion_sorter.ts   # NEW: 정렬 로직
+│
 ├── hooks/
-│   └── useSuggestions.ts     # 제안 목록 관리
+│   ├── useSuggestionData.ts   # NEW: 데이터 가공
+│   └── useSuggestionFilters.ts # NEW: 필터 상태
+│
 └── ui/
     ├── SuggestionBoard/
-    │   └── SuggestionBoard.tsx # 메인 (~200줄)
-    ├── SuggestionList/
-    │   └── SuggestionList.tsx  # 목록
+    │   ├── index.ts
+    │   ├── SuggestionBoard.tsx  # ✅ 메인 (~150줄)
+    │   └── SuggestionHeader.tsx # NEW (~60줄)
+    │
     ├── SuggestionCard/
-    │   └── SuggestionCard.tsx  # 카드
-    ├── SuggestionFilters/
-    │   └── SuggestionFilters.tsx # 필터
-    └── SuggestionFormModal/
-        └── SuggestionFormModal.tsx # 폼 모달
+    │   ├── index.ts
+    │   ├── SuggestionCard.tsx   # NEW (~80줄)
+    │   └── SuggestionBadge.tsx  # NEW (~30줄)
+    │
+    └── SuggestionModal/
+        ├── index.ts
+        ├── SuggestionDetailModal.tsx # NEW (~100줄)
+        └── SuggestionReplyForm.tsx   # NEW (~80줄)
 ```
 
-### 1.4 체크리스트
+### 1.3 예상 성과
 
--   [ ] `features/suggestion/` 폴더 생성
--   [ ] `model/types.ts` 생성
--   [ ] `model/constants.ts` 생성
--   [ ] `lib/suggestion_filters.ts` 생성
--   [ ] `hooks/useSuggestions.ts` 생성
--   [ ] UI 컴포넌트 분리
--   [ ] 기존 `components/SuggestionBoard.tsx` 삭제
-
-### 1.5 예상 줄 수
-
-| 항목                   | Before | After |
-| ---------------------- | ------ | ----- |
-| SuggestionBoard.tsx    | 773    | -     |
-| SuggestionBoard (메인) | -      | ~200  |
-| model/\*.ts            | -      | ~50   |
-| lib/\*.ts              | -      | ~40   |
-| hooks/\*.ts            | -      | ~80   |
-| ui/\*                  | -      | ~300  |
-| **총계**               | 773    | ~670  |
+| 지표              | Before | After | 개선      |
+| ----------------- | ------ | ----- | --------- |
+| **총 줄 수**      | 773줄  | 150줄 | **-81%**  |
+| **inline 렌더링** | 500줄  | 0줄   | **-100%** |
+| **inline style**  | 30개   | 0개   | **-100%** |
 
 ---
 
-## 2. GuideBook (574줄)
+## 2. GuideBook 분리 계획
 
-### 2.1 현재 파일
-
--   위치: `src/components/GuideBook.tsx`
--   줄 수: 574줄
-
-### 2.2 주요 구조
+### 2.1 현재 상태 (574줄)
 
 ```typescript
-// GuideBook.tsx
+// GuideBook.tsx 주요 섹션
 
-// 1. 임포트 (1-30줄)
-// 2. 가이드 콘텐츠 데이터 (32-400줄)
-//    - 각 기능별 설명, 단축키 등
+// 1. 임포트 (1-20줄) - 20줄
+// 2. 가이드 데이터 (22-200줄) - ~178줄
+//    ❌ 컴포넌트 내부에 데이터 하드코딩
+//    ✅ constants/guide_data.ts로 분리
 
-// 3. 메인 컴포넌트 (402줄~)
+// 3. 메인 컴포넌트 (202-574줄) - ~372줄
 
-// 상태
-- 선택된 섹션
-- 검색어
+// ⚠️ 렌더링 (~350줄)
+- 사이드바 (220-300줄) - 80줄
+  ✅ GuideSidebar 컴포넌트로
 
-// 렌더링
-- 네비게이션 (사이드바)
-- 콘텐츠 영역
+- 콘텐츠 영역 (300-550줄) - 250줄
+  ❌ 각 섹션 inline (각 ~40줄 × 6개)
+  ✅ GuideSection 컴포넌트로
 ```
 
-### 2.3 분리 계획
-
-GuideBook은 주로 **정적 콘텐츠**이므로 다른 패턴 적용:
+### 2.2 목표 구조
 
 ```
 features/guide/
 ├── index.ts
-├── content/                  # 콘텐츠 데이터 분리
-│   ├── index.ts
-│   ├── getting_started.ts    # 시작하기
-│   ├── daily_work.ts         # 일간 작업
-│   ├── templates.ts          # 템플릿
-│   ├── shortcuts.ts          # 단축키
-│   └── tips.ts               # 팁
+│
+├── constants/
+│   ├── guide_data.ts          # NEW: 가이드 데이터 (~200줄)
+│   ├── labels.ts              # NEW: UI 레이블
+│   └── config.ts              # NEW: 설정
+│
 ├── hooks/
-│   └── useGuideNavigation.ts # 네비게이션 상태
+│   ├── useGuideNavigation.ts  # NEW: 네비게이션 상태 (~40줄)
+│   └── useGuideSearch.ts      # NEW: 검색 기능 (~50줄)
+│
 └── ui/
     ├── GuideBook/
-    │   └── GuideBook.tsx     # 메인 (~150줄)
-    ├── GuideSidebar/
-    │   └── GuideSidebar.tsx  # 사이드바
-    └── GuideContent/
-        └── GuideContent.tsx  # 콘텐츠 렌더러
+    │   ├── index.ts
+    │   ├── GuideBook.tsx      # ✅ 메인 (~150줄)
+    │   ├── GuideSidebar.tsx   # NEW (~80줄)
+    │   └── GuideContent.tsx   # NEW (~100줄)
+    │
+    └── GuideSection/
+        ├── index.ts
+        ├── GuideSection.tsx   # NEW (~60줄)
+        ├── CodeExample.tsx    # NEW (~50줄)
+        └── TipBox.tsx         # NEW (~40줄)
 ```
 
-### 2.4 체크리스트
+### 2.3 예상 성과
 
--   [ ] `features/guide/` 폴더 생성
--   [ ] `content/` 콘텐츠 데이터 분리
--   [ ] `hooks/useGuideNavigation.ts` 생성
--   [ ] UI 컴포넌트 분리
--   [ ] 기존 `components/GuideBook.tsx` 삭제
-
-### 2.5 예상 줄 수
-
-| 항목             | Before | After |
-| ---------------- | ------ | ----- |
-| GuideBook.tsx    | 574    | -     |
-| GuideBook (메인) | -      | ~150  |
-| content/\*.ts    | -      | ~300  |
-| hooks/\*.ts      | -      | ~50   |
-| ui/\*            | -      | ~150  |
-| **총계**         | 574    | ~650  |
+| 지표                | Before | After           | 개선      |
+| ------------------- | ------ | --------------- | --------- |
+| **총 줄 수**        | 574줄  | 150줄           | **-74%**  |
+| **하드코딩 데이터** | 178줄  | 0줄 (constants) | **-100%** |
+| **inline 섹션**     | 240줄  | 0줄             | **-100%** |
 
 ---
 
-## 3. ChangelogModal (115줄)
+## 3. 작업 체크리스트
 
-### 3.1 현재 상태
+### SuggestionBoard
 
--   위치: `src/components/ChangelogModal.tsx`
--   줄 수: 115줄 (이미 적절한 크기)
+-   [ ] `suggestion_filters.ts` 신규
+-   [ ] `useSuggestionData.ts` 훅
+-   [ ] `SuggestionCard.tsx` (80줄)
+-   [ ] `SuggestionDetailModal.tsx` (100줄)
+-   [ ] `SuggestionBoard.tsx` (150줄)
 
-### 3.2 분리 여부
+### GuideBook
 
-**분리 불필요** - 이미 적절한 크기이며 단일 책임을 가짐.
-
-필요시 `features/changelog/`로 이동만 고려.
-
----
-
-## 4. DemoComponents (가이드 내 데모)
-
-### 4.1 현재 상태
-
--   위치: `src/components/guide/DemoComponents.tsx`
-
-### 4.2 분리 계획
-
-GuideBook과 함께 `features/guide/`로 이동:
-
-```
-features/guide/
-├── ...
-└── ui/
-    └── DemoComponents/
-        └── DemoComponents.tsx
-```
+-   [ ] `guide_data.ts` 데이터 분리
+-   [ ] `useGuideNavigation.ts` 훅
+-   [ ] `GuideSidebar.tsx` (80줄)
+-   [ ] `GuideSection.tsx` (60줄)
+-   [ ] `GuideBook.tsx` (150줄)
 
 ---
 
-## 5. 우선순위
+## 4. 통합 예상 성과
 
-| 순서 | 컴포넌트        | 줄 수 | 중요도 | 비고                  |
-| ---- | --------------- | ----- | ------ | --------------------- |
-| 1    | SuggestionBoard | 773   | 중     | 사용자 피드백 기능    |
-| 2    | GuideBook       | 574   | 낮음   | 정적 콘텐츠, 비핵심   |
-| 3    | ChangelogModal  | 115   | 낮음   | 분리 불필요           |
-| 4    | DemoComponents  | -     | 낮음   | GuideBook과 함께 이동 |
-
----
-
-## 6. 공통화 활용
-
-### 6.1 SuggestionBoard에서 활용
-
-| 공통 자원    | 사용 위치            |
-| ------------ | -------------------- |
-| FormModal    | SuggestionFormModal  |
-| EmptyState   | 빈 목록 표시         |
-| AnimatedList | 제안 목록 애니메이션 |
-
-### 6.2 GuideBook에서 활용
-
-| 공통 자원     | 사용 위치            |
-| ------------- | -------------------- |
-| HighlightText | 검색 결과 하이라이트 |
+| 컴포넌트        | Before  | After | 감소     |
+| --------------- | ------- | ----- | -------- |
+| SuggestionBoard | 773줄   | 150줄 | **-81%** |
+| GuideBook       | 574줄   | 150줄 | **-74%** |
+| **총계**        | 1,347줄 | 300줄 | **-78%** |
 
 ---
 
-## 7. 마이그레이션 순서
+## 5. 참고
 
-1. **Step 3에서 진행** (중소형 컴포넌트 분리 단계)
-2. SuggestionBoard → GuideBook 순으로 진행
-3. ChangelogModal, DemoComponents는 필요시 이동만
-
----
-
-## 참고
-
--   [PHASE8_OVERVIEW.md](./PHASE8_OVERVIEW.md) - 전체 개요
--   SuggestionBoard: 사용자 제안 기능
--   GuideBook: 사용 설명서
+-   [PHASE8_OVERVIEW.md](PHASE8_OVERVIEW.md)
+-   [01_DAILY_GANTT_CHART.md](01_DAILY_GANTT_CHART.md)

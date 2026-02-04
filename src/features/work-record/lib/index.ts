@@ -44,9 +44,17 @@ export {
     recalculateRecordDuration,
 } from "./duration_calculator";
 
-// 레코드 필터링
+// 카테고리 유틸
 export {
     getCategoryColor,
+    getCategoryBadgeStyle,
+    filterCategories,
+    CATEGORY_COLORS,
+    DEFAULT_CATEGORY_COLOR,
+} from "./category_utils";
+
+// 레코드 필터링
+export {
     filterRecordsByDateSession,
     filterIncompleteRecords,
     filterDisplayableRecords,

@@ -1,6 +1,8 @@
 /**
- * 레코드 테이블 컴포넌트
+ * RecordTable 컴포넌트 모음
  */
 
-export { RecordActions } from "./RecordActions";
 export { RecordTableHeader } from "./RecordTableHeader";
+export { RecordFilters } from "./RecordFilters";
+export { DailyStats } from "./DailyStats";
+export { RecordActions } from "./RecordActions";

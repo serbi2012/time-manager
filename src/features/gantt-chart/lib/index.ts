@@ -63,3 +63,21 @@ export {
     isTimeRangeOverlapping,
     calculateOverlapRange,
 } from "./conflict_detector";
+
+// 점심시간 계산
+export {
+    type LunchTimeRange,
+    calculateDurationExcludingLunch,
+    isOverlappingWithLunch,
+    calculateLunchOverlap,
+} from "./lunch_calculator";
+
+// 세션 유효성 검사
+export {
+    type ValidationResult,
+    validateTimeFormat,
+    validateTimeOrder,
+    validateMinDuration,
+    validateSessionOverlap,
+    validateSessionTime,
+} from "./session_validator";

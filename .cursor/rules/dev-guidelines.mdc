@@ -73,12 +73,169 @@ content={<div style={{...}}><strong>...</strong>...</div>}
 content={<SessionContextMenu work_name={...} on_edit={...} />}
 ```
 
+**JSX 작성 위치 엄격 제한 (CRITICAL):**
+
+> ⚠️ **절대 위반 금지**: JSX/DOM 태그는 **컴포넌트의 return 문에서만** 작성합니다.
+
+컴포넌트 **return 문 외부** (로직 영역)에서 JSX를 작성하는 모든 경우는 **줄 수와 무관**하게 **즉시 컴포넌트로 분리**합니다.
+
+**금지 영역 (JSX 작성 불가):**
+
+-   `useMemo()` 내부
+-   `useCallback()` 내부
+-   옵션 배열 생성 시 (`options`, `columns` 등)
+-   조건문 내부 (`if`, `switch`)
+-   배열 메서드 내부 (`.map()`, `.filter()` 등의 콜백)
+-   변수 할당문
+
+```typescript
+// ❌ 절대 금지: useMemo 안에 JSX (1줄이어도 금지)
+const options = useMemo(() => {
+    return data.map(item => ({
+        label: <span>{item.name}</span> // ← 1줄이어도 금지!
+    }));
+}, []);
+
+// ❌ 절대 금지: useMemo 안에 div (줄 수 무관)
+const project_code_options = useMemo(() => {
+    return raw_options.map(opt => ({
+        label: (
+            <div style={{ display: "flex" }}>  // ← 금지!
+                <span>{opt.label}</span>
+                <CloseOutlined onClick={...} />
+            </div>
+        )
+    }));
+}, []);
+
+// ❌ 절대 금지: optionRender/dropdownRender 내 inline JSX
+<Select
+    optionRender={(option) => (
+        <div style={{...}}>  // ← 금지!
+            <span>{option.label}</span>
+        </div>
+    )}
+/>
+
+// ✅ 필수: 별도 컴포넌트로 분리
+interface OptionLabelProps {
+    label: string;
+    onClose: () => void;
+}
+
+function OptionLabel({ label, onClose }: OptionLabelProps) {
+    return (
+        <div style={OPTION_LABEL_CONTAINER_STYLE}>
+            <span>{label}</span>
+            <CloseOutlined onClick={onClose} style={CLOSE_ICON_STYLE} />
+        </div>
+    );
+}
+
+const project_code_options = useMemo(() => {
+    return raw_options.map(opt => ({
+        label: <OptionLabel label={opt.label} onClose={() => hideOption(opt.value)} />
+    }));
+}, []);
+
+// ✅ 필수: optionRender에 컴포넌트 사용
+<Select
+    optionRender={(option) => (
+        <SelectOptionLabel label={option.label} onClose={handleClose} />
+    )}
+/>
+```
+
+**DOM 코드 길이 제한 (CRITICAL):**
+
+컴포넌트의 **return 문 내 DOM 코드**:
+
+-   **50줄 초과** → 분리 검토 권장
+-   **100줄 초과** → 반드시 분리
+-   **200줄 초과** → 즉시 분리 (절대 위반 금지)
+
+```typescript
+// ❌ 금지: return 문 내 DOM 200줄
+function MyModal() {
+    // ... 로직 100줄
+    return (
+        <Modal>
+            {/* 300줄의 DOM 코드 */}  // ← 금지!
+        </Modal>
+    );
+}
+
+// ✅ 필수: 하위 컴포넌트로 분리
+function MyModal() {
+    return (
+        <Modal>
+            <ModalHeader {...} />
+            <ModalBody {...} />
+            <ModalFooter {...} />
+        </Modal>
+    );
+}
+```
+
 **상수 추출 (필수):**
 
--   **인라인 스타일 객체** (`style={{ minWidth: 160, color: "#666", fontSize: 12 }}`) 중 **2회 이상 사용**하거나 **의미 있는 토큰**은 **반드시** 상수 또는 스타일 모듈로 분리합니다.
--   색상(`#666`, `#ff4d4f` 등), 폰트 크기(11, 12), 간격(4, 8, 16), 최소 너비(160 등)는 **매직 넘버/문자열 금지**. `constants/` 또는 feature 내 `constants/` 사용.
 -   **사용자에게 보이는 모든 문구는 상수화**: 버튼/라벨/제목/힌트/설명/빈 상태 문구 등 **한 번만 써도** 상수로 정의합니다. 컴포넌트 안에 `"작업 기록이 없습니다"`, `"드래그하여 작업 추가"` 같은 하드코딩 문자열을 두지 않습니다.
 -   **`message.info` / `message.success` / `message.error` / `message.warning`** 인자도 **반드시 상수**로 정의합니다. 예: `message.success("세션이 삭제되었습니다.")` → `message.success(GANTT_MESSAGE_SESSION_DELETED)`.
+
+**인라인 스타일 객체 엄격 금지 (CRITICAL):**
+
+> ⚠️ **절대 위반 금지**: 모든 `style={{...}}` inline 객체는 **줄 수와 무관**하게 **반드시 상수로 분리**합니다.
+
+```typescript
+// ❌ 절대 금지: 1줄짜리 inline style
+<div style={{ display: "flex" }}>...</div>
+
+// ❌ 절대 금지: 여러 줄 inline style
+<div style={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center"
+}}>...</div>
+
+// ✅ 필수: 상수로 분리 (1줄이어도 반드시)
+const FLEX_CONTAINER_STYLE: React.CSSProperties = {
+    display: "flex",
+};
+
+const OPTION_LABEL_CONTAINER_STYLE: React.CSSProperties = {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+};
+
+<div style={FLEX_CONTAINER_STYLE}>...</div>
+<div style={OPTION_LABEL_CONTAINER_STYLE}>...</div>
+```
+
+**inline style 상수 위치:**
+
+-   **1회 사용**: 컴포넌트 파일 상단 (export 전, 컴포넌트 외부)
+-   **2회 이상 사용**: `feature/constants/styles.ts` 또는 `shared/ui/form/styles.ts`
+-   **의미 있는 토큰** (색상, 폰트, 간격): 반드시 `constants/style/` 또는 `feature/constants/`
+
+```typescript
+// ✅ 권장: 파일 상단에 상수 정의
+const MODAL_TITLE_SECONDARY_STYLE: React.CSSProperties = {
+    fontWeight: "normal",
+};
+
+const FORM_ITEM_FLEX_STYLE: React.CSSProperties = {
+    flex: 1,
+};
+
+export function MyComponent() {
+    return <Text style={MODAL_TITLE_SECONDARY_STYLE}>제목</Text>;
+}
+```
+
+**매직 넘버/문자열 금지:**
+
+-   색상(`#666`, `#ff4d4f` 등), 폰트 크기(11, 12), 간격(4, 8, 16), 최소 너비(160 등)는 **매직 넘버/문자열 금지**. `constants/` 또는 feature 내 `constants/` 사용.
 
 ```
 ❌ 금지: 인라인 매직 넘버/색상
@@ -86,7 +243,13 @@ style={{ minWidth: 160, color: "#666", fontSize: 12, marginTop: 4 }}
 
 ✅ 필수: 상수 또는 스타일 토큰
 import { GANTT_CONTEXT_MENU_MIN_WIDTH, GANTT_TEXT_SECONDARY, GANTT_FONT_SMALL } from "../constants";
-style={{ minWidth: GANTT_CONTEXT_MENU_MIN_WIDTH, ... }}
+const MENU_STYLE: React.CSSProperties = {
+    minWidth: GANTT_CONTEXT_MENU_MIN_WIDTH,
+    color: GANTT_TEXT_SECONDARY,
+    fontSize: GANTT_FONT_SMALL,
+    marginTop: 4,
+};
+style={MENU_STYLE}
 ```
 
 ```
