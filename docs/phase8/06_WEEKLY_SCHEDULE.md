@@ -265,14 +265,16 @@ export function WeeklySchedule() {
 
 ## 5. 작업 체크리스트
 
--   [ ] `week_calculator.ts` 신규 (3개 함수)
--   [ ] `useWeeklyData.ts` 훅 (데이터 가공)
--   [ ] `useWeeklyStats.ts` 훅 (통계 계산)
--   [ ] `WeeklyHeader.tsx` (80줄)
--   [ ] `WeeklyTable.tsx` (120줄)
--   [ ] `WeeklySchedule.tsx` (150줄)
--   [ ] 테스트 작성
--   [ ] 린트 확인
+-   [x] `week_calculator.ts` 신규 (getWeekDates, getWeekRange, getDayRecords, filterRecordsInWeek)
+-   [x] `week_grouper.ts` 신규 (WorkGroup/DayGroup, buildDayGroups, 누적시간/진행상태)
+-   [x] `weekly_copy_text.ts` 신규 (generateWeeklyCopyText 형식 1/2)
+-   [x] `useWeeklyData.ts` 훅 (주간 데이터·편집·필터)
+-   [x] `useCopyFormat.ts` 훅 (복사 형식 1|2)
+-   [x] `WeeklyHeader.tsx` (헤더)
+-   [x] `WeekRangeText.tsx`, `DayCard.tsx`, `WorkItem.tsx`, `CopyPreviewSection.tsx`
+-   [x] `WeeklySchedule.tsx` 메인 (~110줄)
+-   [x] constants (labels, config, styles)
+-   [x] 기존 테스트 14개 통과, 린트 확인
 
 ---
 
