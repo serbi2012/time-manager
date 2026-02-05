@@ -50,9 +50,9 @@ export const RECORD_BUTTON = {
 // 모달 제목
 // ========================================
 export const RECORD_MODAL_TITLE = {
-    ADD: "작업 추가",
+    ADD: "새 작업 추가",
     EDIT: "작업 수정",
-    COMPLETED: "완료된 작업 기록",
+    COMPLETED: "완료된 작업",
     TRASH: "휴지통",
     SESSION_EDIT: "세션 편집",
 } as const;
@@ -62,9 +62,13 @@ export const RECORD_MODAL_TITLE = {
 // ========================================
 export const RECORD_PLACEHOLDER = {
     PROJECT_CODE: "프로젝트 코드 입력...",
+    PROJECT_CODE_WITH_EXAMPLE: "예: A25_01846",
+    PROJECT_CODE_WITH_EXAMPLE_AND_DEFAULT:
+        "예: A25_01846 (미입력 시 A00_00000)",
     WORK_NAME: "작업명 입력...",
     TASK_NAME: "업무 선택",
     CATEGORY: "카테고리 선택",
+    CATEGORY_ALL: "전체",
     DEAL_NAME: "거래명 입력...",
     NOTE: "비고 입력...",
     SEARCH: "작업명 또는 거래명으로 검색...",
@@ -158,6 +162,12 @@ export const RECORD_UI_TEXT = {
     TIME_SEPARATOR: " ~ ",
     MINUTE_UNIT: "분",
     TODAY_TEXT: "오늘",
+    WORK_COUNT_LABEL: "작업",
+    WORK_COUNT_UNIT: "개",
+    TOTAL_DURATION_LABEL: "총 시간",
+    COMPLETED_WORK_COUNT: (count: number) => `총 ${count}개의 완료된 작업`,
+    TRASH_WORK_COUNT: (count: number) => `총 ${count}개의 삭제된 작업`,
+    SHOW_COMPLETED: "완료된 작업 표시",
 } as const;
 
 // ========================================

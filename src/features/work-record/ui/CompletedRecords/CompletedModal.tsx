@@ -9,6 +9,13 @@ import type { CompletedModalProps } from "../../lib/types";
 import type { WorkRecord } from "../../../../shared/types";
 import { formatDuration } from "../../../../shared/lib/time";
 import { getCategoryColor } from "../../../../shared/config";
+import {
+    RECORD_MODAL_TITLE,
+    RECORD_TABLE_COLUMN,
+    RECORD_BUTTON,
+    RECORD_EMPTY,
+    RECORD_UI_TEXT,
+} from "../../constants";
 
 const { Text } = Typography;
 
@@ -23,19 +30,19 @@ export function CompletedModal({
 }: CompletedModalProps) {
     const columns: ColumnsType<WorkRecord> = [
         {
-            title: "작업명",
+            title: RECORD_TABLE_COLUMN.WORK_NAME,
             dataIndex: "work_name",
             key: "work_name",
             ellipsis: true,
         },
         {
-            title: "거래명",
+            title: RECORD_TABLE_COLUMN.DEAL_NAME,
             dataIndex: "deal_name",
             key: "deal_name",
             ellipsis: true,
         },
         {
-            title: "카테고리",
+            title: RECORD_TABLE_COLUMN.CATEGORY,
             dataIndex: "category_name",
             key: "category_name",
             render: (category: string) => (
@@ -43,17 +50,19 @@ export function CompletedModal({
             ),
         },
         {
-            title: "소요 시간",
+            title: RECORD_TABLE_COLUMN.DURATION,
             dataIndex: "duration_minutes",
             key: "duration_minutes",
             render: (mins: number) => formatDuration(mins),
         },
         {
-            title: "완료 일시",
+            title: RECORD_TABLE_COLUMN.COMPLETED_DATE,
             dataIndex: "completed_at",
             key: "completed_at",
             render: (date: string) =>
-                date ? new Date(date).toLocaleString("ko-KR") : "-",
+                date
+                    ? new Date(date).toLocaleString("ko-KR")
+                    : RECORD_UI_TEXT.EMPTY_VALUE,
         },
         {
             title: "",
@@ -65,7 +74,7 @@ export function CompletedModal({
                     icon={<RollbackOutlined />}
                     onClick={() => on_restore(record)}
                 >
-                    복원
+                    {RECORD_BUTTON.RESTORE}
                 </Button>
             ),
         },
@@ -73,19 +82,21 @@ export function CompletedModal({
 
     return (
         <Modal
-            title="완료된 작업"
+            title={RECORD_MODAL_TITLE.COMPLETED}
             open={open}
             onCancel={on_close}
             footer={null}
             width={800}
         >
             {records.length === 0 ? (
-                <Empty description="완료된 작업이 없습니다." />
+                <Empty description={RECORD_EMPTY.NO_COMPLETED} />
             ) : (
                 <>
                     <Space style={{ marginBottom: 16 }}>
                         <Text type="secondary">
-                            총 {records.length}개의 완료된 작업
+                            {RECORD_UI_TEXT.COMPLETED_WORK_COUNT(
+                                records.length
+                            )}
                         </Text>
                     </Space>
                     <Table

@@ -2,12 +2,28 @@
  * 휴지통 모달 컴포넌트
  */
 
-import { Modal, Table, Button, Empty, Typography, Popconfirm, Space } from "antd";
+import {
+    Modal,
+    Table,
+    Button,
+    Empty,
+    Typography,
+    Popconfirm,
+    Space,
+} from "antd";
 import { RollbackOutlined, DeleteOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import type { TrashModalProps } from "../../lib/types";
 import type { WorkRecord } from "../../../../shared/types";
 import { formatDuration } from "../../../../shared/lib/time";
+import {
+    RECORD_MODAL_TITLE,
+    RECORD_TABLE_COLUMN,
+    RECORD_BUTTON,
+    RECORD_EMPTY,
+    RECORD_UI_TEXT,
+    RECORD_CONFIRM,
+} from "../../constants";
 
 const { Text } = Typography;
 
@@ -31,29 +47,31 @@ export function TrashModal({
 
     const columns: ColumnsType<WorkRecord> = [
         {
-            title: "작업명",
+            title: RECORD_TABLE_COLUMN.WORK_NAME,
             dataIndex: "work_name",
             key: "work_name",
             ellipsis: true,
         },
         {
-            title: "거래명",
+            title: RECORD_TABLE_COLUMN.DEAL_NAME,
             dataIndex: "deal_name",
             key: "deal_name",
             ellipsis: true,
         },
         {
-            title: "소요 시간",
+            title: RECORD_TABLE_COLUMN.DURATION,
             dataIndex: "duration_minutes",
             key: "duration_minutes",
             render: (mins: number) => formatDuration(mins),
         },
         {
-            title: "삭제 일시",
+            title: RECORD_TABLE_COLUMN.DELETED_DATE,
             dataIndex: "deleted_at",
             key: "deleted_at",
             render: (date: string) =>
-                date ? new Date(date).toLocaleString("ko-KR") : "-",
+                date
+                    ? new Date(date).toLocaleString("ko-KR")
+                    : RECORD_UI_TEXT.EMPTY_VALUE,
         },
         {
             title: "",
@@ -66,22 +84,20 @@ export function TrashModal({
                         icon={<RollbackOutlined />}
                         onClick={() => on_restore(record)}
                     >
-                        복원
+                        {RECORD_BUTTON.RESTORE}
                     </Button>
                     <Popconfirm
-                        title="영구 삭제"
-                        description="이 작업을 영구 삭제하시겠습니까? 복구할 수 없습니다."
+                        title={RECORD_CONFIRM.PERMANENT_DELETE.TITLE}
+                        description={
+                            RECORD_CONFIRM.PERMANENT_DELETE.DESCRIPTION
+                        }
                         onConfirm={() => on_permanent_delete(record)}
-                        okText="삭제"
-                        cancelText="취소"
+                        okText={RECORD_BUTTON.DELETE}
+                        cancelText={RECORD_BUTTON.CANCEL}
                         okButtonProps={{ danger: true }}
                     >
-                        <Button
-                            type="text"
-                            danger
-                            icon={<DeleteOutlined />}
-                        >
-                            삭제
+                        <Button type="text" danger icon={<DeleteOutlined />}>
+                            {RECORD_BUTTON.DELETE}
                         </Button>
                     </Popconfirm>
                 </Space>
@@ -91,19 +107,19 @@ export function TrashModal({
 
     return (
         <Modal
-            title="휴지통"
+            title={RECORD_MODAL_TITLE.TRASH}
             open={open}
             onCancel={on_close}
             footer={null}
             width={800}
         >
             {records.length === 0 ? (
-                <Empty description="휴지통이 비어있습니다." />
+                <Empty description={RECORD_EMPTY.NO_TRASH} />
             ) : (
                 <>
                     <Space style={{ marginBottom: 16 }}>
                         <Text type="secondary">
-                            {records.length}개의 삭제된 작업
+                            {RECORD_UI_TEXT.TRASH_WORK_COUNT(records.length)}
                         </Text>
                     </Space>
                     <Table

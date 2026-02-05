@@ -25,6 +25,16 @@ export default defineConfig([
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_',
       }],
+      // Fast Refresh 규칙을 warning으로 완화 (빌드에 영향 없음)
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+    },
+  },
+  {
+    files: ['**/*.test.{ts,tsx}', '**/*.stories.tsx'],
+    rules: {
+      'react-hooks/rules-of-hooks': 'off',
+      'react-hooks/globals': 'off',
+      'react-refresh/only-export-components': 'off',
     },
   },
 ])

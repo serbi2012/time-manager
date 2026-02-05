@@ -2,7 +2,7 @@
  * useInView - 뷰포트 진입 감지 훅
  * 요소가 뷰포트에 들어올 때 애니메이션 트리거
  */
-import { useEffect, useRef, useState, type RefObject } from "react";
+import React, { useEffect, useRef, useState, type RefObject } from "react";
 
 interface UseInViewOptions {
     /** 한 번만 트리거 (기본: true) */
@@ -85,9 +85,9 @@ export function useInViewMultiple<T extends HTMLElement = HTMLDivElement>(
     count: number,
     options: UseInViewOptions = {}
 ): { refs: RefObject<T | null>[]; inViews: boolean[] } {
-    const refs = useRef<RefObject<T | null>[]>(
-        Array.from({ length: count }, () => ({ current: null }))
-    ).current;
+    const [refs] = useState<RefObject<T | null>[]>(() =>
+        Array.from({ length: count }, () => React.createRef<T | null>())
+    );
 
     const [inViews, setInViews] = useState<boolean[]>(
         Array.from({ length: count }, () => false)
