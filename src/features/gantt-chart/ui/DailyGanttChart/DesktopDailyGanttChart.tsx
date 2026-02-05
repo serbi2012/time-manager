@@ -1,14 +1,12 @@
 /**
- * 일간 간트 차트 컴포넌트 (리팩토링됨)
- * - 메인 오케스트레이션 컴포넌트
- * - 훅과 하위 컴포넌트 조합
+ * 데스크탑 일간 간트 차트 컴포넌트
+ * - 데스크탑 전용 UI
  */
 
 import { useState, useCallback, useEffect } from "react";
 import { Card, Typography, message } from "antd";
 import dayjs from "dayjs";
 import { useWorkStore } from "../../../../store/useWorkStore";
-import { useResponsive } from "../../../../hooks/useResponsive";
 import { minutesToTime } from "../../../../shared/lib/time";
 import { getSessionMinutes } from "../../../../shared/lib/session";
 import type { WorkRecord, WorkSession } from "../../../../shared/types";
@@ -47,10 +45,9 @@ import {
 const { Text } = Typography;
 
 /**
- * 일간 간트 차트 메인 컴포넌트
+ * 데스크탑 일간 간트 차트 메인 컴포넌트
  */
-export function DailyGanttChart() {
-    const { is_mobile } = useResponsive();
+export function DesktopDailyGanttChart() {
     const { selected_date, timer, deleteSession } = useWorkStore();
 
     // 시간 관련 훅
@@ -253,50 +250,44 @@ export function DailyGanttChart() {
                     </Text>
                 }
             >
-                <div className={is_mobile ? "gantt-scroll-container" : ""}>
-                    <div
-                        className={`gantt-wrapper ${
-                            is_mobile ? "gantt-mobile-scroll" : ""
-                        }`}
-                    >
-                        {grouped_works.length === 0 ? (
-                            <EmptyGanttChart
-                                grid_ref={grid_ref}
-                                time_labels={time_labels}
-                                lunch_overlay_style={lunch_overlay_style}
-                                is_dragging={is_dragging}
-                                drag_selection={drag_selection}
-                                getSelectionStyle={getSelectionStyle}
-                                handleMouseDown={handleMouseDown}
-                            />
-                        ) : (
-                            <GanttChartContent
-                                grouped_works={grouped_works}
-                                time_labels={time_labels}
-                                time_range={time_range}
-                                current_time_mins={current_time_mins}
-                                lunch_overlay_style={lunch_overlay_style}
-                                conflict_info={conflict_info}
-                                resize_state={resize_state}
-                                context_menu={context_menu}
-                                timer={timer}
-                                grid_ref={grid_ref}
-                                is_dragging={is_dragging}
-                                drag_selection={drag_selection}
-                                getSelectionStyle={getSelectionStyle}
-                                getWorkColor={getWorkColor}
-                                getTotalDuration={getTotalDuration}
-                                handleMouseDown={handleMouseDown}
-                                handleResizeStart={handleResizeStart}
-                                handleBarDoubleClick={handleBarDoubleClick}
-                                setContextMenu={setContextMenu}
-                                handleContextEdit={handleContextEdit}
-                                handleContextDeleteSession={
-                                    handleContextDeleteSession
-                                }
-                            />
-                        )}
-                    </div>
+                <div className="gantt-wrapper">
+                    {grouped_works.length === 0 ? (
+                        <EmptyGanttChart
+                            grid_ref={grid_ref}
+                            time_labels={time_labels}
+                            lunch_overlay_style={lunch_overlay_style}
+                            is_dragging={is_dragging}
+                            drag_selection={drag_selection}
+                            getSelectionStyle={getSelectionStyle}
+                            handleMouseDown={handleMouseDown}
+                        />
+                    ) : (
+                        <GanttChartContent
+                            grouped_works={grouped_works}
+                            time_labels={time_labels}
+                            time_range={time_range}
+                            current_time_mins={current_time_mins}
+                            lunch_overlay_style={lunch_overlay_style}
+                            conflict_info={conflict_info}
+                            resize_state={resize_state}
+                            context_menu={context_menu}
+                            timer={timer}
+                            grid_ref={grid_ref}
+                            is_dragging={is_dragging}
+                            drag_selection={drag_selection}
+                            getSelectionStyle={getSelectionStyle}
+                            getWorkColor={getWorkColor}
+                            getTotalDuration={getTotalDuration}
+                            handleMouseDown={handleMouseDown}
+                            handleResizeStart={handleResizeStart}
+                            handleBarDoubleClick={handleBarDoubleClick}
+                            setContextMenu={setContextMenu}
+                            handleContextEdit={handleContextEdit}
+                            handleContextDeleteSession={
+                                handleContextDeleteSession
+                            }
+                        />
+                    )}
                 </div>
 
                 <GanttStyles grouped_works_count={grouped_works.length} />
