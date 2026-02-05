@@ -155,19 +155,28 @@ features/guide/
 
 ### SuggestionBoard
 
--   [ ] `suggestion_filters.ts` 신규
--   [ ] `useSuggestionData.ts` 훅
--   [ ] `SuggestionCard.tsx` (80줄)
--   [ ] `SuggestionDetailModal.tsx` (100줄)
--   [ ] `SuggestionBoard.tsx` (150줄)
+-   [x] `author_utils.ts`, `time_formatter.ts` 순수 함수
+-   [x] `useSuggestionData.ts` 훅
+-   [x] `useSuggestionPostActions.ts` 훅
+-   [x] `useReplyActions.ts` 훅
+-   [x] `usePermissionCheck.ts` 훅
+-   [x] `SuggestionCardHeader.tsx`, `SuggestionCardContent.tsx` 컴포넌트
+-   [x] `ReplyItem.tsx` 컴포넌트
+-   [x] `ReplyForm.tsx` 컴포넌트
+-   [x] `AdminControls.tsx` 컴포넌트
+-   [x] `SuggestionWriteModal.tsx`, `SuggestionEditModal.tsx` 모달
+-   [x] `SuggestionBoard.tsx` (152줄)
 
 ### GuideBook
 
--   [ ] `guide_data.ts` 데이터 분리
--   [ ] `useGuideNavigation.ts` 훅
--   [ ] `GuideSidebar.tsx` (80줄)
--   [ ] `GuideSection.tsx` (60줄)
--   [ ] `GuideBook.tsx` (150줄)
+-   [x] `useGuideNavigation.ts` 훅 (~65줄)
+-   [x] `useGuideSearch.ts` 훅 (~25줄)
+-   [x] `GuideSidebar.tsx` (~120줄)
+-   [x] `MobileSidebar.tsx` (~70줄)
+-   [x] `NavButtons.tsx` (~30줄)
+-   [x] `MermaidDiagram.tsx` (~30줄)
+-   [x] `WikiLink.tsx` (~15줄)
+-   [x] `GuideBook.tsx` (~260줄)
 
 ---
 

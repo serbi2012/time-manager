@@ -6,3 +6,5 @@ export { TemplateCard } from "./TemplateCard";
 export type { TemplateCardProps } from "../model/types";
 export { ColorPicker } from "./ColorPicker";
 export type { ColorPickerProps } from "../model/types";
+export { TemplateModal } from "./TemplateModal";
+export { SortableTemplateCard } from "./SortableTemplateCard";

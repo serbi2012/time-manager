@@ -3,4 +3,15 @@
  */
 
 export { DayColumn, type DayColumnProps } from "./DayColumn";
-export { CopyFormatSelector, type CopyFormatSelectorProps } from "./CopyFormatSelector";
+export {
+    CopyFormatSelector,
+    type CopyFormatSelectorProps,
+} from "./CopyFormatSelector";
+export {
+    WeeklySchedule,
+    WeeklyHeader,
+    WeekRangeText,
+    DayCard,
+    WorkItem,
+    CopyPreviewSection,
+} from "./WeeklySchedule";

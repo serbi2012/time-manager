@@ -142,7 +142,7 @@ export function SettingsModal({
                 <Tabs
                     defaultActiveKey={TAB_KEY_THEME}
                     items={scrollable_tab_items}
-                    tabPlacement="top"
+                    tabPosition="top"
                     centered
                     size="small"
                 />
@@ -165,7 +165,7 @@ export function SettingsModal({
             <Tabs
                 defaultActiveKey={TAB_KEY_THEME}
                 items={scrollable_tab_items}
-                tabPlacement="left"
+                tabPosition="left"
                 tabBarStyle={SETTINGS_TAB_BAR_STYLE}
                 style={SETTINGS_TABS_CONTAINER_STYLE}
             />
