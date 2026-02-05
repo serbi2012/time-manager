@@ -10,8 +10,14 @@ import {
     matchShortcutKey,
 } from "../../../../hooks/useShortcuts";
 import type { WorkRecord } from "../../../../shared/types";
-import { SUCCESS_MESSAGES } from "../../../../shared/constants";
 import { WorkRecordFormFields } from "../../../../shared/ui/form";
+import {
+    RECORD_MODAL_TITLE,
+    RECORD_BUTTON,
+    RECORD_SUCCESS,
+    RECORD_PLACEHOLDER,
+    DEFAULT_PROJECT_CODE,
+} from "../../constants";
 
 export interface RecordAddModalProps {
     /** 모달 열림 상태 */
@@ -55,7 +61,7 @@ export function RecordAddModal({ open, onClose }: RecordAddModalProps) {
 
             const new_record: WorkRecord = {
                 id: crypto.randomUUID(),
-                project_code: values.project_code || "A00_00000",
+                project_code: values.project_code || DEFAULT_PROJECT_CODE,
                 work_name: values.work_name,
                 task_name: values.task_name || "",
                 deal_name: values.deal_name || "",
@@ -71,7 +77,7 @@ export function RecordAddModal({ open, onClose }: RecordAddModalProps) {
             };
 
             addRecord(new_record);
-            message.success(SUCCESS_MESSAGES.workAdded);
+            message.success(RECORD_SUCCESS.ADDED);
 
             form.resetFields();
             onClose();
@@ -88,15 +94,16 @@ export function RecordAddModal({ open, onClose }: RecordAddModalProps) {
 
     return (
         <Modal
-            title="새 작업 추가"
+            title={RECORD_MODAL_TITLE.ADD}
             open={open}
             onCancel={handleClose}
             footer={[
                 <Button key="ok" type="primary" onClick={handleAddWork}>
-                    추가 ({formatShortcutKeyForPlatform(modal_submit_keys)})
+                    {RECORD_BUTTON.ADD} (
+                    {formatShortcutKeyForPlatform(modal_submit_keys)})
                 </Button>,
                 <Button key="cancel" onClick={handleClose}>
-                    취소
+                    {RECORD_BUTTON.CANCEL}
                 </Button>,
             ]}
         >
@@ -122,7 +129,9 @@ export function RecordAddModal({ open, onClose }: RecordAddModalProps) {
                     hideAutoCompleteOption={hideAutoCompleteOption}
                     records={records}
                     templates={templates}
-                    project_code_placeholder="예: A25_01846 (미입력 시 A00_00000)"
+                    project_code_placeholder={
+                        RECORD_PLACEHOLDER.PROJECT_CODE_WITH_EXAMPLE_AND_DEFAULT
+                    }
                 />
             </Form>
         </Modal>

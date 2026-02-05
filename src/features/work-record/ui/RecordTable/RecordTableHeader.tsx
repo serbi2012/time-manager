@@ -12,7 +12,7 @@ import {
 import dayjs from "dayjs";
 import type { RecordTableHeaderProps } from "../../lib/types";
 import { formatDuration } from "../../../../shared/lib/time";
-
+import { RECORD_BUTTON, RECORD_UI_TEXT } from "../../constants";
 
 /**
  * 레코드 테이블 헤더 컴포넌트
@@ -56,7 +56,8 @@ export function RecordTableHeader({
                         <DatePicker
                             value={dayjs(selected_date)}
                             onChange={(date) =>
-                                date && on_date_change(date.format("YYYY-MM-DD"))
+                                date &&
+                                on_date_change(date.format("YYYY-MM-DD"))
                             }
                             allowClear={false}
                             format="YYYY-MM-DD (ddd)"
@@ -68,7 +69,7 @@ export function RecordTableHeader({
                         />
                         {!is_today && (
                             <Button onClick={handle_today} size="small">
-                                오늘
+                                {RECORD_UI_TEXT.TODAY_TEXT}
                             </Button>
                         )}
                     </Space>
@@ -78,13 +79,13 @@ export function RecordTableHeader({
                 <Col>
                     <Space size="large">
                         <Statistic
-                            title="작업"
+                            title={RECORD_UI_TEXT.WORK_COUNT_LABEL}
                             value={record_count}
-                            suffix="개"
+                            suffix={RECORD_UI_TEXT.WORK_COUNT_UNIT}
                             valueStyle={{ fontSize: 16 }}
                         />
                         <Statistic
-                            title="총 시간"
+                            title={RECORD_UI_TEXT.TOTAL_DURATION_LABEL}
                             value={formatDuration(total_minutes)}
                             valueStyle={{ fontSize: 16 }}
                         />
@@ -98,13 +99,13 @@ export function RecordTableHeader({
                             icon={<CheckCircleOutlined />}
                             onClick={on_show_completed}
                         >
-                            완료
+                            {RECORD_BUTTON.VIEW_COMPLETED}
                         </Button>
                         <Button
                             icon={<DeleteOutlined />}
                             onClick={on_show_trash}
                         >
-                            휴지통
+                            {RECORD_BUTTON.VIEW_TRASH}
                         </Button>
                     </Space>
                 </Col>

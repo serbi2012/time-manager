@@ -11,8 +11,13 @@ import {
     matchShortcutKey,
 } from "../../../../hooks/useShortcuts";
 import type { WorkRecord } from "../../../../shared/types";
-import { SUCCESS_MESSAGES } from "../../../../shared/constants";
 import { WorkRecordFormFields } from "../../../../shared/ui/form";
+import {
+    RECORD_MODAL_TITLE,
+    RECORD_BUTTON,
+    RECORD_SUCCESS,
+    RECORD_PLACEHOLDER,
+} from "../../constants";
 
 export interface RecordEditModalProps {
     /** 모달 열림 상태 */
@@ -105,7 +110,7 @@ export function RecordEditModal({
                 }
             }
 
-            message.success(SUCCESS_MESSAGES.workUpdated);
+            message.success(RECORD_SUCCESS.UPDATED);
             handleClose();
         } catch {
             // validation failed
@@ -120,15 +125,16 @@ export function RecordEditModal({
 
     return (
         <Modal
-            title="작업 수정"
+            title={RECORD_MODAL_TITLE.EDIT}
             open={open}
             onCancel={handleClose}
             footer={[
                 <Button key="ok" type="primary" onClick={handleSaveEdit}>
-                    저장 ({formatShortcutKeyForPlatform(modal_submit_keys)})
+                    {RECORD_BUTTON.SAVE} (
+                    {formatShortcutKeyForPlatform(modal_submit_keys)})
                 </Button>,
                 <Button key="cancel" onClick={handleClose}>
-                    취소
+                    {RECORD_BUTTON.CANCEL}
                 </Button>,
             ]}
         >
@@ -154,7 +160,9 @@ export function RecordEditModal({
                     hideAutoCompleteOption={hideAutoCompleteOption}
                     records={records}
                     templates={templates}
-                    project_code_placeholder="예: A25_01846"
+                    project_code_placeholder={
+                        RECORD_PLACEHOLDER.PROJECT_CODE_WITH_EXAMPLE
+                    }
                 />
             </Form>
         </Modal>

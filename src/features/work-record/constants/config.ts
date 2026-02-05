@@ -68,6 +68,9 @@ export const DEFAULT_FILTER_STATE = {
 // 폼 관련
 // ========================================
 
+/** 기본 프로젝트 코드 (미입력 시 사용) */
+export const DEFAULT_PROJECT_CODE = "A00_00000";
+
 /** 기본 폼 데이터 */
 export const DEFAULT_RECORD_FORM_DATA = {
     project_code: "",

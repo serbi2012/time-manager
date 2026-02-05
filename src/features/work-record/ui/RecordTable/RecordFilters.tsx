@@ -5,7 +5,11 @@
 import { Input, Select, Space, Checkbox } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import type { RecordFilters as RecordFiltersType } from "../../hooks/useRecordFilters";
-import { RECORD_CATEGORY_OPTIONS, RECORD_PLACEHOLDER } from "../../constants";
+import {
+    RECORD_CATEGORY_OPTIONS,
+    RECORD_PLACEHOLDER,
+    RECORD_UI_TEXT,
+} from "../../constants";
 
 const { Search } = Input;
 
@@ -41,13 +45,13 @@ export function RecordFilters({
             />
 
             <Select
-                placeholder="카테고리"
+                placeholder={RECORD_PLACEHOLDER.CATEGORY}
                 allowClear
                 value={filters.selected_category}
                 onChange={onCategoryChange}
                 style={{ width: 120 }}
                 options={[
-                    { value: null, label: "전체" },
+                    { value: null, label: RECORD_PLACEHOLDER.CATEGORY_ALL },
                     ...RECORD_CATEGORY_OPTIONS,
                 ]}
             />
@@ -56,7 +60,7 @@ export function RecordFilters({
                 checked={filters.show_completed}
                 onChange={(e) => onShowCompletedChange(e.target.checked)}
             >
-                완료된 작업 표시
+                {RECORD_UI_TEXT.SHOW_COMPLETED}
             </Checkbox>
         </Space>
     );
