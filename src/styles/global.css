@@ -1,0 +1,101 @@
+/*
+ * Tailwind CSS v4 - Global Entry Point
+ *
+ * IMPORTANT: Preflight (base reset) is intentionally EXCLUDED
+ * to prevent any visual regression on existing UI.
+ * The project already has its own resets in index.css and
+ * Ant Design provides its own base styles.
+ *
+ * Preflight can be evaluated for inclusion in a future phase
+ * after full migration is complete.
+ */
+
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* Design Tokens */
+@import "./tokens/colors.css";
+@import "./tokens/spacing.css";
+@import "./tokens/typography.css";
+@import "./tokens/z-index.css";
+
+/* Utilities - keyframes only (scrollbar is in app.css for cascade order) */
+@import "./utilities/keyframes.css";
+
+/* ============================================================================
+   Tailwind Theme: Register CSS custom properties as Tailwind theme values
+   ============================================================================ */
+
+@theme {
+    /* --- Colors --- */
+    --color-primary: var(--color-primary);
+    --color-success: var(--color-success);
+    --color-error: var(--color-error);
+    --color-warning: var(--color-warning);
+    --color-info: var(--color-info);
+    --color-disabled: var(--color-disabled);
+
+    --color-text-primary: var(--color-text-primary);
+    --color-text-secondary: var(--color-text-secondary);
+    --color-text-disabled: var(--color-text-disabled);
+    --color-text-hint: var(--color-text-hint);
+    --color-text-white: var(--color-text-white);
+
+    --color-bg-default: var(--color-bg-default);
+    --color-bg-light: var(--color-bg-light);
+    --color-bg-grey: var(--color-bg-grey);
+    --color-bg-dark: var(--color-bg-dark);
+    --color-bg-app: var(--color-bg-app);
+
+    --color-border-default: var(--color-border-default);
+    --color-border-light: var(--color-border-light);
+    --color-border-dark: var(--color-border-dark);
+
+    --color-primary-dark: var(--color-primary-dark);
+
+    /* --- Spacing --- */
+    --spacing-xs: var(--spacing-xs);
+    --spacing-sm: var(--spacing-sm);
+    --spacing-md: var(--spacing-md);
+    --spacing-lg: var(--spacing-lg);
+    --spacing-xl: var(--spacing-xl);
+    --spacing-2xl: var(--spacing-2xl);
+    --spacing-section: var(--spacing-section);
+
+    /* --- Border Radius --- */
+    --radius-xs: var(--radius-xs);
+    --radius-sm: var(--radius-sm);
+    --radius-md: var(--radius-md);
+    --radius-lg: var(--radius-lg);
+    --radius-xl: var(--radius-xl);
+    --radius-2xl: var(--radius-2xl);
+    --radius-full: var(--radius-full);
+
+    /* --- Font Size --- */
+    --font-size-xs: var(--font-size-xs);
+    --font-size-sm: var(--font-size-sm);
+    --font-size-md: var(--font-size-md);
+    --font-size-lg: var(--font-size-lg);
+    --font-size-xl: var(--font-size-xl);
+    --font-size-2xl: var(--font-size-2xl);
+    --font-size-h3: var(--font-size-h3);
+    --font-size-h2: var(--font-size-h2);
+    --font-size-h1: var(--font-size-h1);
+
+    /* --- Font Family --- */
+    --font-family-base: var(--font-family-base);
+    --font-family-mono: var(--font-family-mono);
+
+    /* --- Z-Index --- */
+    --z-index-base: var(--z-base);
+    --z-index-dropdown: var(--z-dropdown);
+    --z-index-sticky: var(--z-sticky);
+    --z-index-fixed: var(--z-fixed);
+    --z-index-modal-backdrop: var(--z-modal-backdrop);
+    --z-index-modal: var(--z-modal);
+    --z-index-toast: var(--z-toast);
+    --z-index-tooltip: var(--z-tooltip);
+    --z-index-top: var(--z-top);
+}
