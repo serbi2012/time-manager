@@ -1,54 +1,5 @@
-/**
- * 주간 일정 스타일 상수
- */
+/* Weekly Schedule Feature Styles */
 
-import type { CSSProperties } from "react";
-
-export const WEEKLY_HEADER_TITLE_STYLE: CSSProperties = {
-    margin: 0,
-};
-
-export const WEEKLY_HEADER_ICON_STYLE: CSSProperties = {
-    marginRight: 8,
-};
-
-export const WEEKLY_DIVIDER_STYLE: CSSProperties = {
-    margin: "16px 0",
-};
-
-export const WEEKLY_WEEK_RANGE_STYLE: CSSProperties = {
-    textAlign: "center",
-    marginBottom: 16,
-};
-
-export const WEEKLY_DATE_PICKER_MOBILE_STYLE: CSSProperties = {
-    width: 100,
-};
-
-export const WEEKLY_WORK_INPUT_STYLE: CSSProperties = {
-    width: 80,
-};
-
-export const WEEKLY_WORK_DIVIDER_STYLE: CSSProperties = {
-    margin: "8px 0",
-};
-
-export const WEEKLY_PREVIEW_HEADER_TITLE_STYLE: CSSProperties = {
-    margin: 0,
-};
-
-export const WEEKLY_PREVIEW_HEADER_CONTAINER_STYLE: CSSProperties = {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-};
-
-export const WEEKLY_PREVIEW_SECTION_STYLE: CSSProperties = {
-    marginTop: 16,
-};
-
-export const WEEKLY_SCHEDULE_STYLES = `
 .weekly-schedule-content {
     padding: 24px;
     background: #f5f5f5;
@@ -124,7 +75,7 @@ export const WEEKLY_SCHEDULE_STYLES = `
     background: #f5f5f5;
     padding: 16px;
     border-radius: 8px;
-    font-family: 'D2Coding', 'Consolas', monospace;
+    font-family: "D2Coding", "Consolas", monospace;
     font-size: 13px;
     line-height: 1.6;
     white-space: pre-wrap;
@@ -132,4 +83,60 @@ export const WEEKLY_SCHEDULE_STYLES = `
     max-height: 400px;
     overflow-y: auto;
 }
-`;
+
+/* Day Column */
+.day-column {
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 200px;
+}
+
+.day-column-today {
+    border-color: #1890ff;
+    background: #f6ffed;
+}
+
+.day-column-header {
+    padding: 8px 12px;
+    background: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.day-column-today .day-column-header {
+    background: #e6f7ff;
+}
+
+.day-column-content {
+    flex: 1;
+    padding: 8px;
+    overflow-y: auto;
+}
+
+.day-record {
+    display: flex;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px dashed #f0f0f0;
+}
+
+.day-record:last-child {
+    border-bottom: none;
+}
+
+.day-column-footer {
+    padding: 8px 12px;
+    background: #fafafa;
+    border-top: 1px solid #f0f0f0;
+    text-align: right;
+}
+
+/* Copy Format Selector */
+.copy-format-selector {
+    padding: 12px 0;
+}

@@ -7,12 +7,6 @@ import type { DayGroup } from "../../lib/week_grouper";
 import { generateWeeklyCopyText } from "../../lib/weekly_copy_text";
 import type { WeeklyCopyFormat } from "../../hooks/useCopyFormat";
 import { WEEKLY_LABELS } from "../../constants";
-import {
-    WEEKLY_PREVIEW_HEADER_TITLE_STYLE,
-    WEEKLY_PREVIEW_HEADER_CONTAINER_STYLE,
-    WEEKLY_PREVIEW_SECTION_STYLE,
-    WEEKLY_DIVIDER_STYLE,
-} from "../../constants/styles";
 
 const { Title } = Typography;
 
@@ -31,16 +25,10 @@ export function CopyPreviewSection({
 
     return (
         <>
-            <Divider style={WEEKLY_DIVIDER_STYLE} />
-            <div
-                className="preview-section"
-                style={WEEKLY_PREVIEW_SECTION_STYLE}
-            >
-                <div
-                    className="preview-header"
-                    style={WEEKLY_PREVIEW_HEADER_CONTAINER_STYLE}
-                >
-                    <Title level={5} style={WEEKLY_PREVIEW_HEADER_TITLE_STYLE}>
+            <Divider className="!my-lg" />
+            <div className="preview-section">
+                <div className="preview-header">
+                    <Title level={5} className="!m-0">
                         {WEEKLY_LABELS.copyPreview}
                     </Title>
                     <Radio.Group

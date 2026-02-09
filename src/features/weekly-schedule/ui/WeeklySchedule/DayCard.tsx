@@ -9,10 +9,6 @@ import { WorkItem } from "./WorkItem";
 
 const { Text } = Typography;
 
-const DAY_CARD_TITLE_STYLE: React.CSSProperties = {
-    fontSize: 16,
-};
-
 export interface DayCardProps {
     day_group: DayGroup;
     on_status_change: (work_name: string, value: string) => void;
@@ -20,7 +16,7 @@ export interface DayCardProps {
 
 export function DayCard({ day_group, on_status_change }: DayCardProps) {
     const title = (
-        <Text strong style={DAY_CARD_TITLE_STYLE}>
+        <Text strong className="!text-lg">
             {dayjs(day_group.date).format("M/D")} ({day_group.day_name})
         </Text>
     );

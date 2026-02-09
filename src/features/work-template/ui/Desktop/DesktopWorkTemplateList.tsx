@@ -26,9 +26,6 @@ import {
     BUTTON_ADD,
     EMPTY_DESCRIPTION,
     EMPTY_HINT,
-    ADD_BUTTON_WRAPPER_STYLE,
-    SHORTCUT_BADGE_STYLE,
-    EMPTY_SECONDARY_TEXT_STYLE,
 } from "@/features/work-template/constants";
 
 const { Text } = Typography;
@@ -83,9 +80,9 @@ export function DesktopWorkTemplateList({
                         size="small"
                         onClick={handleOpenAddModal}
                     >
-                        <span style={ADD_BUTTON_WRAPPER_STYLE}>
+                        <span className="inline-flex items-center">
                             {BUTTON_ADD}
-                            <span style={SHORTCUT_BADGE_STYLE}>
+                            <span className="text-xs opacity-85 ml-xs py-px px-xs bg-white/20 rounded-[3px]">
                                 {formatShortcutKeyForPlatform(new_preset_keys)}
                             </span>
                         </span>
@@ -99,10 +96,7 @@ export function DesktopWorkTemplateList({
                             <span>
                                 {EMPTY_DESCRIPTION}
                                 <br />
-                                <Text
-                                    type="secondary"
-                                    style={EMPTY_SECONDARY_TEXT_STYLE}
-                                >
+                                <Text type="secondary" className="!text-sm">
                                     {EMPTY_HINT}
                                 </Text>
                             </span>

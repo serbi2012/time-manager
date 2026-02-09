@@ -27,20 +27,13 @@ export function RecordFilters({
     onShowCompletedChange,
 }: RecordFiltersProps) {
     return (
-        <Space
-            style={{
-                marginBottom: 16,
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 8,
-            }}
-        >
+        <Space className="!mb-lg !flex !flex-wrap !gap-sm">
             <Search
                 placeholder={RECORD_PLACEHOLDER.SEARCH}
                 allowClear
                 value={filters.search}
                 onChange={(e) => onSearchChange(e.target.value)}
-                style={{ width: 200 }}
+                className="!w-[200px]"
                 prefix={<SearchOutlined />}
             />
 
@@ -49,7 +42,7 @@ export function RecordFilters({
                 allowClear
                 value={filters.selected_category}
                 onChange={onCategoryChange}
-                style={{ width: 120 }}
+                className="!w-[120px]"
                 options={[
                     { value: null, label: RECORD_PLACEHOLDER.CATEGORY_ALL },
                     ...RECORD_CATEGORY_OPTIONS,

@@ -34,10 +34,10 @@ export function MobileRecordCard({
     on_complete,
     elapsed_seconds = 0,
 }: MobileRecordCardProps) {
-    const { 
-        work_name, 
-        deal_name, 
-        category_name, 
+    const {
+        work_name,
+        deal_name,
+        category_name,
         duration_minutes,
         start_time,
         end_time,
@@ -46,7 +46,9 @@ export function MobileRecordCard({
 
     return (
         <Card
-            className={`mobile-record-card ${is_running ? "mobile-record-running" : ""}`}
+            className={`mobile-record-card ${
+                is_running ? "mobile-record-running" : ""
+            }`}
             size="small"
             onClick={on_toggle_expand}
         >
@@ -56,14 +58,18 @@ export function MobileRecordCard({
                     <Text strong ellipsis>
                         {deal_name || work_name}
                     </Text>
-                    <Tag color={getCategoryColor(category_name)} style={{ marginLeft: 8 }}>
+                    <Tag
+                        color={getCategoryColor(category_name)}
+                        className="!ml-sm"
+                    >
                         {category_name}
                     </Tag>
                 </div>
                 <div className="mobile-card-time">
                     {is_running ? (
                         <Text type="success" strong>
-                            <ClockCircleOutlined /> {formatTimer(elapsed_seconds)}
+                            <ClockCircleOutlined />{" "}
+                            {formatTimer(elapsed_seconds)}
                         </Text>
                     ) : (
                         <Text type="secondary">
@@ -75,14 +81,14 @@ export function MobileRecordCard({
 
             {/* 부제목 */}
             {deal_name && (
-                <Text type="secondary" style={{ fontSize: 12 }}>
+                <Text type="secondary" className="!text-sm">
                     {work_name}
                 </Text>
             )}
 
             {/* 시간 정보 */}
             <div className="mobile-card-time-range">
-                <Text type="secondary" style={{ fontSize: 12 }}>
+                <Text type="secondary" className="!text-sm">
                     {start_time} ~ {end_time || "진행 중"}
                 </Text>
             </div>
@@ -150,45 +156,6 @@ export function MobileRecordCard({
                     }}
                 />
             </div>
-
-            <style>{`
-                .mobile-record-card {
-                    margin-bottom: 8px;
-                    cursor: pointer;
-                    transition: box-shadow 0.2s;
-                }
-                .mobile-record-card:hover {
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                }
-                .mobile-record-running {
-                    border-left: 3px solid #52c41a;
-                }
-                .mobile-card-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
-                .mobile-card-title {
-                    display: flex;
-                    align-items: center;
-                    flex: 1;
-                    min-width: 0;
-                }
-                .mobile-card-time-range {
-                    margin-top: 4px;
-                }
-                .mobile-card-actions {
-                    margin-top: 12px;
-                    padding-top: 12px;
-                    border-top: 1px dashed #e8e8e8;
-                }
-                .mobile-card-expand-icon {
-                    position: absolute;
-                    right: 12px;
-                    bottom: 8px;
-                    color: #bfbfbf;
-                }
-            `}</style>
         </Card>
     );
 }

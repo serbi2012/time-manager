@@ -66,13 +66,7 @@ export function AutoCompleteWithHide({
         return options.map((opt) => ({
             value: opt.value,
             label: (
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                    }}
-                >
+                <div className="flex justify-between items-center">
                     <span>
                         {searchValue ? (
                             <HighlightText
@@ -85,11 +79,7 @@ export function AutoCompleteWithHide({
                     </span>
                     {showHideButton && onHideOption && (
                         <CloseOutlined
-                            style={{
-                                fontSize: 10,
-                                color: "#999",
-                                cursor: "pointer",
-                            }}
+                            className="!text-[10px] !text-[#999] cursor-pointer"
                             onClick={(e) => handleHide(e, opt.value)}
                         />
                     )}

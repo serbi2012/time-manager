@@ -5,11 +5,7 @@
 import { Typography } from "antd";
 import type { WorkRecord } from "../../../../shared/types";
 import { getTimeRangeForDate } from "../../lib/duration_calculator";
-import {
-    RECORD_FONT_SMALL_STYLE,
-    RECORD_UI_TEXT,
-    TIME_SLICE_END,
-} from "../../constants";
+import { RECORD_UI_TEXT, TIME_SLICE_END } from "../../constants";
 
 const { Text } = Typography;
 
@@ -25,7 +21,7 @@ export function TimeRangeColumn({
     const time_range = getTimeRangeForDate(record, selected_date);
 
     return (
-        <Text type="secondary" style={RECORD_FONT_SMALL_STYLE}>
+        <Text type="secondary" className="!text-[11px]">
             {time_range.start_time?.slice(0, TIME_SLICE_END) ||
                 RECORD_UI_TEXT.EMPTY_VALUE}
             {RECORD_UI_TEXT.TIME_SEPARATOR}

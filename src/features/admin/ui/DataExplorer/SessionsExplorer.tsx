@@ -163,7 +163,7 @@ export function SessionsExplorer({
       },
       render: (_, session) => (
         <Text>
-          <CalendarOutlined style={{ marginRight: 4 }} />
+          <CalendarOutlined className="mr-xs" />
           {session.date || session.record_date}
         </Text>
       ),
@@ -191,7 +191,7 @@ export function SessionsExplorer({
         (a.duration_minutes || 0) - (b.duration_minutes || 0),
       render: (mins: number, session) => (
         <Text type={session.end_time === "" ? "success" : undefined}>
-          <ClockCircleOutlined style={{ marginRight: 4 }} />
+          <ClockCircleOutlined className="mr-xs" />
           {formatDuration(mins || 0, time_format)}
         </Text>
       ),
@@ -219,8 +219,8 @@ export function SessionsExplorer({
       width: 120,
       render: (id: string) => (
         <Tooltip title={id}>
-          <Text code style={{ fontSize: 11 }}>
-            <LinkOutlined style={{ marginRight: 4 }} />
+          <Text code className="!text-[11px]">
+            <LinkOutlined className="mr-xs" />
             {id.substring(0, 8)}...
           </Text>
         </Tooltip>
@@ -233,7 +233,7 @@ export function SessionsExplorer({
       width: 120,
       render: (id: string) => (
         <Tooltip title={id}>
-          <Text code style={{ fontSize: 11 }}>
+          <Text code className="!text-[11px]">
             {id.substring(0, 8)}...
           </Text>
         </Tooltip>
@@ -244,7 +244,7 @@ export function SessionsExplorer({
   return (
     <div>
       {/* 필터 영역 */}
-      <Card size="small" style={{ marginBottom: 16 }}>
+      <Card size="small" className="!mb-lg">
         <Row gutter={[16, 16]} align="middle">
           <Col xs={24} sm={12} md={8}>
             <Input
@@ -261,12 +261,12 @@ export function SessionsExplorer({
               onChange={(dates) =>
                 setDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs] | null)
               }
-              style={{ width: "100%" }}
+              className="!w-full"
               placeholder={["시작일", "종료일"]}
             />
           </Col>
           <Col xs={12} sm={6} md={4}>
-            <Space.Compact style={{ width: "100%" }}>
+            <Space.Compact className="!w-full">
               <Button
                 type={time_filter === "all" ? "primary" : "default"}
                 onClick={() => setTimeFilter("all")}
@@ -302,7 +302,7 @@ export function SessionsExplorer({
       </Card>
 
       {/* 통계 요약 */}
-      <Row gutter={16} style={{ marginBottom: 16 }}>
+      <Row gutter={16} className="!mb-lg">
         <Col span={6}>
           <Card size="small">
             <Statistic

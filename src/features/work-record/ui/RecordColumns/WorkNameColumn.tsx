@@ -4,7 +4,6 @@
 
 import { Tag } from "antd";
 import type { WorkRecord } from "../../../../shared/types";
-import { RECORD_FONT_SMALL_STYLE } from "../../constants";
 
 interface WorkNameColumnProps {
     record: WorkRecord;
@@ -13,7 +12,7 @@ interface WorkNameColumnProps {
 
 export function WorkNameColumn({ record, theme_color }: WorkNameColumnProps) {
     return (
-        <Tag color={theme_color} style={RECORD_FONT_SMALL_STYLE}>
+        <Tag color={theme_color} className="!text-[11px]">
             {record.work_name}
         </Tag>
     );

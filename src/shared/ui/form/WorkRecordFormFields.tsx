@@ -6,7 +6,6 @@
 import { Form, Input, Select, AutoComplete, Space } from "antd";
 import { SelectOptionLabel } from "./SelectOptionLabel";
 import { SelectAddNewDropdown } from "./SelectAddNewDropdown";
-import { SPACE_FULL_WIDTH_STYLE } from "./styles";
 import type { UseWorkFormOptionsParams } from "./hooks/useWorkFormOptions.tsx";
 import { useWorkFormOptions } from "./hooks/useWorkFormOptions.tsx";
 import {
@@ -29,13 +28,7 @@ import {
     GANTT_FORM_PLACEHOLDER_NOTE,
     GANTT_FORM_VALIDATE_WORK_NAME_REQUIRED,
     GANTT_MODAL_BUTTON_ADD,
-    GANTT_OPTION_CLOSE_FONT_SIZE,
-    GANTT_OPTION_CLOSE_COLOR,
 } from "../../../features/gantt-chart/constants";
-
-const FORM_ITEM_FLEX_STYLE: React.CSSProperties = {
-    flex: 1,
-};
 
 const AUTOCOMPLETE_FILTER_OPTION = (
     input: string,
@@ -113,11 +106,11 @@ export function WorkRecordFormFields({
             </Form.Item>
 
             {/* 업무명 / 카테고리 */}
-            <Space style={SPACE_FULL_WIDTH_STYLE} size="middle">
+            <Space className="!w-full" size="middle">
                 <Form.Item
                     name="task_name"
                     label={GANTT_FORM_LABEL_TASK}
-                    style={FORM_ITEM_FLEX_STYLE}
+                    className="!flex-1"
                 >
                     <Select
                         placeholder={GANTT_FORM_PLACEHOLDER_TASK}
@@ -127,8 +120,6 @@ export function WorkRecordFormFields({
                         optionRender={(option) => (
                             <SelectOptionLabel
                                 label={option.label}
-                                close_icon_size={GANTT_OPTION_CLOSE_FONT_SIZE}
-                                close_icon_color={GANTT_OPTION_CLOSE_COLOR}
                                 onClose={(e) => {
                                     e.stopPropagation();
                                     options.hideAutoCompleteOption(
@@ -154,7 +145,7 @@ export function WorkRecordFormFields({
                 <Form.Item
                     name="category_name"
                     label={GANTT_FORM_LABEL_CATEGORY}
-                    style={FORM_ITEM_FLEX_STYLE}
+                    className="!flex-1"
                 >
                     <Select
                         placeholder={GANTT_FORM_PLACEHOLDER_CATEGORY}
@@ -164,8 +155,6 @@ export function WorkRecordFormFields({
                         optionRender={(option) => (
                             <SelectOptionLabel
                                 label={option.label}
-                                close_icon_size={GANTT_OPTION_CLOSE_FONT_SIZE}
-                                close_icon_color={GANTT_OPTION_CLOSE_COLOR}
                                 onClose={(e) => {
                                     e.stopPropagation();
                                     options.hideAutoCompleteOption(

@@ -82,13 +82,7 @@ export function RecordListModal<T extends { id: string }>({
                 <Empty description={emptyText} />
             ) : (
                 <>
-                    <Space
-                        style={{
-                            marginBottom: 16,
-                            width: "100%",
-                            justifyContent: "space-between",
-                        }}
-                    >
+                    <Space className="!mb-lg !w-full !justify-between">
                         <Text type="secondary">
                             총 {records.length}
                             {countText}
@@ -102,7 +96,7 @@ export function RecordListModal<T extends { id: string }>({
                                     onChange={(e) =>
                                         onSearchChange(e.target.value)
                                     }
-                                    style={{ width: 200 }}
+                                    className="!w-[200px]"
                                     allowClear
                                 />
                             )}

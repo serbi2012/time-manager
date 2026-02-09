@@ -15,8 +15,6 @@ import type { HiddenAutoCompleteField } from "../../../../store/types/store";
 import {
     GANTT_MESSAGE_OPTION_HIDDEN,
     GANTT_MESSAGE_OPTION_HIDDEN_V,
-    GANTT_OPTION_CLOSE_FONT_SIZE,
-    GANTT_OPTION_CLOSE_COLOR,
 } from "../../../../features/gantt-chart/constants";
 
 export interface UseWorkFormOptionsParams {
@@ -118,8 +116,6 @@ export function useWorkFormOptions({
                     search={debounced_project_code_search}
                     value={opt.value}
                     option_type="project_code"
-                    close_icon_size={GANTT_OPTION_CLOSE_FONT_SIZE}
-                    close_icon_color={GANTT_OPTION_CLOSE_COLOR}
                     onHide={hideAutoCompleteOption}
                     hide_message={GANTT_MESSAGE_OPTION_HIDDEN(opt.label)}
                 />
@@ -141,8 +137,6 @@ export function useWorkFormOptions({
                     search={debounced_work_name_search}
                     value={v}
                     option_type="work_name"
-                    close_icon_size={GANTT_OPTION_CLOSE_FONT_SIZE}
-                    close_icon_color={GANTT_OPTION_CLOSE_COLOR}
                     onHide={hideAutoCompleteOption}
                     hide_message={GANTT_MESSAGE_OPTION_HIDDEN_V(v)}
                 />
@@ -164,8 +158,6 @@ export function useWorkFormOptions({
                     search={debounced_deal_name_search}
                     value={v}
                     option_type="deal_name"
-                    close_icon_size={GANTT_OPTION_CLOSE_FONT_SIZE}
-                    close_icon_color={GANTT_OPTION_CLOSE_COLOR}
                     onHide={hideAutoCompleteOption}
                     hide_message={GANTT_MESSAGE_OPTION_HIDDEN_V(v)}
                 />

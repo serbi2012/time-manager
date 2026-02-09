@@ -34,12 +34,6 @@ import {
     GANTT_MESSAGE_SESSION_DELETED,
     GANTT_TITLE_DAILY_TIMELINE,
     GANTT_HINT_DRAG_TO_ADD,
-    GANTT_FONT_SMALL,
-    GANTT_HEADER_FONT_SIZE,
-    GANTT_TITLE_FONT_SIZE,
-    GANTT_TITLE_DIVIDER_COLOR,
-    GANTT_TITLE_DATE_COLOR,
-    GANTT_HEADER_GAP,
 } from "../../constants";
 
 const { Text } = Typography;
@@ -210,31 +204,12 @@ export function MobileDailyGanttChart() {
         <>
             <Card
                 title={
-                    <div
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: GANTT_HEADER_GAP,
-                            fontSize: GANTT_HEADER_FONT_SIZE,
-                        }}
-                    >
-                        <span
-                            style={{
-                                fontWeight: 800,
-                                fontSize: GANTT_TITLE_FONT_SIZE,
-                            }}
-                        >
+                    <div className="flex items-center gap-md text-lg">
+                        <span className="font-[800] text-[17px]">
                             {GANTT_TITLE_DAILY_TIMELINE}
                         </span>
-                        <span style={{ color: GANTT_TITLE_DIVIDER_COLOR }}>
-                            |
-                        </span>
-                        <span
-                            style={{
-                                color: GANTT_TITLE_DATE_COLOR,
-                                fontWeight: 500,
-                            }}
-                        >
+                        <span className="text-[#d9d9d9]">|</span>
+                        <span className="text-[#555] font-medium">
                             {dayjs(selected_date).format("YYYY년 M월 D일")} (
                             {dayjs(selected_date).format("dd")})
                         </span>
@@ -242,10 +217,7 @@ export function MobileDailyGanttChart() {
                 }
                 size="small"
                 extra={
-                    <Text
-                        type="secondary"
-                        style={{ fontSize: GANTT_FONT_SMALL }}
-                    >
+                    <Text type="secondary" className="!text-sm">
                         {GANTT_HINT_DRAG_TO_ADD}
                     </Text>
                 }

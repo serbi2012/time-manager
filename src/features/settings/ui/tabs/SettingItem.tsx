@@ -6,64 +6,6 @@ import { Typography } from "antd";
 
 const { Text } = Typography;
 
-const ROW_MOBILE: React.CSSProperties = {
-    padding: "12px 0",
-    borderBottom: "1px solid #f0f0f0",
-};
-
-const TITLE_MOBILE: React.CSSProperties = {
-    fontSize: 14,
-    display: "block",
-    marginBottom: 2,
-};
-
-const DESC_MOBILE: React.CSSProperties = {
-    fontSize: 12,
-    lineHeight: 1.4,
-};
-
-const ROW_DESKTOP: React.CSSProperties = {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "16px 0",
-    borderBottom: "1px solid #f0f0f0",
-};
-
-const INNER_DESKTOP: React.CSSProperties = {
-    display: "flex",
-    alignItems: "flex-start",
-    gap: 12,
-    flex: 1,
-};
-
-const ICON_WRAPPER: React.CSSProperties = {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    background: "#f5f5f5",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 16,
-    color: "#595959",
-    flexShrink: 0,
-};
-
-const TITLE_DESKTOP: React.CSSProperties = {
-    fontSize: 14,
-    display: "block",
-};
-
-const DESC_DESKTOP: React.CSSProperties = {
-    fontSize: 12,
-};
-
-const ACTION_WRAPPER: React.CSSProperties = {
-    flexShrink: 0,
-    marginLeft: 16,
-};
-
 export interface SettingItemProps {
     icon: React.ReactNode;
     title: string;
@@ -81,13 +23,13 @@ export function SettingItem({
 }: SettingItemProps) {
     if (is_mobile) {
         return (
-            <div style={ROW_MOBILE}>
-                <div style={{ marginBottom: 8 }}>
-                    <Text strong style={TITLE_MOBILE}>
+            <div className="py-md border-b border-[#f0f0f0]">
+                <div className="mb-sm">
+                    <Text strong className="!text-sm !block !mb-[2px]">
                         {title}
                     </Text>
                     {description && (
-                        <Text type="secondary" style={DESC_MOBILE}>
+                        <Text type="secondary" className="!text-xs !leading-[1.4]">
                             {description}
                         </Text>
                     )}
@@ -98,21 +40,21 @@ export function SettingItem({
     }
 
     return (
-        <div style={ROW_DESKTOP}>
-            <div style={INNER_DESKTOP}>
-                <div style={ICON_WRAPPER}>{icon}</div>
-                <div style={{ flex: 1 }}>
-                    <Text strong style={TITLE_DESKTOP}>
+        <div className="flex items-center justify-between py-lg border-b border-[#f0f0f0]">
+            <div className="flex items-start gap-md flex-1">
+                <div className="w-9 h-9 rounded-lg bg-[#f5f5f5] flex items-center justify-center text-base text-[#595959] shrink-0">{icon}</div>
+                <div className="flex-1">
+                    <Text strong className="!text-sm !block">
                         {title}
                     </Text>
                     {description && (
-                        <Text type="secondary" style={DESC_DESKTOP}>
+                        <Text type="secondary" className="!text-xs">
                             {description}
                         </Text>
                     )}
                 </div>
             </div>
-            <div style={ACTION_WRAPPER}>{action}</div>
+            <div className="shrink-0 ml-lg">{action}</div>
         </div>
     );
 }

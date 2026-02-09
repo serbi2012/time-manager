@@ -239,7 +239,7 @@ export function TrashManager({
     return (
         <div>
             {/* 필터 영역 */}
-            <Card size="small" style={{ marginBottom: 16 }}>
+            <Card size="small" className="!mb-lg">
                 <Row gutter={[16, 16]} align="middle">
                     <Col xs={24} sm={12} md={8}>
                         <Input
@@ -258,7 +258,7 @@ export function TrashManager({
                                     dates as [dayjs.Dayjs, dayjs.Dayjs] | null
                                 )
                             }
-                            style={{ width: "100%" }}
+                            className="!w-full"
                             placeholder={["삭제 시작일", "삭제 종료일"]}
                         />
                     </Col>
@@ -276,7 +276,7 @@ export function TrashManager({
             </Card>
 
             {/* 통계 */}
-            <Row gutter={16} style={{ marginBottom: 16 }}>
+            <Row gutter={16} className="!mb-lg">
                 <Col span={8}>
                     <Card size="small">
                         <Statistic
@@ -310,7 +310,7 @@ export function TrashManager({
             </Row>
 
             {/* 일괄 작업 버튼 */}
-            <Space style={{ marginBottom: 16 }}>
+            <Space className="!mb-lg">
                 <Button
                     icon={<UndoOutlined />}
                     onClick={handleBatchRestore}

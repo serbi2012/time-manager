@@ -4,12 +4,7 @@
 
 import { Typography } from "antd";
 import dayjs from "dayjs";
-import {
-    DATE_FORMAT,
-    DATE_SLICE_START,
-    RECORD_FONT_SMALL_STYLE,
-    RECORD_UI_TEXT,
-} from "../../constants";
+import { DATE_FORMAT, DATE_SLICE_START, RECORD_UI_TEXT } from "../../constants";
 
 const { Text } = Typography;
 
@@ -22,10 +17,7 @@ export function DateColumn({ date }: DateColumnProps) {
     const is_past = date < today;
 
     return (
-        <Text
-            type={is_past ? "warning" : "secondary"}
-            style={RECORD_FONT_SMALL_STYLE}
-        >
+        <Text type={is_past ? "warning" : "secondary"} className="!text-[11px]">
             {date === today
                 ? RECORD_UI_TEXT.TODAY_TEXT
                 : date.slice(DATE_SLICE_START)}

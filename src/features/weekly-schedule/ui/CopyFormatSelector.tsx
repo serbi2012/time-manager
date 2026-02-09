@@ -41,7 +41,7 @@ export function CopyFormatSelector({
                         )
                     )}
                 </Radio.Group>
-                
+
                 <Button
                     type="primary"
                     icon={<CopyOutlined />}
@@ -51,12 +51,6 @@ export function CopyFormatSelector({
                     복사
                 </Button>
             </Space>
-            
-            <style>{`
-                .copy-format-selector {
-                    padding: 12px 0;
-                }
-            `}</style>
         </div>
     );
 }

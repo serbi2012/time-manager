@@ -46,71 +46,6 @@ const CATEGORY_LABELS: Record<string, string> = {
     modal: "모달",
 };
 
-const HEADER_ROW_STYLE: React.CSSProperties = {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-};
-
-const MOBILE_OVERLAY_WRAPPER: React.CSSProperties = {
-    position: "relative",
-};
-
-const MOBILE_BLUR_STYLE: React.CSSProperties = {
-    filter: "blur(3px)",
-    opacity: 0.5,
-    pointerEvents: "none",
-    userSelect: "none",
-};
-
-const MOBILE_PREVIEW_LIST: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-};
-
-const MOBILE_PREVIEW_ITEM: React.CSSProperties = {
-    padding: 12,
-    background: "#fafafa",
-    borderRadius: 8,
-    border: "1px solid #f0f0f0",
-};
-
-const MOBILE_OVERLAY_BOX: React.CSSProperties = {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    background: "rgba(255, 255, 255, 0.85)",
-    borderRadius: 8,
-    padding: 24,
-    textAlign: "center",
-};
-
-const KEY_ICON_STYLE: React.CSSProperties = {
-    fontSize: 40,
-    color: "#bfbfbf",
-    marginBottom: 16,
-};
-
-const PC_ONLY_TITLE_STYLE: React.CSSProperties = {
-    fontSize: 16,
-    marginBottom: 8,
-    color: "#595959",
-};
-
-const TAG_MONOSPACE: React.CSSProperties = {
-    fontFamily: "monospace",
-    fontSize: 13,
-    padding: "4px 8px",
-};
-
 export interface ShortcutsTabProps {
     is_mobile?: boolean;
 }
@@ -134,7 +69,7 @@ export function ShortcutsTab({ is_mobile }: ShortcutsTabProps) {
                 <div>
                     <Text strong>{name}</Text>
                     <br />
-                    <Text type="secondary" style={{ fontSize: 12 }}>
+                    <Text type="secondary" className="!text-xs">
                         {record.description}
                     </Text>
                 </div>
@@ -147,7 +82,7 @@ export function ShortcutsTab({ is_mobile }: ShortcutsTabProps) {
             width: 150,
             render: (keys: string, record: ShortcutDefinition) => (
                 <Space>
-                    <Tag style={TAG_MONOSPACE}>
+                    <Tag className="!font-mono !text-[13px] !py-xs !px-sm">
                         {formatShortcutKeyForPlatform(keys)}
                     </Tag>
                     <Button
@@ -192,35 +127,32 @@ export function ShortcutsTab({ is_mobile }: ShortcutsTabProps) {
 
     if (is_mobile) {
         return (
-            <div style={MOBILE_OVERLAY_WRAPPER}>
-                <div style={MOBILE_BLUR_STYLE}>
-                    <div style={MOBILE_PREVIEW_LIST}>
+            <div className="relative">
+                <div className="blur-sm opacity-50 pointer-events-none select-none">
+                    <div className="flex flex-col gap-sm">
                         {shortcuts.slice(0, 3).map((shortcut) => (
-                            <div key={shortcut.id} style={MOBILE_PREVIEW_ITEM}>
+                            <div key={shortcut.id} className="p-md bg-[#fafafa] rounded-lg border border-[#f0f0f0]">
                                 <Text
                                     strong
-                                    style={{
-                                        fontSize: 13,
-                                        display: "block",
-                                    }}
+                                    className="!text-[13px] !block"
                                 >
                                     {shortcut.name}
                                 </Text>
-                                <Text type="secondary" style={{ fontSize: 11 }}>
+                                <Text type="secondary" className="!text-[11px]">
                                     {shortcut.description}
                                 </Text>
                             </div>
                         ))}
                     </div>
                 </div>
-                <div style={MOBILE_OVERLAY_BOX}>
-                    <KeyOutlined style={KEY_ICON_STYLE} />
-                    <Text strong style={PC_ONLY_TITLE_STYLE}>
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/85 rounded-lg p-xl text-center">
+                    <KeyOutlined className="!text-[40px] !text-[#bfbfbf] !mb-lg" />
+                    <Text strong className="!text-base !mb-sm !text-[#595959]">
                         {SETTINGS_SHORTCUTS_PC_ONLY_TITLE}
                     </Text>
                     <Text
                         type="secondary"
-                        style={{ fontSize: 13, lineHeight: 1.5 }}
+                        className="!text-[13px] !leading-[1.5]"
                     >
                         {SETTINGS_SHORTCUTS_PC_ONLY_DESC}
                     </Text>
@@ -231,7 +163,7 @@ export function ShortcutsTab({ is_mobile }: ShortcutsTabProps) {
 
     return (
         <div>
-            <div style={HEADER_ROW_STYLE}>
+            <div className="flex justify-between items-center mb-lg">
                 <Text type="secondary">{SETTINGS_SHORTCUTS_DESC}</Text>
                 <Popconfirm
                     title={SETTINGS_SHORTCUTS_RESET_CONFIRM_TITLE}
@@ -252,7 +184,7 @@ export function ShortcutsTab({ is_mobile }: ShortcutsTabProps) {
                 rowKey="id"
                 pagination={false}
                 size="small"
-                style={{ marginTop: 8 }}
+                className="!mt-sm"
             />
             {editing_shortcut && (
                 <ShortcutKeyEditor

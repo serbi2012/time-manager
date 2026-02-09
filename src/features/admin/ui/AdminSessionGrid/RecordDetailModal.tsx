@@ -26,12 +26,7 @@ import {
     MERGE_MODAL_COMPLETED,
     MERGE_MODAL_INCOMPLETE,
 } from "../../constants";
-import { ADMIN_DESCRIPTION_PRE_STYLE } from "../../constants/styles";
-
 const { Text } = Typography;
-
-const DESCRIPTIONS_ITEM_ID_STYLE: React.CSSProperties = { fontSize: 11 };
-const DESCRIPTIONS_ITEM_ID_COPY_STYLE: React.CSSProperties = { fontSize: 10 };
 
 interface RecordDetailModalProps {
     open: boolean;
@@ -74,7 +69,7 @@ export function RecordDetailModal({
                 </Button>,
             ]}
         >
-            <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+            <Space direction="vertical" size="middle" className="!w-full">
                 <Descriptions
                     bordered
                     size="small"
@@ -82,7 +77,7 @@ export function RecordDetailModal({
                     title={RECORD_DETAIL_BASIC_INFO}
                 >
                     <Descriptions.Item label="ID" span={2}>
-                        <Text copyable code style={DESCRIPTIONS_ITEM_ID_STYLE}>
+                        <Text copyable code className="!text-[11px]">
                             {record.id}
                         </Text>
                     </Descriptions.Item>
@@ -171,9 +166,7 @@ export function RecordDetailModal({
                                         <Text
                                             copyable
                                             code
-                                            style={
-                                                DESCRIPTIONS_ITEM_ID_COPY_STYLE
-                                            }
+                                            className="!text-[10px]"
                                         >
                                             {id}
                                         </Text>
@@ -189,7 +182,7 @@ export function RecordDetailModal({
                 )}
 
                 <Card size="small" title={RECORD_DETAIL_RAW_JSON}>
-                    <pre style={ADMIN_DESCRIPTION_PRE_STYLE}>
+                    <pre className="bg-bg-grey p-md rounded-sm text-[11px] max-h-[300px] overflow-auto m-0">
                         {JSON.stringify(record, null, 2)}
                     </pre>
                 </Card>

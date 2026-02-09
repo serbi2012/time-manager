@@ -14,14 +14,6 @@ import { TEMPLATE_COLORS } from "../../../store/useWorkStore";
 import { WorkRecordFormFields } from "../../../shared/ui/form";
 import { SUCCESS_MESSAGES } from "../../../shared/constants";
 
-const MODAL_FOOTER_SHORTCUT_STYLE: React.CSSProperties = {
-    fontSize: 11,
-    opacity: 0.85,
-    marginLeft: 4,
-    padding: "1px 4px",
-    background: "rgba(255,255,255,0.2)",
-    borderRadius: 3,
-};
 
 export interface TemplateModalProps {
     /** 모달 열림 상태 */
@@ -148,7 +140,7 @@ export function TemplateModal({
             footer={[
                 <Button key="ok" type="primary" onClick={handleSubmit}>
                     {is_edit_mode ? "수정" : "추가"}{" "}
-                    <span style={MODAL_FOOTER_SHORTCUT_STYLE}>F8</span>
+                    <span className="text-[11px] opacity-85 ml-xs px-xs py-[1px] bg-white/20 rounded-[3px]">F8</span>
                 </Button>,
                 <Button key="cancel" onClick={onClose}>
                     취소

@@ -9,7 +9,6 @@ import {
     GANTT_LABEL_LUNCH,
     GANTT_EMPTY_NO_RECORDS,
     GANTT_EMPTY_HINT_DRAG,
-    GANTT_FONT_SMALL,
 } from "../../constants";
 
 const { Text } = Typography;
@@ -90,10 +89,7 @@ export function EmptyGanttChart({
                         <span>
                             {GANTT_EMPTY_NO_RECORDS}
                             <br />
-                            <Text
-                                type="secondary"
-                                style={{ fontSize: GANTT_FONT_SMALL }}
-                            >
+                            <Text type="secondary" className="!text-sm">
                                 {GANTT_EMPTY_HINT_DRAG}
                             </Text>
                         </span>

@@ -7,10 +7,6 @@ import { Space } from "antd";
 import { formatDurationAsTime } from "@/shared/lib/time";
 import type { WorkGroup } from "../../lib/week_grouper";
 import { WEEKLY_LABELS } from "../../constants";
-import {
-    WEEKLY_WORK_INPUT_STYLE,
-    WEEKLY_WORK_DIVIDER_STYLE,
-} from "../../constants/styles";
 
 const { Text } = Typography;
 
@@ -38,7 +34,7 @@ export function WorkItem({
                         onChange={(e) =>
                             on_status_change(work.work_name, e.target.value)
                         }
-                        style={WEEKLY_WORK_INPUT_STYLE}
+                        className="!w-[80px]"
                     />
                     <Text type="secondary">
                         , {WEEKLY_LABELS.startDateLabel} {work.start_date},{" "}
@@ -62,7 +58,7 @@ export function WorkItem({
                 ))}
             </div>
 
-            {show_divider && <Divider style={WEEKLY_WORK_DIVIDER_STYLE} />}
+            {show_divider && <Divider className="!my-sm" />}
         </div>
     );
 }

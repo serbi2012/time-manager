@@ -59,7 +59,7 @@ export function GuideSidebar({
         <div className="guide-book-sider-inner">
             <div className="guide-book-toc-header">
                 <BookOutlined />
-                <Title level={5} style={{ margin: 0 }}>
+                <Title level={5} className="!m-0">
                     {GUIDE_LABELS.pageTitle}
                 </Title>
             </div>
@@ -100,18 +100,12 @@ export function GuideSidebar({
                                             <div className="guide-search-result-title">
                                                 <Tag
                                                     color="blue"
-                                                    style={{ marginRight: 8 }}
+                                                    className="!mr-sm"
                                                 >
                                                     {item.title}
                                                 </Tag>
                                             </div>
-                                            <div
-                                                className="guide-search-result-preview"
-                                                style={{
-                                                    color: "#999",
-                                                    fontSize: 12,
-                                                }}
-                                            >
+                                            <div className="guide-search-result-preview text-[#999] text-sm">
                                                 {highlightText(
                                                     item.preview,
                                                     search_query
@@ -129,7 +123,7 @@ export function GuideSidebar({
                         selectedKeys={[current_section]}
                         items={menu_items}
                         onClick={(info) => on_menu_click(info.key)}
-                        style={{ border: "none" }}
+                        className="!border-none"
                     />
                 )}
             </div>

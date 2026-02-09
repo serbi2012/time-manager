@@ -14,7 +14,7 @@ import { DesktopWeeklyHeader } from "./DesktopWeeklyHeader";
 import { WeekRangeText } from "../WeeklySchedule/WeekRangeText";
 import { DayCard } from "../WeeklySchedule/DayCard";
 import { CopyPreviewSection } from "../WeeklySchedule/CopyPreviewSection";
-import { WEEKLY_LABELS, WEEKLY_SCHEDULE_STYLES } from "../../constants";
+import { WEEKLY_LABELS } from "../../constants";
 
 dayjs.extend(isoWeek);
 
@@ -97,8 +97,6 @@ export function DesktopWeeklySchedule() {
                     />
                 )}
             </div>
-
-            <style>{WEEKLY_SCHEDULE_STYLES}</style>
         </Content>
     );
 }

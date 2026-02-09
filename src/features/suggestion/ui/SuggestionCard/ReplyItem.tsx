@@ -3,11 +3,7 @@ import type { SuggestionReply } from "@/types";
 import type { useReplyActions } from "../../hooks";
 import { usePermissionCheck } from "../../hooks";
 import { formatRelativeTime } from "../../lib";
-import {
-    SUGGESTION_LABELS,
-    SUGGESTION_STYLES,
-    SUGGESTION_CONFIG,
-} from "../../constants";
+import { SUGGESTION_LABELS, SUGGESTION_CONFIG } from "../../constants";
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -42,7 +38,7 @@ export function ReplyItem({
     return (
         <div className="suggestion-reply-item">
             {is_editing ? (
-                <div style={SUGGESTION_STYLES.replyEditArea}>
+                <div className="w-full">
                     <TextArea
                         value={reply_actions.edit_reply_content}
                         onChange={(e) =>
@@ -65,7 +61,7 @@ export function ReplyItem({
                         }}
                         autoFocus
                     />
-                    <Space style={SUGGESTION_STYLES.replyEditActions}>
+                    <Space className="!mt-sm">
                         <Button
                             size="small"
                             type="primary"
@@ -86,18 +82,12 @@ export function ReplyItem({
             ) : (
                 <>
                     <div className="suggestion-reply-content">
-                        <Text style={SUGGESTION_STYLES.replyContentText}>
+                        <Text className="!whitespace-pre-wrap">
                             {reply.content}
                         </Text>
                     </div>
-                    <div
-                        className="suggestion-reply-meta"
-                        style={SUGGESTION_STYLES.replyMeta}
-                    >
-                        <Text
-                            type="secondary"
-                            style={SUGGESTION_STYLES.replyMetaText}
-                        >
+                    <div className="suggestion-reply-meta flex justify-between items-center">
+                        <Text type="secondary" className="!text-sm">
                             {reply.author_name} ·{" "}
                             {formatRelativeTime(reply.created_at)}
                         </Text>
@@ -107,9 +97,7 @@ export function ReplyItem({
                                     <Button
                                         type="link"
                                         size="small"
-                                        style={
-                                            SUGGESTION_STYLES.replyEditButton
-                                        }
+                                        className="!p-0 !h-auto !text-sm"
                                         onClick={() =>
                                             reply_actions.startEditReply(
                                                 post_id,
@@ -147,9 +135,7 @@ export function ReplyItem({
                                             type="link"
                                             size="small"
                                             danger
-                                            style={
-                                                SUGGESTION_STYLES.replyEditButton
-                                            }
+                                            className="!p-0 !h-auto !text-sm"
                                         >
                                             {SUGGESTION_LABELS.deleteButton}
                                         </Button>

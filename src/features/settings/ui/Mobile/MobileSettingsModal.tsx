@@ -33,7 +33,6 @@ import {
 } from "../../constants";
 import {
     SETTINGS_LAYOUT,
-    SETTINGS_SCROLL_WRAPPER_MOBILE,
     SETTINGS_MODAL_BODY_MOBILE,
     SETTINGS_MODAL_STYLE_MOBILE,
 } from "../../constants";
@@ -117,7 +116,9 @@ export function MobileSettingsModal({
     const scrollable_tab_items = tab_items.map((item) => ({
         ...item,
         children: (
-            <div style={SETTINGS_SCROLL_WRAPPER_MOBILE}>{item.children}</div>
+            <div className="max-h-[calc(100vh-280px)] overflow-y-auto overflow-x-hidden pb-lg pr-xs">
+                {item.children}
+            </div>
         ),
     }));
 

@@ -5,12 +5,6 @@
 import { Button, Space, Popconfirm } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
-    GANTT_CONTEXT_MENU_MIN_WIDTH,
-    GANTT_CONTEXT_MENU_HEADER_MARGIN_BOTTOM,
-    GANTT_CONTEXT_MENU_TIME_MARGIN_TOP,
-    GANTT_TEXT_SECONDARY,
-    GANTT_TEXT_TERTIARY,
-    GANTT_FONT_SMALL,
     GANTT_LABEL_EDIT_WORK,
     GANTT_LABEL_DELETE_SESSION,
     GANTT_LABEL_DELETE_SESSION_TITLE,
@@ -28,30 +22,6 @@ export interface SessionContextMenuProps {
     on_delete: () => void;
 }
 
-const WRAPPER_STYLE: React.CSSProperties = {
-    minWidth: GANTT_CONTEXT_MENU_MIN_WIDTH,
-};
-
-const HEADER_STYLE: React.CSSProperties = {
-    marginBottom: GANTT_CONTEXT_MENU_HEADER_MARGIN_BOTTOM,
-};
-
-const TIME_STYLE: React.CSSProperties = {
-    color: GANTT_TEXT_TERTIARY,
-    fontSize: GANTT_FONT_SMALL,
-    marginTop: GANTT_CONTEXT_MENU_TIME_MARGIN_TOP,
-};
-
-const DEAL_NAME_STYLE: React.CSSProperties = {
-    color: GANTT_TEXT_SECONDARY,
-    fontSize: GANTT_FONT_SMALL,
-};
-
-const BUTTON_STYLE: React.CSSProperties = {
-    width: "100%",
-    textAlign: "left",
-};
-
 /**
  * 세션 우클릭 시 표시되는 컨텍스트 메뉴
  */
@@ -63,22 +33,24 @@ export function SessionContextMenu({
     on_delete,
 }: SessionContextMenuProps) {
     return (
-        <div style={WRAPPER_STYLE}>
-            <div style={HEADER_STYLE}>
+        <div className="min-w-[160px]">
+            <div className="mb-sm">
                 <strong>{record.work_name}</strong>
                 {record.deal_name && (
-                    <div style={DEAL_NAME_STYLE}>{record.deal_name}</div>
+                    <div className="text-[#666] text-sm">
+                        {record.deal_name}
+                    </div>
                 )}
-                <div style={TIME_STYLE}>
+                <div className="text-[#888] text-sm mt-xs">
                     {session.start_time} ~ {session.end_time}
                 </div>
             </div>
-            <Space direction="vertical" style={{ width: "100%" }}>
+            <Space direction="vertical" className="!w-full">
                 <Button
                     type="text"
                     icon={<EditOutlined />}
                     onClick={on_edit}
-                    style={BUTTON_STYLE}
+                    className="!w-full !text-left"
                 >
                     {GANTT_LABEL_EDIT_WORK}
                 </Button>
@@ -97,7 +69,7 @@ export function SessionContextMenu({
                         type="text"
                         danger
                         icon={<DeleteOutlined />}
-                        style={BUTTON_STYLE}
+                        className="!w-full !text-left"
                         disabled={is_running}
                     >
                         {GANTT_LABEL_DELETE_SESSION}

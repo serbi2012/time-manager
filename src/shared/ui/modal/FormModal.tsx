@@ -83,15 +83,7 @@ export function FormModal({
     const okText = submitShortcut ? (
         <>
             {submitText}{" "}
-            <span
-                style={{
-                    marginLeft: 4,
-                    padding: "2px 6px",
-                    backgroundColor: "rgba(0,0,0,0.06)",
-                    borderRadius: 4,
-                    fontSize: 11,
-                }}
-            >
+            <span className="ml-xs px-[6px] py-[2px] bg-black/[0.06] rounded text-[11px]">
                 {submitShortcut}
             </span>
         </>

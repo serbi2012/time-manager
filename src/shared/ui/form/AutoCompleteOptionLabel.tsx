@@ -5,7 +5,6 @@
 import { CloseOutlined } from "@ant-design/icons";
 import { message } from "antd";
 import { HighlightText } from "../HighlightText";
-import { OPTION_LABEL_CONTAINER_STYLE } from "./styles";
 import type { HiddenAutoCompleteField } from "../../../store/types/store";
 
 export interface AutoCompleteOptionLabelProps {
@@ -17,10 +16,6 @@ export interface AutoCompleteOptionLabelProps {
     value: string;
     /** 옵션 타입 */
     option_type: HiddenAutoCompleteField;
-    /** 닫기 아이콘 폰트 크기 */
-    close_icon_size: number;
-    /** 닫기 아이콘 색상 */
-    close_icon_color: string;
     /** 옵션 숨기기 핸들러 */
     onHide: (field: HiddenAutoCompleteField, value: string) => void;
     /** 숨김 메시지 */
@@ -35,22 +30,16 @@ export function AutoCompleteOptionLabel({
     search,
     value,
     option_type,
-    close_icon_size,
-    close_icon_color,
     onHide,
     hide_message,
 }: AutoCompleteOptionLabelProps) {
     return (
-        <div style={OPTION_LABEL_CONTAINER_STYLE}>
+        <div className="flex justify-between items-center">
             <span>
                 <HighlightText text={text} search={search} />
             </span>
             <CloseOutlined
-                style={{
-                    fontSize: close_icon_size,
-                    color: close_icon_color,
-                    cursor: "pointer",
-                }}
+                className="!text-[10px] !text-[#999] cursor-pointer"
                 onClick={(e) => {
                     e.stopPropagation();
                     onHide(option_type, value);

@@ -136,7 +136,7 @@ export function RecordsExplorer({
       sorter: (a, b) => a.date.localeCompare(b.date),
       render: (date: string) => (
         <Text>
-          <CalendarOutlined style={{ marginRight: 4 }} />
+          <CalendarOutlined className="mr-xs" />
           {date}
         </Text>
       ),
@@ -173,7 +173,7 @@ export function RecordsExplorer({
         (a.duration_minutes || 0) - (b.duration_minutes || 0),
       render: (mins: number) => (
         <Text>
-          <ClockCircleOutlined style={{ marginRight: 4 }} />
+          <ClockCircleOutlined className="mr-xs" />
           {formatDuration(mins || 0, time_format)}
         </Text>
       ),
@@ -218,7 +218,7 @@ export function RecordsExplorer({
   return (
     <div>
       {/* 필터 영역 */}
-      <Card size="small" style={{ marginBottom: 16 }}>
+      <Card size="small" className="!mb-lg">
         <Row gutter={[16, 16]} align="middle">
           <Col xs={24} sm={12} md={6}>
             <Input
@@ -235,7 +235,7 @@ export function RecordsExplorer({
               onChange={(dates) =>
                 setDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs] | null)
               }
-              style={{ width: "100%" }}
+              className="!w-full"
               placeholder={["시작일", "종료일"]}
             />
           </Col>
@@ -243,7 +243,7 @@ export function RecordsExplorer({
             <Select
               value={status_filter}
               onChange={setStatusFilter}
-              style={{ width: "100%" }}
+              className="!w-full"
               options={[
                 { value: "all", label: "전체 상태" },
                 { value: "completed", label: "완료됨" },
@@ -255,7 +255,7 @@ export function RecordsExplorer({
             <Select
               value={deleted_filter}
               onChange={setDeletedFilter}
-              style={{ width: "100%" }}
+              className="!w-full"
               options={[
                 { value: "exclude", label: "삭제 제외" },
                 { value: "include", label: "삭제 포함" },
@@ -279,7 +279,7 @@ export function RecordsExplorer({
       </Card>
 
       {/* 통계 요약 */}
-      <Row gutter={16} style={{ marginBottom: 16 }}>
+      <Row gutter={16} className="!mb-lg">
         <Col span={8}>
           <Card size="small">
             <Statistic
@@ -402,14 +402,14 @@ export function RecordsExplorer({
         )}
 
         {detail_record && detail_record.sessions.length > 0 && (
-          <div style={{ marginTop: 16 }}>
+          <div className="mt-lg">
             <Text strong>세션 목록</Text>
             <Table
               dataSource={detail_record.sessions}
               rowKey="id"
               size="small"
               pagination={false}
-              style={{ marginTop: 8 }}
+              className="!mt-sm"
               columns={[
                 {
                   title: "날짜",

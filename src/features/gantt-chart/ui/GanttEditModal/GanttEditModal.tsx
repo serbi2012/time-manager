@@ -26,10 +26,6 @@ import {
 
 const { Text } = Typography;
 
-const MODAL_TITLE_SECONDARY_STYLE: React.CSSProperties = {
-    fontWeight: "normal",
-};
-
 export interface GanttEditModalProps {
     /** 모달 열림 상태 */
     open: boolean;
@@ -189,10 +185,7 @@ export function GanttEditModal({
                 <Space>
                     <span>{GANTT_MODAL_TITLE_EDIT}</span>
                     {record && (
-                        <Text
-                            type="secondary"
-                            style={MODAL_TITLE_SECONDARY_STYLE}
-                        >
+                        <Text type="secondary" className="!font-normal">
                             ({record.deal_name || record.work_name})
                         </Text>
                     )}

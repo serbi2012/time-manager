@@ -117,7 +117,7 @@ export function TrashModal({
                 <Empty description={RECORD_EMPTY.NO_TRASH} />
             ) : (
                 <>
-                    <Space style={{ marginBottom: 16 }}>
+                    <Space className="!mb-lg">
                         <Text type="secondary">
                             {RECORD_UI_TEXT.TRASH_WORK_COUNT(records.length)}
                         </Text>

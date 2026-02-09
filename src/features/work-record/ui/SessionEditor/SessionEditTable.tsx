@@ -228,7 +228,7 @@ export function SessionEditTable({ record_id }: SessionEditTableProps) {
                             type="text"
                             danger
                             size="small"
-                            style={{ marginLeft: 16 }}
+                            className="!ml-lg"
                         >
                             선택 삭제 ({selected_session_keys.length})
                         </Button>
@@ -246,7 +246,7 @@ export function SessionEditTable({ record_id }: SessionEditTableProps) {
             />
 
             <div className="session-summary">
-                <Space split={<span style={{ color: "#d9d9d9" }}>|</span>}>
+                <Space split={<span className="text-[#d9d9d9]">|</span>}>
                     <Text type="secondary">첫 시작: {record.start_time}</Text>
                     <Text type="secondary">마지막 종료: {record.end_time}</Text>
                     <Text strong style={{ color: theme_color }}>

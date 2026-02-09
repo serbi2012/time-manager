@@ -64,12 +64,7 @@ export function DesktopHeader({
                 mode="horizontal"
                 selectedKeys={[current_path]}
                 items={menu_items}
-                style={{
-                    flex: 1,
-                    marginLeft: 24,
-                    background: "transparent",
-                    borderBottom: "none",
-                }}
+                className="!flex-1 !ml-xl !bg-transparent !border-b-0"
                 theme="dark"
             />
             <Space size="middle">
@@ -85,12 +80,7 @@ export function DesktopHeader({
                     type="text"
                     icon={<InfoCircleOutlined />}
                     onClick={on_changelog_open}
-                    style={{
-                        color: "rgba(255,255,255,0.85)",
-                        fontSize: 12,
-                        padding: "4px 8px",
-                        height: "auto",
-                    }}
+                    className="!text-white/85 !text-xs !px-sm !py-xs !h-auto"
                 >
                     v{current_version}
                 </Button>
@@ -99,10 +89,7 @@ export function DesktopHeader({
                     type="text"
                     icon={<SettingOutlined />}
                     onClick={on_settings_open}
-                    style={{
-                        color: "white",
-                        fontSize: 18,
-                    }}
+                    className="!text-white !text-lg"
                 />
 
                 <UserMenu

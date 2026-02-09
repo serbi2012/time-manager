@@ -11,7 +11,6 @@ import {
     TIME_FORMAT_HOURS,
     TIME_FORMAT_MINUTES,
 } from "../../constants";
-import { ADMIN_CARD_EXTRA_SPACE_STYLE } from "../../constants/styles";
 import type { TimeDisplayFormat } from "../../hooks/useAdminFilters";
 
 interface AdminGridHeaderProps {
@@ -31,7 +30,7 @@ export function AdminGridHeader({
                 <Tag color="purple">{ADMIN_TAG}</Tag>
             </Space>
             <Space>
-                <span style={ADMIN_CARD_EXTRA_SPACE_STYLE}>
+                <span className="text-[#666] text-[13px]">
                     {TIME_DISPLAY_LABEL}
                 </span>
                 <Radio.Group

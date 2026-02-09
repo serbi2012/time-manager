@@ -42,7 +42,7 @@ export function MobileDailyPage() {
                 direction="bottom"
                 show={is_ready}
                 delay={MOBILE_DAILY_DELAYS.content}
-                style={{ flex: 1, display: "flex", flexDirection: "column" }}
+                className="flex-1 flex flex-col"
                 enabled={transition_enabled}
                 speed={transition_speed}
             >
