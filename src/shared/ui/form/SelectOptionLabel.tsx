@@ -19,7 +19,7 @@ export function SelectOptionLabel({ label, onClose }: SelectOptionLabelProps) {
         <div className="flex justify-between items-center">
             <span>{label}</span>
             <CloseOutlined
-                className="!text-[10px] !text-[#999] cursor-pointer"
+                className="!text-xs !text-text-disabled cursor-pointer"
                 onClick={onClose}
             />
         </div>

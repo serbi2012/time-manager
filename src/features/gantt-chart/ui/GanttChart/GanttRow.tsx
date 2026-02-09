@@ -96,12 +96,12 @@ export function GanttRow({
                     display: flex;
                     align-items: center;
                     height: 36px;
-                    border-bottom: 1px solid #f0f0f0;
+                    border-bottom: 1px solid var(--color-border-light);
                 }
                 .gantt-row-label {
                     width: 120px;
                     min-width: 120px;
-                    padding: 0 8px;
+                    padding: 0 var(--spacing-sm);
                     overflow: hidden;
                 }
                 .gantt-row-bars {

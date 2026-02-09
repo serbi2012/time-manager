@@ -148,26 +148,14 @@ interface SortIconProps {
 
 function SortIcon({ isSorted }: SortIconProps) {
     if (!isSorted) {
-        return (
-            <MinusOutlined
-                className="text-[10px] text-[#bfbfbf] ml-xs"
-            />
-        );
+        return <MinusOutlined className="text-xs text-text-disabled ml-xs" />;
     }
 
     if (isSorted === "asc") {
-        return (
-            <CaretUpOutlined
-                className="text-xs text-[#1890ff] ml-xs"
-            />
-        );
+        return <CaretUpOutlined className="text-xs text-primary ml-xs" />;
     }
 
-    return (
-        <CaretDownOutlined
-            className="text-xs text-[#1890ff] ml-xs"
-        />
-    );
+    return <CaretDownOutlined className="text-xs text-[#1890ff] ml-xs" />;
 }
 
 // ============================================================================
@@ -366,9 +354,13 @@ export function DataTable<TData>({
                     style={scroll ? { overflow: "auto", ...scroll } : undefined}
                 >
                     <table
-                        className={clsx("data-table", {
-                            [`data-table-${size}`]: size,
-                        }, "w-full border-collapse")}
+                        className={clsx(
+                            "data-table",
+                            {
+                                [`data-table-${size}`]: size,
+                            },
+                            "w-full border-collapse"
+                        )}
                     >
                         {/* 헤더 */}
                         <thead>
@@ -388,9 +380,10 @@ export function DataTable<TData>({
                                                         : "12px",
                                                 textAlign: "left",
                                                 borderBottom:
-                                                    "1px solid #f0f0f0",
-                                                fontWeight: 500,
-                                                background: "#fafafa",
+                                                    "1px solid var(--color-border-light)",
+                                                fontWeight: 600,
+                                                background:
+                                                    "var(--color-bg-light)",
                                                 cursor: header.column.getCanSort()
                                                     ? "pointer"
                                                     : "default",
@@ -402,9 +395,7 @@ export function DataTable<TData>({
                                             }
                                         >
                                             {header.isPlaceholder ? null : (
-                                                <span
-                                                    className="flex items-center"
-                                                >
+                                                <span className="flex items-center">
                                                     {flexRender(
                                                         header.column.columnDef
                                                             .header,
@@ -458,9 +449,9 @@ export function DataTable<TData>({
                                                     ? "pointer"
                                                     : "default",
                                             background: row.getIsSelected()
-                                                ? "#e6f7ff"
+                                                ? "var(--color-primary-light)"
                                                 : striped && index % 2 === 1
-                                                ? "#fafafa"
+                                                ? "var(--color-bg-light)"
                                                 : "white",
                                         }}
                                     >
@@ -473,7 +464,7 @@ export function DataTable<TData>({
                                                             ? "8px"
                                                             : "12px",
                                                     borderBottom:
-                                                        "1px solid #f0f0f0",
+                                                        "1px solid var(--color-border-light)",
                                                 }}
                                             >
                                                 {flexRender(
@@ -492,9 +483,7 @@ export function DataTable<TData>({
 
             {/* 페이지네이션 */}
             {enablePagination && data.length > 0 && (
-                <div
-                    className="flex justify-end py-lg"
-                >
+                <div className="flex justify-end py-lg">
                     <Pagination
                         current={pagination.pageIndex + 1}
                         pageSize={pagination.pageSize}

@@ -37,11 +37,11 @@ export function SessionContextMenu({
             <div className="mb-sm">
                 <strong>{record.work_name}</strong>
                 {record.deal_name && (
-                    <div className="text-[#666] text-sm">
+                    <div className="text-text-secondary text-sm">
                         {record.deal_name}
                     </div>
                 )}
-                <div className="text-[#888] text-sm mt-xs">
+                <div className="text-text-disabled text-sm mt-xs">
                     {session.start_time} ~ {session.end_time}
                 </div>
             </div>

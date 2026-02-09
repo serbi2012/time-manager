@@ -157,38 +157,38 @@ export function DesktopWorkTemplateList({
                 .template-items {
                     display: flex;
                     flex-direction: column;
-                    gap: 8px;
+                    gap: var(--spacing-sm);
                 }
                 
                 .template-card {
                     position: relative;
                     display: flex;
                     align-items: center;
-                    border-radius: 8px;
-                    border-left: 4px solid #1890ff;
-                    background: #fafafa;
+                    border-radius: var(--radius-lg);
+                    border-left: 4px solid var(--color-primary);
+                    background: var(--color-bg-light);
                     overflow: hidden;
                     transition: all 0.2s;
                 }
                 
                 .template-card:hover {
-                    background: #f0f5ff;
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                    background: var(--color-primary-light);
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
                 }
                 
                 .template-drag-handle {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    padding: 0 8px;
+                    padding: 0 var(--spacing-sm);
                     cursor: grab;
-                    color: #bbb;
+                    color: var(--color-text-disabled);
                     transition: color 0.2s;
                     align-self: stretch;
                 }
                 
                 .template-drag-handle:hover {
-                    color: #666;
+                    color: var(--color-text-secondary);
                 }
                 
                 .template-drag-handle:active {
@@ -197,9 +197,9 @@ export function DesktopWorkTemplateList({
                 
                 .template-content {
                     flex: 1;
-                    padding: 10px 12px;
+                    padding: var(--spacing-sm) var(--spacing-md);
                     padding-left: 0;
-                    padding-right: 8px;
+                    padding-right: var(--spacing-sm);
                     min-height: 60px;
                     min-width: 0;
                     display: flex;
@@ -213,15 +213,15 @@ export function DesktopWorkTemplateList({
                 }
                 
                 .template-title {
-                    font-size: 13px;
+                    font-size: var(--font-size-sm);
                     line-height: 1.4;
                     word-break: break-word;
                     display: block;
                 }
                 
                 .template-subtitle {
-                    font-size: 11px;
-                    color: #999;
+                    font-size: var(--font-size-xs);
+                    color: var(--color-text-disabled);
                     display: block;
                     word-break: break-word;
                 }
@@ -229,14 +229,14 @@ export function DesktopWorkTemplateList({
                 .template-actions {
                     display: flex;
                     align-items: center;
-                    gap: 4px;
-                    padding-right: 8px;
+                    gap: var(--spacing-xs);
+                    padding-right: var(--spacing-sm);
                     flex-shrink: 0;
                 }
                 
                 .template-hover-buttons {
                     display: flex;
-                    gap: 4px;
+                    gap: var(--spacing-xs);
                     opacity: 0;
                     transition: opacity 0.2s;
                 }

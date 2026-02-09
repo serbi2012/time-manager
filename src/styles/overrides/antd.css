@@ -1,33 +1,33 @@
-/* Ant Design Global Overrides */
+/* Ant Design Global Overrides (Toss-Inspired) */
 
 /* === Table === */
 
 .ant-table-wrapper .ant-table {
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     overflow: hidden;
 }
 
 .ant-table-wrapper .ant-table-thead > tr > th {
-    background: #fafafa;
-    font-weight: 600;
+    background: var(--color-bg-light);
+    font-weight: var(--font-weight-semibold);
 }
 
 /* === Card === */
 
 .ant-card {
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .ant-card-head {
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--color-border-light);
 }
 
 /* === Button === */
 
 .ant-btn-primary:not(:disabled):hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+    box-shadow: 0 4px 12px rgba(49, 130, 246, 0.4);
 }
 
 /* === Popconfirm === */
@@ -35,7 +35,7 @@
 .ant-popconfirm-buttons {
     display: flex !important;
     flex-direction: row-reverse !important;
-    gap: 8px;
+    gap: var(--spacing-sm);
 }
 
 .ant-popconfirm-buttons .ant-btn:first-child {
@@ -49,26 +49,26 @@
 @media (max-width: 480px) {
     /* Card */
     .ant-card {
-        border-radius: 8px;
+        border-radius: var(--radius-lg);
     }
 
     .ant-card > .ant-card-head,
     .ant-card.ant-card-small > .ant-card-head,
     .ant-card.ant-card-bordered > .ant-card-head {
-        padding: 14px 16px !important;
+        padding: var(--spacing-lg) !important;
         min-height: auto !important;
     }
 
     .ant-card-head-wrapper {
         flex-direction: column;
         align-items: stretch !important;
-        gap: 10px;
+        gap: var(--spacing-sm);
     }
 
     .ant-card > .ant-card-head .ant-card-head-title,
     .ant-card-head-title {
-        font-size: 15px !important;
-        font-weight: 600 !important;
+        font-size: var(--font-size-md) !important;
+        font-weight: var(--font-weight-semibold) !important;
     }
 
     .ant-card-extra {
@@ -78,7 +78,7 @@
 
     .ant-card-extra .ant-space {
         flex-wrap: wrap !important;
-        gap: 8px !important;
+        gap: var(--spacing-sm) !important;
     }
 
     .ant-card-extra .ant-space-item {
@@ -104,7 +104,7 @@
     .ant-card > .ant-card-body,
     .ant-card.ant-card-small > .ant-card-body,
     .ant-card.ant-card-bordered > .ant-card-body {
-        padding: 14px 16px !important;
+        padding: var(--spacing-lg) !important;
     }
 
     /* Button */
@@ -120,12 +120,12 @@
 
     /* Modal */
     .ant-modal {
-        max-width: calc(100vw - 24px) !important;
-        margin: 12px !important;
+        max-width: calc(100vw - var(--spacing-xl)) !important;
+        margin: var(--spacing-md) !important;
     }
 
     .ant-modal-content {
-        border-radius: 12px;
+        border-radius: var(--radius-xl);
     }
 
     .ant-modal-body {
@@ -135,7 +135,7 @@
 
     /* Dropdown */
     .ant-dropdown {
-        max-width: calc(100vw - 24px);
+        max-width: calc(100vw - var(--spacing-xl));
     }
 
     /* Select */
@@ -145,31 +145,31 @@
 
     /* DatePicker */
     .ant-picker-dropdown {
-        max-width: calc(100vw - 24px);
+        max-width: calc(100vw - var(--spacing-xl));
     }
 
     /* Statistic */
     .ant-statistic-title {
-        font-size: 12px;
+        font-size: var(--font-size-xs);
     }
 
     .ant-statistic-content {
-        font-size: 18px;
+        font-size: var(--font-size-xl);
     }
 
     /* Tag */
     .ant-tag {
-        font-size: 11px;
+        font-size: var(--font-size-xs);
         padding: 2px 6px;
     }
 
     /* Form */
     .ant-form-item-label {
-        padding-bottom: 4px !important;
+        padding-bottom: var(--spacing-xs) !important;
     }
 
     .ant-form-item-label > label {
-        font-size: 13px;
+        font-size: var(--font-size-sm);
     }
 
     .ant-input,
@@ -189,7 +189,7 @@
     }
 
     .ant-space-compact .ant-picker .ant-picker-input > input {
-        font-size: 13px !important;
+        font-size: var(--font-size-sm) !important;
     }
 
     .ant-select-selector {
@@ -197,15 +197,15 @@
     }
 
     .ant-form-item {
-        margin-bottom: 16px;
+        margin-bottom: var(--spacing-lg);
     }
 
     .ant-modal-footer {
-        padding: 12px 16px;
+        padding: var(--spacing-md) var(--spacing-lg);
     }
 
     .ant-modal-footer .ant-btn {
         height: 44px;
-        font-size: 15px;
+        font-size: var(--font-size-md);
     }
 }

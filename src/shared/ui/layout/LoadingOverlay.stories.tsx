@@ -157,7 +157,7 @@ export const WithTopOffset: Story = {
                 <div
                     style={{
                         height: 64,
-                        backgroundColor: "#1890ff",
+                        backgroundColor: "var(--color-primary)",
                         color: "white",
                         display: "flex",
                         alignItems: "center",

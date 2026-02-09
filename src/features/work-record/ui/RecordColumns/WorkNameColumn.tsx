@@ -12,7 +12,7 @@ interface WorkNameColumnProps {
 
 export function WorkNameColumn({ record, theme_color }: WorkNameColumnProps) {
     return (
-        <Tag color={theme_color} className="!text-[11px]">
+        <Tag color={theme_color} className="!text-xs">
             {record.work_name}
         </Tag>
     );

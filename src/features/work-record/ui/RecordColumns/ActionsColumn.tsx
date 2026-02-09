@@ -50,7 +50,7 @@ export function ActionsColumn({
                     <Tooltip title={RECORD_TOOLTIP.COMPLETE}>
                         <Button
                             type="text"
-                            className="!text-[#52c41a]"
+                            className="!text-success"
                             icon={<CheckOutlined />}
                             size="small"
                             onClick={() => onComplete(record)}

@@ -246,7 +246,7 @@ export function SessionEditTable({ record_id }: SessionEditTableProps) {
             />
 
             <div className="session-summary">
-                <Space split={<span className="text-[#d9d9d9]">|</span>}>
+                <Space split={<span className="text-gray-300">|</span>}>
                     <Text type="secondary">첫 시작: {record.start_time}</Text>
                     <Text type="secondary">마지막 종료: {record.end_time}</Text>
                     <Text strong style={{ color: theme_color }}>
@@ -262,9 +262,9 @@ export function SessionEditTable({ record_id }: SessionEditTableProps) {
             </div>
 
             <style>{`
-                .session-history { padding: 16px 24px; background: #fafafa; border-radius: 8px; }
+                .session-history { padding: var(--spacing-lg) var(--spacing-xl); background: var(--color-bg-light); border-radius: var(--radius-lg); }
                 .session-header { display: flex; align-items: center; margin-bottom: 8px; }
-                .session-summary { margin-top: 16px; padding-top: 12px; border-top: 1px dashed #e8e8e8; }
+                .session-summary { margin-top: var(--spacing-lg); padding-top: var(--spacing-md); border-top: 1px dashed var(--color-border-default); }
             `}</style>
         </div>
     );

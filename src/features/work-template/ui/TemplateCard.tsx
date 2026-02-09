@@ -35,9 +35,13 @@ export function TemplateCard({
 
     return (
         <Card
-            className={`template-card ${is_dragging ? "template-card-dragging" : ""}`}
+            className={`template-card ${
+                is_dragging ? "template-card-dragging" : ""
+            }`}
             size="small"
-            style={{ borderLeft: `4px solid ${color || "#1890ff"}` }}
+            style={{
+                borderLeft: `4px solid ${color || "var(--color-primary)"}`,
+            }}
             actions={[
                 <Tooltip key="apply" title="적용">
                     <Button
@@ -81,12 +85,10 @@ export function TemplateCard({
                         <Tag color={getCategoryColor(category_name)}>
                             {category_name}
                         </Tag>
-                        {task_name && (
-                            <Tag className="!ml-xs">{task_name}</Tag>
-                        )}
+                        {task_name && <Tag className="!ml-xs">{task_name}</Tag>}
                     </div>
                     {project_code && (
-                        <Text type="secondary" className="!text-[11px]">
+                        <Text type="secondary" className="!text-xs">
                             {project_code}
                         </Text>
                     )}
@@ -95,15 +97,15 @@ export function TemplateCard({
 
             <style>{`
                 .template-card {
-                    margin-bottom: 8px;
+                    margin-bottom: var(--spacing-sm);
                     transition: box-shadow 0.2s;
                 }
                 .template-card:hover {
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
                 }
                 .template-card-dragging {
                     opacity: 0.5;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
                 }
                 .template-card-content {
                     min-height: 60px;
@@ -111,19 +113,19 @@ export function TemplateCard({
                 .template-card-header {
                     display: flex;
                     align-items: center;
-                    gap: 8px;
-                    margin-bottom: 8px;
+                    gap: var(--spacing-sm);
+                    margin-bottom: var(--spacing-sm);
                 }
                 .template-icon {
-                    font-size: 20px;
+                    font-size: var(--font-size-2xl);
                 }
                 .drag-handle {
                     margin-left: auto;
                     cursor: grab;
-                    color: #999;
+                    color: var(--color-text-disabled);
                 }
                 .drag-handle:hover {
-                    color: #1890ff;
+                    color: var(--color-primary);
                 }
             `}</style>
         </Card>

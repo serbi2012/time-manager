@@ -1,8 +1,26 @@
 /**
- * 색상 상수
+ * 색상 상수 (Toss-Inspired)
  */
 
 import type { AppTheme } from "../enums/theme";
+
+// ============================================
+// 그레이스케일 (Toss Gray)
+// ============================================
+
+/** Toss-Inspired 그레이스케일 */
+export const GRAY = {
+    50: "#F9FAFB",
+    100: "#F2F4F6",
+    200: "#E5E8EB",
+    300: "#D1D6DB",
+    400: "#B0B8C1",
+    500: "#8B95A1",
+    600: "#6B7684",
+    700: "#4E5968",
+    800: "#333D4B",
+    900: "#191F28",
+} as const;
 
 // ============================================
 // 시맨틱 색상
@@ -11,15 +29,15 @@ import type { AppTheme } from "../enums/theme";
 /** 시맨틱 색상 */
 export const SEMANTIC_COLORS = {
     /** 성공 */
-    success: "#52c41a",
+    success: "#34C759",
     /** 에러 */
-    error: "#ff4d4f",
+    error: "#F04452",
     /** 경고 */
-    warning: "#faad14",
+    warning: "#FF9500",
     /** 정보 */
-    info: "#1890ff",
+    info: "#3182F6",
     /** 비활성화 */
-    disabled: "#d9d9d9",
+    disabled: "#D1D6DB",
 } as const;
 
 // ============================================
@@ -29,13 +47,13 @@ export const SEMANTIC_COLORS = {
 /** 텍스트 색상 */
 export const TEXT_COLORS = {
     /** 기본 텍스트 */
-    primary: "rgba(0, 0, 0, 0.85)",
+    primary: "#191F28",
     /** 보조 텍스트 */
-    secondary: "rgba(0, 0, 0, 0.65)",
+    secondary: "#6B7684",
     /** 비활성 텍스트 */
-    disabled: "rgba(0, 0, 0, 0.45)",
+    disabled: "#B0B8C1",
     /** 힌트/플레이스홀더 */
-    hint: "rgba(0, 0, 0, 0.25)",
+    hint: "#D1D6DB",
     /** 흰색 텍스트 */
     white: "#ffffff",
 } as const;
@@ -49,11 +67,11 @@ export const BACKGROUND_COLORS = {
     /** 기본 배경 */
     default: "#ffffff",
     /** 밝은 회색 배경 */
-    light: "#fafafa",
+    light: "#F9FAFB",
     /** 회색 배경 */
-    grey: "#f5f5f5",
+    grey: "#F2F4F6",
     /** 어두운 배경 */
-    dark: "#001529",
+    dark: "#191F28",
 } as const;
 
 // ============================================
@@ -63,11 +81,11 @@ export const BACKGROUND_COLORS = {
 /** 경계선 색상 */
 export const BORDER_COLORS = {
     /** 기본 경계선 */
-    default: "#d9d9d9",
+    default: "#E5E8EB",
     /** 밝은 경계선 */
-    light: "#f0f0f0",
+    light: "#F2F4F6",
     /** 어두운 경계선 */
-    dark: "#bfbfbf",
+    dark: "#D1D6DB",
 } as const;
 
 // ============================================
@@ -76,10 +94,10 @@ export const BORDER_COLORS = {
 
 /** 템플릿 색상 팔레트 */
 export const TEMPLATE_COLORS: string[] = [
-    "#1890ff",
-    "#52c41a",
-    "#faad14",
-    "#f5222d",
+    "#3182F6",
+    "#34C759",
+    "#FF9500",
+    "#F04452",
     "#722ed1",
     "#13c2c2",
     "#eb2f96",
@@ -127,9 +145,9 @@ export interface ThemeColors {
 /** 앱 테마별 색상 정의 */
 export const APP_THEME_COLORS: Record<AppTheme, ThemeColors> = {
     blue: {
-        primary: "#1890ff",
-        gradient: "linear-gradient(135deg, #1890ff 0%, #096dd9 100%)",
-        gradientDark: "#096dd9",
+        primary: "#3182F6",
+        gradient: "linear-gradient(135deg, #3182F6 0%, #1B64DA 100%)",
+        gradientDark: "#1B64DA",
     },
     green: {
         primary: "#52c41a",

@@ -56,7 +56,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
                 algorithm: theme.defaultAlgorithm,
                 token: {
                     colorPrimary: theme_colors.primary,
-                    borderRadius: 8,
+                    borderRadius: 12,
+                    fontFamily:
+                        '"Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif',
                 },
             }}
         >

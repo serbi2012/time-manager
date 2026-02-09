@@ -79,7 +79,7 @@ export function AutoCompleteWithHide({
                     </span>
                     {showHideButton && onHideOption && (
                         <CloseOutlined
-                            className="!text-[10px] !text-[#999] cursor-pointer"
+                            className="!text-xs !text-text-disabled cursor-pointer"
                             onClick={(e) => handleHide(e, opt.value)}
                         />
                     )}

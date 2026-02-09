@@ -49,8 +49,8 @@ export function SessionTimeSection({
     is_active_session,
 }: SessionTimeSectionProps) {
     return (
-        <div className="mb-lg p-md bg-[#f5f5f5] rounded-lg">
-            <div className="mb-sm font-medium text-[13px] text-[#666]">
+        <div className="mb-lg p-md bg-bg-grey rounded-lg">
+            <div className="mb-sm font-medium text-sm text-text-secondary">
                 {GANTT_MODAL_SESSION_TIME_HEADER}
             </div>
             <Space size="middle">
@@ -66,7 +66,7 @@ export function SessionTimeSection({
                         maxLength={5}
                     />
                 </Form.Item>
-                <span className="text-[#999]">~</span>
+                <span className="text-text-disabled">~</span>
                 <Form.Item
                     name="session_end_time"
                     label={GANTT_FORM_LABEL_END}
@@ -82,7 +82,7 @@ export function SessionTimeSection({
                 </Form.Item>
             </Space>
             {is_active_session && (
-                <div className="mt-sm text-sm text-[#999]">
+                <div className="mt-sm text-sm text-text-disabled">
                     {GANTT_MODAL_ACTIVE_SESSION_HINT}
                 </div>
             )}

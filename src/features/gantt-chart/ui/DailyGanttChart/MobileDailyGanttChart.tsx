@@ -205,11 +205,11 @@ export function MobileDailyGanttChart() {
             <Card
                 title={
                     <div className="flex items-center gap-md text-lg">
-                        <span className="font-[800] text-[17px]">
+                        <span className="font-semibold text-lg">
                             {GANTT_TITLE_DAILY_TIMELINE}
                         </span>
-                        <span className="text-[#d9d9d9]">|</span>
-                        <span className="text-[#555] font-medium">
+                        <span className="text-gray-300">|</span>
+                        <span className="text-text-secondary font-medium">
                             {dayjs(selected_date).format("YYYY년 M월 D일")} (
                             {dayjs(selected_date).format("dd")})
                         </span>

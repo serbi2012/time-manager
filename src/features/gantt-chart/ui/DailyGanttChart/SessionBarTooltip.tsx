@@ -41,11 +41,11 @@ export function SessionBarTooltip({
             </div>
             <div>{duration_formatted}</div>
             {is_conflicting && (
-                <div className="mt-xs text-[#ff4d4f]">
+                <div className="mt-xs text-error">
                     {GANTT_LABEL_CONFLICT_WARNING}
                 </div>
             )}
-            <div className="mt-xs text-[11px] text-[#aaa]">
+            <div className="mt-xs text-xs text-text-disabled">
                 {GANTT_LABEL_TOTAL_SESSIONS(
                     sessions_count,
                     total_duration_formatted
