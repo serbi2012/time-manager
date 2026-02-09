@@ -1070,6 +1070,53 @@ import { cn } from "@/shared/lib/cn";
 
 ---
 
+## Ant Design CSS Specificity Guide
+
+Ant Design v6 uses CSS-in-JS which injects **global reset styles** on native HTML elements like `<button>`, `<input>`, `<a>`. These resets (e.g. `border: 0; background: transparent`) have **higher specificity** than Tailwind utility classes, causing Tailwind styles to be silently overridden.
+
+### Rule
+
+> When applying **visual Tailwind styles** (`bg-*`, `border-*`, `rounded-*`, `text-*`, `opacity-*`) to **native form/interaction elements** or **Ant Design components**, always use the `!` prefix to force `!important`.
+
+### When `!` is Required
+
+| Target                                           | Visual styles need `!`                      | Layout utilities need `!`       |
+| ------------------------------------------------ | ------------------------------------------- | ------------------------------- |
+| `<button>`                                       | **Yes** (`!bg-white !border !rounded-full`) | No (`flex items-center gap-sm`) |
+| `<input>`                                        | **Yes** (`!bg-white !border`)               | No                              |
+| `<a>`                                            | **Yes** (`!text-blue-500 !no-underline`)    | No                              |
+| Ant Design components (`Button`, `Card`, `Text`) | **Yes** (`!text-sm !block`)                 | Rarely                          |
+| `<div>`, `<span>`                                | **No** (`bg-white border rounded-lg`)       | No                              |
+
+### Examples
+
+```tsx
+// button - visual styles need !
+<button className="!bg-white !border !border-solid !border-[#e8e8e8] !rounded-full !text-xs flex items-center gap-xs px-sm" />
+
+// Ant Design Text - override CSS-in-JS
+<Text className="!text-sm !block !mb-sm" />
+
+// div - no ! needed
+<div className="flex flex-wrap gap-[6px] p-sm bg-[#fafafa] rounded-lg border border-[#f0f0f0]" />
+```
+
+### Why This Happens
+
+Ant Design's CSS-in-JS generates styles like:
+
+```css
+button {
+    border: 0;
+    background: transparent;
+    outline: none;
+}
+```
+
+These rules target the element type directly, which in CSS specificity beats Tailwind's single-class selectors. The `!important` flag is the only reliable override.
+
+---
+
 ## Appendix: Quick Reference
 
 ### Common Tailwind Mappings

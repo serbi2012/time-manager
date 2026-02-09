@@ -47,6 +47,9 @@ export const SETTINGS_AUTOCOMPLETE_OPTION_EMPTY = "옵션 없음";
 export const SETTINGS_AUTOCOMPLETE_HIDDEN = "숨겨진 항목";
 export const SETTINGS_AUTOCOMPLETE_RESTORE_ALL = "전체 복원";
 export const SETTINGS_AUTOCOMPLETE_SELECT_HIDE = "선택 숨김";
+export const SETTINGS_AUTOCOMPLETE_INPUT_GROUP = "입력 필드 자동완성";
+export const SETTINGS_AUTOCOMPLETE_SELECT_GROUP = "Select 드롭다운 옵션";
+export const SETTINGS_AUTOCOMPLETE_OPTION_EMPTY_DESC = "등록된 항목이 없습니다";
 
 export const SETTINGS_SHORTCUTS_DESC =
     "단축키를 활성화/비활성화하거나 원하는 키 조합으로 변경할 수 있습니다.";

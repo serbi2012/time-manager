@@ -16,7 +16,8 @@
         "test:e2e:report": "playwright show-report",
         "storybook": "storybook dev -p 6006",
         "storybook:build": "storybook build",
-        "generate-pwa-icons": "node scripts/generate-pwa-icons.js"
+        "generate-pwa-icons": "node scripts/generate-pwa-icons.js",
+        "mockup": "npx serve mockups -p 3456 --no-clipboard"
     },
     "dependencies": {
         "@ant-design/icons": "^6.1.0",
