@@ -38,8 +38,8 @@ import { SettingItem } from "./SettingItem";
 
 const { Text } = Typography;
 
-const CARD_BODY_MOBILE = { padding: "0 12px" as const };
-const CARD_BODY_DESKTOP = { padding: "0 16px" as const };
+const CARD_BODY_MOBILE = { padding: "12px" as const };
+const CARD_BODY_DESKTOP = { padding: "16px" as const };
 const CARD_BODY_MANAGEMENT_MOBILE = { padding: 12 };
 const CARD_BODY_MANAGEMENT_DESKTOP = { padding: 16 };
 
