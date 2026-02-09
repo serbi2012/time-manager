@@ -32,7 +32,6 @@ import {
 } from "../../constants";
 import {
     SETTINGS_LAYOUT,
-    SETTINGS_SCROLL_WRAPPER_DESKTOP,
     SETTINGS_TAB_BAR_STYLE,
     SETTINGS_TABS_CONTAINER_STYLE,
     SETTINGS_MODAL_BODY_DESKTOP,
@@ -117,7 +116,9 @@ export function DesktopSettingsModal({
     const scrollable_tab_items = tab_items.map((item) => ({
         ...item,
         children: (
-            <div style={SETTINGS_SCROLL_WRAPPER_DESKTOP}>{item.children}</div>
+            <div className="h-[calc(70vh-120px)] max-h-[500px] min-h-[300px] overflow-y-auto pr-sm">
+                {item.children}
+            </div>
         ),
     }));
 

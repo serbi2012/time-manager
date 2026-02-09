@@ -24,7 +24,7 @@ export function ColorPicker({ selected_color, on_change }: ColorPickerProps) {
                         onClick={() => on_change(color)}
                     >
                         {selected_color === color && (
-                            <CheckOutlined style={{ color: "#fff" }} />
+                            <CheckOutlined className="!text-white" />
                         )}
                     </button>
                 </Tooltip>

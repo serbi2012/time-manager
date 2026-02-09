@@ -86,8 +86,6 @@ import {
     CHAR_CODE_THRESHOLD,
     HANGUL_CHAR_WIDTH,
     ASCII_CHAR_WIDTH,
-    RECORD_DATE_PICKER_MOBILE_WIDTH,
-    RECORD_COLORS,
 } from "../../constants";
 
 export function MobileWorkRecordTable() {
@@ -445,9 +443,7 @@ export function MobileWorkRecordTable() {
                                 onChange={handleDateChange}
                                 format={DATE_FORMAT_WITH_DAY}
                                 allowClear={false}
-                                style={{
-                                    width: RECORD_DATE_PICKER_MOBILE_WIDTH,
-                                }}
+                                className="!w-[130px]"
                             />
                             <Tooltip
                                 title={RECORD_TOOLTIP.NEXT_DATE(
@@ -472,9 +468,7 @@ export function MobileWorkRecordTable() {
                         <Tooltip title={RECORD_TOOLTIP.COMPLETED_LIST}>
                             <Button
                                 icon={
-                                    <CheckCircleOutlined
-                                        style={{ color: RECORD_COLORS.SUCCESS }}
-                                    />
+                                    <CheckCircleOutlined className="!text-[#52c41a]" />
                                 }
                                 onClick={openCompletedModal}
                             />
@@ -483,9 +477,7 @@ export function MobileWorkRecordTable() {
                         <Tooltip title={RECORD_TOOLTIP.TRASH_LIST}>
                             <Button
                                 icon={
-                                    <DeleteOutlined
-                                        style={{ color: RECORD_COLORS.ERROR }}
-                                    />
+                                    <DeleteOutlined className="!text-[#ff4d4f]" />
                                 }
                                 onClick={openTrashModal}
                             />

@@ -44,13 +44,7 @@ export function SyncIndicator({
                     </>
                 )}
                 {sync_status === "synced" && (
-                    <span
-                        style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 4,
-                        }}
-                    >
+                    <span className="inline-flex items-center gap-xs">
                         <CloudSyncOutlined />
                         {!is_mobile && " 클라우드 연결됨"}
                         {show_sync_check && (
@@ -67,7 +61,7 @@ export function SyncIndicator({
                 )}
                 {sync_status === "error" && (
                     <>
-                        <CloudOutlined style={{ color: "#ff4d4f" }} />
+                        <CloudOutlined className="!text-[#ff4d4f]" />
                         {!is_mobile && " 동기화 오류"}
                     </>
                 )}

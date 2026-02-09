@@ -39,7 +39,7 @@ export function MobileSidebar({
                 value={search_query}
                 onChange={(e) => on_search(e.target.value)}
                 allowClear
-                style={{ marginBottom: 12 }}
+                className="!mb-md"
             />
             {search_query ? (
                 search_results.length === 0 ? (
@@ -60,25 +60,9 @@ export function MobileSidebar({
                                     )
                                 }
                             >
-                                <div
-                                    style={{
-                                        display: "flex",
-                                        gap: 8,
-                                        alignItems: "center",
-                                        width: "100%",
-                                    }}
-                                >
+                                <div className="flex gap-sm items-center w-full">
                                     <Tag color="blue">{item.title}</Tag>
-                                    <span
-                                        style={{
-                                            color: "#999",
-                                            fontSize: 12,
-                                            flex: 1,
-                                            overflow: "hidden",
-                                            textOverflow: "ellipsis",
-                                            whiteSpace: "nowrap",
-                                        }}
-                                    >
+                                    <span className="text-[#999] text-sm flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
                                         {item.preview}
                                     </span>
                                 </div>
@@ -92,7 +76,7 @@ export function MobileSidebar({
                     selectedKeys={[current_section]}
                     items={menu_items}
                     onClick={(info) => on_menu_click(info.key)}
-                    style={{ border: "none" }}
+                    className="!border-none"
                 />
             )}
         </Card>

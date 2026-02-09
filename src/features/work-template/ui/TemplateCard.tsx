@@ -71,9 +71,9 @@ export function TemplateCard({
                     <DragOutlined className="drag-handle" />
                 </div>
 
-                <Space direction="vertical" size={2} style={{ width: "100%" }}>
+                <Space direction="vertical" size={2} className="!w-full">
                     {deal_name && (
-                        <Text type="secondary" ellipsis style={{ fontSize: 12 }}>
+                        <Text type="secondary" ellipsis className="!text-xs">
                             {deal_name}
                         </Text>
                     )}
@@ -82,11 +82,11 @@ export function TemplateCard({
                             {category_name}
                         </Tag>
                         {task_name && (
-                            <Tag style={{ marginLeft: 4 }}>{task_name}</Tag>
+                            <Tag className="!ml-xs">{task_name}</Tag>
                         )}
                     </div>
                     {project_code && (
-                        <Text type="secondary" style={{ fontSize: 11 }}>
+                        <Text type="secondary" className="!text-[11px]">
                             {project_code}
                         </Text>
                     )}

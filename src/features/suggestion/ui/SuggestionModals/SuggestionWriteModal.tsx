@@ -1,10 +1,6 @@
 import { Modal, Form, Input } from "antd";
 import { UserOutlined } from "@ant-design/icons";
-import {
-    SUGGESTION_LABELS,
-    SUGGESTION_STYLES,
-    SUGGESTION_CONFIG,
-} from "../../constants";
+import { SUGGESTION_LABELS, SUGGESTION_CONFIG } from "../../constants";
 
 const { TextArea } = Input;
 
@@ -32,18 +28,16 @@ export function SuggestionWriteModal({
             okText={
                 <>
                     {SUGGESTION_LABELS.submitButton}{" "}
-                    <span style={SUGGESTION_STYLES.shortcutBadge}>F8</span>
+                    <span className="text-[11px] opacity-85 ml-xs py-px px-xs bg-white/20 rounded-[3px]">
+                        F8
+                    </span>
                 </>
             }
             cancelText={SUGGESTION_LABELS.cancelButton}
             confirmLoading={is_submitting}
             destroyOnClose
         >
-            <Form
-                form={form}
-                layout="vertical"
-                style={SUGGESTION_STYLES.formContainer}
-            >
+            <Form form={form} layout="vertical" className="!mt-lg">
                 <Form.Item
                     name="author_name"
                     label={SUGGESTION_LABELS.nicknameLabel}

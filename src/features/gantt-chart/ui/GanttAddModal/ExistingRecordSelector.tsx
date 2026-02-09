@@ -4,16 +4,7 @@
 
 import { Radio, Space, Typography } from "antd";
 import type { WorkRecord } from "../../../../shared/types";
-import {
-    RADIO_CARD_SELECTED_STYLE,
-    RADIO_CARD_UNSELECTED_STYLE,
-    TEXT_SECONDARY_WITH_MARGIN_STYLE,
-    TEXT_BLOCK_WITH_MARGIN_STYLE,
-} from "../../../../shared/ui/form/styles";
-import {
-    GANTT_MODAL_SELECT_WORK_PROMPT,
-    GANTT_FONT_SMALL,
-} from "../../constants";
+import { GANTT_MODAL_SELECT_WORK_PROMPT } from "../../constants";
 
 const { Text } = Typography;
 
@@ -26,10 +17,6 @@ export interface ExistingRecordSelectorProps {
     onChange: (record_id: string) => void;
 }
 
-const RECORD_META_STYLE: React.CSSProperties = {
-    fontSize: GANTT_FONT_SMALL,
-};
-
 /**
  * 기존 작업 선택 컴포넌트
  */
@@ -40,40 +27,34 @@ export function ExistingRecordSelector({
 }: ExistingRecordSelectorProps) {
     return (
         <div>
-            <Text type="secondary" style={TEXT_BLOCK_WITH_MARGIN_STYLE}>
+            <Text type="secondary" className="!block !mb-md">
                 {GANTT_MODAL_SELECT_WORK_PROMPT}
             </Text>
             <Radio.Group
                 value={selected_record_id}
                 onChange={(e) => onChange(e.target.value)}
-                style={{ width: "100%" }}
+                className="!w-full"
             >
-                <Space direction="vertical" style={{ width: "100%" }}>
+                <Space direction="vertical" className="!w-full">
                     {today_records.map((record) => (
                         <Radio
                             key={record.id}
                             value={record.id}
-                            style={
+                            className={`!w-full !py-sm !px-md !border !border-[#d9d9d9] !rounded-md ${
                                 selected_record_id === record.id
-                                    ? RADIO_CARD_SELECTED_STYLE
-                                    : RADIO_CARD_UNSELECTED_STYLE
-                            }
+                                    ? "!bg-[#e6f4ff]"
+                                    : "!bg-transparent"
+                            }`}
                         >
                             <div>
                                 <Text strong>{record.work_name}</Text>
                                 {record.deal_name && (
-                                    <Text
-                                        type="secondary"
-                                        style={TEXT_SECONDARY_WITH_MARGIN_STYLE}
-                                    >
+                                    <Text type="secondary" className="!ml-sm">
                                         - {record.deal_name}
                                     </Text>
                                 )}
                                 <br />
-                                <Text
-                                    type="secondary"
-                                    style={RECORD_META_STYLE}
-                                >
+                                <Text type="secondary" className="!text-sm">
                                     [{record.project_code}]{" "}
                                     {record.task_name && `${record.task_name}`}
                                     {record.sessions?.length

@@ -94,23 +94,10 @@ export function MobileLayout() {
                         initial={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.3 }}
-                        style={{
-                            position: "fixed",
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            flexDirection: "column",
-                            gap: 16,
-                            background: "#fff",
-                            zIndex: 1000,
-                        }}
+                        className="fixed inset-0 flex flex-col items-center justify-center gap-lg bg-white z-[1000]"
                     >
                         <Spin size="large" />
-                        <span style={{ color: "#666" }}>
+                        <span className="!text-[#666]">
                             {auth_loading
                                 ? "로그인 확인 중..."
                                 : "데이터를 불러오는 중..."}
@@ -145,7 +132,7 @@ export function MobileLayout() {
                 type="file"
                 accept=".json"
                 onChange={handleFileChange}
-                style={{ display: "none" }}
+                className="hidden"
             />
 
             <MobileBottomNav />

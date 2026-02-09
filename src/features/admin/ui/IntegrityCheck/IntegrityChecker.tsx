@@ -179,7 +179,7 @@ export function IntegrityChecker({
             render: (id: string) =>
                 id ? (
                     <Tooltip title={id}>
-                        <Text code style={{ fontSize: 11 }}>
+                        <Text code className="!text-[11px]">
                             {id.substring(0, 8)}...
                         </Text>
                     </Tooltip>
@@ -251,9 +251,9 @@ export function IntegrityChecker({
     // 검사 전 화면
     if (!result) {
         return (
-            <div style={{ textAlign: "center", padding: 48 }}>
-                <BugOutlined style={{ fontSize: 64, color: "#1890ff" }} />
-                <Title level={4} style={{ marginTop: 24 }}>
+            <div className="text-center p-[48px]">
+                <BugOutlined className="!text-[64px] !text-[#1890ff]" />
+                <Title level={4} className="!mt-xl">
                     데이터 정합성 검사
                 </Title>
                 <Paragraph type="secondary">
@@ -271,7 +271,7 @@ export function IntegrityChecker({
                     {is_checking ? "검사 중..." : "검사 시작"}
                 </Button>
 
-                <Card style={{ marginTop: 32, textAlign: "left" }}>
+                <Card className="!mt-[32px] !text-left">
                     <Title level={5}>검사 항목</Title>
                     <Row gutter={[16, 8]}>
                         <Col span={12}>
@@ -308,7 +308,7 @@ export function IntegrityChecker({
     return (
         <div>
             {/* 요약 통계 */}
-            <Row gutter={16} style={{ marginBottom: 16 }}>
+            <Row gutter={16} className="!mb-lg">
                 <Col span={6}>
                     <Card size="small">
                         <Statistic
@@ -379,7 +379,7 @@ export function IntegrityChecker({
                     description="데이터 정합성 검사를 통과했습니다. 모든 데이터가 정상입니다."
                     icon={<CheckCircleOutlined />}
                     showIcon
-                    style={{ marginBottom: 16 }}
+                    className="!mb-lg"
                 />
             ) : (
                 <Alert
@@ -387,12 +387,12 @@ export function IntegrityChecker({
                     message={`${result.issues.length}개의 문제가 발견되었습니다`}
                     description={`오류: ${result.error_count}개, 경고: ${result.warning_count}개, 정보: ${result.info_count}개`}
                     showIcon
-                    style={{ marginBottom: 16 }}
+                    className="!mb-lg"
                 />
             )}
 
             {/* 필터 및 재검사 */}
-            <Space style={{ marginBottom: 16 }}>
+            <Space className="!mb-lg">
                 <Button
                     icon={<SyncOutlined spin={is_checking} />}
                     onClick={runCheck}
@@ -489,10 +489,7 @@ export function IntegrityChecker({
             )}
 
             {/* 검사 시간 */}
-            <Text
-                type="secondary"
-                style={{ display: "block", marginTop: 16, textAlign: "right" }}
-            >
+            <Text type="secondary" className="!block !mt-lg !text-right">
                 검사 시각:{" "}
                 {dayjs(result.checked_at).format("YYYY-MM-DD HH:mm:ss")}
             </Text>

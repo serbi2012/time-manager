@@ -62,14 +62,14 @@ export function UserMenu({
     if (is_authenticated && user) {
         return (
             <Dropdown menu={{ items: user_menu_items }} placement="bottomRight">
-                <Space style={{ cursor: "pointer" }}>
+                <Space className="cursor-pointer">
                     <Avatar
                         src={user.photoURL}
                         icon={<UserOutlined />}
                         size="small"
                     />
                     {!is_mobile && (
-                        <span style={{ color: "white", fontSize: 13 }}>
+                        <span className="!text-white !text-[13px]">
                             {user.displayName || user.email}
                         </span>
                     )}

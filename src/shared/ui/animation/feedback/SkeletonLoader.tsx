@@ -4,6 +4,7 @@
  */
 import { motion } from "framer-motion";
 import type { CSSProperties } from "react";
+import { cn } from "@/shared/lib/cn";
 
 interface SkeletonLoaderProps {
     /** 너비 */
@@ -83,8 +84,8 @@ export function SkeletonText({
 }: SkeletonTextProps) {
     return (
         <div
-            className={className}
-            style={{ display: "flex", flexDirection: "column", gap }}
+            className={cn(className, "flex flex-col")}
+            style={{ gap }}
         >
             {Array.from({ length: lines }).map((_, i) => (
                 <SkeletonLoader
@@ -157,13 +158,13 @@ export function SkeletonCard({
                     width="100%"
                     height={imageHeight}
                     borderRadius={4}
-                    style={{ marginBottom: 16 }}
+                    className="mb-lg"
                 />
             )}
             <SkeletonLoader
                 width="60%"
                 height={24}
-                style={{ marginBottom: 12 }}
+                className="mb-md"
             />
             <SkeletonText lines={2} />
         </div>
@@ -188,16 +189,15 @@ export function SkeletonTable({
 }: SkeletonTableProps) {
     return (
         <div
-            className={className}
-            style={{ display: "flex", flexDirection: "column", gap: 8 }}
+            className={cn(className, "flex flex-col gap-sm")}
         >
             {/* 헤더 */}
-            <div style={{ display: "flex", gap: 8 }}>
+            <div className="flex gap-sm">
                 {Array.from({ length: cols }).map((_, i) => (
                     <SkeletonLoader
                         key={`header-${i}`}
                         height={40}
-                        style={{ flex: 1 }}
+                        className="flex-1"
                     />
                 ))}
             </div>
@@ -205,13 +205,13 @@ export function SkeletonTable({
             {Array.from({ length: rows }).map((_, rowIndex) => (
                 <div
                     key={`row-${rowIndex}`}
-                    style={{ display: "flex", gap: 8 }}
+                    className="flex gap-sm"
                 >
                     {Array.from({ length: cols }).map((_, colIndex) => (
                         <SkeletonLoader
                             key={`cell-${rowIndex}-${colIndex}`}
                             height={48}
-                            style={{ flex: 1 }}
+                            className="flex-1"
                         />
                     ))}
                 </div>

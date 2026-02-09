@@ -39,19 +39,13 @@ export function CategoryChart({
 
   return (
     <div>
-      <Text strong style={{ display: "block", marginBottom: 16 }}>
+      <Text strong className="!block !mb-lg">
         {title}
       </Text>
-      <Space direction="vertical" style={{ width: "100%" }} size="small">
+      <Space direction="vertical" className="!w-full" size="small">
         {data.slice(0, 8).map((item) => (
           <div key={item.category}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: 4,
-              }}
-            >
+            <div className="flex justify-between mb-xs">
               <Text>{item.category}</Text>
               <Text type="secondary">
                 {formatDuration(item.total_minutes, time_format)} ({item.percentage}%)
@@ -125,7 +119,7 @@ export function WorkNameTable({
 
   return (
     <div>
-      <Text strong style={{ display: "block", marginBottom: 16 }}>
+      <Text strong className="!block !mb-lg">
         {title}
       </Text>
       <Table
@@ -157,7 +151,7 @@ export function CategoryAnalysis({
         title="카테고리별 시간 분포"
         time_format={time_format}
       />
-      <div style={{ marginTop: 24 }}>
+      <div className="mt-xl">
         <WorkNameTable
           data={work_name_stats}
           title="작업명별 TOP 10"

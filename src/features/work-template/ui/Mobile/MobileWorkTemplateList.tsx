@@ -24,7 +24,6 @@ import {
     BUTTON_ADD,
     EMPTY_DESCRIPTION,
     EMPTY_HINT,
-    EMPTY_SECONDARY_TEXT_STYLE,
 } from "@/features/work-template/constants";
 
 const { Text } = Typography;
@@ -84,10 +83,7 @@ export function MobileWorkTemplateList({
                             <span>
                                 {EMPTY_DESCRIPTION}
                                 <br />
-                                <Text
-                                    type="secondary"
-                                    style={EMPTY_SECONDARY_TEXT_STYLE}
-                                >
+                                <Text type="secondary" className="!text-sm">
                                     {EMPTY_HINT}
                                 </Text>
                             </span>

@@ -38,14 +38,6 @@ import {
 
 const { Text } = Typography;
 
-const MODAL_TITLE_SECONDARY_STYLE: React.CSSProperties = {
-    fontWeight: "normal",
-};
-
-const SEGMENTED_MARGIN_STYLE: React.CSSProperties = {
-    marginBottom: 16,
-};
-
 export interface GanttAddModalProps {
     /** 모달 열림 상태 */
     open: boolean;
@@ -278,10 +270,7 @@ export function GanttAddModal({
                     <PlusOutlined />
                     <span>{GANTT_MODAL_TITLE_ADD}</span>
                     {selected_time_range && (
-                        <Text
-                            type="secondary"
-                            style={MODAL_TITLE_SECONDARY_STYLE}
-                        >
+                        <Text type="secondary" className="!font-normal">
                             ({selected_time_range.start} ~{" "}
                             {selected_time_range.end})
                         </Text>
@@ -322,7 +311,7 @@ export function GanttAddModal({
                         },
                     ]}
                     block
-                    style={SEGMENTED_MARGIN_STYLE}
+                    className="!mb-lg"
                 />
             )}
 

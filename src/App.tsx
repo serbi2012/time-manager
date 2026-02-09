@@ -424,16 +424,13 @@ function AppLayout() {
     const ADMIN_EMAIL = "rlaxo0306@gmail.com";
     const is_admin = user?.email === ADMIN_EMAIL;
 
-    // 메뉴 링크 스타일 (기본 a 태그 스타일 제거)
-    const menu_link_style = { color: "inherit", textDecoration: "none" };
-
     const menu_items = useMemo(
         () => [
             {
                 key: "/",
                 icon: <HomeOutlined />,
                 label: (
-                    <Link to="/" style={menu_link_style}>
+                    <Link to="/" className="text-inherit no-underline">
                         일간 기록
                     </Link>
                 ),
@@ -442,7 +439,7 @@ function AppLayout() {
                 key: "/weekly",
                 icon: <CalendarOutlined />,
                 label: (
-                    <Link to="/weekly" style={menu_link_style}>
+                    <Link to="/weekly" className="text-inherit no-underline">
                         주간 일정
                     </Link>
                 ),
@@ -451,7 +448,10 @@ function AppLayout() {
                 key: "/suggestions",
                 icon: <MessageOutlined />,
                 label: (
-                    <Link to="/suggestions" style={menu_link_style}>
+                    <Link
+                        to="/suggestions"
+                        className="text-inherit no-underline"
+                    >
                         건의사항
                     </Link>
                 ),
@@ -460,7 +460,7 @@ function AppLayout() {
                 key: "/guide",
                 icon: <BookOutlined />,
                 label: (
-                    <Link to="/guide" style={menu_link_style}>
+                    <Link to="/guide" className="text-inherit no-underline">
                         사용 설명서
                     </Link>
                 ),
@@ -471,7 +471,10 @@ function AppLayout() {
                           key: "/admin",
                           icon: <ToolOutlined />,
                           label: (
-                              <Link to="/admin" style={menu_link_style}>
+                              <Link
+                                  to="/admin"
+                                  className="text-inherit no-underline"
+                              >
                                   관리자
                               </Link>
                           ),
@@ -638,12 +641,7 @@ function AppLayout() {
                     mode="horizontal"
                     selectedKeys={[location.pathname]}
                     items={menu_items}
-                    style={{
-                        flex: 1,
-                        marginLeft: 24,
-                        background: "transparent",
-                        borderBottom: "none",
-                    }}
+                    className="!flex-1 !ml-xl !bg-transparent !border-b-0"
                     theme="dark"
                 />
                 <Space size={is_mobile ? "small" : "middle"}>
@@ -662,13 +660,7 @@ function AppLayout() {
                                 </>
                             )}
                             {sync_status === "synced" && (
-                                <span
-                                    style={{
-                                        display: "inline-flex",
-                                        alignItems: "center",
-                                        gap: 4,
-                                    }}
-                                >
+                                <span className="inline-flex items-center gap-xs">
                                     <CloudSyncOutlined />
                                     {!is_mobile && " 클라우드 연결됨"}
                                     {show_sync_check && (
@@ -685,9 +677,7 @@ function AppLayout() {
                             )}
                             {sync_status === "error" && (
                                 <>
-                                    <CloudOutlined
-                                        style={{ color: "#ff4d4f" }}
-                                    />
+                                    <CloudOutlined className="!text-[#ff4d4f]" />
                                     {!is_mobile && " 동기화 오류"}
                                 </>
                             )}
@@ -715,12 +705,7 @@ function AppLayout() {
                             type="text"
                             icon={<InfoCircleOutlined />}
                             onClick={() => setIsChangelogOpen(true)}
-                            style={{
-                                color: "rgba(255,255,255,0.85)",
-                                fontSize: 12,
-                                padding: "4px 8px",
-                                height: "auto",
-                            }}
+                            className="!text-white/85 !text-xs !px-sm !py-xs !h-auto"
                         >
                             v{CURRENT_VERSION}
                         </Button>
@@ -745,16 +730,14 @@ function AppLayout() {
                             menu={{ items: user_menu_items }}
                             placement="bottomRight"
                         >
-                            <Space style={{ cursor: "pointer" }}>
+                            <Space className="cursor-pointer">
                                 <Avatar
                                     src={user.photoURL}
                                     icon={<UserOutlined />}
                                     size="small"
                                 />
                                 {!is_mobile && (
-                                    <span
-                                        style={{ color: "white", fontSize: 13 }}
-                                    >
+                                    <span className="text-white text-[13px]">
                                         {user.displayName || user.email}
                                     </span>
                                 )}
@@ -775,24 +758,9 @@ function AppLayout() {
 
             {/* 초기 데이터 로딩 오버레이 (Auth 로딩 중 또는 데이터 동기화 중) */}
             {(auth_loading || (isAuthenticated && !initial_load_done)) && (
-                <div
-                    style={{
-                        position: "fixed",
-                        top: 64,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        flexDirection: "column",
-                        gap: 16,
-                        background: "rgba(255, 255, 255, 0.9)",
-                        zIndex: 1000,
-                    }}
-                >
+                <div className="fixed top-16 inset-x-0 bottom-0 flex flex-col items-center justify-center gap-lg bg-white/90 z-[1000]">
                     <Spin size="large" />
-                    <span style={{ color: "#666" }}>
+                    <span className="text-[#666]">
                         {auth_loading
                             ? "로그인 확인 중..."
                             : "데이터를 불러오는 중..."}
@@ -829,7 +797,7 @@ function AppLayout() {
                 type="file"
                 accept=".json"
                 onChange={handleFileChange}
-                style={{ display: "none" }}
+                className="hidden"
             />
 
             {/* 모바일 하단 네비게이션 */}

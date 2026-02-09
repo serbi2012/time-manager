@@ -13,13 +13,9 @@ import {
 } from "../../lib/bar_calculator";
 import { GanttBarCell } from "./GanttBarCell";
 import { ConflictOverlayTooltip } from "./ConflictOverlayTooltip";
-import {
-    GANTT_LABEL_LUNCH,
-    GANTT_LABEL_CONFLICT,
-    GANTT_ROW_HEIGHT,
-    GANTT_ROW_LABEL_MAX_WIDTH,
-    GANTT_FONT_XSMALL,
-} from "../../constants";
+import { GANTT_LABEL_LUNCH, GANTT_LABEL_CONFLICT } from "../../constants";
+
+const GANTT_ROW_HEIGHT = 40;
 
 const { Text } = Typography;
 
@@ -194,10 +190,7 @@ export function GanttChartContent({
                                 >
                                     <Text
                                         ellipsis
-                                        style={{
-                                            fontSize: GANTT_FONT_XSMALL,
-                                            maxWidth: GANTT_ROW_LABEL_MAX_WIDTH,
-                                        }}
+                                        className="!text-[11px] !max-w-[80px]"
                                     >
                                         {group.record.deal_name ||
                                             group.record.work_name}

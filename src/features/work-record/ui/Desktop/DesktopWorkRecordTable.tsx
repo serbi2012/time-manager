@@ -87,9 +87,6 @@ import {
     CHAR_CODE_THRESHOLD,
     HANGUL_CHAR_WIDTH,
     ASCII_CHAR_WIDTH,
-    RECORD_DATE_PICKER_DESKTOP_WIDTH,
-    RECORD_SHORTCUT_HINT_STYLE,
-    RECORD_COLORS,
 } from "../../constants";
 
 export function DesktopWorkRecordTable() {
@@ -448,9 +445,7 @@ export function DesktopWorkRecordTable() {
                                 onChange={handleDateChange}
                                 format={DATE_FORMAT_WITH_DAY}
                                 allowClear={false}
-                                style={{
-                                    width: RECORD_DATE_PICKER_DESKTOP_WIDTH,
-                                }}
+                                className="!w-[150px]"
                             />
                             <Tooltip
                                 title={RECORD_TOOLTIP.NEXT_DATE(
@@ -471,7 +466,7 @@ export function DesktopWorkRecordTable() {
                             onClick={openAddModal}
                         >
                             {RECORD_BUTTON.NEW_WORK}{" "}
-                            <span style={RECORD_SHORTCUT_HINT_STYLE}>
+                            <span className="text-[11px] opacity-85 ml-xs py-px px-xs bg-white/20 rounded-[3px]">
                                 {formatShortcutKeyForPlatform(new_work_keys)}
                             </span>
                         </Button>
@@ -480,9 +475,7 @@ export function DesktopWorkRecordTable() {
                         <Tooltip title={RECORD_TOOLTIP.COMPLETED_LIST}>
                             <Button
                                 icon={
-                                    <CheckCircleOutlined
-                                        style={{ color: RECORD_COLORS.SUCCESS }}
-                                    />
+                                    <CheckCircleOutlined className="!text-[#52c41a]" />
                                 }
                                 onClick={openCompletedModal}
                             >
@@ -493,9 +486,7 @@ export function DesktopWorkRecordTable() {
                         <Tooltip title={RECORD_TOOLTIP.TRASH_LIST}>
                             <Button
                                 icon={
-                                    <DeleteOutlined
-                                        style={{ color: RECORD_COLORS.ERROR }}
-                                    />
+                                    <DeleteOutlined className="!text-[#ff4d4f]" />
                                 }
                                 onClick={openTrashModal}
                             >

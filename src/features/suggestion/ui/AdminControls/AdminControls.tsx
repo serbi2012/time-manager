@@ -5,11 +5,7 @@ import { message } from "antd";
 import type { SuggestionPost, SuggestionStatus } from "@/types";
 import { updateSuggestionStatus } from "@/firebase/suggestionService";
 import { SUGGESTION_MESSAGES } from "@/shared/constants";
-import {
-    SUGGESTION_LABELS,
-    STATUS_LABELS,
-    SUGGESTION_STYLES,
-} from "../../constants";
+import { SUGGESTION_LABELS, STATUS_LABELS } from "../../constants";
 
 const { Text } = Typography;
 
@@ -52,22 +48,19 @@ export function AdminControls({ post }: AdminControlsProps) {
 
     return (
         <div className="suggestion-admin-controls">
-            <Divider style={SUGGESTION_STYLES.adminDivider}>
+            <Divider className="!mt-lg !mb-md">
                 <Space size="small">
                     <SettingOutlined />
-                    <Text
-                        type="secondary"
-                        style={SUGGESTION_STYLES.adminTitleText}
-                    >
+                    <Text type="secondary" className="!text-sm">
                         {SUGGESTION_LABELS.adminSettingsTitle}
                     </Text>
                 </Space>
             </Divider>
-            <Space wrap style={SUGGESTION_STYLES.adminWrap}>
+            <Space wrap className="!w-full">
                 <Select
                     value={status}
                     onChange={setStatus}
-                    style={SUGGESTION_STYLES.adminStatusSelect}
+                    className="!w-[120px]"
                     options={Object.entries(STATUS_LABELS).map(
                         ([value, config]) => ({
                             value,
@@ -82,7 +75,7 @@ export function AdminControls({ post }: AdminControlsProps) {
                         }
                         value={resolved_version}
                         onChange={(e) => setResolvedVersion(e.target.value)}
-                        style={SUGGESTION_STYLES.adminVersionInput}
+                        className="!w-[160px]"
                     />
                 )}
                 <Button

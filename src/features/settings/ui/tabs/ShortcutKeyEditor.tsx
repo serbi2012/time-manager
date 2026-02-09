@@ -27,54 +27,6 @@ const { Text } = Typography;
 
 const EDITOR_MODAL_WIDTH = 400;
 
-const PROMPT_BOX_STYLE: React.CSSProperties = {
-    textAlign: "center",
-    padding: "20px 0",
-};
-
-const PROMPT_TEXT_STYLE: React.CSSProperties = {
-    display: "block",
-    marginBottom: 16,
-};
-
-const INPUT_AREA_BASE: React.CSSProperties = {
-    padding: "24px 16px",
-    borderRadius: 8,
-    background: "#fafafa",
-    cursor: "text",
-    outline: "none",
-    transition: "all 0.2s",
-};
-
-const TAG_STYLE: React.CSSProperties = {
-    fontFamily: "monospace",
-    fontSize: 16,
-    padding: "8px 16px",
-};
-
-const PLACEHOLDER_TEXT_STYLE: React.CSSProperties = {
-    fontSize: 14,
-};
-
-const ERROR_TEXT_STYLE: React.CSSProperties = {
-    display: "block",
-    marginTop: 12,
-};
-
-const CURRENT_LABEL_STYLE: React.CSSProperties = {
-    marginTop: 16,
-};
-
-const CURRENT_TAG_STYLE: React.CSSProperties = {
-    fontFamily: "monospace",
-};
-
-const HINT_STYLE: React.CSSProperties = {
-    display: "block",
-    marginTop: 12,
-    fontSize: 12,
-};
-
 const SEMANTIC_ERROR_BORDER = "2px dashed #ff4d4f";
 const SEMANTIC_SUCCESS_BORDER = "2px solid #52c41a";
 const SEMANTIC_DEFAULT_BORDER = "2px dashed #d9d9d9";
@@ -154,8 +106,8 @@ export function ShortcutKeyEditor({
             ]}
             width={EDITOR_MODAL_WIDTH}
         >
-            <div style={PROMPT_BOX_STYLE}>
-                <Text type="secondary" style={PROMPT_TEXT_STYLE}>
+            <div className="text-center py-[20px]">
+                <Text type="secondary" className="!block !mb-lg">
                     {SETTINGS_SHORTCUT_EDITOR_PROMPT}
                 </Text>
                 <div
@@ -163,35 +115,36 @@ export function ShortcutKeyEditor({
                     role="textbox"
                     aria-label={SETTINGS_SHORTCUT_EDITOR_PLACEHOLDER}
                     onKeyDown={handleKeyDown}
-                    style={{ ...INPUT_AREA_BASE, border: input_border }}
+                    className="py-xl px-lg rounded-lg bg-[#fafafa] cursor-text outline-none transition-all duration-200"
+                    style={{ border: input_border }}
                 >
                     {pending_keys ? (
-                        <Tag color="blue" style={TAG_STYLE}>
+                        <Tag color="blue" className="!font-mono !text-base !py-sm !px-lg">
                             {formatShortcutKeyForPlatform(pending_keys)}
                         </Tag>
                     ) : (
-                        <Text type="secondary" style={PLACEHOLDER_TEXT_STYLE}>
+                        <Text type="secondary" className="!text-sm">
                             {SETTINGS_SHORTCUT_EDITOR_PLACEHOLDER}
                         </Text>
                     )}
                 </div>
 
                 {error_message && (
-                    <Text type="danger" style={ERROR_TEXT_STYLE}>
+                    <Text type="danger" className="!block !mt-md">
                         {error_message}
                     </Text>
                 )}
 
-                <div style={CURRENT_LABEL_STYLE}>
-                    <Text type="secondary" style={{ fontSize: 12 }}>
+                <div className="mt-lg">
+                    <Text type="secondary" className="!text-xs">
                         {SETTINGS_SHORTCUT_EDITOR_CURRENT}{" "}
-                        <Tag style={CURRENT_TAG_STYLE}>
+                        <Tag className="!font-mono">
                             {formatShortcutKeyForPlatform(shortcut.keys)}
                         </Tag>
                     </Text>
                 </div>
 
-                <Text type="secondary" style={HINT_STYLE}>
+                <Text type="secondary" className="!block !mt-md !text-xs">
                     {SETTINGS_SHORTCUT_EDITOR_HINT}
                 </Text>
             </div>

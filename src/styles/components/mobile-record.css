@@ -1,4 +1,4 @@
-/* Mobile Record Cards */
+/* Mobile Record Cards - Base responsive styling */
 
 @media (max-width: 480px) {
     .mobile-record-card {
@@ -7,67 +7,5 @@
         padding: 14px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         border: 1px solid #f0f0f0;
-    }
-
-    .mobile-record-card.running {
-        border: 2px solid #1890ff;
-        animation: pulse-border 2s infinite;
-    }
-
-    .mobile-record-card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 8px;
-    }
-
-    .mobile-record-card-title {
-        font-weight: 600;
-        font-size: 15px;
-        color: #262626;
-        line-height: 1.4;
-        flex: 1;
-        margin-right: 8px;
-    }
-
-    .mobile-record-card-timer {
-        font-size: 16px;
-        font-weight: 700;
-        color: #1890ff;
-        font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
-    }
-
-    .mobile-record-card-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-bottom: 10px;
-    }
-
-    .mobile-record-card-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 12px;
-        color: #8c8c8c;
-    }
-
-    .mobile-record-card-time {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .mobile-record-card-actions {
-        display: flex;
-        gap: 8px;
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px solid #f0f0f0;
-    }
-
-    .mobile-record-card-actions .ant-btn {
-        flex: 1;
-        height: 40px;
     }
 }

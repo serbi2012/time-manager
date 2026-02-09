@@ -56,11 +56,7 @@ import {
     TABLE_TAG_NO_SESSIONS,
     PAGINATION_TOTAL,
 } from "../../constants";
-import {
-    ADMIN_STATS_ROW_STYLE,
-    ADMIN_STAT_CARD_MIN_WIDTH,
-} from "../../constants/styles";
-import { BORDER_COLOR_CONFLICT } from "../../constants/styles";
+import { cn } from "@/shared/lib/cn";
 
 interface RecordsTabProps {
     all_records: WorkRecord[];
@@ -125,7 +121,7 @@ export function RecordsTab({
             title: TABLE_COL_TIME,
             width: 120,
             render: (_, record) => (
-                <Text style={{ fontFamily: "monospace", fontSize: 12 }}>
+                <Text className="!font-mono !text-sm">
                     {record.start_time || "-"} ~ {record.end_time || "-"}
                 </Text>
             ),
@@ -172,43 +168,37 @@ export function RecordsTab({
     ];
 
     return (
-        <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-            <div style={ADMIN_STATS_ROW_STYLE}>
-                <Card size="small" style={ADMIN_STAT_CARD_MIN_WIDTH}>
+        <Space direction="vertical" size="middle" className="!w-full">
+            <div className="flex gap-lg flex-wrap">
+                <Card size="small" className="!min-w-[150px]">
                     <Text type="secondary">{RECORDS_TAB_ALL_RECORDS}</Text>
-                    <Title level={4} style={{ margin: 0 }}>
+                    <Title level={4} className="!m-0">
                         {all_records.length}개
                     </Title>
                 </Card>
                 <Card
                     size="small"
-                    style={{
-                        ...ADMIN_STAT_CARD_MIN_WIDTH,
-                        borderColor:
-                            duplicate_groups.length > 0
-                                ? BORDER_COLOR_CONFLICT
-                                : undefined,
-                    }}
+                    className={cn(
+                        "!min-w-[150px]",
+                        duplicate_groups.length > 0 && "!border-[#ff4d4f]"
+                    )}
                 >
                     <Text type="secondary">{RECORDS_TAB_DUPLICATE_GROUPS}</Text>
                     <Title
                         level={4}
-                        style={{
-                            margin: 0,
-                            color:
-                                duplicate_groups.length > 0
-                                    ? BORDER_COLOR_CONFLICT
-                                    : undefined,
-                        }}
+                        className={cn(
+                            "!m-0",
+                            duplicate_groups.length > 0 && "!text-[#ff4d4f]"
+                        )}
                     >
                         {duplicate_groups.length}개
                     </Title>
                 </Card>
-                <Card size="small" style={ADMIN_STAT_CARD_MIN_WIDTH}>
+                <Card size="small" className="!min-w-[150px]">
                     <Text type="secondary">
                         {RECORDS_TAB_DUPLICATE_RECORDS}
                     </Text>
-                    <Title level={4} style={{ margin: 0 }}>
+                    <Title level={4} className="!m-0">
                         {duplicate_groups.reduce(
                             (sum, g) => sum + g.records.length,
                             0
@@ -223,9 +213,7 @@ export function RecordsTab({
                     size="small"
                     title={
                         <Space>
-                            <WarningOutlined
-                                style={{ color: BORDER_COLOR_CONFLICT }}
-                            />
+                            <WarningOutlined className="!text-[#ff4d4f]" />
                             <span>{RECORDS_TAB_DUPLICATE_GROUP_TITLE}</span>
                             <Tag color="red">
                                 {duplicate_groups.length}
@@ -233,13 +221,13 @@ export function RecordsTab({
                             </Tag>
                         </Space>
                     }
-                    style={{ borderColor: "#ffccc7" }}
+                    className="!border-[#ffccc7]"
                 >
                     <Alert
                         type="warning"
                         message={RECORDS_TAB_DUPLICATE_GROUP_HINT}
                         showIcon
-                        style={{ marginBottom: 16 }}
+                        className="!mb-lg"
                     />
                     <DuplicatesView
                         duplicates={duplicate_groups}

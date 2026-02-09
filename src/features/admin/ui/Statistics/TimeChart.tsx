@@ -39,19 +39,13 @@ export function TimeChart({
   const bar_width = Math.max(100 / data.length - 1, 2);
 
   return (
-    <div style={{ width: "100%" }}>
-      <Text strong style={{ display: "block", marginBottom: 8 }}>
+    <div className="w-full">
+      <Text strong className="!block !mb-sm">
         {title}
       </Text>
       <div
-        style={{
-          display: "flex",
-          alignItems: "flex-end",
-          height,
-          gap: 2,
-          padding: "0 4px",
-          borderBottom: "1px solid #d9d9d9",
-        }}
+        className="flex items-end gap-[2px] px-xs border-b border-[#d9d9d9]"
+        style={{ height }}
       >
         {data.map((item, index) => {
           const bar_height = (item.total_minutes / max_value) * (height - 30);
@@ -85,14 +79,7 @@ export function TimeChart({
         })}
       </div>
       {show_labels && data.length <= 31 && (
-        <div
-          style={{
-            display: "flex",
-            gap: 2,
-            padding: "4px 4px 0",
-            overflow: "hidden",
-          }}
-        >
+        <div className="flex gap-[2px] pt-xs px-xs overflow-hidden">
           {data.map((item, index) => (
             <div
               key={index}

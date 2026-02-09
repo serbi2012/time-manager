@@ -6,7 +6,6 @@ import { Button, Space, DatePicker, Radio, Tooltip } from "antd";
 import { CopyOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
 import type { Dayjs } from "dayjs";
 import { WEEKLY_LABELS } from "../../constants";
-import { WEEKLY_DATE_PICKER_MOBILE_STYLE } from "../../constants/styles";
 
 export interface MobileWeeklyHeaderProps {
     selected_week_start: Dayjs;
@@ -49,7 +48,7 @@ export function MobileWeeklyHeader({
                         date && on_week_change(date.startOf("isoWeek"))
                     }
                     format={datePickerFormat}
-                    style={WEEKLY_DATE_PICKER_MOBILE_STYLE}
+                    className="!w-[100px]"
                 />
                 <Button
                     icon={<RightOutlined />}

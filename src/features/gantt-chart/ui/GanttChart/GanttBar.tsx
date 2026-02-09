@@ -28,18 +28,14 @@ export function GanttBar({
     const duration_mins = getSessionMinutes(session);
     const tooltip_content = (
         <div>
-            <div style={{ fontWeight: 600, marginBottom: 4 }}>
+            <div className="font-semibold mb-xs">
                 {record.deal_name || record.work_name}
             </div>
             <div>
                 {session.start_time} ~ {session.end_time || "진행중"}
             </div>
             <div>{formatDuration(duration_mins)}</div>
-            {is_running && (
-                <div style={{ color: "#52c41a", marginTop: 4 }}>
-                    진행 중
-                </div>
-            )}
+            {is_running && <div className="text-[#52c41a] mt-xs">진행 중</div>}
         </div>
     );
 
@@ -52,8 +48,8 @@ export function GanttBar({
         boxShadow: is_conflicting
             ? "0 0 0 2px #ff4d4f"
             : is_running
-              ? `0 0 0 2px ${color}`
-              : "0 1px 3px rgba(0,0,0,0.15)",
+            ? `0 0 0 2px ${color}`
+            : "0 1px 3px rgba(0,0,0,0.15)",
     };
 
     return (

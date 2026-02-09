@@ -5,11 +5,6 @@
 import { Input, Button, Space, Divider } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import type { InputRef } from "antd";
-import {
-    DROPDOWN_DIVIDER_STYLE,
-    DROPDOWN_ADD_SECTION_STYLE,
-    INPUT_FLEX_STYLE,
-} from "./styles";
 
 export interface SelectAddNewDropdownProps {
     /** 기존 메뉴 */
@@ -43,8 +38,8 @@ export function SelectAddNewDropdown({
     return (
         <>
             {menu}
-            <Divider style={DROPDOWN_DIVIDER_STYLE} />
-            <Space style={DROPDOWN_ADD_SECTION_STYLE}>
+            <Divider className="!my-sm" />
+            <Space className="!px-sm !pb-xs !pt-0 !w-full">
                 <Input
                     ref={input_ref}
                     placeholder={placeholder}
@@ -52,7 +47,7 @@ export function SelectAddNewDropdown({
                     onChange={(e) => onChange(e.target.value)}
                     onKeyDown={(e) => e.stopPropagation()}
                     size="small"
-                    style={INPUT_FLEX_STYLE}
+                    className="!flex-1"
                 />
                 <Button
                     type="text"

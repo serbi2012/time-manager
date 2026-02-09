@@ -133,7 +133,6 @@ export function DesktopLayout() {
     useShortcuts(shortcut_handlers);
 
     const is_admin = user?.email === ADMIN_EMAIL;
-    const menu_link_style = { color: "inherit", textDecoration: "none" };
 
     const menu_items = useMemo(
         () => [
@@ -141,7 +140,7 @@ export function DesktopLayout() {
                 key: "/",
                 icon: <HomeOutlined />,
                 label: (
-                    <Link to="/" style={menu_link_style}>
+                    <Link to="/" className="text-inherit no-underline">
                         일간 기록
                     </Link>
                 ),
@@ -150,7 +149,7 @@ export function DesktopLayout() {
                 key: "/weekly",
                 icon: <CalendarOutlined />,
                 label: (
-                    <Link to="/weekly" style={menu_link_style}>
+                    <Link to="/weekly" className="text-inherit no-underline">
                         주간 일정
                     </Link>
                 ),
@@ -159,7 +158,10 @@ export function DesktopLayout() {
                 key: "/suggestions",
                 icon: <MessageOutlined />,
                 label: (
-                    <Link to="/suggestions" style={menu_link_style}>
+                    <Link
+                        to="/suggestions"
+                        className="text-inherit no-underline"
+                    >
                         건의사항
                     </Link>
                 ),
@@ -168,7 +170,7 @@ export function DesktopLayout() {
                 key: "/guide",
                 icon: <BookOutlined />,
                 label: (
-                    <Link to="/guide" style={menu_link_style}>
+                    <Link to="/guide" className="text-inherit no-underline">
                         사용 설명서
                     </Link>
                 ),
@@ -179,7 +181,10 @@ export function DesktopLayout() {
                           key: "/admin",
                           icon: <ToolOutlined />,
                           label: (
-                              <Link to="/admin" style={menu_link_style}>
+                              <Link
+                                  to="/admin"
+                                  className="text-inherit no-underline"
+                              >
                                   관리자
                               </Link>
                           ),
@@ -243,7 +248,7 @@ export function DesktopLayout() {
                         }}
                     >
                         <Spin size="large" />
-                        <span style={{ color: "#666" }}>
+                        <span className="text-[#666]">
                             {auth_loading
                                 ? "로그인 확인 중..."
                                 : "데이터를 불러오는 중..."}
@@ -284,7 +289,7 @@ export function DesktopLayout() {
                 type="file"
                 accept=".json"
                 onChange={handleFileChange}
-                style={{ display: "none" }}
+                className="hidden"
             />
         </Layout>
     );

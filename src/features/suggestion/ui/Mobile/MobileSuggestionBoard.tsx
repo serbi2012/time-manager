@@ -9,11 +9,7 @@ import {
     usePermissionCheck,
 } from "../../hooks";
 import { getAuthorId } from "../../lib";
-import {
-    SUGGESTION_LABELS,
-    SUGGESTION_STYLES,
-    SUGGESTION_CONFIG,
-} from "../../constants";
+import { SUGGESTION_LABELS } from "../../constants";
 import { SuggestionCardHeader, SuggestionCardContent } from "../SuggestionCard";
 import { SuggestionWriteModal, SuggestionEditModal } from "../SuggestionModals";
 
@@ -111,11 +107,6 @@ export function MobileSuggestionBoard() {
         setIsEditModalOpen(true);
     };
 
-    const content_style = {
-        ...SUGGESTION_STYLES.content,
-        padding: SUGGESTION_CONFIG.mobilePadding,
-    };
-
     // Collapse 아이템 생성
     const collapse_items = posts.map((post: SuggestionPost) => {
         const can_edit = canEditPost(post);
@@ -140,18 +131,15 @@ export function MobileSuggestionBoard() {
     });
 
     return (
-        <Layout className="app-body" style={{ padding: 0 }}>
-            <Content style={content_style}>
+        <Layout className="app-body !p-0">
+            <Content className="max-w-[800px] mx-auto w-full p-md">
                 <Card
                     title={
                         <Space>
                             <MessageOutlined />
                             <span>{SUGGESTION_LABELS.pageTitle}</span>
                             {is_admin && (
-                                <Tag
-                                    color="purple"
-                                    style={SUGGESTION_STYLES.adminTag}
-                                >
+                                <Tag color="purple" className="!ml-sm">
                                     {SUGGESTION_LABELS.adminBadge}
                                 </Tag>
                             )}
@@ -168,7 +156,7 @@ export function MobileSuggestionBoard() {
                     {posts.length === 0 ? (
                         <Empty
                             description={SUGGESTION_LABELS.emptyDescription}
-                            style={SUGGESTION_STYLES.emptyContainer}
+                            className="!py-[40px]"
                         >
                             <Button
                                 type="primary"

@@ -133,7 +133,7 @@ export function ExportPanel({
                 <Col xs={24} lg={14}>
                     <Card title="내보내기 옵션">
                         {/* 파일 형식 */}
-                        <div style={{ marginBottom: 24 }}>
+                        <div className="mb-xl">
                             <Title level={5}>파일 형식</Title>
                             <Radio.Group
                                 value={format}
@@ -150,7 +150,7 @@ export function ExportPanel({
                             </Radio.Group>
                             <Paragraph
                                 type="secondary"
-                                style={{ marginTop: 8 }}
+                                className="!mt-sm"
                             >
                                 {format === "csv"
                                     ? "CSV 형식은 Excel에서 바로 열 수 있습니다."
@@ -161,7 +161,7 @@ export function ExportPanel({
                         <Divider />
 
                         {/* 데이터 유형 */}
-                        <div style={{ marginBottom: 24 }}>
+                        <div className="mb-xl">
                             <Title level={5}>데이터 유형</Title>
                             <Radio.Group
                                 value={data_type}
@@ -179,7 +179,7 @@ export function ExportPanel({
                             </Radio.Group>
                             <Paragraph
                                 type="secondary"
-                                style={{ marginTop: 8 }}
+                                className="!mt-sm"
                             >
                                 {data_type === "records" &&
                                     "작업 기록 단위로 내보냅니다."}
@@ -193,7 +193,7 @@ export function ExportPanel({
                         <Divider />
 
                         {/* 날짜 범위 */}
-                        <div style={{ marginBottom: 24 }}>
+                        <div className="mb-xl">
                             <Title level={5}>날짜 범위</Title>
                             <Space direction="vertical">
                                 <RangePicker
@@ -206,7 +206,7 @@ export function ExportPanel({
                                         )
                                     }
                                     placeholder={["시작일", "종료일"]}
-                                    style={{ width: 300 }}
+                                    className="!w-[300px]"
                                 />
                                 {date_range && (
                                     <Button
@@ -219,7 +219,7 @@ export function ExportPanel({
                             </Space>
                             <Paragraph
                                 type="secondary"
-                                style={{ marginTop: 8 }}
+                                className="!mt-sm"
                             >
                                 {date_range
                                     ? `${date_range[0].format(
@@ -234,7 +234,7 @@ export function ExportPanel({
                         <Divider />
 
                         {/* 추가 옵션 */}
-                        <div style={{ marginBottom: 24 }}>
+                        <div className="mb-xl">
                             <Title level={5}>추가 옵션</Title>
                             <Checkbox
                                 checked={include_deleted}
@@ -284,7 +284,7 @@ export function ExportPanel({
                             message="내보내기 정보"
                             description={
                                 <ul
-                                    style={{ margin: "8px 0", paddingLeft: 20 }}
+                                    className="my-sm pl-[20px]"
                                 >
                                     <li>
                                         형식:{" "}
@@ -316,7 +316,7 @@ export function ExportPanel({
                                     </li>
                                 </ul>
                             }
-                            style={{ marginBottom: 16 }}
+                            className="!mb-lg"
                         />
 
                         <Button
@@ -335,13 +335,13 @@ export function ExportPanel({
                             <Alert
                                 type="warning"
                                 message="내보낼 데이터가 없습니다"
-                                style={{ marginTop: 16 }}
+                                className="!mt-lg"
                             />
                         )}
                     </Card>
 
                     {/* 도움말 */}
-                    <Card title="도움말" size="small" style={{ marginTop: 16 }}>
+                    <Card title="도움말" size="small" className="!mt-lg">
                         <Paragraph>
                             <Text strong>CSV 형식</Text>
                             <br />

@@ -21,9 +21,8 @@ export function HeaderContent() {
 
     return (
         <div
-            className="header-content"
+            className="header-content cursor-pointer"
             onClick={handleClick}
-            style={{ cursor: "pointer" }}
         >
             <ClockCircleOutlined className="header-icon" />
             <Title level={4} className="header-title">

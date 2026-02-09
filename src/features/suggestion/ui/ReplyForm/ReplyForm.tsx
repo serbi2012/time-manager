@@ -2,11 +2,7 @@ import { useState } from "react";
 import { Input, Button } from "antd";
 import { UserOutlined, SendOutlined } from "@ant-design/icons";
 import { useReplyActions } from "../../hooks";
-import {
-    SUGGESTION_LABELS,
-    SUGGESTION_STYLES,
-    SUGGESTION_CONFIG,
-} from "../../constants";
+import { SUGGESTION_LABELS, SUGGESTION_CONFIG } from "../../constants";
 
 const { TextArea } = Input;
 
@@ -45,13 +41,13 @@ export function ReplyForm({
 
     return (
         <div className="suggestion-reply-form">
-            <div style={SUGGESTION_STYLES.replyFormContainer}>
+            <div className="flex gap-sm items-start">
                 <Input
                     placeholder={SUGGESTION_LABELS.nicknamePlaceholder}
                     prefix={<UserOutlined />}
                     value={author_name}
                     onChange={(e) => setAuthorName(e.target.value)}
-                    style={SUGGESTION_STYLES.replyNicknameInput}
+                    className="!w-[120px]"
                 />
                 <TextArea
                     placeholder={SUGGESTION_LABELS.replyPlaceholder}
@@ -62,7 +58,7 @@ export function ReplyForm({
                         minRows: SUGGESTION_CONFIG.minReplyRows,
                         maxRows: SUGGESTION_CONFIG.maxReplyRows,
                     }}
-                    style={SUGGESTION_STYLES.replyContentInput}
+                    className="!flex-1"
                 />
                 <Button
                     type="primary"

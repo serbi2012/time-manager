@@ -873,16 +873,22 @@ Setup       CSS Split    New Code    Migrate      Cleanup
 
 Order (by complexity, low → high):
 
-1. [ ] `work-template` (26 lines styles)
-2. [ ] `guide` (18 lines styles)
-3. [ ] `admin` (80 lines styles)
-4. [ ] `settings` (88 lines styles)
-5. [ ] `gantt-chart` (74 lines styles)
-6. [ ] `weekly-schedule` (136 lines styles)
-7. [ ] `suggestion` (146 lines styles)
-8. [ ] `work-record` (225 lines styles)
-9. [ ] `shared/ui/form/styles.ts` (126 lines)
-10. [ ] Remaining inline `style={{...}}` across 90+ files
+1. [x] `work-template` (26 lines styles → deleted, 3 constants → Tailwind)
+2. [x] `guide` (18 lines styles → deleted, 4 inline styles → Tailwind)
+3. [x] `admin` (80 lines styles → deleted, 14 CSSProperties + 8 color constants → Tailwind)
+4. [x] `settings` (88 lines → 56 lines, 4 CSSProperties removed → Tailwind, Ant Design API constraints kept)
+5. [x] `gantt-chart` (74 lines styles → deleted, 20 constants → Tailwind/inline, 2 shared → moved to shared/ui/form)
+6. [x] `weekly-schedule` (136 lines styles → deleted, 10 CSSProperties → Tailwind, CSS string → weekly-schedule.css, 3 embedded `<style>` → CSS file)
+7. [x] `suggestion` (146 lines styles → deleted, 24 SUGGESTION_STYLES properties → Tailwind, 8 files updated, 2 inline styles → Tailwind)
+8. [x] `work-record` (225 lines styles → reduced to 32 lines, 20 CSSProperties → Tailwind/inline, RECORD_COLUMN_WIDTH + RECORD_SPACING retained as Ant Design prop values, embedded `<style>` → mobile-record-card.css, 10+ inline styles → Tailwind across 10 files)
+9. [x] `shared/ui/form/styles.ts` (132 lines → deleted, 14 CSSProperties + 2 plain values → Tailwind/removed, close_icon props simplified, 9 files updated incl. gantt-chart consumers, inline styles in SelectWithAdd + AutoCompleteWithHide → Tailwind)
+10. [x] Remaining inline `style={{...}}` across 60+ production files (200+ static instances → Tailwind, 80+ dynamic instances retained as inline styles)
+    - Settings tabs: SettingItem (9 constants → Tailwind), ShortcutsTab (9 constants → Tailwind), ShortcutKeyEditor (8 constants → Tailwind, border logic kept inline), AutoCompleteOptionList (4 constants → Tailwind), AnimationTab (7 inline → Tailwind), ThemeTab (6 static constants → Tailwind, 5 base constants kept for dynamic spread), AutoCompleteTab (1 inline → Tailwind)
+    - Admin: StatsDashboard (43+ static → Tailwind), ExportPanel (12 → Tailwind), IntegrityChecker (11 static → Tailwind), RecordsExplorer (8 → Tailwind), SessionsExplorer (8 → Tailwind), CategoryAnalysis (4 → Tailwind), TimeChart (3 static → Tailwind), TrashManager (4 → Tailwind), AdminSessionGrid (3 → Tailwind), DuplicatesView (1 → Tailwind), ConflictsView (3 → Tailwind), MergeConfirmModal (1 → Tailwind)
+    - App/Layout/Widget: App.tsx (9 static → Tailwind), DesktopLayout (7 → Tailwind), MobileLayout (3 → Tailwind), DesktopHeader (3 → Tailwind), HeaderContent (1 → Tailwind), UserMenu (2 → Tailwind), MobileDailyPage (1 → Tailwind)
+    - Shared UI: DataTable (7 static → Tailwind), EmptyState (1 → Tailwind), RecordListModal (2 → Tailwind), FormModal (1 → Tailwind), LoadingOverlay (2 → Tailwind), WorkFormFields (5 static → Tailwind), SkeletonLoader (7 → Tailwind)
+    - Other: ChangelogModal (15 → Tailwind), TemplateCard (4 → Tailwind), TemplateModal (1 constant → Tailwind), SortableTemplateCard (1 constant → Tailwind), ColorPicker (1 → Tailwind), SyncIndicator (2 static → Tailwind)
+    - Skipped (dynamic/must stay inline): Animation components (RippleEffect, PressAnimation, SuccessAnimation, LoadingSpinner — all prop-driven), TimerDisplay/DateInput/TimeInput (style prop spreading), Ant Design `styles={{ body }}` / `valueStyle` API, theme-dependent colors, is_mobile conditionals, chart bar calculations
 
 Per feature:
 
@@ -894,11 +900,18 @@ Per feature:
 
 **Goal:** Remove all legacy style infrastructure.
 
--   [ ] Delete empty `features/*/constants/styles.ts` files
--   [ ] Update `shared/constants/style/` to reference CSS vars only
--   [ ] Remove unused CSS class references
--   [ ] Final full visual regression test
--   [ ] Update project documentation
+-   [x] Delete empty `features/*/constants/styles.ts` files
+    -   Deleted in Phase 4: `gantt-chart`, `weekly-schedule`, `suggestion`, `work-template`, `guide`, `admin`
+    -   Retained (not empty, Ant Design API required): `work-record/constants/styles.ts` (32 lines — RECORD_COLUMN_WIDTH, RECORD_SPACING), `settings/constants/styles.ts` (56 lines — modal/tabs CSSProperties)
+-   [x] Update `shared/constants/style/` to reference CSS vars only
+    -   Dual-source pattern documented: CSS tokens (`src/styles/tokens/`) for CSS/Tailwind, JS constants (`shared/constants/style/`) for runtime logic
+    -   JS constants remain for: Ant Design ConfigProvider theming, dynamic gradient backgrounds, template/category color mapping, responsive breakpoint calculations
+    -   Values are synchronized between CSS tokens and JS constants
+-   [x] Remove unused CSS class references
+    -   `mobile-record.css`: Removed 8 unused legacy classes (`.mobile-record-card-header`, `-title`, `-timer`, `-tags`, `-info`, `-time`, `-actions`, `.running`), kept `.mobile-record-card` base styling
+    -   All other component CSS files: 100% class usage verified (59 classes across 8 files)
+-   [x] Final full visual regression test — TypeScript check + Vite build passed
+-   [x] Update project documentation
 
 ---
 

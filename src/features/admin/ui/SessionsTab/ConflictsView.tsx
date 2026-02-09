@@ -16,10 +16,7 @@ type ConflictItem = ConflictsViewProps["conflicts"][0];
  * 충돌 뷰 컴포넌트
  * 시간이 겹치는 세션 쌍을 표시
  */
-export function ConflictsView({
-    conflicts,
-    on_resolve,
-}: ConflictsViewProps) {
+export function ConflictsView({ conflicts, on_resolve }: ConflictsViewProps) {
     if (conflicts.length === 0) {
         return <Empty description="충돌이 없습니다." />;
     }
@@ -38,7 +35,7 @@ export function ConflictsView({
                 <div>
                     <Text strong>{item.session1.work_name}</Text>
                     <br />
-                    <Text type="secondary" style={{ fontSize: 12 }}>
+                    <Text type="secondary" className="!text-xs">
                         {item.session1.start_time} ~ {item.session1.end_time}
                     </Text>
                 </div>
@@ -51,7 +48,7 @@ export function ConflictsView({
                 <div>
                     <Text strong>{item.session2.work_name}</Text>
                     <br />
-                    <Text type="secondary" style={{ fontSize: 12 }}>
+                    <Text type="secondary" className="!text-xs">
                         {item.session2.start_time} ~ {item.session2.end_time}
                     </Text>
                 </div>
@@ -86,10 +83,8 @@ export function ConflictsView({
 
     return (
         <div>
-            <Space style={{ marginBottom: 16 }}>
-                <Text type="secondary">
-                    총 {conflicts.length}개의 충돌
-                </Text>
+            <Space className="!mb-lg">
+                <Text type="secondary">총 {conflicts.length}개의 충돌</Text>
             </Space>
             <Table
                 dataSource={conflicts}

@@ -19,11 +19,6 @@ import {
 
 const { Text } = Typography;
 
-const THEME_HEADER_STYLE: React.CSSProperties = {
-    marginBottom: 24,
-    textAlign: "center",
-};
-
 const THEME_ICON_WRAPPER_BASE: React.CSSProperties = {
     width: 64,
     height: 64,
@@ -32,21 +27,6 @@ const THEME_ICON_WRAPPER_BASE: React.CSSProperties = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-};
-
-const THEME_TITLE_STYLE: React.CSSProperties = {
-    fontSize: 16,
-    display: "block",
-};
-
-const THEME_DESC_STYLE: React.CSSProperties = {
-    fontSize: 13,
-};
-
-const THEME_GRID_STYLE: React.CSSProperties = {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))",
-    gap: 12,
 };
 
 const THEME_ITEM_BASE: React.CSSProperties = {
@@ -78,28 +58,13 @@ const THEME_HINT_BOX_BASE: React.CSSProperties = {
     borderRadius: 8,
 };
 
-const THEME_HINT_TEXT: React.CSSProperties = {
-    fontSize: 12,
-    color: "#595959",
-};
-
-const CHECK_ICON_WRAPPER: React.CSSProperties = {
-    width: 24,
-    height: 24,
-    borderRadius: "50%",
-    background: "rgba(255,255,255,0.9)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-};
-
 export function ThemeTab() {
     const app_theme = useWorkStore((state) => state.app_theme);
     const setAppTheme = useWorkStore((state) => state.setAppTheme);
 
     return (
         <div>
-            <div style={THEME_HEADER_STYLE}>
+            <div className="mb-xl text-center">
                 <div
                     style={{
                         ...THEME_ICON_WRAPPER_BASE,
@@ -107,19 +72,17 @@ export function ThemeTab() {
                         boxShadow: `0 8px 24px ${APP_THEME_COLORS[app_theme].primary}33`,
                     }}
                 >
-                    <BgColorsOutlined
-                        style={{ fontSize: 28, color: "white" }}
-                    />
+                    <BgColorsOutlined className="!text-[28px] !text-white" />
                 </div>
-                <Text strong style={THEME_TITLE_STYLE}>
+                <Text strong className="!text-base !block">
                     {SETTINGS_THEME_TITLE}
                 </Text>
-                <Text type="secondary" style={THEME_DESC_STYLE}>
+                <Text type="secondary" className="!text-[13px]">
                     {SETTINGS_THEME_DESC}
                 </Text>
             </div>
 
-            <div style={THEME_GRID_STYLE}>
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(90px,1fr))] gap-md">
                 {APP_THEME_VALUES.map((theme) => {
                     const is_selected = app_theme === theme;
                     return (
@@ -155,7 +118,7 @@ export function ThemeTab() {
                                 }}
                             >
                                 {is_selected && (
-                                    <div style={CHECK_ICON_WRAPPER}>
+                                    <div className="w-6 h-6 rounded-full bg-white/90 flex items-center justify-center">
                                         <CheckOutlined
                                             style={{
                                                 color: APP_THEME_COLORS[theme]
@@ -189,7 +152,7 @@ export function ThemeTab() {
                     border: `1px solid ${APP_THEME_COLORS[app_theme].primary}20`,
                 }}
             >
-                <Text style={THEME_HINT_TEXT}>
+                <Text className="!text-xs !text-[#595959]">
                     {SETTINGS_THEME_AUTO_SAVE_HINT}
                 </Text>
             </div>

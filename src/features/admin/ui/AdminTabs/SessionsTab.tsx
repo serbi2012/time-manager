@@ -73,23 +73,7 @@ import {
     CARD_CONFLICT_DATES,
     BULK_DELETE_SESSIONS_BTN,
 } from "../../constants";
-import {
-    ADMIN_SPACE_VERTICAL_FULL,
-    ADMIN_STATS_ROW_STYLE,
-    ADMIN_STAT_CARD_MIN_WIDTH,
-    ADMIN_TIME_SEARCH_CARD_STYLE,
-    ADMIN_RUNNING_CARD_STYLE,
-    ADMIN_PROBLEM_STATS_CARD_STYLE,
-    ADMIN_CONFLICT_DATES_CARD_STYLE,
-    BORDER_COLOR_CONFLICT,
-    BORDER_COLOR_PROBLEM,
-    BORDER_COLOR_INVISIBLE,
-    BORDER_COLOR_RUNNING,
-    COLOR_SUCCESS,
-    COLOR_WARNING,
-    COLOR_DANGER,
-    COLOR_RUNNING,
-} from "../../constants/styles";
+import { cn } from "@/shared/lib/cn";
 
 const { RangePicker } = DatePicker;
 const { Text, Title } = Typography;
@@ -293,11 +277,7 @@ export function SessionsTab({
             : null;
 
     return (
-        <Space
-            direction="vertical"
-            size="middle"
-            style={ADMIN_SPACE_VERTICAL_FULL}
-        >
+        <Space direction="vertical" size="middle" className="!w-full">
             <Space size="middle" wrap>
                 {selected_row_keys.length > 0 && (
                     <Popconfirm
@@ -388,19 +368,22 @@ export function SessionsTab({
             <Space
                 direction="vertical"
                 size="middle"
-                style={{ width: "100%", marginBottom: 16 }}
+                className="!w-full !mb-lg"
             >
                 {view_mode === "time_search" && (
-                    <Card size="small" style={ADMIN_TIME_SEARCH_CARD_STYLE}>
+                    <Card
+                        size="small"
+                        className="!bg-[#e6f7ff] !border-[#91d5ff]"
+                    >
                         <Space
                             direction="vertical"
                             size="small"
-                            style={{ width: "100%" }}
+                            className="!w-full"
                         >
-                            <Text strong style={{ color: COLOR_SUCCESS }}>
+                            <Text strong className="!text-[#096dd9]">
                                 <SearchOutlined /> {SESSION_TIME_SEARCH_TITLE}
                             </Text>
-                            <Text type="secondary" style={{ fontSize: 12 }}>
+                            <Text type="secondary" className="!text-sm">
                                 {SESSION_TIME_SEARCH_HINT}
                             </Text>
                             <Space wrap>
@@ -441,7 +424,7 @@ export function SessionsTab({
                                     }
                                     message={time_search_message}
                                     showIcon
-                                    style={{ marginTop: 8 }}
+                                    className="!mt-sm"
                                 />
                             )}
                         </Space>
@@ -458,117 +441,97 @@ export function SessionsTab({
                         />
                     )}
 
-                <div style={ADMIN_STATS_ROW_STYLE}>
-                    <Card size="small" style={ADMIN_STAT_CARD_MIN_WIDTH}>
+                <div className="flex gap-lg flex-wrap">
+                    <Card size="small" className="!min-w-[150px]">
                         <Text type="secondary">{STAT_ALL_SESSIONS}</Text>
-                        <Title level={4} style={{ margin: 0 }}>
+                        <Title level={4} className="!m-0">
                             {all_sessions.length}개
                         </Title>
                     </Card>
                     <Card
                         size="small"
-                        style={{
-                            ...ADMIN_STAT_CARD_MIN_WIDTH,
-                            borderColor:
-                                conflicts.length > 0
-                                    ? BORDER_COLOR_CONFLICT
-                                    : undefined,
-                        }}
+                        className={cn(
+                            "!min-w-[150px]",
+                            conflicts.length > 0 && "!border-[#ff4d4f]"
+                        )}
                     >
                         <Text type="secondary">{STAT_CONFLICT_SESSIONS}</Text>
                         <Title
                             level={4}
-                            style={{
-                                margin: 0,
-                                color:
-                                    conflicts.length > 0
-                                        ? BORDER_COLOR_CONFLICT
-                                        : undefined,
-                            }}
+                            className={cn(
+                                "!m-0",
+                                conflicts.length > 0 && "!text-[#ff4d4f]"
+                            )}
                         >
                             {conflict_session_ids.size}개
                         </Title>
                     </Card>
-                    <Card size="small" style={ADMIN_STAT_CARD_MIN_WIDTH}>
+                    <Card size="small" className="!min-w-[150px]">
                         <Text type="secondary">{STAT_CONFLICT_DAYS}</Text>
-                        <Title level={4} style={{ margin: 0 }}>
+                        <Title level={4} className="!m-0">
                             {conflict_dates.size}일
                         </Title>
                     </Card>
                     <Card
                         size="small"
-                        style={{
-                            ...ADMIN_STAT_CARD_MIN_WIDTH,
-                            borderColor:
-                                problem_session_ids.size > 0
-                                    ? BORDER_COLOR_PROBLEM
-                                    : undefined,
-                        }}
+                        className={cn(
+                            "!min-w-[150px]",
+                            problem_session_ids.size > 0 && "!border-[#fa8c16]"
+                        )}
                     >
                         <Text type="secondary">
                             <BugOutlined /> {STAT_PROBLEM_SESSIONS}
                         </Text>
                         <Title
                             level={4}
-                            style={{
-                                margin: 0,
-                                color:
-                                    problem_session_ids.size > 0
-                                        ? BORDER_COLOR_PROBLEM
-                                        : undefined,
-                            }}
+                            className={cn(
+                                "!m-0",
+                                problem_session_ids.size > 0 &&
+                                    "!text-[#fa8c16]"
+                            )}
                         >
                             {problem_session_ids.size}개
                         </Title>
                     </Card>
                     <Card
                         size="small"
-                        style={{
-                            ...ADMIN_STAT_CARD_MIN_WIDTH,
-                            borderColor:
-                                invisible_session_ids.size > 0
-                                    ? BORDER_COLOR_INVISIBLE
-                                    : undefined,
-                        }}
+                        className={cn(
+                            "!min-w-[150px]",
+                            invisible_session_ids.size > 0 &&
+                                "!border-[#722ed1]"
+                        )}
                     >
                         <Text type="secondary">
                             <EyeInvisibleOutlined /> {STAT_GANTT_INVISIBLE}
                         </Text>
                         <Title
                             level={4}
-                            style={{
-                                margin: 0,
-                                color:
-                                    invisible_session_ids.size > 0
-                                        ? BORDER_COLOR_INVISIBLE
-                                        : undefined,
-                            }}
+                            className={cn(
+                                "!m-0",
+                                invisible_session_ids.size > 0 &&
+                                    "!text-[#722ed1]"
+                            )}
                         >
                             {invisible_session_ids.size}개
                         </Title>
                     </Card>
                     <Card
                         size="small"
-                        style={{
-                            ...ADMIN_STAT_CARD_MIN_WIDTH,
-                            borderColor:
-                                running_session_ids.size > 0
-                                    ? BORDER_COLOR_RUNNING
-                                    : undefined,
-                        }}
+                        className={cn(
+                            "!min-w-[150px]",
+                            running_session_ids.size > 0 && "!border-[#52c41a]"
+                        )}
                     >
                         <Text type="secondary">
                             <PlayCircleOutlined /> {STAT_RUNNING}
                         </Text>
                         <Title
                             level={4}
-                            style={{
-                                margin: 0,
-                                color:
-                                    running_session_ids.size > 0
-                                        ? BORDER_COLOR_RUNNING
-                                        : undefined,
-                            }}
+                            className={cn(
+                                "!m-0",
+                                running_session_ids.size > 0 &&
+                                    "!text-[#52c41a]"
+                            )}
                         >
                             {running_session_ids.size}개
                         </Title>
@@ -576,16 +539,19 @@ export function SessionsTab({
                 </div>
 
                 {view_mode === "running" && running_session_ids.size > 0 && (
-                    <Card size="small" style={ADMIN_RUNNING_CARD_STYLE}>
+                    <Card
+                        size="small"
+                        className="!bg-[#f6ffed] !border-[#b7eb8f]"
+                    >
                         <Space
                             direction="vertical"
                             size="small"
-                            style={{ width: "100%" }}
+                            className="!w-full"
                         >
-                            <Text strong style={{ color: COLOR_RUNNING }}>
+                            <Text strong className="!text-[#389e0d]">
                                 <PlayCircleOutlined /> {CARD_RUNNING_STATUS}
                             </Text>
-                            <Text type="secondary" style={{ fontSize: 12 }}>
+                            <Text type="secondary" className="!text-sm">
                                 {CARD_RUNNING_HINT}
                             </Text>
                             {duplicate_running_sessions.length > 0 && (
@@ -609,13 +575,9 @@ export function SessionsTab({
                                                 (dup) => (
                                                     <Text
                                                         key={dup.record_id}
-                                                        style={{ fontSize: 12 }}
+                                                        className="!text-sm"
                                                     >
-                                                        <WarningOutlined
-                                                            style={{
-                                                                color: BORDER_COLOR_CONFLICT,
-                                                            }}
-                                                        />{" "}
+                                                        <WarningOutlined className="!text-[#ff4d4f]" />{" "}
                                                         "{dup.work_name} &gt;{" "}
                                                         {dup.deal_name}" -{" "}
                                                         {dup.sessions.length}
@@ -644,13 +606,16 @@ export function SessionsTab({
                 )}
 
                 {problem_session_ids.size > 0 && (
-                    <Card size="small" style={ADMIN_PROBLEM_STATS_CARD_STYLE}>
+                    <Card
+                        size="small"
+                        className="!bg-[#fff7e6] !border-[#ffd591]"
+                    >
                         <Space
                             direction="vertical"
                             size="small"
-                            style={{ width: "100%" }}
+                            className="!w-full"
                         >
-                            <Text strong style={{ color: COLOR_WARNING }}>
+                            <Text strong className="!text-[#d46b08]">
                                 <BugOutlined /> {CARD_PROBLEM_STATS}
                             </Text>
                             <Space wrap>
@@ -679,7 +644,7 @@ export function SessionsTab({
                                     </Tag>
                                 )}
                             </Space>
-                            <Text type="secondary" style={{ fontSize: 12 }}>
+                            <Text type="secondary" className="!text-sm">
                                 {CARD_PROBLEM_DAYS}{" "}
                                 {Array.from(problem_dates)
                                     .sort()
@@ -693,9 +658,12 @@ export function SessionsTab({
                 )}
 
                 {conflicts.length > 0 && (
-                    <Card size="small" style={ADMIN_CONFLICT_DATES_CARD_STYLE}>
+                    <Card
+                        size="small"
+                        className="!bg-[#fff2f0] !border-[#ffccc7]"
+                    >
                         <Space direction="vertical" size="small">
-                            <Text strong style={{ color: COLOR_DANGER }}>
+                            <Text strong className="!text-[#cf1322]">
                                 <WarningOutlined /> {CARD_CONFLICT_DATES}
                             </Text>
                             <Space wrap>
@@ -709,7 +677,7 @@ export function SessionsTab({
                                             <Tag
                                                 key={date}
                                                 color="red"
-                                                style={{ cursor: "pointer" }}
+                                                className="!cursor-pointer"
                                                 onClick={() =>
                                                     set_date_range([
                                                         dayjs(date),

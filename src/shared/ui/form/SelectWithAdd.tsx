@@ -89,20 +89,10 @@ export function SelectWithAdd({
             optionRender={
                 showHideButton && onHideOption
                     ? (option) => (
-                          <div
-                              style={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                  alignItems: "center",
-                              }}
-                          >
+                          <div className="flex justify-between items-center">
                               <span>{option.label}</span>
                               <CloseOutlined
-                                  style={{
-                                      fontSize: 10,
-                                      color: "#999",
-                                      cursor: "pointer",
-                                  }}
+                                  className="!text-[10px] !text-[#999] cursor-pointer"
                                   onClick={(e) => {
                                       e.stopPropagation();
                                       onHideOption(option.value as string);
@@ -117,12 +107,9 @@ export function SelectWithAdd({
                     ? (menu) => (
                           <>
                               {menu}
-                              <Divider style={{ margin: "8px 0" }} />
+                              <Divider className="!my-sm" />
                               <Space
-                                  style={{
-                                      padding: "0 8px 4px",
-                                      width: "100%",
-                                  }}
+                                  className="!px-sm !pb-xs !pt-0 !w-full"
                                   onMouseDown={stopPropagation}
                                   onClick={(e) => {
                                       stopPropagation(e);

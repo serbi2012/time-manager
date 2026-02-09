@@ -92,7 +92,7 @@ export function CompletedModal({
                 <Empty description={RECORD_EMPTY.NO_COMPLETED} />
             ) : (
                 <>
-                    <Space style={{ marginBottom: 16 }}>
+                    <Space className="!mb-lg">
                         <Text type="secondary">
                             {RECORD_UI_TEXT.COMPLETED_WORK_COUNT(
                                 records.length

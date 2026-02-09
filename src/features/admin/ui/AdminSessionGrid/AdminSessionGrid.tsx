@@ -313,8 +313,8 @@ function AdminSessionGridContent() {
     ];
 
     return (
-        <Layout className="app-body" style={{ padding: 0 }}>
-            <Content style={{ padding: 24 }}>
+        <Layout className="app-body !p-0">
+            <Content className="!p-xl">
                 <Card
                     title={
                         <AdminGridHeader
@@ -362,8 +362,8 @@ export default function AdminSessionGrid() {
 
     if (user?.email !== ADMIN_EMAIL) {
         return (
-            <Layout className="app-body" style={{ padding: 24 }}>
-                <Content style={{ maxWidth: 800, margin: "0 auto" }}>
+            <Layout className="app-body !p-xl">
+                <Content className="!max-w-[800px] !mx-auto">
                     <Card>
                         <Empty
                             description={ADMIN_ACCESS_REQUIRED}

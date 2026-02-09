@@ -253,7 +253,7 @@ export function WorkFormFields({
                                                 .toLowerCase()
                                                 .includes(input.toLowerCase())
                                         }
-                                        style={{ width: "100%" }}
+                                        className="!w-full"
                                     />
                                 )}
                             />
@@ -294,7 +294,7 @@ export function WorkFormFields({
                                                 .toLowerCase()
                                                 .includes(input.toLowerCase())
                                         }
-                                        style={{ width: "100%" }}
+                                        className="!w-full"
                                     />
                                 </Form.Item>
                             )}
@@ -330,7 +330,7 @@ export function WorkFormFields({
                                                 .toLowerCase()
                                                 .includes(input.toLowerCase())
                                         }
-                                        style={{ width: "100%" }}
+                                        className="!w-full"
                                     />
                                 )}
                             />
@@ -380,7 +380,7 @@ export function WorkFormFields({
                                                     )
                                                 }
                                                 addPlaceholder="새 업무명"
-                                                style={{ width: "100%" }}
+                                                className="!w-full"
                                             />
                                         )}
                                     />
@@ -417,7 +417,7 @@ export function WorkFormFields({
                                                     )
                                                 }
                                                 addPlaceholder="새 카테고리"
-                                                style={{ width: "100%" }}
+                                                className="!w-full"
                                             />
                                         )}
                                     />

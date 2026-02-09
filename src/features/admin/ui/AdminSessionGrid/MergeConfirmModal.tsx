@@ -59,7 +59,7 @@ export function MergeConfirmModal({
             cancelText={CANCEL}
             width={900}
         >
-            <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+            <Space direction="vertical" size="middle" className="!w-full">
                 <Alert
                     type="warning"
                     message={MERGE_MODAL_WARNING}

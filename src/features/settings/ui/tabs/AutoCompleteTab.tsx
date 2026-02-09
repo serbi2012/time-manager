@@ -144,7 +144,7 @@ export function AutoCompleteTab() {
         <div>
             <Text
                 type="secondary"
-                style={{ display: "block", marginBottom: 16 }}
+                className="!block !mb-lg"
             >
                 {SETTINGS_AUTOCOMPLETE_DESC}
             </Text>

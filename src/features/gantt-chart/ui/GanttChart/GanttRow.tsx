@@ -7,7 +7,6 @@ import type { GanttRowProps } from "../../lib/types";
 import { GanttBar } from "./GanttBar";
 import { timeToMinutes } from "../../../../shared/lib/time";
 import { TEMPLATE_COLORS } from "../../../../shared/config";
-import { GANTT_FONT_SMALL } from "../../constants";
 
 const { Text } = Typography;
 
@@ -39,10 +38,7 @@ export function GanttRow({
         <div className="gantt-row">
             {/* 작업명 라벨 */}
             <div className="gantt-row-label">
-                <Text
-                    ellipsis={{ tooltip: key }}
-                    style={{ fontSize: GANTT_FONT_SMALL }}
-                >
+                <Text ellipsis={{ tooltip: key }} className="!text-sm">
                     {key}
                 </Text>
             </div>

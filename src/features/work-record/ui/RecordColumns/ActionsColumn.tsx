@@ -14,7 +14,6 @@ import {
     RECORD_TOOLTIP,
     RECORD_CONFIRM,
     RECORD_SPACING,
-    RECORD_COLORS,
 } from "../../constants";
 
 interface ActionsColumnProps {
@@ -51,7 +50,7 @@ export function ActionsColumn({
                     <Tooltip title={RECORD_TOOLTIP.COMPLETE}>
                         <Button
                             type="text"
-                            style={{ color: RECORD_COLORS.SUCCESS }}
+                            className="!text-[#52c41a]"
                             icon={<CheckOutlined />}
                             size="small"
                             onClick={() => onComplete(record)}

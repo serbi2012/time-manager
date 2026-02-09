@@ -150,7 +150,7 @@ function SortIcon({ isSorted }: SortIconProps) {
     if (!isSorted) {
         return (
             <MinusOutlined
-                style={{ fontSize: 10, color: "#bfbfbf", marginLeft: 4 }}
+                className="text-[10px] text-[#bfbfbf] ml-xs"
             />
         );
     }
@@ -158,14 +158,14 @@ function SortIcon({ isSorted }: SortIconProps) {
     if (isSorted === "asc") {
         return (
             <CaretUpOutlined
-                style={{ fontSize: 12, color: "#1890ff", marginLeft: 4 }}
+                className="text-xs text-[#1890ff] ml-xs"
             />
         );
     }
 
     return (
         <CaretDownOutlined
-            style={{ fontSize: 12, color: "#1890ff", marginLeft: 4 }}
+            className="text-xs text-[#1890ff] ml-xs"
         />
     );
 }
@@ -368,8 +368,7 @@ export function DataTable<TData>({
                     <table
                         className={clsx("data-table", {
                             [`data-table-${size}`]: size,
-                        })}
-                        style={{ width: "100%", borderCollapse: "collapse" }}
+                        }, "w-full border-collapse")}
                     >
                         {/* 헤더 */}
                         <thead>
@@ -404,10 +403,7 @@ export function DataTable<TData>({
                                         >
                                             {header.isPlaceholder ? null : (
                                                 <span
-                                                    style={{
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                    }}
+                                                    className="flex items-center"
                                                 >
                                                     {flexRender(
                                                         header.column.columnDef
@@ -434,10 +430,7 @@ export function DataTable<TData>({
                                 <tr>
                                     <td
                                         colSpan={all_columns.length}
-                                        style={{
-                                            padding: "48px",
-                                            textAlign: "center",
-                                        }}
+                                        className="p-[48px] text-center"
                                     >
                                         <Empty description={emptyText} />
                                     </td>
@@ -500,11 +493,7 @@ export function DataTable<TData>({
             {/* 페이지네이션 */}
             {enablePagination && data.length > 0 && (
                 <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        padding: "16px 0",
-                    }}
+                    className="flex justify-end py-lg"
                 >
                     <Pagination
                         current={pagination.pageIndex + 1}

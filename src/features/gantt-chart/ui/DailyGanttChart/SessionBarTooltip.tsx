@@ -3,11 +3,6 @@
  */
 
 import {
-    GANTT_TOOLTIP_CONFLICT_MARGIN_TOP,
-    GANTT_TOOLTIP_FOOTER_MARGIN_TOP,
-    GANTT_CONFLICT_COLOR,
-    GANTT_TEXT_HINT,
-    GANTT_FONT_XSMALL,
     GANTT_LABEL_CONFLICT_WARNING,
     GANTT_LABEL_TOTAL_SESSIONS,
 } from "../../constants";
@@ -22,17 +17,6 @@ export interface SessionBarTooltipProps {
     total_duration_formatted: string;
     is_conflicting: boolean;
 }
-
-const CONFLICT_STYLE: React.CSSProperties = {
-    marginTop: GANTT_TOOLTIP_CONFLICT_MARGIN_TOP,
-    color: GANTT_CONFLICT_COLOR,
-};
-
-const FOOTER_STYLE: React.CSSProperties = {
-    marginTop: GANTT_TOOLTIP_FOOTER_MARGIN_TOP,
-    fontSize: GANTT_FONT_XSMALL,
-    color: GANTT_TEXT_HINT,
-};
 
 /**
  * 간트 바 호버 시 표시되는 툴팁 내용
@@ -57,9 +41,11 @@ export function SessionBarTooltip({
             </div>
             <div>{duration_formatted}</div>
             {is_conflicting && (
-                <div style={CONFLICT_STYLE}>{GANTT_LABEL_CONFLICT_WARNING}</div>
+                <div className="mt-xs text-[#ff4d4f]">
+                    {GANTT_LABEL_CONFLICT_WARNING}
+                </div>
             )}
-            <div style={FOOTER_STYLE}>
+            <div className="mt-xs text-[11px] text-[#aaa]">
                 {GANTT_LABEL_TOTAL_SESSIONS(
                     sessions_count,
                     total_duration_formatted

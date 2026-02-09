@@ -65,7 +65,7 @@ export function LoadingOverlay({
                 }}
             >
                 <Spin size={spinSize} />
-                {message && <span style={{ color: "#666" }}>{message}</span>}
+                {message && <span className="!text-[#666]">{message}</span>}
             </div>
         );
     }
@@ -94,7 +94,7 @@ export function LoadingOverlay({
                 >
                     <Spin size={spinSize} />
                     {message && (
-                        <span style={{ color: "#666" }}>{message}</span>
+                        <span className="!text-[#666]">{message}</span>
                     )}
                 </motion.div>
             )}

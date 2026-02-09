@@ -4,7 +4,6 @@
 
 import { Typography } from "antd";
 import type { Dayjs } from "dayjs";
-import { WEEKLY_WEEK_RANGE_STYLE } from "../../constants/styles";
 
 const { Text } = Typography;
 
@@ -15,7 +14,7 @@ export interface WeekRangeTextProps {
 
 export function WeekRangeText({ week_start, week_end }: WeekRangeTextProps) {
     return (
-        <div className="week-range" style={WEEKLY_WEEK_RANGE_STYLE}>
+        <div className="week-range">
             <Text type="secondary">
                 {week_start.format("YYYY년 M월 D일")} ~{" "}
                 {week_end.format("M월 D일")}

@@ -26,10 +26,6 @@ import { Empty, Typography } from "antd";
 
 const { Text } = Typography;
 
-const SUB_DESCRIPTION_STYLE: React.CSSProperties = {
-    fontSize: 12,
-};
-
 export type EmptyImageType = "simple" | "default";
 
 export interface EmptyStateProps {
@@ -71,7 +67,7 @@ export function EmptyState({
         <span>
             {description}
             <br />
-            <Text type="secondary" style={SUB_DESCRIPTION_STYLE}>
+            <Text type="secondary" className="!text-xs">
                 {subDescription}
             </Text>
         </span>

@@ -11,11 +11,6 @@ import {
 } from "@ant-design/icons";
 import type { Dayjs } from "dayjs";
 import { WEEKLY_LABELS } from "../../constants";
-import {
-    WEEKLY_HEADER_TITLE_STYLE,
-    WEEKLY_HEADER_ICON_STYLE,
-    WEEKLY_DATE_PICKER_MOBILE_STYLE,
-} from "../../constants/styles";
 
 export interface WeeklyHeaderProps {
     is_mobile: boolean;
@@ -56,8 +51,8 @@ export function WeeklyHeader({
             }`}
         >
             {!is_mobile && (
-                <Typography.Title level={4} style={WEEKLY_HEADER_TITLE_STYLE}>
-                    <CalendarOutlined style={WEEKLY_HEADER_ICON_STYLE} />
+                <Typography.Title level={4} className="!m-0">
+                    <CalendarOutlined className="!mr-sm" />
                     {WEEKLY_LABELS.title}
                 </Typography.Title>
             )}
@@ -75,9 +70,7 @@ export function WeeklyHeader({
                         date && on_week_change(date.startOf("isoWeek"))
                     }
                     format={datePickerFormat}
-                    style={
-                        is_mobile ? WEEKLY_DATE_PICKER_MOBILE_STYLE : undefined
-                    }
+                    className={is_mobile ? "!w-[100px]" : undefined}
                 />
                 <Button
                     icon={<RightOutlined />}

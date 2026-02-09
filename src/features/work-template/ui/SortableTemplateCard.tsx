@@ -11,13 +11,6 @@ import type { WorkTemplate } from "@/shared/types";
 
 const { Text } = Typography;
 
-const TAG_STYLE = {
-    fontSize: 10,
-    lineHeight: 1.3,
-    padding: "1px 6px",
-    margin: 0,
-} as const;
-
 interface SortableTemplateCardProps {
     template: WorkTemplate;
     onEdit: (template: WorkTemplate) => void;
@@ -62,7 +55,7 @@ export function SortableTemplateCard({
             <div className="template-content">
                 {/* 상단: 작업명 태그 */}
                 <div className="template-header">
-                    <Tag color={template.color} style={TAG_STYLE}>
+                    <Tag color={template.color} className="!text-[10px] !leading-[1.3] !px-[6px] !py-[1px] !m-0">
                         {template.work_name}
                     </Tag>
                 </div>

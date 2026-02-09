@@ -17,10 +17,7 @@ type DuplicateGroup = DuplicatesViewProps["duplicates"][0];
  * 중복 레코드 뷰 컴포넌트
  * 같은 work_name + deal_name을 가진 레코드 그룹을 표시
  */
-export function DuplicatesView({
-    duplicates,
-    on_merge,
-}: DuplicatesViewProps) {
+export function DuplicatesView({ duplicates, on_merge }: DuplicatesViewProps) {
     if (duplicates.length === 0) {
         return <Empty description="중복된 레코드가 없습니다." />;
     }
@@ -110,7 +107,7 @@ export function DuplicatesView({
 
     return (
         <div>
-            <Space style={{ marginBottom: 16 }}>
+            <Space className="!mb-lg">
                 <Text type="secondary">
                     총 {duplicates.length}개의 중복 그룹
                 </Text>

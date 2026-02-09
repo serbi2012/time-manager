@@ -33,10 +33,7 @@ import {
     SETTINGS_DATA_STORAGE_LOCAL,
     SETTINGS_DATA_STORAGE_LOCAL_DESC,
 } from "../../constants";
-import {
-    TAB_CONTAINER_STYLE,
-    TAB_CONTAINER_STYLE_MOBILE,
-} from "../../constants";
+import { cn } from "@/shared/lib/cn";
 import { SettingItem } from "./SettingItem";
 
 const { Text } = Typography;
@@ -45,20 +42,6 @@ const CARD_BODY_MOBILE = { padding: "0 12px" as const };
 const CARD_BODY_DESKTOP = { padding: "0 16px" as const };
 const CARD_BODY_MANAGEMENT_MOBILE = { padding: 12 };
 const CARD_BODY_MANAGEMENT_DESKTOP = { padding: 16 };
-
-const GRID_STYLE_MOBILE: React.CSSProperties = {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: 8,
-    marginBottom: 12,
-};
-
-const GRID_STYLE_DESKTOP: React.CSSProperties = {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: 12,
-    marginBottom: 16,
-};
 
 const STORAGE_AUTH_BG = "#f6ffed";
 const STORAGE_LOCAL_BG = "#e6f4ff";
@@ -99,12 +82,8 @@ export function DataTab({
         }
     };
 
-    const container_style = is_mobile
-        ? TAB_CONTAINER_STYLE_MOBILE
-        : TAB_CONTAINER_STYLE;
-
     return (
-        <div style={container_style}>
+        <div className={cn("flex flex-col", is_mobile ? "gap-lg" : "gap-xl")}>
             <Card
                 size="small"
                 title={
@@ -179,7 +158,12 @@ export function DataTab({
                         : CARD_BODY_MANAGEMENT_DESKTOP,
                 }}
             >
-                <div style={is_mobile ? GRID_STYLE_MOBILE : GRID_STYLE_DESKTOP}>
+                <div
+                    className={cn(
+                        "grid grid-cols-2",
+                        is_mobile ? "gap-sm mb-md" : "gap-md mb-lg"
+                    )}
+                >
                     <Button
                         icon={<DownloadOutlined />}
                         onClick={onExport}
@@ -215,31 +199,19 @@ export function DataTab({
                     },
                 }}
             >
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div className="flex items-center gap-md">
                     {isAuthenticated ? (
-                        <CheckCircleFilled
-                            style={{
-                                color: "#52c41a",
-                                fontSize: 32,
-                                flexShrink: 0,
-                            }}
-                        />
+                        <CheckCircleFilled className="!text-[#52c41a] !text-[32px] shrink-0" />
                     ) : (
-                        <CloudOutlined
-                            style={{
-                                color: "#1677ff",
-                                fontSize: 32,
-                                flexShrink: 0,
-                            }}
-                        />
+                        <CloudOutlined className="!text-[#1677ff] !text-[32px] shrink-0" />
                     )}
-                    <div style={{ flex: 1 }}>
-                        <Text strong style={{ display: "block", fontSize: 14 }}>
+                    <div className="flex-1">
+                        <Text strong className="!block !text-md">
                             {isAuthenticated
                                 ? SETTINGS_DATA_STORAGE_CONNECTED
                                 : SETTINGS_DATA_STORAGE_LOCAL}
                         </Text>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
+                        <Text type="secondary" className="!text-sm">
                             {isAuthenticated
                                 ? SETTINGS_DATA_STORAGE_CONNECTED_DESC
                                 : SETTINGS_DATA_STORAGE_LOCAL_DESC}

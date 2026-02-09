@@ -24,35 +24,6 @@ import {
 
 const { Text } = Typography;
 
-const SECTION_HEADER_STYLE: React.CSSProperties = {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
-};
-
-const CHECKBOX_GROUP_WRAPPER_STYLE: React.CSSProperties = {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 4,
-    maxHeight: 120,
-    overflowY: "auto",
-    border: "1px solid #d9d9d9",
-    borderRadius: 4,
-    padding: 8,
-};
-
-const HIDDEN_TAGS_WRAPPER_STYLE: React.CSSProperties = {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 4,
-};
-
-const HIDDEN_TAG_STYLE: React.CSSProperties = {
-    opacity: 0.6,
-    textDecoration: "line-through",
-};
-
 export type AutoCompleteFieldType =
     | "work_name"
     | "task_name"
@@ -89,8 +60,8 @@ export function AutoCompleteOptionList({
     on_bulk_unhide,
 }: AutoCompleteOptionListProps) {
     return (
-        <div style={{ marginBottom: 16 }}>
-            <div style={SECTION_HEADER_STYLE}>
+        <div className="mb-lg">
+            <div className="flex justify-between items-center mb-sm">
                 <Text strong>
                     {title} ({visible_options.length}개)
                 </Text>
@@ -118,15 +89,15 @@ export function AutoCompleteOptionList({
                 <Empty
                     description={SETTINGS_AUTOCOMPLETE_OPTION_EMPTY}
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
-                    style={{ padding: "8px 0" }}
+                    className="!py-sm"
                 />
             ) : (
                 <Checkbox.Group
                     value={selected}
                     onChange={(values) => set_selected(values as string[])}
-                    style={{ width: "100%" }}
+                    className="!w-full"
                 >
-                    <div style={CHECKBOX_GROUP_WRAPPER_STYLE}>
+                    <div className="flex flex-wrap gap-xs max-h-[120px] overflow-y-auto border border-[#d9d9d9] rounded p-sm">
                         {visible_options.map((opt) => (
                             <Checkbox key={opt} value={opt}>
                                 <Tag>{opt}</Tag>
@@ -139,7 +110,7 @@ export function AutoCompleteOptionList({
             {hidden_list.length > 0 && (
                 <Collapse
                     size="small"
-                    style={{ marginTop: 8 }}
+                    className="!mt-sm"
                     items={[
                         {
                             key: "hidden",
@@ -163,7 +134,7 @@ export function AutoCompleteOptionList({
                                 </Button>
                             ),
                             children: (
-                                <div style={HIDDEN_TAGS_WRAPPER_STYLE}>
+                                <div className="flex flex-wrap gap-xs">
                                     {hidden_list.map((opt) => (
                                         <Tag
                                             key={opt}
@@ -173,7 +144,7 @@ export function AutoCompleteOptionList({
                                                 e.preventDefault();
                                                 on_unhide(field, opt);
                                             }}
-                                            style={HIDDEN_TAG_STYLE}
+                                            className="!opacity-60 !line-through"
                                         >
                                             {opt}
                                         </Tag>

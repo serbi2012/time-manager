@@ -31,23 +31,11 @@ function SettingItem({
 }: SettingItemProps) {
     if (is_mobile) {
         return (
-            <div
-                style={{
-                    padding: "12px 0",
-                    borderBottom: "1px solid #f0f0f0",
-                }}
-            >
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: 4,
-                    }}
-                >
+            <div className="py-md border-b border-[#f0f0f0]">
+                <div className="flex justify-between items-center mb-xs">
                     <Space size={8}>
                         {icon}
-                        <Text strong style={{ fontSize: 13 }}>
+                        <Text strong className="!text-[13px]">
                             {title}
                         </Text>
                     </Space>
@@ -55,7 +43,7 @@ function SettingItem({
                 </div>
                 <Text
                     type="secondary"
-                    style={{ fontSize: 11, display: "block", paddingLeft: 22 }}
+                    className="!text-[11px] !block !pl-[22px]"
                 >
                     {description}
                 </Text>
@@ -64,23 +52,15 @@ function SettingItem({
     }
 
     return (
-        <div
-            style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "12px 0",
-                borderBottom: "1px solid #f0f0f0",
-            }}
-        >
-            <div style={{ flex: 1 }}>
+        <div className="flex justify-between items-center py-md border-b border-[#f0f0f0]">
+            <div className="flex-1">
                 <Space size={8}>
                     {icon}
                     <Text strong>{title}</Text>
                 </Space>
                 <Text
                     type="secondary"
-                    style={{ display: "block", marginTop: 2, paddingLeft: 22 }}
+                    className="!block !mt-[2px] !pl-[22px]"
                 >
                     {description}
                 </Text>

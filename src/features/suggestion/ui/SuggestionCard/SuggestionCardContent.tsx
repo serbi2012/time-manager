@@ -6,7 +6,7 @@ import {
 } from "@ant-design/icons";
 import type { SuggestionPost } from "@/types";
 import { useReplyActions } from "../../hooks";
-import { SUGGESTION_LABELS, SUGGESTION_STYLES } from "../../constants";
+import { SUGGESTION_LABELS } from "../../constants";
 import { ReplyForm } from "../ReplyForm";
 import { AdminControls } from "../AdminControls";
 import { ReplyItem } from "./ReplyItem";
@@ -40,7 +40,7 @@ export function SuggestionCardContent({
         <div className="suggestion-item-content">
             {/* 수정/삭제 버튼 */}
             {(can_edit || can_delete) && (
-                <div style={SUGGESTION_STYLES.postActionsContainer}>
+                <div className="mb-md text-right">
                     <Space>
                         {can_edit && (
                             <Button
@@ -79,18 +79,16 @@ export function SuggestionCardContent({
             )}
 
             {/* 게시글 본문 */}
-            <Paragraph style={SUGGESTION_STYLES.postContent}>
+            <Paragraph className="!whitespace-pre-wrap !mb-lg !px-lg !py-md !bg-[#fafafa] !rounded-lg">
                 {post.content}
             </Paragraph>
 
             {/* 해결 완료 표시 */}
             {post.status === "completed" && post.resolved_version && (
-                <div style={SUGGESTION_STYLES.resolvedBadge}>
+                <div className="py-sm px-md bg-[#f6ffed] border border-[#b7eb8f] rounded-md mb-lg">
                     <Space>
-                        <CheckCircleOutlined
-                            style={SUGGESTION_STYLES.resolvedIcon}
-                        />
-                        <Text style={SUGGESTION_STYLES.resolvedText}>
+                        <CheckCircleOutlined className="!text-[#52c41a]" />
+                        <Text className="!text-[#52c41a]">
                             {post.resolved_version}
                             {SUGGESTION_LABELS.resolvedInVersion}
                         </Text>
@@ -103,7 +101,7 @@ export function SuggestionCardContent({
                 <div className="suggestion-replies">
                     <Text
                         type="secondary"
-                        style={SUGGESTION_STYLES.replyCountText}
+                        className="!text-[13px] !mb-sm !block"
                     >
                         {SUGGESTION_LABELS.replyCountPrefix}{" "}
                         {post.replies.length}
@@ -125,7 +123,7 @@ export function SuggestionCardContent({
             )}
 
             {/* 답글 작성 폼 */}
-            <Divider style={SUGGESTION_STYLES.replySectionDivider} />
+            <Divider className="!my-lg" />
             <ReplyForm
                 post_id={post.id}
                 default_author={user_display_name || ""}

@@ -4,7 +4,6 @@
 
 import { Typography } from "antd";
 import type { TimeAxisProps } from "../../lib/types";
-import { GANTT_FONT_XSMALL } from "../../constants";
 
 const { Text } = Typography;
 
@@ -33,10 +32,7 @@ export function TimeAxis({
                         width: pixels_per_hour,
                     }}
                 >
-                    <Text
-                        type="secondary"
-                        style={{ fontSize: GANTT_FONT_XSMALL }}
-                    >
+                    <Text type="secondary" className="!text-[11px]">
                         {h}:00
                     </Text>
                 </div>

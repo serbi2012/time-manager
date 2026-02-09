@@ -11,10 +11,6 @@ import {
 } from "@ant-design/icons";
 import type { Dayjs } from "dayjs";
 import { WEEKLY_LABELS } from "../../constants";
-import {
-    WEEKLY_HEADER_TITLE_STYLE,
-    WEEKLY_HEADER_ICON_STYLE,
-} from "../../constants/styles";
 
 export interface DesktopWeeklyHeaderProps {
     selected_week_start: Dayjs;
@@ -44,8 +40,8 @@ export function DesktopWeeklyHeader({
 
     return (
         <div className="weekly-header">
-            <Typography.Title level={4} style={WEEKLY_HEADER_TITLE_STYLE}>
-                <CalendarOutlined style={WEEKLY_HEADER_ICON_STYLE} />
+            <Typography.Title level={4} className="!m-0">
+                <CalendarOutlined className="!mr-sm" />
                 {WEEKLY_LABELS.title}
             </Typography.Title>
 

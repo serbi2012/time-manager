@@ -22,32 +22,21 @@ import {
     TABLE_TOOLTIP_PROBLEM,
     TABLE_TOOLTIP_GANTT_INVISIBLE,
 } from "../../constants";
-import {
-    ADMIN_TEXT_NOWRAP,
-    ADMIN_TEXT_MONOSPACE,
-} from "../../constants/styles";
-
 const { Text } = Typography;
-
-const TOOLTIP_HEADER_STYLE: React.CSSProperties = {
-    marginBottom: 8,
-    fontWeight: "bold",
-};
-const TOOLTIP_ROW_STYLE: React.CSSProperties = { marginBottom: 4 };
 
 interface SessionWithMetaRecord extends SessionWithMeta {
     key?: string;
 }
 
 export function SessionDateCell({ date }: { date: string }) {
-    return <Text style={ADMIN_TEXT_NOWRAP}>{date}</Text>;
+    return <Text className="!whitespace-nowrap">{date}</Text>;
 }
 
 export function SessionTimeCell({ record }: { record: SessionWithMetaRecord }) {
     if (record.end_time === "") {
         return (
             <Space size={4}>
-                <Text style={{ ...ADMIN_TEXT_NOWRAP, ...ADMIN_TEXT_MONOSPACE }}>
+                <Text className="!whitespace-nowrap !font-mono">
                     {record.start_time} ~
                 </Text>
                 <Tag color="green" icon={<PlayCircleOutlined />}>
@@ -57,7 +46,7 @@ export function SessionTimeCell({ record }: { record: SessionWithMetaRecord }) {
         );
     }
     return (
-        <Text style={{ ...ADMIN_TEXT_NOWRAP, ...ADMIN_TEXT_MONOSPACE }}>
+        <Text className="!whitespace-nowrap !font-mono">
             {record.start_time} ~ {record.end_time}
         </Text>
     );
@@ -76,9 +65,9 @@ export function SessionConflictCell({
     }
     const tooltipContent = (
         <div>
-            <div style={TOOLTIP_HEADER_STYLE}>{TABLE_TOOLTIP_CONFLICT}</div>
+            <div className="mb-sm font-bold">{TABLE_TOOLTIP_CONFLICT}</div>
             {conflicting.map((c, idx) => (
-                <div key={idx} style={TOOLTIP_ROW_STYLE}>
+                <div key={idx} className="mb-xs">
                     • {c.work_name} ({c.start_time}~{c.end_time})
                 </div>
             ))}
@@ -86,7 +75,7 @@ export function SessionConflictCell({
     );
     return (
         <Tooltip title={tooltipContent} placement="left">
-            <Tag color="red" style={{ cursor: "help" }}>
+            <Tag color="red" className="!cursor-help">
                 <WarningOutlined /> {conflicting.length}
             </Tag>
         </Tooltip>
@@ -121,11 +110,11 @@ export function SessionProblemCell({
     }
     const tooltipContent = (
         <div>
-            <div style={TOOLTIP_HEADER_STYLE}>
+            <div className="mb-sm font-bold">
                 <BugOutlined /> {TABLE_TOOLTIP_PROBLEM}
             </div>
             {list.map((p, idx) => (
-                <div key={idx} style={TOOLTIP_ROW_STYLE}>
+                <div key={idx} className="mb-xs">
                     • {p.description}
                 </div>
             ))}
@@ -135,7 +124,7 @@ export function SessionProblemCell({
         <Tooltip title={tooltipContent} placement="left">
             <Tag
                 color={getProblemTagColor(list[0].type)}
-                style={{ cursor: "help" }}
+                className="!cursor-help"
             >
                 <ExclamationCircleOutlined /> {list.length}
             </Tag>
@@ -154,7 +143,7 @@ export function SessionGanttCell({
     if (is_invisible) {
         return (
             <Tooltip title={TABLE_TOOLTIP_GANTT_INVISIBLE}>
-                <Tag color="purple" style={{ cursor: "help" }}>
+                <Tag color="purple" className="!cursor-help">
                     <EyeInvisibleOutlined /> {TABLE_TAG_INVISIBLE}
                 </Tag>
             </Tooltip>
