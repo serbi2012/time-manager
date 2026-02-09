@@ -1,34 +1,47 @@
-/* Design Tokens: Colors */
+/* Design Tokens: Colors (Toss-Inspired) */
 
 :root {
+    /* === Grayscale (Toss Gray) === */
+    --gray-50: #f9fafb;
+    --gray-100: #f2f4f6;
+    --gray-200: #e5e8eb;
+    --gray-300: #d1d6db;
+    --gray-400: #b0b8c1;
+    --gray-500: #8b95a1;
+    --gray-600: #6b7684;
+    --gray-700: #4e5968;
+    --gray-800: #333d4b;
+    --gray-900: #191f28;
+
     /* === Semantic === */
-    --color-success: #52c41a;
-    --color-error: #ff4d4f;
-    --color-warning: #faad14;
-    --color-info: #1890ff;
-    --color-disabled: #d9d9d9;
+    --color-success: #34c759;
+    --color-error: #f04452;
+    --color-warning: #ff9500;
+    --color-info: #3182f6;
+    --color-disabled: #d1d6db;
 
     /* === Text === */
-    --color-text-primary: rgba(0, 0, 0, 0.85);
-    --color-text-secondary: rgba(0, 0, 0, 0.65);
-    --color-text-disabled: rgba(0, 0, 0, 0.45);
-    --color-text-hint: rgba(0, 0, 0, 0.25);
+    --color-text-primary: #191f28;
+    --color-text-secondary: #6b7684;
+    --color-text-disabled: #b0b8c1;
+    --color-text-hint: #d1d6db;
     --color-text-white: #ffffff;
 
     /* === Background === */
     --color-bg-default: #ffffff;
-    --color-bg-light: #fafafa;
-    --color-bg-grey: #f5f5f5;
-    --color-bg-dark: #001529;
-    --color-bg-app: #f5f7fa;
+    --color-bg-light: #f9fafb;
+    --color-bg-grey: #f2f4f6;
+    --color-bg-dark: #191f28;
+    --color-bg-app: #f9fafb;
 
     /* === Border === */
-    --color-border-default: #d9d9d9;
-    --color-border-light: #f0f0f0;
-    --color-border-dark: #bfbfbf;
+    --color-border-default: #e5e8eb;
+    --color-border-light: #f2f4f6;
+    --color-border-dark: #d1d6db;
 
     /* === Primary (dynamic - synced by ThemeProvider) === */
-    --color-primary: #1890ff;
-    --color-primary-gradient: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
-    --color-primary-dark: #096dd9;
+    --color-primary: #3182f6;
+    --color-primary-dark: #1b64da;
+    --color-primary-light: #ecf2fe;
+    --color-primary-gradient: linear-gradient(135deg, #3182f6 0%, #1b64da 100%);
 }

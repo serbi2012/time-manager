@@ -82,12 +82,12 @@ export function RecordTableHeader({
                             title={RECORD_UI_TEXT.WORK_COUNT_LABEL}
                             value={record_count}
                             suffix={RECORD_UI_TEXT.WORK_COUNT_UNIT}
-                            valueStyle={{ fontSize: 16 }}
+                            valueStyle={{ fontSize: 17 }}
                         />
                         <Statistic
                             title={RECORD_UI_TEXT.TOTAL_DURATION_LABEL}
                             value={formatDuration(total_minutes)}
-                            valueStyle={{ fontSize: 16 }}
+                            valueStyle={{ fontSize: 17 }}
                         />
                     </Space>
                 </Col>

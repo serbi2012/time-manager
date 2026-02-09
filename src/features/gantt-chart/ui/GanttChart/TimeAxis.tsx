@@ -32,7 +32,7 @@ export function TimeAxis({
                         width: pixels_per_hour,
                     }}
                 >
-                    <Text type="secondary" className="!text-[11px]">
+                    <Text type="secondary" className="!text-xs">
                         {h}:00
                     </Text>
                 </div>
@@ -41,13 +41,13 @@ export function TimeAxis({
                 .gantt-time-axis {
                     position: relative;
                     height: 24px;
-                    border-bottom: 1px solid #e8e8e8;
+                    border-bottom: 1px solid var(--color-border-default);
                 }
                 .gantt-hour-label {
                     position: absolute;
                     text-align: left;
-                    padding-left: 4px;
-                    border-left: 1px solid #e8e8e8;
+                    padding-left: var(--spacing-xs);
+                    border-left: 1px solid var(--color-border-default);
                     height: 100%;
                     display: flex;
                     align-items: center;

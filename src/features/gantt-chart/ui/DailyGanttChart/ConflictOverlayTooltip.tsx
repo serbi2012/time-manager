@@ -19,7 +19,7 @@ export function ConflictOverlayTooltip({
 }: ConflictOverlayTooltipProps) {
     return (
         <div>
-            <div className="font-bold text-[#ff4d4f]">
+            <div className="font-semibold text-error">
                 {GANTT_LABEL_CONFLICT_DETECTED}
             </div>
             <div>

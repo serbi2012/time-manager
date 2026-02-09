@@ -92,7 +92,7 @@ export function SelectWithAdd({
                           <div className="flex justify-between items-center">
                               <span>{option.label}</span>
                               <CloseOutlined
-                                  className="!text-[10px] !text-[#999] cursor-pointer"
+                                  className="!text-xs !text-text-disabled cursor-pointer"
                                   onClick={(e) => {
                                       e.stopPropagation();
                                       onHideOption(option.value as string);

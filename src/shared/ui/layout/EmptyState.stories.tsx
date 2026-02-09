@@ -167,7 +167,7 @@ export const CustomStyle: Story = {
         description: "결과 없음",
         style: {
             padding: 40,
-            backgroundColor: "#fafafa",
+            backgroundColor: "var(--color-bg-light)",
             borderRadius: 8,
         },
     },
@@ -185,7 +185,7 @@ export const CustomImage: Story = {
                     width: 80,
                     height: 80,
                     borderRadius: "50%",
-                    backgroundColor: "#e6f7ff",
+                    backgroundColor: "var(--color-primary-light)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",

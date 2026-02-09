@@ -1,6 +1,6 @@
 /**
  * 타이머 표시 컴포넌트
- * 
+ *
  * 초 단위 경과 시간을 타이머 형식으로 표시
  */
 
@@ -22,7 +22,7 @@ export interface TimerDisplayProps {
 
 /**
  * 타이머 표시 컴포넌트
- * 
+ *
  * @example
  * <TimerDisplay seconds={3661} /> // "01:01"
  * <TimerDisplay seconds={3661} showSeconds /> // "01:01:01"
@@ -33,17 +33,17 @@ export function TimerDisplay({
     isRunning = false,
     style,
 }: TimerDisplayProps) {
-    const display_text = showSeconds 
+    const display_text = showSeconds
         ? formatTimerWithSeconds(seconds)
         : formatTimer(seconds);
-    
+
     return (
         <Text
             strong
             style={{
                 fontFamily: "monospace",
-                fontSize: 14,
-                color: isRunning ? "#1890ff" : undefined,
+                fontSize: "var(--font-size-md)",
+                color: isRunning ? "var(--color-primary)" : undefined,
                 ...style,
             }}
         >

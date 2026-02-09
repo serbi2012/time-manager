@@ -21,7 +21,7 @@ export function TimeRangeColumn({
     const time_range = getTimeRangeForDate(record, selected_date);
 
     return (
-        <Text type="secondary" className="!text-[11px]">
+        <Text type="secondary" className="!text-xs">
             {time_range.start_time?.slice(0, TIME_SLICE_END) ||
                 RECORD_UI_TEXT.EMPTY_VALUE}
             {RECORD_UI_TEXT.TIME_SEPARATOR}

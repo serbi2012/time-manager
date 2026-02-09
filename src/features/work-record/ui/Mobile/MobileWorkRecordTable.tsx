@@ -468,7 +468,7 @@ export function MobileWorkRecordTable() {
                         <Tooltip title={RECORD_TOOLTIP.COMPLETED_LIST}>
                             <Button
                                 icon={
-                                    <CheckCircleOutlined className="!text-[#52c41a]" />
+                                    <CheckCircleOutlined className="!text-success" />
                                 }
                                 onClick={openCompletedModal}
                             />
@@ -477,7 +477,7 @@ export function MobileWorkRecordTable() {
                         <Tooltip title={RECORD_TOOLTIP.TRASH_LIST}>
                             <Button
                                 icon={
-                                    <DeleteOutlined className="!text-[#ff4d4f]" />
+                                    <DeleteOutlined className="!text-error" />
                                 }
                                 onClick={openTrashModal}
                             />

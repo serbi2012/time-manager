@@ -21,7 +21,7 @@ export function DailyStats({ stats }: DailyStatsProps) {
                         title={RECORD_STATS.TOTAL_DURATION}
                         value={formatDuration(stats.total_minutes)}
                         prefix={<ClockCircleOutlined />}
-                        valueStyle={{ fontSize: 20 }}
+                        valueStyle={{ fontSize: 22 }}
                     />
                 </Col>
                 <Col span={8}>
@@ -29,7 +29,10 @@ export function DailyStats({ stats }: DailyStatsProps) {
                         title={RECORD_STATS.COMPLETED_COUNT}
                         value={stats.completed_count}
                         suffix={RECORD_STATS.COUNT_UNIT}
-                        valueStyle={{ color: "#52c41a", fontSize: 20 }}
+                        valueStyle={{
+                            color: "var(--color-success)",
+                            fontSize: 22,
+                        }}
                     />
                 </Col>
                 <Col span={8}>
@@ -37,7 +40,10 @@ export function DailyStats({ stats }: DailyStatsProps) {
                         title={RECORD_STATS.INCOMPLETE_COUNT}
                         value={stats.incomplete_count}
                         suffix={RECORD_STATS.COUNT_UNIT}
-                        valueStyle={{ color: "#1890ff", fontSize: 20 }}
+                        valueStyle={{
+                            color: "var(--color-primary)",
+                            fontSize: 22,
+                        }}
                     />
                 </Col>
             </Row>

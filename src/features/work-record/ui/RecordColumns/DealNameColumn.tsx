@@ -28,7 +28,7 @@ export function DealNameColumn({
     const text_color = is_active
         ? theme_color
         : is_completed
-        ? "#8c8c8c"
+        ? "var(--gray-500)"
         : undefined;
 
     const text_decoration = is_completed ? "line-through" : undefined;
@@ -37,7 +37,7 @@ export function DealNameColumn({
         <Space direction="vertical" size={RECORD_SPACING.NONE}>
             <Space>
                 {is_completed && (
-                    <CheckCircleOutlined className="!text-[#52c41a]" />
+                    <CheckCircleOutlined className="!text-success" />
                 )}
                 <Text
                     strong

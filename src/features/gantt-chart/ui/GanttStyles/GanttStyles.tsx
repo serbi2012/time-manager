@@ -51,8 +51,8 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
         .gantt-time-label {
             position: absolute;
             transform: translateX(-50%);
-            font-size: 11px;
-            color: #8c8c8c;
+            font-size: var(--font-size-xs);
+            color: var(--gray-500);
         }
         
         .gantt-grid {
@@ -77,16 +77,16 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
             top: 0;
             bottom: 0;
             width: 1px;
-            background: #f0f0f0;
+            background: var(--color-border-light);
         }
         
         .gantt-selection {
             position: absolute;
             top: 0;
             bottom: 0;
-            background: rgba(24, 144, 255, 0.2);
-            border: 2px dashed #1890ff;
-            border-radius: 4px;
+            background: rgba(49, 130, 246, 0.2);
+            border: 2px dashed var(--color-primary);
+            border-radius: var(--radius-xs);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -96,11 +96,11 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
         }
         
         .gantt-selection-text {
-            background: #1890ff;
+            background: var(--color-primary);
             color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
+            padding: 2px var(--spacing-sm);
+            border-radius: var(--radius-xs);
+            font-size: var(--font-size-sm);
             white-space: nowrap;
         }
         
@@ -115,8 +115,8 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
                 rgba(0, 0, 0, 0.06) 10px,
                 rgba(0, 0, 0, 0.06) 20px
             );
-            border-left: 2px dashed #d9d9d9;
-            border-right: 2px dashed #d9d9d9;
+            border-left: 2px dashed var(--color-border-dark);
+            border-right: 2px dashed var(--color-border-dark);
             z-index: 1;
             cursor: not-allowed;
         }
@@ -156,10 +156,10 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
         .gantt-row-label {
             width: 85px;
             flex-shrink: 0;
-            padding: 4px 8px;
-            background: #fafafa;
-            border-left: 3px solid #1890ff;
-            border-radius: 0 4px 4px 0;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            background: var(--color-bg-light);
+            border-left: 3px solid var(--color-primary);
+            border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
             margin-right: 5px;
             overflow: hidden;
             pointer-events: none;
@@ -176,7 +176,7 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
             position: absolute;
             height: 20px;
             top: 6px;
-            border-radius: 4px;
+            border-radius: var(--radius-xs);
             cursor: pointer;
             transition: opacity 0.2s, transform 0.1s;
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
@@ -185,7 +185,7 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
         
         .gantt-bar-running {
             animation: pulse 2s ease-in-out infinite;
-            box-shadow: 0 0 8px rgba(24, 144, 255, 0.6);
+            box-shadow: 0 0 8px rgba(49, 130, 246, 0.6);
         }
         
         @keyframes pulse {
@@ -204,11 +204,10 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
             transform: scaleY(1.3);
         }
         
-        /* 충돌 세션 스타일 */
         .gantt-bar-conflict {
             animation: conflictPulse 1.2s ease-in-out infinite;
-            border: 2px solid #ff4d4f;
-            box-shadow: 0 0 8px rgba(255, 77, 79, 0.6);
+            border: 2px solid var(--color-error);
+            box-shadow: 0 0 8px rgba(240, 68, 82, 0.6);
         }
         
         .gantt-bar-conflict::before {
@@ -223,27 +222,26 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
         
         @keyframes conflictPulse {
             0%, 100% { 
-                box-shadow: 0 0 6px rgba(255, 77, 79, 0.5);
+                box-shadow: 0 0 6px rgba(240, 68, 82, 0.5);
             }
             50% { 
-                box-shadow: 0 0 12px rgba(255, 77, 79, 0.8);
+                box-shadow: 0 0 12px rgba(240, 68, 82, 0.8);
             }
         }
         
-        /* 충돌 오버레이 */
         .gantt-conflict-overlay {
             position: absolute;
             top: 0;
             bottom: 0;
             background: repeating-linear-gradient(
                 -45deg,
-                rgba(255, 77, 79, 0.15),
-                rgba(255, 77, 79, 0.15) 4px,
-                rgba(255, 77, 79, 0.30) 4px,
-                rgba(255, 77, 79, 0.30) 8px
+                rgba(240, 68, 82, 0.15),
+                rgba(240, 68, 82, 0.15) 4px,
+                rgba(240, 68, 82, 0.30) 4px,
+                rgba(240, 68, 82, 0.30) 8px
             );
-            border: 2px dashed #ff4d4f;
-            border-radius: 4px;
+            border: 2px dashed var(--color-error);
+            border-radius: var(--radius-xs);
             z-index: 5;
             pointer-events: none;
         }
@@ -253,13 +251,13 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: #ff4d4f;
+            background: var(--color-error);
             color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 10px;
+            padding: 2px var(--spacing-sm);
+            border-radius: var(--radius-xs);
+            font-size: var(--font-size-xs);
             white-space: nowrap;
-            font-weight: bold;
+            font-weight: var(--font-weight-semibold);
         }
         
         .gantt-bar-zero {
@@ -267,11 +265,10 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
         }
         
         @keyframes zeroPulse {
-            0%, 100% { opacity: 0.6; box-shadow: 0 0 4px #ff4d4f; }
-            50% { opacity: 1; box-shadow: 0 0 8px #ff4d4f; }
+            0%, 100% { opacity: 0.6; box-shadow: 0 0 4px var(--color-error); }
+            50% { opacity: 1; box-shadow: 0 0 8px var(--color-error); }
         }
         
-        /* 리사이즈 핸들 */
         .resize-handle {
             position: absolute;
             top: 0;
@@ -285,12 +282,12 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
         
         .resize-handle-left {
             left: -2px;
-            border-radius: 4px 0 0 4px;
+            border-radius: var(--radius-xs) 0 0 var(--radius-xs);
         }
         
         .resize-handle-right {
             right: -2px;
-            border-radius: 0 4px 4px 0;
+            border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
         }
         
         .gantt-bar:hover .resize-handle {
@@ -302,7 +299,6 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
             background: rgba(255, 255, 255, 0.6) !important;
         }
         
-        /* 리사이즈 중 시간 표시 */
         .resize-time-indicator {
             position: absolute;
             top: -24px;
@@ -310,9 +306,9 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
             transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.8);
             color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 11px;
+            padding: 2px var(--spacing-sm);
+            border-radius: var(--radius-xs);
+            font-size: var(--font-size-xs);
             white-space: nowrap;
             z-index: 100;
             pointer-events: none;

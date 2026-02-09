@@ -35,7 +35,7 @@ export function GanttBar({
                 {session.start_time} ~ {session.end_time || "진행중"}
             </div>
             <div>{formatDuration(duration_mins)}</div>
-            {is_running && <div className="text-[#52c41a] mt-xs">진행 중</div>}
+            {is_running && <div className="text-success mt-xs">진행 중</div>}
         </div>
     );
 
@@ -46,7 +46,7 @@ export function GanttBar({
             ? `linear-gradient(90deg, ${color} 0%, ${color}cc 100%)`
             : color,
         boxShadow: is_conflicting
-            ? "0 0 0 2px #ff4d4f"
+            ? "0 0 0 2px var(--color-error)"
             : is_running
             ? `0 0 0 2px ${color}`
             : "0 1px 3px rgba(0,0,0,0.15)",
@@ -106,7 +106,7 @@ export function GanttBar({
                     .gantt-bar {
                         position: absolute;
                         height: 28px;
-                        border-radius: 4px;
+                        border-radius: var(--radius-xs);
                         display: flex;
                         align-items: center;
                         cursor: pointer;
@@ -132,8 +132,8 @@ export function GanttBar({
                     }
                     .gantt-bar-label {
                         color: white;
-                        font-size: 12px;
-                        font-weight: 500;
+                        font-size: var(--font-size-sm);
+                        font-weight: var(--font-weight-medium);
                         white-space: nowrap;
                         overflow: hidden;
                         text-overflow: ellipsis;

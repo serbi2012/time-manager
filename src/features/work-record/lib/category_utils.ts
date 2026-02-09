@@ -41,13 +41,13 @@ export function getCategoryBadgeStyle(category: string): CSSProperties {
 
     // Ant Design Tag 색상 매핑
     const color_map: Record<string, string> = {
-        green: "#52c41a",
+        green: "#34C759",
         orange: "#fa8c16",
         purple: "#722ed1",
         cyan: "#13c2c2",
         magenta: "#eb2f96",
-        blue: "#1890ff",
-        default: "#8c8c8c",
+        blue: "#3182F6",
+        default: "#8B95A1",
     };
 
     return {

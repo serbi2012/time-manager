@@ -1,0 +1,600 @@
+---
+description: 토스(Toss) 인스파이어드 디자인 시스템 — UI/UX 철학, 컬러, 타이포그래피, 여백, 컴포넌트 스타일 가이드
+globs:
+alwaysApply: true
+---
+
+# 디자인 시스템 (Toss-Inspired Design System)
+
+토스(Toss)의 UI/UX 철학을 기반으로 한 디자인 시스템.
+**"사용법을 배울 필요 없이 쓸 수 있어야 한다"** 가 핵심이다.
+
+> 이 문서의 모든 값은 **구현 완료 상태**이다. 새 코드 작성 시 반드시 이 가이드를 따른다.
+
+---
+
+## 1. 디자인 철학 (Design Philosophy)
+
+### 핵심 원칙: Simplicity
+
+모든 UI/UX 결정의 최상위 기준은 **단순함**이다.
+복잡한 기능도 단순하게 보여야 하고, 사용자가 고민하지 않아야 한다.
+
+### 10대 제품 원칙 (프로젝트 적용)
+
+| #   | 원칙                 | 프로젝트 적용                                                                  |
+| --- | -------------------- | ------------------------------------------------------------------------------ |
+| 1   | **Casual Concept**   | 전문 용어 대신 일상 언어. "세션" → "작업 시간", "프리셋" → "즐겨찾기" 등 검토  |
+| 2   | **Simple Policy**    | UI가 아무리 예뻐도 규칙이 복잡하면 복잡한 제품. 기능 규칙 자체를 단순화        |
+| 3   | **Value First**      | 행동을 요구하기 전에 가치를 먼저 보여준다. 빈 상태에서 "이걸 하면 이런 이점이" |
+| 4   | **Clear Action**     | 설명 없이도 다음 행동이 한눈에 보여야 한다. CTA 버튼은 명확하고 하나           |
+| 5   | **Context Based**    | 전체 사용자 여정을 고려. 흐름이 끊기거나 강제되면 안 됨                        |
+| 6   | **Easy to Answer**   | 3초 안에 답할 수 있는 질문만. 어려운 결정은 추천을 제공                        |
+| 7   | **Explain Why**      | 왜 이 행동이 필요한지 항상 설명. 사용자가 확신을 갖고 진행                     |
+| 8   | **One Thing**        | 한 화면 = 하나의 핵심 메시지. 정보를 덜어내는 용기                             |
+| 9   | **No More Loading**  | 대기 시간 제거. Skeleton UI, Optimistic Update 적극 활용                       |
+| 10  | **Minimum Features** | 기능 추가는 최후의 수단. 기능이 많을수록 복잡도↑ 업데이트↓ 버그↑               |
+
+### 시각적 톤 (Visual Tone)
+
+```
+깨끗함 (Clean)      — 불필요한 장식 요소 제거, 정보만 남긴다
+가벼움 (Light)      — 무거운 색상/그림자 대신 밝고 가벼운 톤
+넉넉함 (Spacious)   — 여백은 낭비가 아니라 가독성이다
+일관됨 (Consistent) — 같은 요소는 어디서든 같은 모습
+자연스러움 (Natural) — 스프링 물리 기반 애니메이션, 부드러운 전환
+```
+
+---
+
+## 2. 컬러 시스템 (Color System)
+
+### 프라이머리 컬러 — Toss Blue
+
+| 토큰                    | 값        | 용도                        |
+| ----------------------- | --------- | --------------------------- |
+| `--color-primary`       | `#3182F6` | 기본 액센트, CTA 버튼, 링크 |
+| `--color-primary-dark`  | `#1B64DA` | 호버, 활성 상태             |
+| `--color-primary-light` | `#ECF2FE` | 프라이머리 배경 틴트        |
+
+> 7가지 테마(blue, green, purple, red, orange, teal, black) 중 **blue 테마의 기본값이 Toss Blue**이며, 나머지 6가지 테마는 기존 값을 유지한다.
+
+### 그레이스케일
+
+| 토큰         | 값        | Tailwind 클래스 | 용도                          |
+| ------------ | --------- | --------------- | ----------------------------- |
+| `--gray-50`  | `#F9FAFB` | `gray-50`       | 앱 배경, 미세한 구분          |
+| `--gray-100` | `#F2F4F6` | `gray-100`      | 카드 배경 (비활성), 인풋 배경 |
+| `--gray-200` | `#E5E8EB` | `gray-200`      | 보더, 구분선                  |
+| `--gray-300` | `#D1D6DB` | `gray-300`      | 비활성 보더                   |
+| `--gray-400` | `#B0B8C1` | `gray-400`      | 플레이스홀더 텍스트           |
+| `--gray-500` | `#8B95A1` | `gray-500`      | 보조 아이콘                   |
+| `--gray-600` | `#6B7684` | `gray-600`      | 보조 텍스트 (Secondary)       |
+| `--gray-700` | `#4E5968` | `gray-700`      | 본문 텍스트 (기본)            |
+| `--gray-800` | `#333D4B` | `gray-800`      | 강조 텍스트                   |
+| `--gray-900` | `#191F28` | `gray-900`      | 제목, 최상위 강조             |
+
+### 시맨틱 컬러
+
+| 토큰              | 값        | Tailwind 클래스 | 용도 |
+| ----------------- | --------- | --------------- | ---- |
+| `--color-success` | `#34C759` | `text-success`  | 성공 |
+| `--color-error`   | `#F04452` | `text-error`    | 에러 |
+| `--color-warning` | `#FF9500` | `text-warning`  | 경고 |
+| `--color-info`    | `#3182F6` | `text-info`     | 안내 |
+
+### 텍스트 컬러
+
+| 토큰                     | 값        | Tailwind 클래스       |
+| ------------------------ | --------- | --------------------- |
+| `--color-text-primary`   | `#191F28` | `text-text-primary`   |
+| `--color-text-secondary` | `#6B7684` | `text-text-secondary` |
+| `--color-text-disabled`  | `#B0B8C1` | `text-text-disabled`  |
+| `--color-text-hint`      | `#D1D6DB` | `text-text-hint`      |
+
+### 배경 컬러
+
+| 토큰                 | 값        | Tailwind 클래스 |
+| -------------------- | --------- | --------------- |
+| `--color-bg-default` | `#FFFFFF` | `bg-bg-default` |
+| `--color-bg-light`   | `#F9FAFB` | `bg-bg-light`   |
+| `--color-bg-grey`    | `#F2F4F6` | `bg-bg-grey`    |
+| `--color-bg-app`     | `#F9FAFB` | `bg-bg-app`     |
+
+### 보더 컬러
+
+| 토큰                     | 값        | Tailwind 클래스         |
+| ------------------------ | --------- | ----------------------- |
+| `--color-border-default` | `#E5E8EB` | `border-border-default` |
+| `--color-border-light`   | `#F2F4F6` | `border-border-light`   |
+| `--color-border-dark`    | `#D1D6DB` | `border-border-dark`    |
+
+### 컬러 사용 원칙
+
+```
+1. 화면의 90%는 화이트 + 그레이스케일
+2. 프라이머리 컬러는 CTA, 핵심 액션, 활성 상태에만 사용
+3. 시맨틱 컬러는 상태 표시에만 사용 (성공/실패/경고)
+4. 배경에 컬러를 깔지 않는다 — 화이트 또는 gray-50이 기본
+5. 그라데이션은 헤더 등 제한된 영역에서만 사용
+```
+
+### 하드코딩 금지 (CRITICAL)
+
+> ⚠️ 아래 색상은 **코드에서 직접 사용을 금지**한다. 반드시 CSS 변수 또는 Tailwind 클래스를 사용한다.
+
+| 금지 값                        | 대체                                                  |
+| ------------------------------ | ----------------------------------------------------- |
+| `#1890ff`                      | `var(--color-primary)` / `text-primary`               |
+| `#52c41a`                      | `var(--color-success)` / `text-success`               |
+| `#ff4d4f`                      | `var(--color-error)` / `text-error`                   |
+| `#fafafa`                      | `var(--color-bg-light)` / `bg-bg-light`               |
+| `#f0f0f0`                      | `var(--color-border-light)` / `border-border-light`   |
+| `#d9d9d9`                      | `var(--color-border-default)` / `text-gray-300`       |
+| `#e8e8e8`                      | `var(--color-border-default)`                         |
+| `#f5f5f5`                      | `var(--color-bg-grey)` / `bg-bg-grey`                 |
+| `#555`, `#666`                 | `var(--color-text-secondary)` / `text-text-secondary` |
+| `#888`, `#999`, `#aaa`, `#bbb` | `var(--color-text-disabled)` / `text-text-disabled`   |
+| `#8c8c8c`                      | `var(--gray-500)` / `text-gray-500`                   |
+| `rgba(24, 144, 255, ...)`      | `rgba(49, 130, 246, ...)` (Toss Blue 기반)            |
+| `rgba(255, 77, 79, ...)`       | `rgba(240, 68, 82, ...)` (--color-error 기반)         |
+
+---
+
+## 3. 타이포그래피 (Typography)
+
+### 폰트 패밀리
+
+**Pretendard Variable**을 기본 폰트로 사용한다. (`index.html`에서 CDN 로드)
+
+```
+--font-family-base: "Pretendard Variable", Pretendard, -apple-system,
+    BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI",
+    "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif
+```
+
+-   Ant Design `ConfigProvider`의 `token.fontFamily`에도 동일하게 적용 완료
+-   `body`의 `font-family`는 `var(--font-family-base)` 참조
+
+### 폰트 사이즈 스케일
+
+| 토큰              | 값     | Tailwind 클래스 | 용도              |
+| ----------------- | ------ | --------------- | ----------------- |
+| `--font-size-xs`  | `11px` | `text-xs`       | 캡션, 뱃지        |
+| `--font-size-sm`  | `13px` | `text-sm`       | 보조 텍스트, 라벨 |
+| `--font-size-md`  | `15px` | `text-md`       | 본문 기본         |
+| `--font-size-lg`  | `17px` | `text-lg`       | 강조 본문, 인풋   |
+| `--font-size-xl`  | `19px` | `text-xl`       | 소제목            |
+| `--font-size-2xl` | `22px` | `text-2xl`      | 섹션 제목         |
+| `--font-size-h3`  | `24px` | `text-h3`       | 큰 제목           |
+| `--font-size-h2`  | `26px` | `text-h2`       | 페이지 제목       |
+| `--font-size-h1`  | `28px` | `text-h1`       | 히어로 텍스트     |
+
+### 폰트 웨이트
+
+| 토큰                     | 값    | Tailwind 클래스 | 용도                      |
+| ------------------------ | ----- | --------------- | ------------------------- |
+| `--font-weight-regular`  | `400` | `font-normal`   | 본문 텍스트, 설명         |
+| `--font-weight-medium`   | `500` | `font-medium`   | 라벨, 약간의 강조         |
+| `--font-weight-semibold` | `600` | `font-semibold` | 제목, 버튼, 중요 숫자     |
+| `--font-weight-bold`     | `700` | `font-bold`     | 히어로 숫자 (드물게 사용) |
+
+> ⚠️ **`font-weight: 800` 사용 금지.** `font-bold(700)`도 최소화하고, 대부분 `font-semibold(600)`을 사용한다.
+
+### 텍스트 위계 (5단계)
+
+프로젝트 전체에 적용되는 **표준 텍스트 위계**:
+
+| 레벨 | 역할        | 크기             | 웨이트                | 예시                      |
+| ---- | ----------- | ---------------- | --------------------- | ------------------------- |
+| L1   | 섹션 제목   | `text-lg` (17px) | `font-semibold` (600) | 간트 차트 제목, 카드 헤더 |
+| L2   | 카드 제목   | `text-md` (15px) | `font-semibold` (600) | 템플릿 카드 타이틀        |
+| L3   | 본문        | `text-md` (15px) | `font-normal` (400)   | 테이블 셀, 설명 텍스트    |
+| L4   | 보조 텍스트 | `text-sm` (13px) | `font-normal` (400)   | 라벨, 시간 범위, 부제     |
+| L5   | 캡션        | `text-xs` (11px) | `font-normal` (400)   | 뱃지, 행 라벨, 태그, 힌트 |
+
+**특수 용도:**
+
+| 용도      | 크기              | 웨이트                |
+| --------- | ----------------- | --------------------- |
+| 통계 숫자 | `text-2xl` (22px) | `font-semibold` (600) |
+| 헤더 통계 | `text-lg` (17px)  | `font-semibold` (600) |
+
+### 하드코딩 금지 (CRITICAL)
+
+> ⚠️ 폰트 크기와 웨이트를 **직접 숫자로 작성하는 것을 금지**한다.
+
+| 금지 패턴                                   | 대체                                       |
+| ------------------------------------------- | ------------------------------------------ |
+| `font-[800]`                                | `font-semibold` (600)                      |
+| `text-[17px]`, `text-[11px]`, `text-[13px]` | `text-lg`, `text-xs`, `text-sm`            |
+| `text-[10px]`                               | `text-xs` (11px)                           |
+| `fontSize: 20`                              | `fontSize: 22` (text-2xl 토큰)             |
+| `fontSize: 16`                              | `fontSize: 17` (text-lg 토큰)              |
+| `fontWeight: 500`                           | `fontWeight: 600` (semibold)               |
+| `font-size: 12px` (CSS-in-JS)               | `font-size: var(--font-size-sm)`           |
+| `font-weight: bold` (CSS-in-JS)             | `font-weight: var(--font-weight-semibold)` |
+
+### 줄 간격 (Line Height)
+
+| 토큰                    | 값    | 용도         |
+| ----------------------- | ----- | ------------ |
+| `--line-height-tight`   | `1.3` | 제목         |
+| `--line-height-normal`  | `1.5` | 일반         |
+| `--line-height-body`    | `1.6` | 본문         |
+| `--line-height-relaxed` | `1.8` | 넓은 줄 간격 |
+
+### 타이포그래피 원칙
+
+```
+1. 제목과 본문의 크기 차이는 명확하게 (최소 4px 이상)
+2. 한 화면에 3단계 이하의 텍스트 위계만 사용
+3. 줄 간격(line-height)은 넉넉하게: 본문 1.6, 제목 1.3
+4. 숫자(타이머, 시간)는 tabular numerals로 표시
+5. 긴 텍스트는 최대 너비 제한 (읽기 최적: 600~700px)
+```
+
+---
+
+## 4. 여백/간격 시스템 (Spacing)
+
+### 간격 스케일
+
+| 토큰                | 값     | Tailwind 클래스 | 용도                   |
+| ------------------- | ------ | --------------- | ---------------------- |
+| `--spacing-xs`      | `4px`  | `xs`            | 아이콘과 텍스트 간격   |
+| `--spacing-sm`      | `8px`  | `sm`            | 인라인 요소 간격       |
+| `--spacing-md`      | `12px` | `md`            | 관련 요소 그룹 내 간격 |
+| `--spacing-lg`      | `16px` | `lg`            | 컴포넌트 내부 패딩     |
+| `--spacing-xl`      | `24px` | `xl`            | 섹션 내 간격           |
+| `--spacing-2xl`     | `32px` | `2xl`           | 섹션 간 간격           |
+| `--spacing-3xl`     | `40px` | `3xl`           | 큰 섹션 간 간격        |
+| `--spacing-section` | `48px` | `section`       | 페이지 섹션 간격       |
+
+### 적용된 여백 기준
+
+| 요소                      | 값                     | 구현 위치    |
+| ------------------------- | ---------------------- | ------------ |
+| 페이지 패딩 (데스크탑)    | `20px 24px`            | `layout.css` |
+| 페이지 패딩 (모바일)      | `16px`                 | `layout.css` |
+| 섹션 간 간격              | `20px`                 | `layout.css` |
+| 카드 내부 패딩 (데스크탑) | Ant Design 기본 + 토큰 | `antd.css`   |
+| 카드 내부 패딩 (모바일)   | `16px`                 | `antd.css`   |
+| 사이드바 패딩             | `16px`                 | `layout.css` |
+| 템플릿 카드 간격          | `8px`                  | CSS-in-JS    |
+
+### 하드코딩 금지 (CRITICAL)
+
+> ⚠️ CSS-in-JS 내 여백도 반드시 CSS 변수를 사용한다.
+
+| 금지 패턴                        | 대체                                           |
+| -------------------------------- | ---------------------------------------------- |
+| `padding: 16px 24px`             | `padding: var(--spacing-lg) var(--spacing-xl)` |
+| `gap: 8px` (CSS-in-JS)           | `gap: var(--spacing-sm)`                       |
+| `margin-bottom: 8px`             | `margin-bottom: var(--spacing-sm)`             |
+| `padding: 10px 12px`             | `padding: var(--spacing-sm) var(--spacing-md)` |
+| `border-radius: 8px` (CSS-in-JS) | `border-radius: var(--radius-lg)`              |
+
+### 여백 원칙
+
+```
+1. 여백은 관대하게 — "이게 너무 넓은 건 아닌가?"라고 느끼면 적당한 것
+2. 관련 없는 요소 사이는 넓게, 관련 있는 요소 사이는 좁게 (근접성 원칙)
+3. 카드 내부 패딩 > 카드 간 간격 (내부가 더 넉넉해야 카드가 살아남)
+4. 모바일에서도 여백을 아끼지 않는다 — 스크롤은 자연스러운 행동
+5. 수직 여백 > 수평 여백 (시선이 위에서 아래로 흐르므로)
+```
+
+---
+
+## 5. Border Radius (모서리 둥글기)
+
+| 토큰            | 값       | Tailwind 클래스 | 용도                   |
+| --------------- | -------- | --------------- | ---------------------- |
+| `--radius-xs`   | `4px`    | `rounded-xs`    | 뱃지, 태그, 작은 요소  |
+| `--radius-sm`   | `6px`    | `rounded-sm`    | 인풋, 토글             |
+| `--radius-md`   | `8px`    | `rounded-md`    | 버튼, 칩               |
+| `--radius-lg`   | `12px`   | `rounded-lg`    | 카드, 드롭다운, 팝오버 |
+| `--radius-xl`   | `16px`   | `rounded-xl`    | 모달, 바텀시트, 토스트 |
+| `--radius-2xl`  | `20px`   | `rounded-2xl`   | 대형 카드, 다이얼로그  |
+| `--radius-full` | `9999px` | `rounded-full`  | 원형, 필               |
+
+-   Ant Design `ConfigProvider`의 `token.borderRadius`: **12**
+
+### 라운딩 원칙
+
+```
+1. 큰 요소일수록 큰 라운딩 (버튼 8px < 카드 12px < 모달 16px)
+2. 중첩 요소의 내부 라운딩 = 외부 라운딩 - 패딩 (시각적 일관성)
+3. 직각 모서리는 사용하지 않는다 (최소 4px 이상)
+```
+
+---
+
+## 6. 그림자/깊이 (Shadow & Depth)
+
+| 레벨          | 값                             | 용도                |
+| ------------- | ------------------------------ | ------------------- |
+| **shadow-xs** | `0 1px 2px rgba(0,0,0,0.04)`   | 카드 기본 상태      |
+| **shadow-sm** | `0 2px 8px rgba(0,0,0,0.06)`   | 카드 호버, 드롭다운 |
+| **shadow-md** | `0 4px 16px rgba(0,0,0,0.08)`  | 팝오버, 토스트      |
+| **shadow-lg** | `0 8px 24px rgba(0,0,0,0.12)`  | 모달                |
+| **shadow-xl** | `0 12px 40px rgba(0,0,0,0.16)` | 오버레이 다이얼로그 |
+
+### 깊이 원칙
+
+```
+1. 그림자는 최대한 미세하게 — 존재감보다 자연스러움
+2. 호버 시 그림자가 살짝 깊어지는 것으로 인터랙션 피드백
+3. 보더 vs 그림자: 구분이 필요하면 보더, 떠있음이 필요하면 그림자
+4. 블러 효과: 배경 블러(backdrop-filter: blur)로 가벼운 느낌 가능
+5. 그림자 색상에 약간의 컬러를 섞으면 자연스러움
+   예: 프라이머리 카드 → rgba(49,130,246, 0.15) 그림자
+```
+
+---
+
+## 7. 컴포넌트 스타일 가이드 (Component Style Guide)
+
+### 카드 (Card)
+
+```
+배경:        white (#FFFFFF)
+보더:        1px solid gray-100 (#F2F4F6) — border-light
+라운딩:      12px (radius-lg)
+그림자:      0 1px 2px rgba(0,0,0,0.04) — shadow-xs
+내부 패딩:   20px ~ 24px
+카드 간 간격: 16px ~ 20px
+호버 효과:   shadow-sm (선택적)
+```
+
+**카드 사용 원칙:**
+
+-   카드 안에 카드를 넣지 않는다 (중첩 최대 1단계)
+-   카드 헤더는 `font-semibold (600)`, 카드 본문은 `font-normal (400)`
+-   카드 내 액션 버튼은 우측 하단 또는 카드 하단에 배치
+
+### 버튼 (Button)
+
+| 타입          | 배경          | 텍스트    | 보더 | 라운딩 |
+| ------------- | ------------- | --------- | ---- | ------ |
+| **Primary**   | `#3182F6`     | `white`   | 없음 | `8px`  |
+| **Secondary** | `#F2F4F6`     | `#4E5968` | 없음 | `8px`  |
+| **Ghost**     | `transparent` | `#4E5968` | 없음 | `8px`  |
+| **Danger**    | `#F04452`     | `white`   | 없음 | `8px`  |
+
+```
+높이:         40px (기본), 48px (대형), 32px (소형)
+패딩:         좌우 16px (기본), 24px (대형), 12px (소형)
+폰트:         font-semibold (600), text-md (15px)
+호버:         밝기 약간 어두워짐, shadow rgba(49,130,246,0.4)
+클릭:         scale(0.98) + 약간 더 어두움
+비활성:       opacity 0.4, cursor not-allowed
+```
+
+**버튼 원칙:**
+
+-   한 화면에 Primary 버튼은 **최대 1개**
+-   텍스트만 있는 버튼이 아이콘+텍스트보다 우선
+-   버튼 라벨은 동사형: "저장", "추가", "시작" (명사형 ❌)
+
+### 인풋 (Input)
+
+```
+높이:         44px (모바일), 40px (데스크탑)
+배경:         gray-100 (#F2F4F6) — 비활성/빈 상태
+              white (#FFFFFF) — 포커스 상태
+보더:         포커스 시 2px solid primary (#3182F6)
+              기본: 없음 (배경색으로 구분)
+라운딩:       8px (radius-md)
+폰트:         text-md (15px), font-normal (400)
+플레이스홀더: gray-400 (#B0B8C1)
+```
+
+**인풋 원칙:**
+
+-   라벨은 인풋 위에 배치 (좌측 라벨 지양)
+-   에러 메시지는 인풋 바로 아래, `text-error text-sm`
+-   포커스 시 부드러운 transition (150ms ease)
+
+### 모달 (Modal)
+
+```
+배경:         white (#FFFFFF)
+오버레이:     rgba(0, 0, 0, 0.4) + backdrop-filter: blur(4px)
+라운딩:       16px (radius-xl) — 데스크탑
+              16px 16px 0 0 — 모바일 (바텀시트)
+내부 패딩:    24px
+그림자:       shadow-lg
+최대 너비:    480px (기본), 600px (대형)
+```
+
+**모달 원칙:**
+
+-   모달 제목은 `text-xl (19px), font-semibold (600)`
+-   모달 본문은 `text-md (15px), font-normal (400), text-text-secondary`
+-   닫기 버튼: 우측 상단 X 아이콘 또는 "닫기" 텍스트
+-   모바일에서는 가능하면 바텀시트로 전환
+
+### 테이블 (Table)
+
+```
+헤더 배경:    bg-bg-light (#F9FAFB)
+헤더 텍스트:  text-sm (13px), font-semibold (600), text-text-secondary
+셀 텍스트:    text-md (15px), font-normal (400), text-text-primary
+행 높이:      52px (넉넉하게)
+행 호버:      bg-bg-light 배경
+선택 행:      bg-primary-light (#ECF2FE)
+구분선:       1px solid border-light (#F2F4F6) — 수평선만
+```
+
+### 태그/뱃지 (Tag/Badge)
+
+```
+배경:         각 컬러의 10% 투명도 (예: primary → rgba(49,130,246,0.1))
+텍스트:       각 컬러 원본
+라운딩:       6px
+패딩:         4px 8px
+폰트:         text-sm (13px), font-medium (500)
+```
+
+### 빈 상태 (Empty State)
+
+```
+아이콘:       48px, text-text-hint (#D1D6DB)
+제목:         text-lg (17px), font-semibold (600), text-text-primary
+설명:         text-md (15px), font-normal (400), text-gray-500
+액션 버튼:    Secondary 버튼 스타일
+전체 패딩:    48px 이상 (넉넉한 여백)
+정렬:         수직 중앙, 텍스트 중앙 정렬
+```
+
+### 토스트/알림 (Toast)
+
+```
+배경:         gray-900 (#191F28) — 다크 토스트
+텍스트:       white, text-md (15px)
+라운딩:       12px
+패딩:         12px 20px
+그림자:       shadow-md
+위치:         화면 하단 중앙 (모바일), 우측 하단 (데스크탑)
+표시 시간:    3초 (기본), 5초 (액션 포함)
+```
+
+---
+
+## 8. 인터랙션/애니메이션 (Interaction & Animation)
+
+### 기존 시스템 활용
+
+`shared/ui/animation/`의 framer-motion 시스템을 **그대로 유지**한다.
+
+### 토스 스타일 트랜지션 가이드
+
+| 상황              | 추천 방식      | 설정                             |
+| ----------------- | -------------- | -------------------------------- |
+| 버튼 호버/클릭    | CSS transition | `150ms ease`                     |
+| 카드 호버         | CSS transition | `200ms ease`, `translateY(-1px)` |
+| 페이지 전환       | framer-motion  | `SLIDE` 프리셋, spring           |
+| 모달 등장         | framer-motion  | `FADE` + `SLIDE.up`, 200ms       |
+| 리스트 아이템     | framer-motion  | stagger 50ms, `FADE`             |
+| 토스트            | framer-motion  | `SLIDE.up` + `FADE`              |
+| Skeleton → 컨텐츠 | framer-motion  | `FADE`, 200ms                    |
+
+### 애니메이션 원칙
+
+```
+1. 모든 상태 전환에 transition 적용 (최소 150ms)
+2. 갑자기 나타나거나 사라지는 것은 없다 (opacity + transform)
+3. 스프링 물리가 linear/ease보다 자연스럽다
+4. 애니메이션 시간은 짧게: 150~300ms (500ms 이상은 답답함)
+5. 사용자 설정에서 애니메이션 끄기 옵션은 유지
+6. 의미 있는 애니메이션만 — 장식적 애니메이션은 지양
+```
+
+---
+
+## 9. UX Writing 가이드
+
+### 어조 (Tone)
+
+```
+해요체 사용       — "~합니다" 대신 "~해요", "~됐어요"
+능동형 문장       — "삭제되었습니다" → "삭제했어요"
+긍정적 표현       — "실패했습니다" → "다시 시도해 주세요"
+캐주얼한 경어     — "~하시겠습니까?" → "~할까요?"
+한자어 풀어쓰기   — "저장 완료" → "저장했어요"
+```
+
+### 문구 패턴
+
+| 상황      | 기존 스타일 (❌)         | 토스 스타일 (✅)                      |
+| --------- | ------------------------ | ------------------------------------- |
+| 저장 성공 | "저장되었습니다"         | "저장했어요"                          |
+| 삭제 확인 | "정말 삭제하시겠습니까?" | "삭제할까요?"                         |
+| 삭제 완료 | "삭제되었습니다"         | "삭제했어요"                          |
+| 에러      | "오류가 발생했습니다"    | "문제가 생겼어요. 다시 시도해 주세요" |
+| 빈 상태   | "데이터가 없습니다"      | "아직 기록이 없어요"                  |
+| 로딩      | "로딩 중..."             | (Skeleton UI로 대체, 텍스트 없이)     |
+| 권유      | "작업을 추가하세요"      | "작업을 추가해 보세요"                |
+
+### UX Writing 원칙
+
+```
+1. 짧게 — 한 문장 15자 이내 권장, 30자 초과 금지
+2. 명확하게 — 무엇이 일어났는지/일어날지 분명히
+3. 공감 — 사용자의 감정에 맞는 톤 (실패 시 부드럽게)
+4. 행동 유도 — "~해 보세요"로 자연스러운 다음 행동 안내
+5. 전문 용어 제거 — 개발자가 아닌 사용자의 언어로
+```
+
+---
+
+## 10. 레이아웃 원칙 (Layout)
+
+### 데스크탑
+
+```
+최대 컨텐츠 너비:  1200px (중앙 정렬)
+사이드바 너비:     240px (접힌 상태 64px)
+헤더 높이:         56px
+컨텐츠 패딩:       20px 24px
+카드 그리드:       gap 20px
+```
+
+### 모바일
+
+```
+컨텐츠 패딩:       16px
+하단 네비 높이:    56px + safe-area
+카드 패딩:         16px
+풀 블리드 카드:    좌우 패딩 0, 카드가 화면 가장자리까지
+```
+
+### 레이아웃 원칙
+
+```
+1. 한 줄에 너무 많은 정보를 넣지 않는다 (최대 3~4개 항목)
+2. 중요한 정보는 화면 상단 1/3 안에 배치
+3. 스크롤은 자연스러운 행동 — 한 화면에 다 넣으려 하지 않기
+4. 수직 리듬을 유지 — 같은 간격으로 요소 반복
+5. 좌측 정렬 기본 (한국어/영어 모두 좌→우 읽기)
+```
+
+---
+
+## 11. 접근성 (Accessibility)
+
+```
+1. 터치 타겟: 최소 44px × 44px (모바일)
+2. 컬러 대비: WCAG AA 기준 4.5:1 이상 (텍스트)
+3. 포커스 링: 키보드 포커스 시 2px solid primary (outline)
+4. 폰트 크기: 최소 13px (본문), 모바일 인풋 16px (확대 방지)
+5. 애니메이션: prefers-reduced-motion 미디어 쿼리 존중
+```
+
+---
+
+## 12. 디자인 토큰 파일 위치
+
+모든 디자인 토큰의 **Single Source of Truth**:
+
+| 토큰 유형     | CSS 파일                              | JS 상수 파일                            |
+| ------------- | ------------------------------------- | --------------------------------------- |
+| 컬러          | `src/styles/tokens/colors.css`        | `src/shared/constants/style/colors.ts`  |
+| 타이포그래피  | `src/styles/tokens/typography.css`    | `src/shared/constants/style/spacing.ts` |
+| 여백/반경     | `src/styles/tokens/spacing.css`       | `src/shared/constants/style/spacing.ts` |
+| z-index       | `src/styles/tokens/z-index.css`       | `src/shared/constants/style/colors.ts`  |
+| Tailwind 등록 | `src/styles/global.css` (`@theme`)    | —                                       |
+| Ant Design    | `src/app/providers/ThemeProvider.tsx` | —                                       |
+| Pretendard    | `index.html` (`<link>` CDN)           | —                                       |
+
+### CSS 변수 우선 원칙
+
+```
+1. Tailwind 클래스 사용이 최우선 (className="text-primary bg-bg-light")
+2. Tailwind으로 불가능한 경우 → CSS 변수 (var(--color-primary))
+3. JS에서 런타임 계산이 필요한 경우만 → JS 상수 (SEMANTIC_COLORS.success)
+4. 하드코딩 hex 값은 어떤 경우에도 금지
+```

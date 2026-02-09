@@ -190,7 +190,7 @@ export function GanttChartContent({
                                 >
                                     <Text
                                         ellipsis
-                                        className="!text-[11px] !max-w-[80px]"
+                                        className="!text-xs !max-w-[80px]"
                                     >
                                         {group.record.deal_name ||
                                             group.record.work_name}

@@ -17,7 +17,7 @@ export function DateColumn({ date }: DateColumnProps) {
     const is_past = date < today;
 
     return (
-        <Text type={is_past ? "warning" : "secondary"} className="!text-[11px]">
+        <Text type={is_past ? "warning" : "secondary"} className="!text-xs">
             {date === today
                 ? RECORD_UI_TEXT.TODAY_TEXT
                 : date.slice(DATE_SLICE_START)}

@@ -19,7 +19,7 @@ interface LoadingSpinnerProps {
 
 export function LoadingSpinner({
     size = 24,
-    color = "#1890ff",
+    color = "var(--color-primary)",
     thickness = 2,
     className,
     style,
@@ -30,7 +30,7 @@ export function LoadingSpinner({
             style={{
                 width: size,
                 height: size,
-                border: `${thickness}px solid #f0f0f0`,
+                border: `${thickness}px solid var(--color-border-light)`,
                 borderTop: `${thickness}px solid ${color}`,
                 borderRadius: "50%",
                 ...style,
@@ -65,7 +65,7 @@ interface LoadingDotsProps {
  */
 export function LoadingDots({
     size = 8,
-    color = "#1890ff",
+    color = "var(--color-primary)",
     gap = 4,
     className,
     style,
@@ -122,7 +122,7 @@ interface LoadingPulseProps {
  */
 export function LoadingPulse({
     size = 24,
-    color = "#1890ff",
+    color = "var(--color-primary)",
     className,
     style,
 }: LoadingPulseProps) {

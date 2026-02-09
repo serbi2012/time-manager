@@ -466,7 +466,7 @@ export function DesktopWorkRecordTable() {
                             onClick={openAddModal}
                         >
                             {RECORD_BUTTON.NEW_WORK}{" "}
-                            <span className="text-[11px] opacity-85 ml-xs py-px px-xs bg-white/20 rounded-[3px]">
+                            <span className="text-xs opacity-85 ml-xs py-px px-xs bg-white/20 rounded-[3px]">
                                 {formatShortcutKeyForPlatform(new_work_keys)}
                             </span>
                         </Button>
@@ -475,7 +475,7 @@ export function DesktopWorkRecordTable() {
                         <Tooltip title={RECORD_TOOLTIP.COMPLETED_LIST}>
                             <Button
                                 icon={
-                                    <CheckCircleOutlined className="!text-[#52c41a]" />
+                                    <CheckCircleOutlined className="!text-success" />
                                 }
                                 onClick={openCompletedModal}
                             >
@@ -486,7 +486,7 @@ export function DesktopWorkRecordTable() {
                         <Tooltip title={RECORD_TOOLTIP.TRASH_LIST}>
                             <Button
                                 icon={
-                                    <DeleteOutlined className="!text-[#ff4d4f]" />
+                                    <DeleteOutlined className="!text-error" />
                                 }
                                 onClick={openTrashModal}
                             >

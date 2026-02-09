@@ -39,7 +39,7 @@ export function AutoCompleteOptionLabel({
                 <HighlightText text={text} search={search} />
             </span>
             <CloseOutlined
-                className="!text-[10px] !text-[#999] cursor-pointer"
+                className="!text-xs !text-text-disabled cursor-pointer"
                 onClick={(e) => {
                     e.stopPropagation();
                     onHide(option_type, value);
