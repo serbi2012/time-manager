@@ -1,0 +1,37 @@
+/* Admin Session Grid Styles */
+
+.admin-conflict-row {
+    background: #fff2f0 !important;
+}
+
+.admin-conflict-row td {
+    background: #fff2f0 !important;
+}
+
+.admin-conflict-row:hover td {
+    background: #ffccc7 !important;
+}
+
+.admin-problem-row {
+    background: #fff7e6 !important;
+}
+
+.admin-problem-row td {
+    background: #fff7e6 !important;
+}
+
+.admin-problem-row:hover td {
+    background: #ffd591 !important;
+}
+
+.admin-invisible-row {
+    background: #f9f0ff !important;
+}
+
+.admin-invisible-row td {
+    background: #f9f0ff !important;
+}
+
+.admin-invisible-row:hover td {
+    background: #d3adf7 !important;
+}

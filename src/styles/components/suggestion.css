@@ -1,0 +1,121 @@
+/* Suggestion Board Styles */
+
+.suggestion-collapse .ant-collapse-item {
+    margin-bottom: 8px;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px !important;
+    overflow: hidden;
+}
+
+.suggestion-collapse .ant-collapse-header {
+    padding: 12px 16px !important;
+    background: #fafafa;
+}
+
+.suggestion-collapse .ant-collapse-content-box {
+    padding: 16px !important;
+}
+
+.suggestion-item-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.suggestion-item-title {
+    font-size: 15px;
+}
+
+.suggestion-item-meta {
+    font-size: 12px;
+    color: #8c8c8c;
+}
+
+.suggestion-item-meta .anticon {
+    margin-right: 4px;
+}
+
+.suggestion-replies {
+    margin-bottom: 16px;
+}
+
+.suggestion-reply-item {
+    padding: 10px 12px;
+    background: #f9f9f9;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    border-left: 3px solid #1890ff;
+}
+
+.suggestion-reply-content {
+    margin-bottom: 4px;
+}
+
+.suggestion-reply-meta {
+    text-align: right;
+}
+
+.suggestion-reply-form {
+    margin-top: 8px;
+}
+
+.suggestion-admin-controls {
+    background: #fafafa;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 8px;
+}
+
+.suggestion-item-title .ant-tag {
+    margin-left: 0;
+}
+
+@media (max-width: 480px) {
+    .suggestion-item-meta .ant-space {
+        flex-wrap: wrap;
+        gap: 4px !important;
+    }
+
+    .suggestion-item-meta .ant-divider {
+        display: none;
+    }
+
+    .suggestion-reply-form .ant-space-compact {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .suggestion-reply-form .ant-space-compact > * {
+        width: 100% !important;
+        border-radius: 6px !important;
+    }
+
+    .suggestion-reply-form .ant-space-compact .ant-input-affix-wrapper {
+        width: 100% !important;
+    }
+
+    .suggestion-reply-form .ant-space-compact .ant-btn {
+        width: 100% !important;
+    }
+
+    .suggestion-item-title .ant-space {
+        flex-wrap: wrap;
+        gap: 6px !important;
+    }
+
+    .suggestion-admin-controls .ant-space {
+        width: 100%;
+    }
+
+    .suggestion-admin-controls .ant-select {
+        width: 100% !important;
+    }
+
+    .suggestion-admin-controls .ant-input {
+        width: 100% !important;
+    }
+
+    .suggestion-admin-controls .ant-btn {
+        width: 100%;
+    }
+}

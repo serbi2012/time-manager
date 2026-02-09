@@ -1,0 +1,32 @@
+/* Mobile Gantt Chart Styles */
+
+@media (max-width: 480px) {
+    .gantt-scroll-container {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        max-width: 100%;
+    }
+
+    .gantt-scroll-container::-webkit-scrollbar {
+        display: none;
+    }
+
+    .gantt-mobile-scroll {
+        min-width: 600px;
+    }
+
+    .gantt-time-label {
+        font-size: 10px;
+    }
+
+    .gantt-bar {
+        min-height: 28px;
+    }
+
+    .gantt-bar-label {
+        font-size: 10px;
+    }
+}

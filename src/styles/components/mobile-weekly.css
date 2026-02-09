@@ -1,0 +1,47 @@
+/* Mobile Weekly Schedule Styles */
+
+@media (max-width: 480px) {
+    .weekly-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch !important;
+    }
+
+    .weekly-header .ant-space {
+        justify-content: center;
+    }
+
+    .weekly-header .ant-btn {
+        padding: 4px 12px;
+    }
+
+    .weekly-day-card {
+        margin-bottom: 12px;
+    }
+
+    .weekly-day-header {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+
+    .weekly-work-item {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .weekly-deal-item {
+        padding-left: 20px;
+        font-size: 12px;
+    }
+
+    .weekly-preview {
+        font-size: 12px;
+    }
+
+    .weekly-preview pre {
+        font-size: 11px;
+        padding: 12px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+}

@@ -182,80 +182,115 @@ function MyModal() {
 -   **사용자에게 보이는 모든 문구는 상수화**: 버튼/라벨/제목/힌트/설명/빈 상태 문구 등 **한 번만 써도** 상수로 정의합니다. 컴포넌트 안에 `"작업 기록이 없습니다"`, `"드래그하여 작업 추가"` 같은 하드코딩 문자열을 두지 않습니다.
 -   **`message.info` / `message.success` / `message.error` / `message.warning`** 인자도 **반드시 상수**로 정의합니다. 예: `message.success("세션이 삭제되었습니다.")` → `message.success(GANTT_MESSAGE_SESSION_DELETED)`.
 
-**인라인 스타일 객체 엄격 금지 (CRITICAL):**
+**스타일 작성: Tailwind 유틸리티 클래스 우선 (CRITICAL):**
 
-> ⚠️ **절대 위반 금지**: 모든 `style={{...}}` inline 객체는 **줄 수와 무관**하게 **반드시 상수로 분리**합니다.
+> ⚠️ **절대 위반 금지**: 새 코드의 스타일은 **Tailwind 유틸리티 클래스**를 우선 사용합니다.
+> `style={{...}}` inline 객체와 `CSSProperties` 상수는 **동적 계산 값**에만 허용합니다.
 
 ```typescript
-// ❌ 절대 금지: 1줄짜리 inline style
-<div style={{ display: "flex" }}>...</div>
+// ❌ 금지: inline style 객체
+<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>...</div>
 
-// ❌ 절대 금지: 여러 줄 inline style
-<div style={{
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center"
-}}>...</div>
+// ❌ 금지: CSSProperties 상수 (새 코드에서)
+const HEADER_STYLE: React.CSSProperties = { display: "flex", gap: 8 };
+<div style={HEADER_STYLE}>...</div>
 
-// ✅ 필수: 상수로 분리 (1줄이어도 반드시)
-const FLEX_CONTAINER_STYLE: React.CSSProperties = {
-    display: "flex",
-};
+// ✅ 필수: Tailwind 유틸리티 클래스
+<div className="flex justify-between items-center">...</div>
 
-const OPTION_LABEL_CONTAINER_STYLE: React.CSSProperties = {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-};
-
-<div style={FLEX_CONTAINER_STYLE}>...</div>
-<div style={OPTION_LABEL_CONTAINER_STYLE}>...</div>
+// ✅ 허용: 동적 계산 값만 inline style 사용
+<div
+    className="absolute h-full rounded"
+    style={{ left: `${start_pct}%`, width: `${width_pct}%` }}
+>...</div>
 ```
 
-**inline style 상수 위치:**
-
--   **1회 사용**: 컴포넌트 파일 상단 (export 전, 컴포넌트 외부)
--   **2회 이상 사용**: `feature/constants/styles.ts` 또는 `shared/ui/form/styles.ts`
--   **의미 있는 토큰** (색상, 폰트, 간격): 반드시 `constants/style/` 또는 `feature/constants/`
+**cn() 유틸리티 사용 (조건부 스타일):**
 
 ```typescript
-// ✅ 권장: 파일 상단에 상수 정의
-const MODAL_TITLE_SECONDARY_STYLE: React.CSSProperties = {
-    fontWeight: "normal",
-};
+import { cn } from "@/shared/lib/cn";
 
-const FORM_ITEM_FLEX_STYLE: React.CSSProperties = {
-    flex: 1,
-};
+// ✅ 필수: 조건부 스타일은 cn() 사용
+<div className={cn(
+    "rounded-xl p-4 border",
+    is_active
+        ? "border-primary bg-white shadow-md"
+        : "border-dashed border-border-default bg-bg-light"
+)}>
 
-export function MyComponent() {
-    return <Text style={MODAL_TITLE_SECONDARY_STYLE}>제목</Text>;
+// ✅ props로 className override 허용
+interface CardProps {
+    className?: string;
+}
+function Card({ className }: CardProps) {
+    return <div className={cn("rounded-lg p-4 bg-white", className)}>...</div>;
 }
 ```
 
-**매직 넘버/문자열 금지:**
+**className 작성 순서:**
 
--   색상(`#666`, `#ff4d4f` 등), 폰트 크기(11, 12), 간격(4, 8, 16), 최소 너비(160 등)는 **매직 넘버/문자열 금지**. `constants/` 또는 feature 내 `constants/` 사용.
+```typescript
+className={cn(
+    // 1. Layout (display, position, flex, grid)
+    "flex items-center justify-between",
+    // 2. Sizing (width, height)
+    "w-full h-14",
+    // 3. Spacing (margin, padding, gap)
+    "px-6 py-4 gap-2",
+    // 4. Typography (font, text)
+    "text-sm font-medium text-text-primary",
+    // 5. Visual (bg, border, shadow, rounded)
+    "bg-white border border-border-default rounded-lg shadow-sm",
+    // 6. Interactive (hover, focus, transition)
+    "hover:bg-bg-light transition-colors duration-200",
+    // 7. Responsive (sm:, md:, lg:, max-sm:)
+    "max-sm:px-3 max-sm:h-[52px]",
+    // 8. Conditional
+    is_active && "border-primary bg-primary/5",
+)}
+```
+
+**스타일 방식 결정 트리:**
 
 ```
-❌ 금지: 인라인 매직 넘버/색상
-style={{ minWidth: 160, color: "#666", fontSize: 12, marginTop: 4 }}
-
-✅ 필수: 상수 또는 스타일 토큰
-import { GANTT_CONTEXT_MENU_MIN_WIDTH, GANTT_TEXT_SECONDARY, GANTT_FONT_SMALL } from "../constants";
-const MENU_STYLE: React.CSSProperties = {
-    minWidth: GANTT_CONTEXT_MENU_MIN_WIDTH,
-    color: GANTT_TEXT_SECONDARY,
-    fontSize: GANTT_FONT_SMALL,
-    marginTop: 4,
-};
-style={MENU_STYLE}
+New style needed?
+├─ Simple layout/spacing/color/font? → Tailwind utility class
+├─ Conditional/dynamic class?        → cn() + Tailwind classes
+├─ Ant Design component override?    → CSS file with global selector (styles/overrides/)
+├─ Complex pseudo-selector/nesting?  → CSS file (styles/components/)
+├─ Dynamic value from JS?            → inline style={{ }} (ONLY exception)
+├─ Entry/exit animation?             → framer-motion preset
+└─ Repeating keyframe animation?     → CSS @keyframes (styles/utilities/keyframes.css)
 ```
+
+**디자인 토큰 사용 (Tailwind theme tokens):**
+
+```typescript
+// ❌ 금지: 매직 넘버/색상 하드코딩
+<div className="text-[#666] text-[12px] mt-[4px]">  // ← arbitrary values 남용 금지
+
+// ✅ 필수: 디자인 토큰 참조
+<div className="text-text-secondary text-sm mt-xs">
+
+// 사용 가능한 토큰 (src/styles/tokens/ 참조):
+// Colors: text-primary, text-text-secondary, bg-bg-light, border-border-default, ...
+// Spacing: p-xs(4px), p-sm(8px), p-md(12px), p-lg(16px), p-xl(24px), ...
+// Font: text-xs(10px), text-sm(12px), text-md(14px), text-lg(16px), ...
+// Radius: rounded-xs(2px), rounded-sm(4px), rounded-md(6px), rounded-lg(8px), ...
+// Z-Index: z-base, z-dropdown, z-modal, z-tooltip, z-top
+```
+
+**기존 CSSProperties 상수 (마이그레이션 중 허용):**
+
+기존 `feature/constants/styles.ts`의 `CSSProperties` 상수는 마이그레이션 완료 전까지 **기존 코드에서 그대로 사용 가능**합니다.
+새 코드에서는 Tailwind 클래스를 사용합니다.
+
+**UI/메시지 문구 상수화 (기존 규칙 유지):**
 
 ```
 ❌ 금지: 인라인 UI/메시지 문구
 message.success("세션이 삭제되었습니다.");
-<Text>💡 빈 영역을 드래그하여 작업 추가</Text>
+<Text>빈 영역을 드래그하여 작업 추가</Text>
 
 ✅ 필수: constants/labels 또는 feature constants 사용
 message.success(GANTT_MESSAGE_SESSION_DELETED);
@@ -264,14 +299,19 @@ message.success(GANTT_MESSAGE_SESSION_DELETED);
 
 **분리 기준:**
 
-| 책임          | 위치                    |
-| ------------- | ----------------------- |
-| UI 렌더링     | `components/`, `ui/`    |
-| 비즈니스 로직 | `lib/` (순수 함수)      |
-| 상태 관리     | `store/`, `hooks/`      |
-| API 통신      | `api/`, `firebase/`     |
-| 타입 정의     | `types/`                |
-| 상수          | `config/`, `constants/` |
+| 책임              | 위치                                   |
+| ----------------- | -------------------------------------- |
+| UI 렌더링         | `components/`, `ui/`                   |
+| 비즈니스 로직     | `lib/` (순수 함수)                     |
+| 상태 관리         | `store/`, `hooks/`                     |
+| API 통신          | `api/`, `firebase/`                    |
+| 타입 정의         | `types/`                               |
+| 상수              | `config/`, `constants/`                |
+| 디자인 토큰       | `styles/tokens/` (CSS vars)            |
+| antd 오버라이드   | `styles/overrides/` (CSS)              |
+| 피쳐 스타일       | `styles/components/` (CSS)             |
+| 애니메이션        | `shared/ui/animation/` (framer-motion) |
+| 유틸리티 (스타일) | `shared/lib/cn.ts` (className 합성)    |
 
 ---
 
@@ -980,3 +1020,4 @@ const handleChange = (value: any) => { ... };
 -   `project-overview.mdc`: 프로젝트 구조 및 아키텍처
 -   `versioning.mdc`: 버저닝 전략
 -   `release-prep.mdc`: 릴리즈 프로세스
+-   `docs/STYLE_ARCHITECTURE.md`: 스타일 아키텍처 설계 (Tailwind v4 + CSS Modules)

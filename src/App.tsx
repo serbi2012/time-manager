@@ -71,7 +71,7 @@ import {
     syncTemplate,
     syncSettings,
 } from "./firebase/syncService";
-import "./App.css";
+import "./styles/app.css";
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;

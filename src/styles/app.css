@@ -1,0 +1,30 @@
+/*
+ * App Styles - Barrel Import
+ * Replaces the monolithic App.css
+ *
+ * Import order matters for CSS cascade.
+ * Scrollbar styles are here (not in global.css) to override index.css.
+ */
+
+/* Utilities that must come after index.css */
+@import "./utilities/scrollbar.css";
+
+/* Layout */
+@import "./layout.css";
+
+/* Ant Design Overrides */
+@import "./overrides/antd.css";
+
+/* Mobile Components */
+@import "./components/mobile-header.css";
+@import "./components/mobile-nav.css";
+@import "./components/mobile-record.css";
+@import "./components/mobile-gantt.css";
+@import "./components/mobile-weekly.css";
+@import "./components/mobile-settings.css";
+
+/* Feature Components */
+@import "./components/suggestion.css";
+@import "./components/guide.css";
+@import "./components/demo.css";
+@import "./components/admin.css";
