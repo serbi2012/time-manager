@@ -94,7 +94,7 @@ export function AnimationTab({ is_mobile }: AnimationTabProps) {
                         <span>트랜지션 효과</span>
                     </Space>
                 }
-                styles={{ body: { padding: is_mobile ? "0 12px" : "0 16px" } }}
+                styles={{ body: { padding: is_mobile ? "12px" : "16px" } }}
             >
                 <SettingItem
                     title="페이지 진입 애니메이션"

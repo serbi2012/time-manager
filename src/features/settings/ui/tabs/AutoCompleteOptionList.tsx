@@ -137,9 +137,7 @@ export function AutoCompleteOptionList({
                 },
                 body: {
                     padding:
-                        !has_content && hidden_list.length === 0
-                            ? "0"
-                            : "12px 16px",
+                        !has_content && hidden_list.length === 0 ? "0" : "16px",
                 },
             }}
         >
