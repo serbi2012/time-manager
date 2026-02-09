@@ -97,7 +97,6 @@ export function DataTab({
                 }}
             >
                 <SettingItem
-                    icon={<ClockCircleOutlined />}
                     title={SETTINGS_DATA_LUNCH_TITLE}
                     description={SETTINGS_DATA_LUNCH_DESC}
                     is_mobile={is_mobile}
@@ -131,7 +130,6 @@ export function DataTab({
                 }}
             >
                 <SettingItem
-                    icon={<AppstoreOutlined />}
                     title={SETTINGS_DATA_POSTFIX_TITLE}
                     description={SETTINGS_DATA_POSTFIX_DESC}
                     is_mobile={is_mobile}

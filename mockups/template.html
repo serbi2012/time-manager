@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>UI Mockup</title>
+
+        <!-- Tailwind CSS Play CDN -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        spacing: {
+                            xs: "4px",
+                            sm: "8px",
+                            md: "12px",
+                            lg: "16px",
+                            xl: "24px",
+                            "2xl": "32px",
+                        },
+                    },
+                },
+            };
+        </script>
+
+        <!-- React 18 UMD -->
+        <script
+            crossorigin
+            src="https://unpkg.com/react@18/umd/react.development.js"
+        ></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+        ></script>
+
+        <!-- Day.js (antd peer dependency) -->
+        <script src="https://unpkg.com/dayjs@1/dayjs.min.js"></script>
+
+        <!-- Ant Design 5 UMD (CSS-in-JS, no separate CSS needed) -->
+        <script src="https://unpkg.com/antd@5/dist/antd.min.js"></script>
+
+        <!-- Ant Design Icons UMD -->
+        <script src="https://unpkg.com/@ant-design/icons@5/dist/index.umd.min.js"></script>
+
+        <!-- Babel Standalone for JSX -->
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+        <style>
+            body {
+                margin: 0;
+                padding: 24px;
+                background: #f5f5f5;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                    Roboto, sans-serif;
+            }
+            #root {
+                max-width: 900px;
+                margin: 0 auto;
+            }
+            .mockup-header {
+                text-align: center;
+                margin-bottom: 32px;
+                padding-bottom: 16px;
+                border-bottom: 1px solid #e8e8e8;
+            }
+            .mockup-header h1 {
+                font-size: 20px;
+                font-weight: 700;
+                color: #333;
+                margin: 0 0 4px;
+            }
+            .mockup-header p {
+                font-size: 13px;
+                color: #999;
+                margin: 0;
+            }
+            .mockup-section {
+                margin-bottom: 48px;
+            }
+            .mockup-section-label {
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                color: #1890ff;
+                margin-bottom: 12px;
+            }
+            .mockup-frame {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+                padding: 24px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <script type="text/babel">
+            /**
+             * =============================================
+             *  UI MOCKUP TEMPLATE
+             * =============================================
+             *
+             *  Usage:
+             *  1. Copy this file as mockups/[feature-name].html
+             *  2. Edit the MockupApp component below
+             *  3. Run: npx serve mockups -p 3456
+             *  4. Open: http://localhost:3456/[feature-name].html
+             *
+             *  Available:
+             *  - All Ant Design components: antd.Button, antd.Card, antd.Modal, etc.
+             *  - All Ant Design Icons: icons.EditOutlined, icons.DeleteOutlined, etc.
+             *  - Tailwind CSS utility classes
+             *  - React 18 hooks: React.useState, React.useEffect, etc.
+             */
+
+            // Destructure commonly used Ant Design components
+            const {
+                Button,
+                Card,
+                Switch,
+                Select,
+                Input,
+                Typography,
+                Space,
+                Tag,
+                Modal,
+                Collapse,
+                Empty,
+                Divider,
+                Form,
+                Checkbox,
+                Radio,
+                Popconfirm,
+                Tooltip,
+                Table,
+                List,
+                Tabs,
+                Badge,
+                Alert,
+                TimePicker,
+            } = antd;
+
+            const { Text, Title, Paragraph } = Typography;
+
+            // Destructure commonly used icons
+            const {
+                EditOutlined,
+                DeleteOutlined,
+                PlusOutlined,
+                SettingOutlined,
+                SearchOutlined,
+                CloseOutlined,
+                CheckOutlined,
+                ThunderboltOutlined,
+                SaveOutlined,
+                DownloadOutlined,
+                UploadOutlined,
+                UndoOutlined,
+                ClockCircleOutlined,
+                AppstoreOutlined,
+                MessageOutlined,
+                CloudOutlined,
+                CheckCircleFilled,
+            } = icons;
+
+            // ============================================
+            // EDIT YOUR MOCKUP BELOW
+            // ============================================
+
+            function MockupApp() {
+                return (
+                    <div>
+                        <div className="mockup-header">
+                            <h1>Mockup Title</h1>
+                            <p>Description of what this mockup demonstrates</p>
+                        </div>
+
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                Section Name
+                            </div>
+                            <div className="mockup-frame">
+                                <Card title="Example Card">
+                                    <Space
+                                        direction="vertical"
+                                        style={{ width: "100%" }}
+                                    >
+                                        <Text>
+                                            Replace this with your mockup
+                                            content.
+                                        </Text>
+                                        <Button
+                                            type="primary"
+                                            icon={<EditOutlined />}
+                                        >
+                                            Sample Button
+                                        </Button>
+                                    </Space>
+                                </Card>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // ============================================
+            // DO NOT EDIT BELOW
+            // ============================================
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            root.render(<MockupApp />);
+        </script>
+    </body>
+</html>

@@ -132,7 +132,7 @@ export function DesktopSuggestionBoard() {
 
     return (
         <Layout className="app-body !p-0">
-            <Content className="max-w-[800px] mx-auto w-full p-xl">
+            <Content className="!max-w-[800px] !mx-auto w-full p-xl">
                 <Card
                     title={
                         <Space>

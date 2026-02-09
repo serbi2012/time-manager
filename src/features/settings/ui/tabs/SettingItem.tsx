@@ -7,7 +7,7 @@ import { Typography } from "antd";
 const { Text } = Typography;
 
 export interface SettingItemProps {
-    icon: React.ReactNode;
+    icon?: React.ReactNode;
     title: string;
     description?: string;
     action: React.ReactNode;
@@ -29,7 +29,10 @@ export function SettingItem({
                         {title}
                     </Text>
                     {description && (
-                        <Text type="secondary" className="!text-xs !leading-[1.4]">
+                        <Text
+                            type="secondary"
+                            className="!text-xs !leading-[1.4]"
+                        >
                             {description}
                         </Text>
                     )}
@@ -42,7 +45,11 @@ export function SettingItem({
     return (
         <div className="flex items-center justify-between py-lg border-b border-[#f0f0f0]">
             <div className="flex items-start gap-md flex-1">
-                <div className="w-9 h-9 rounded-lg bg-[#f5f5f5] flex items-center justify-center text-base text-[#595959] shrink-0">{icon}</div>
+                {icon && (
+                    <div className="w-9 h-9 rounded-lg bg-[#f5f5f5] flex items-center justify-center text-base text-[#595959] shrink-0">
+                        {icon}
+                    </div>
+                )}
                 <div className="flex-1">
                     <Text strong className="!text-sm !block">
                         {title}

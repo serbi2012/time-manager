@@ -11,11 +11,11 @@ import {
     type TransitionSpeed,
 } from "../../../../store/useWorkStore";
 import { TRANSITION_SPEED_LABELS } from "../../../../shared/ui";
+import { cn } from "@/shared/lib/cn";
 
 const { Text } = Typography;
 
 interface SettingItemProps {
-    icon: React.ReactNode;
     title: string;
     description: string;
     action: React.ReactNode;
@@ -23,7 +23,6 @@ interface SettingItemProps {
 }
 
 function SettingItem({
-    icon,
     title,
     description,
     action,
@@ -31,20 +30,14 @@ function SettingItem({
 }: SettingItemProps) {
     if (is_mobile) {
         return (
-            <div className="py-md border-b border-[#f0f0f0]">
+            <div className="py-md border-b border-[#f0f0f0] last:border-b-0">
                 <div className="flex justify-between items-center mb-xs">
-                    <Space size={8}>
-                        {icon}
-                        <Text strong className="!text-[13px]">
-                            {title}
-                        </Text>
-                    </Space>
+                    <Text strong className="!text-[13px]">
+                        {title}
+                    </Text>
                     {action}
                 </div>
-                <Text
-                    type="secondary"
-                    className="!text-[11px] !block !pl-[22px]"
-                >
+                <Text type="secondary" className="!text-[11px] !block">
                     {description}
                 </Text>
             </div>
@@ -52,20 +45,16 @@ function SettingItem({
     }
 
     return (
-        <div className="flex justify-between items-center py-md border-b border-[#f0f0f0]">
-            <div className="flex-1">
-                <Space size={8}>
-                    {icon}
-                    <Text strong>{title}</Text>
-                </Space>
-                <Text
-                    type="secondary"
-                    className="!block !mt-[2px] !pl-[22px]"
-                >
+        <div className="flex items-center justify-between py-[14px] border-b border-[#fafafa] last:border-b-0">
+            <div className="flex-1 min-w-0">
+                <Text strong className="!text-[13px] !block !mb-[2px]">
+                    {title}
+                </Text>
+                <Text type="secondary" className="!text-xs !leading-[1.4]">
                     {description}
                 </Text>
             </div>
-            {action}
+            <div className="shrink-0 ml-xl">{action}</div>
         </div>
     );
 }
@@ -95,13 +84,7 @@ export function AnimationTab({ is_mobile }: AnimationTabProps) {
     );
 
     return (
-        <div
-            style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: is_mobile ? 16 : 24,
-            }}
-        >
+        <div className={cn("flex flex-col", is_mobile ? "gap-lg" : "gap-xl")}>
             {/* 트랜지션 효과 섹션 */}
             <Card
                 size="small"
@@ -114,7 +97,6 @@ export function AnimationTab({ is_mobile }: AnimationTabProps) {
                 styles={{ body: { padding: is_mobile ? "0 12px" : "0 16px" } }}
             >
                 <SettingItem
-                    icon={<ThunderboltOutlined />}
                     title="페이지 진입 애니메이션"
                     description="페이지 로딩 후 UI가 슬라이드되며 나타납니다"
                     is_mobile={is_mobile}
@@ -126,7 +108,6 @@ export function AnimationTab({ is_mobile }: AnimationTabProps) {
                     }
                 />
                 <SettingItem
-                    icon={<ThunderboltOutlined />}
                     title="애니메이션 속도"
                     description="트랜지션 효과의 속도를 조절합니다"
                     is_mobile={is_mobile}

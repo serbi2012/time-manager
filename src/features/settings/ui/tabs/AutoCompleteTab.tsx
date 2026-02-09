@@ -1,9 +1,17 @@
 /**
- * 자동완성 옵션 관리 탭
+ * AutoComplete option management tab with card-based section grouping
  */
 
 import { useState, useMemo } from "react";
 import { Divider, Typography } from "antd";
+import {
+    FileTextOutlined,
+    TeamOutlined,
+    ShoppingOutlined,
+    CodeOutlined,
+    AppstoreOutlined,
+    TagsOutlined,
+} from "@ant-design/icons";
 import { useWorkStore } from "@/store/useWorkStore";
 import {
     DEFAULT_TASK_OPTIONS,
@@ -19,6 +27,8 @@ import {
     SETTINGS_AUTOCOMPLETE_PROJECT_CODE,
     SETTINGS_AUTOCOMPLETE_TASK_OPTION,
     SETTINGS_AUTOCOMPLETE_CATEGORY_OPTION,
+    SETTINGS_AUTOCOMPLETE_INPUT_GROUP,
+    SETTINGS_AUTOCOMPLETE_SELECT_GROUP,
 } from "../../constants";
 import {
     AutoCompleteOptionList,
@@ -26,6 +36,9 @@ import {
 } from "./AutoCompleteOptionList";
 
 const { Text } = Typography;
+
+const GROUP_LABEL_CLASS =
+    "!text-xs !font-semibold !text-[#8c8c8c] !block !mb-md";
 
 export function AutoCompleteTab() {
     const {
@@ -142,86 +155,101 @@ export function AutoCompleteTab() {
 
     return (
         <div>
-            <Text
-                type="secondary"
-                className="!block !mb-lg"
-            >
+            <Text type="secondary" className="!block !mb-xl !text-[13px]">
                 {SETTINGS_AUTOCOMPLETE_DESC}
             </Text>
 
-            <AutoCompleteOptionList
-                title={SETTINGS_AUTOCOMPLETE_WORK_NAME}
-                field="work_name"
-                visible_options={visible_work_names}
-                selected={selected_work_names}
-                set_selected={setSelectedWorkNames}
-                hidden_list={hidden("work_name")}
-                on_bulk_hide={handleBulkHide}
-                on_unhide={handleUnhide}
-                on_bulk_unhide={handleBulkUnhide}
-            />
+            <Text className={GROUP_LABEL_CLASS}>
+                {SETTINGS_AUTOCOMPLETE_INPUT_GROUP}
+            </Text>
 
-            <AutoCompleteOptionList
-                title={SETTINGS_AUTOCOMPLETE_TASK_NAME}
-                field="task_name"
-                visible_options={visible_task_names}
-                selected={selected_task_names}
-                set_selected={setSelectedTaskNames}
-                hidden_list={hidden("task_name")}
-                on_bulk_hide={handleBulkHide}
-                on_unhide={handleUnhide}
-                on_bulk_unhide={handleBulkUnhide}
-            />
+            <div className="flex flex-col gap-md mb-xl">
+                <AutoCompleteOptionList
+                    icon={<FileTextOutlined />}
+                    title={SETTINGS_AUTOCOMPLETE_WORK_NAME}
+                    field="work_name"
+                    visible_options={visible_work_names}
+                    selected={selected_work_names}
+                    set_selected={setSelectedWorkNames}
+                    hidden_list={hidden("work_name")}
+                    on_bulk_hide={handleBulkHide}
+                    on_unhide={handleUnhide}
+                    on_bulk_unhide={handleBulkUnhide}
+                />
 
-            <AutoCompleteOptionList
-                title={SETTINGS_AUTOCOMPLETE_DEAL_NAME}
-                field="deal_name"
-                visible_options={visible_deal_names}
-                selected={selected_deal_names}
-                set_selected={setSelectedDealNames}
-                hidden_list={hidden("deal_name")}
-                on_bulk_hide={handleBulkHide}
-                on_unhide={handleUnhide}
-                on_bulk_unhide={handleBulkUnhide}
-            />
+                <AutoCompleteOptionList
+                    icon={<TeamOutlined />}
+                    title={SETTINGS_AUTOCOMPLETE_TASK_NAME}
+                    field="task_name"
+                    visible_options={visible_task_names}
+                    selected={selected_task_names}
+                    set_selected={setSelectedTaskNames}
+                    hidden_list={hidden("task_name")}
+                    on_bulk_hide={handleBulkHide}
+                    on_unhide={handleUnhide}
+                    on_bulk_unhide={handleBulkUnhide}
+                />
 
-            <AutoCompleteOptionList
-                title={SETTINGS_AUTOCOMPLETE_PROJECT_CODE}
-                field="project_code"
-                visible_options={visible_project_codes}
-                selected={selected_project_codes}
-                set_selected={setSelectedProjectCodes}
-                hidden_list={hidden("project_code")}
-                on_bulk_hide={handleBulkHide}
-                on_unhide={handleUnhide}
-                on_bulk_unhide={handleBulkUnhide}
-            />
+                <AutoCompleteOptionList
+                    icon={<ShoppingOutlined />}
+                    title={SETTINGS_AUTOCOMPLETE_DEAL_NAME}
+                    field="deal_name"
+                    visible_options={visible_deal_names}
+                    selected={selected_deal_names}
+                    set_selected={setSelectedDealNames}
+                    hidden_list={hidden("deal_name")}
+                    on_bulk_hide={handleBulkHide}
+                    on_unhide={handleUnhide}
+                    on_bulk_unhide={handleBulkUnhide}
+                />
 
-            <Divider />
+                <AutoCompleteOptionList
+                    icon={<CodeOutlined />}
+                    title={SETTINGS_AUTOCOMPLETE_PROJECT_CODE}
+                    field="project_code"
+                    visible_options={visible_project_codes}
+                    selected={selected_project_codes}
+                    set_selected={setSelectedProjectCodes}
+                    hidden_list={hidden("project_code")}
+                    on_bulk_hide={handleBulkHide}
+                    on_unhide={handleUnhide}
+                    on_bulk_unhide={handleBulkUnhide}
+                />
+            </div>
 
-            <AutoCompleteOptionList
-                title={SETTINGS_AUTOCOMPLETE_TASK_OPTION}
-                field="task_option"
-                visible_options={visible_task_options}
-                selected={selected_task_options}
-                set_selected={setSelectedTaskOptions}
-                hidden_list={hidden("task_option")}
-                on_bulk_hide={handleBulkHide}
-                on_unhide={handleUnhide}
-                on_bulk_unhide={handleBulkUnhide}
-            />
+            <Divider style={{ margin: "4px 0 20px" }}>
+                <Text type="secondary" className="!text-[11px]">
+                    {SETTINGS_AUTOCOMPLETE_SELECT_GROUP}
+                </Text>
+            </Divider>
 
-            <AutoCompleteOptionList
-                title={SETTINGS_AUTOCOMPLETE_CATEGORY_OPTION}
-                field="category_option"
-                visible_options={visible_category_options}
-                selected={selected_category_options}
-                set_selected={setSelectedCategoryOptions}
-                hidden_list={hidden("category_option")}
-                on_bulk_hide={handleBulkHide}
-                on_unhide={handleUnhide}
-                on_bulk_unhide={handleBulkUnhide}
-            />
+            <div className="flex flex-col gap-md">
+                <AutoCompleteOptionList
+                    icon={<AppstoreOutlined />}
+                    title={SETTINGS_AUTOCOMPLETE_TASK_OPTION}
+                    field="task_option"
+                    visible_options={visible_task_options}
+                    selected={selected_task_options}
+                    set_selected={setSelectedTaskOptions}
+                    hidden_list={hidden("task_option")}
+                    on_bulk_hide={handleBulkHide}
+                    on_unhide={handleUnhide}
+                    on_bulk_unhide={handleBulkUnhide}
+                />
+
+                <AutoCompleteOptionList
+                    icon={<TagsOutlined />}
+                    title={SETTINGS_AUTOCOMPLETE_CATEGORY_OPTION}
+                    field="category_option"
+                    visible_options={visible_category_options}
+                    selected={selected_category_options}
+                    set_selected={setSelectedCategoryOptions}
+                    hidden_list={hidden("category_option")}
+                    on_bulk_hide={handleBulkHide}
+                    on_unhide={handleUnhide}
+                    on_bulk_unhide={handleBulkUnhide}
+                />
+            </div>
         </div>
     );
 }
