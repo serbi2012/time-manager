@@ -147,6 +147,7 @@ export const GANTT_MODAL_SELECT_WORK_PROMPT =
 export const GANTT_MODAL_SESSION_TIME_HEADER = "세션 시간";
 export const GANTT_MODAL_ACTIVE_SESSION_HINT =
     "💡 진행 중인 세션은 시작 시간만 수정할 수 있습니다";
+export const GANTT_MODAL_DURATION_LABEL = "소요";
 
 // ---------- 폼 검증 메시지 ----------
 
