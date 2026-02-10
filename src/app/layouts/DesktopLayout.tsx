@@ -25,7 +25,11 @@ import { useWorkStore } from "../../store/useWorkStore";
 import { useSyncStatus } from "../../features/sync";
 import { useShortcuts } from "../../hooks/useShortcuts";
 import { useAuthHandlers, useDataImportExport } from "../../shared/hooks";
-import { INFO_MESSAGES, WARNING_MESSAGES } from "../../shared/constants";
+import {
+    INFO_MESSAGES,
+    WARNING_MESSAGES,
+    FEATURE_FLAGS,
+} from "../../shared/constants";
 import { CURRENT_VERSION } from "../../constants/changelog";
 import SettingsModal from "../../components/SettingsModal";
 import ChangelogModal from "../../components/ChangelogModal";
@@ -154,18 +158,22 @@ export function DesktopLayout() {
                     </Link>
                 ),
             },
-            {
-                key: "/suggestions",
-                icon: <MessageOutlined />,
-                label: (
-                    <Link
-                        to="/suggestions"
-                        className="text-inherit no-underline"
-                    >
-                        건의사항
-                    </Link>
-                ),
-            },
+            ...(FEATURE_FLAGS.suggestions.visible
+                ? [
+                      {
+                          key: "/suggestions",
+                          icon: <MessageOutlined />,
+                          label: (
+                              <Link
+                                  to="/suggestions"
+                                  className="text-inherit no-underline"
+                              >
+                                  건의사항
+                              </Link>
+                          ),
+                      },
+                  ]
+                : []),
             {
                 key: "/guide",
                 icon: <BookOutlined />,

@@ -25,7 +25,7 @@ import {
 } from "@/features/work-template/hooks";
 import {
     TEMPLATE_CARD_TITLE,
-    BUTTON_ADD,
+    BUTTON_ADD_FULL,
 } from "@/features/work-template/constants";
 import { EmptyPresetState } from "../EmptyPresetState";
 
@@ -68,8 +68,8 @@ export function DesktopWorkTemplateList({
         <>
             <div className="flex flex-col h-full">
                 {/* Header */}
-                <div className="flex items-center justify-between px-lg py-md">
-                    <h3 className="text-md font-semibold text-text-primary m-0">
+                <div className="flex flex-col gap-md px-lg pt-lg pb-sm">
+                    <h3 className="text-lg font-semibold text-text-primary m-0">
                         {TEMPLATE_CARD_TITLE}
                     </h3>
 
@@ -80,22 +80,23 @@ export function DesktopWorkTemplateList({
                             type="button"
                             onClick={handleOpenAddModal}
                             className={cn(
-                                "inline-flex items-center gap-xs",
-                                "border-none cursor-pointer bg-transparent",
-                                "text-sm font-medium text-primary",
-                                "hover:text-primary-dark",
-                                "active:scale-95",
-                                "transition-all duration-150"
+                                "w-full inline-flex items-center justify-center gap-sm",
+                                "py-md rounded-xl cursor-pointer",
+                                "text-sm font-semibold text-text-secondary",
+                                "bg-bg-light border-[1.5px] border-dashed border-border-dark",
+                                "hover:bg-primary/5 hover:text-primary hover:border-primary",
+                                "active:scale-[0.99]",
+                                "transition-all duration-200"
                             )}
                         >
                             <PlusOutlined className="text-xs" />
-                            {BUTTON_ADD}
+                            {BUTTON_ADD_FULL}
                         </button>
                     </Tooltip>
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto px-lg pb-lg">
+                <div className="flex-1 overflow-y-auto px-lg pt-[2px] pb-lg">
                     <AnimatePresence mode="wait">
                         {templates.length === 0 ? (
                             <motion.div

@@ -77,7 +77,7 @@ export function SortableTemplateCard({
     const title_element = (
         <span
             ref={title_ref}
-            className="text-sm font-semibold text-text-primary line-clamp-2 break-words"
+            className="text-sm font-semibold text-text-primary line-clamp-2 break-words leading-snug"
         >
             {title}
         </span>
@@ -86,7 +86,7 @@ export function SortableTemplateCard({
     const subtitle_element = subtitle ? (
         <span
             ref={subtitle_ref}
-            className="text-xs text-text-secondary block truncate mt-px"
+            className="text-xs text-text-secondary block truncate mt-[3px]"
         >
             {subtitle}
         </span>
@@ -98,21 +98,20 @@ export function SortableTemplateCard({
             style={drag_style}
             className={cn(
                 "group relative flex items-center",
-                "bg-white rounded-xl shadow-xs overflow-hidden",
-                "border border-border-light",
+                "bg-white rounded-xl overflow-hidden",
+                "border border-border-default",
+                "shadow-xs",
                 "transition-all duration-200",
-                "hover:shadow-sm hover:-translate-y-px hover:border-border-default",
+                "hover:shadow-sm hover:-translate-y-px hover:border-border-dark",
                 isDragging &&
                     "opacity-70 shadow-md scale-[1.02] z-50 border-primary/30"
             )}
         >
-            {/* Left color stripe */}
+            {/* Left color stripe (tapered ends) */}
             <div className="flex items-center pl-[6px] self-stretch flex-shrink-0">
                 <div
                     className="w-[3px] h-[60%] rounded-full"
-                    style={{
-                        background: `linear-gradient(to bottom, ${template.color}, ${template.color}88)`,
-                    }}
+                    style={{ background: template.color }}
                 />
             </div>
 
@@ -132,7 +131,7 @@ export function SortableTemplateCard({
             </div>
 
             {/* Content */}
-            <div className="flex-1 py-md pl-sm pr-0 min-w-0">
+            <div className="flex-1 py-lg pl-sm pr-0 min-w-0">
                 {title_overflowing ? (
                     <Tooltip title={title}>{title_element}</Tooltip>
                 ) : (
@@ -148,7 +147,7 @@ export function SortableTemplateCard({
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-xs pr-md flex-shrink-0">
+            <div className="flex items-center gap-sm pr-md flex-shrink-0">
                 <TemplateCardMenu
                     onEdit={() => onEdit(template)}
                     onDelete={() => onDelete(template.id)}
@@ -164,11 +163,11 @@ export function SortableTemplateCard({
                             transition={SPRING.snappy}
                             className={cn(
                                 "flex items-center justify-center",
-                                "w-6 h-6 rounded-full border-none cursor-pointer",
-                                "transition-colors duration-150",
+                                "w-[34px] h-[34px] rounded-full border-none cursor-pointer",
+                                "transition-all duration-200",
                                 show_check
-                                    ? "bg-success/15 text-success"
-                                    : "bg-primary/8 text-primary hover:bg-primary/15"
+                                    ? "bg-success/12 text-success"
+                                    : "bg-primary/6 text-primary hover:bg-primary/12"
                             )}
                         >
                             {show_check ? (
@@ -177,10 +176,10 @@ export function SortableTemplateCard({
                                     animate={{ scale: 1, rotate: 0 }}
                                     transition={SPRING.bouncy}
                                 >
-                                    <CheckOutlined className="!text-[10px]" />
+                                    <CheckOutlined className="text-sm" />
                                 </motion.span>
                             ) : (
-                                <PlusOutlined className="!text-[10px]" />
+                                <PlusOutlined className="text-sm" />
                             )}
                         </motion.button>
                     </Tooltip>

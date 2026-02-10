@@ -46,6 +46,7 @@ import {
     ERROR_MESSAGES,
     WARNING_MESSAGES,
     INFO_MESSAGES,
+    FEATURE_FLAGS,
 } from "./shared/constants";
 import WorkRecordTable from "./components/WorkRecordTable";
 import WorkTemplateList from "./components/WorkTemplateList";
@@ -444,18 +445,22 @@ function AppLayout() {
                     </Link>
                 ),
             },
-            {
-                key: "/suggestions",
-                icon: <MessageOutlined />,
-                label: (
-                    <Link
-                        to="/suggestions"
-                        className="text-inherit no-underline"
-                    >
-                        건의사항
-                    </Link>
-                ),
-            },
+            ...(FEATURE_FLAGS.suggestions.visible
+                ? [
+                      {
+                          key: "/suggestions",
+                          icon: <MessageOutlined />,
+                          label: (
+                              <Link
+                                  to="/suggestions"
+                                  className="text-inherit no-underline"
+                              >
+                                  건의사항
+                              </Link>
+                          ),
+                      },
+                  ]
+                : []),
             {
                 key: "/guide",
                 icon: <BookOutlined />,
@@ -821,15 +826,19 @@ function AppLayout() {
                         <CalendarOutlined />
                         <span>주간</span>
                     </button>
-                    <button
-                        className={`mobile-nav-item ${
-                            location.pathname === "/suggestions" ? "active" : ""
-                        }`}
-                        onClick={() => navigate("/suggestions")}
-                    >
-                        <MessageOutlined />
-                        <span>건의</span>
-                    </button>
+                    {FEATURE_FLAGS.suggestions.visible && (
+                        <button
+                            className={`mobile-nav-item ${
+                                location.pathname === "/suggestions"
+                                    ? "active"
+                                    : ""
+                            }`}
+                            onClick={() => navigate("/suggestions")}
+                        >
+                            <MessageOutlined />
+                            <span>건의</span>
+                        </button>
+                    )}
                     <button
                         className={`mobile-nav-item ${
                             location.pathname === "/guide" ? "active" : ""

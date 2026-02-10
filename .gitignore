@@ -24,7 +24,3 @@ dist-ssr
 *.sw?
 
 dev-dist
-
-# Mockup temp files (keep template.html)
-mockups/*.html
-!mockups/template.html

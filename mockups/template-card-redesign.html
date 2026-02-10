@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>작업 프리셋 카드 리디자인 목업</title>
+
+        <!-- Tailwind CSS Play CDN -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        spacing: {
+                            xs: "4px",
+                            sm: "8px",
+                            md: "12px",
+                            lg: "16px",
+                            xl: "24px",
+                            "2xl": "32px",
+                            section: "48px",
+                        },
+                        colors: {
+                            primary: {
+                                DEFAULT: "#3182F6",
+                                dark: "#1B64DA",
+                                light: "#ECF2FE",
+                            },
+                            success: "#34C759",
+                            error: "#F04452",
+                            text: {
+                                primary: "#191F28",
+                                secondary: "#6B7684",
+                                disabled: "#B0B8C1",
+                                hint: "#D1D6DB",
+                            },
+                            bg: {
+                                default: "#FFFFFF",
+                                light: "#F9FAFB",
+                                grey: "#F2F4F6",
+                                app: "#F9FAFB",
+                            },
+                            border: {
+                                default: "#E5E8EB",
+                                light: "#F2F4F6",
+                                dark: "#D1D6DB",
+                            },
+                            gray: {
+                                50: "#F9FAFB",
+                                100: "#F2F4F6",
+                                200: "#E5E8EB",
+                                300: "#D1D6DB",
+                                400: "#B0B8C1",
+                                500: "#8B95A1",
+                                600: "#6B7684",
+                                700: "#4E5968",
+                                800: "#333D4B",
+                                900: "#191F28",
+                            },
+                        },
+                        fontSize: {
+                            xs: "11px",
+                            sm: "13px",
+                            md: "15px",
+                            lg: "17px",
+                            xl: "19px",
+                            "2xl": "22px",
+                        },
+                        borderRadius: {
+                            xs: "4px",
+                            sm: "6px",
+                            md: "8px",
+                            lg: "12px",
+                            xl: "16px",
+                            "2xl": "20px",
+                            full: "9999px",
+                        },
+                        boxShadow: {
+                            xs: "0 1px 2px rgba(0,0,0,0.04)",
+                            sm: "0 2px 8px rgba(0,0,0,0.06)",
+                            md: "0 4px 16px rgba(0,0,0,0.08)",
+                            lg: "0 8px 24px rgba(0,0,0,0.12)",
+                        },
+                    },
+                },
+            };
+        </script>
+
+        <!-- React 18 UMD -->
+        <script
+            crossorigin
+            src="https://unpkg.com/react@18/umd/react.development.js"
+        ></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+        ></script>
+
+        <!-- Day.js -->
+        <script src="https://unpkg.com/dayjs@1/dayjs.min.js"></script>
+
+        <!-- Ant Design 5 UMD -->
+        <script src="https://unpkg.com/antd@5/dist/antd.min.js"></script>
+
+        <!-- Ant Design Icons UMD -->
+        <script src="https://unpkg.com/@ant-design/icons@5/dist/index.umd.min.js"></script>
+
+        <!-- Babel Standalone -->
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+        <style>
+            @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
+
+            body {
+                margin: 0;
+                padding: 24px;
+                background: #f2f4f6;
+                font-family: "Pretendard Variable", Pretendard, -apple-system,
+                    BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            }
+            #root {
+                max-width: 1100px;
+                margin: 0 auto;
+            }
+            .mockup-header {
+                text-align: center;
+                margin-bottom: 40px;
+                padding-bottom: 20px;
+                border-bottom: 1px solid #e5e8eb;
+            }
+            .mockup-header h1 {
+                font-size: 22px;
+                font-weight: 700;
+                color: #191f28;
+                margin: 0 0 6px;
+            }
+            .mockup-header p {
+                font-size: 13px;
+                color: #8b95a1;
+                margin: 0;
+            }
+            .mockup-section {
+                margin-bottom: 56px;
+            }
+            .mockup-section-label {
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+                color: #3182f6;
+                margin-bottom: 6px;
+            }
+            .mockup-section-desc {
+                font-size: 13px;
+                color: #6b7684;
+                margin-bottom: 16px;
+            }
+            .mockup-frame {
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+                overflow: hidden;
+            }
+            .mockup-comparison {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 24px;
+            }
+            @media (max-width: 768px) {
+                .mockup-comparison {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const { Button, Typography, Tag, Tooltip, Dropdown } = antd;
+
+            const { Text } = Typography;
+
+            const {
+                PlusOutlined,
+                MoreOutlined,
+                EditOutlined,
+                DeleteOutlined,
+                HolderOutlined,
+                CheckOutlined,
+                FolderOpenOutlined,
+                ThunderboltOutlined,
+                AppstoreOutlined,
+                RightOutlined,
+            } = icons;
+
+            // ========== MOCK DATA ==========
+            const MOCK_TEMPLATES = [
+                {
+                    id: "1",
+                    work_name: "문서작업",
+                    deal_name: "",
+                    task_name: "문서작업",
+                    category_name: "작업",
+                    project_code: "",
+                    color: "#3182F6",
+                },
+                {
+                    id: "2",
+                    work_name: "환경세팅",
+                    deal_name: "",
+                    task_name: "환경세팅",
+                    category_name: "작업",
+                    project_code: "",
+                    color: "#34C759",
+                },
+                {
+                    id: "3",
+                    work_name: "회의",
+                    deal_name: "",
+                    task_name: "회의",
+                    category_name: "작업",
+                    project_code: "",
+                    color: "#FF9500",
+                },
+                {
+                    id: "4",
+                    work_name: "질의응답",
+                    deal_name: "",
+                    task_name: "질의응답",
+                    category_name: "작업",
+                    project_code: "",
+                    color: "#AF52DE",
+                },
+                {
+                    id: "5",
+                    work_name: "세트메뉴설정",
+                    deal_name: "",
+                    task_name: "",
+                    category_name: "개발",
+                    project_code: "",
+                    color: "#FF2D55",
+                },
+                {
+                    id: "6",
+                    work_name: "시간관리 및 주간일정작성",
+                    deal_name: "",
+                    task_name: "문서작업",
+                    category_name: "작업",
+                    project_code: "",
+                    color: "#5856D6",
+                },
+                {
+                    id: "7",
+                    work_name: "5.6 잡",
+                    deal_name: "",
+                    task_name: "",
+                    category_name: "개발",
+                    project_code: "",
+                    color: "#007AFF",
+                },
+            ];
+
+            // ========== CURRENT DESIGN (for comparison) ==========
+            function CurrentCard({ template }) {
+                const subtitle = [template.task_name, template.category_name]
+                    .filter(Boolean)
+                    .join(" · ");
+
+                return (
+                    <div
+                        className="group relative flex items-center bg-white rounded-xl overflow-hidden border border-gray-100"
+                        style={{ boxShadow: "0 1px 2px rgba(0,0,0,0.04)" }}
+                    >
+                        <div className="flex items-center pl-[6px] self-stretch flex-shrink-0">
+                            <div
+                                className="w-[3px] h-[60%] rounded-full"
+                                style={{
+                                    background: `linear-gradient(to bottom, ${template.color}, ${template.color}88)`,
+                                }}
+                            />
+                        </div>
+                        <div className="flex-1 py-[12px] pl-[8px] pr-0 min-w-0">
+                            <span className="text-[13px] font-semibold text-gray-900 line-clamp-2 break-words">
+                                {template.work_name}
+                            </span>
+                            {subtitle && (
+                                <span className="text-[11px] text-gray-500 block truncate mt-px">
+                                    {subtitle}
+                                </span>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-[4px] pr-[12px] flex-shrink-0">
+                            <button
+                                className="flex items-center justify-center w-6 h-6 rounded-full border-none cursor-pointer bg-blue-50 text-blue-500"
+                                style={{ fontSize: 10 }}
+                            >
+                                <PlusOutlined />
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            function CurrentDesign() {
+                return (
+                    <div className="p-[16px]">
+                        <div className="flex items-center justify-between px-0 py-[12px]">
+                            <h3 className="text-[15px] font-semibold text-gray-900 m-0">
+                                작업 프리셋
+                            </h3>
+                            <button className="inline-flex items-center gap-[4px] border-none cursor-pointer bg-transparent text-[13px] font-medium text-blue-500">
+                                <PlusOutlined style={{ fontSize: 11 }} />
+                                추가
+                            </button>
+                        </div>
+                        <div className="flex flex-col gap-[8px]">
+                            {MOCK_TEMPLATES.map((t) => (
+                                <CurrentCard key={t.id} template={t} />
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
+            // ========== OPTION A: "Spacious & Soft" ==========
+            // 카드 패딩 증가 + 소프트한 그라데이션 배경 + 둥근 CTA 버튼
+            function OptionACard({ template }) {
+                const subtitle = [template.task_name, template.category_name]
+                    .filter(Boolean)
+                    .join(" · ");
+                const [hovered, setHovered] = React.useState(false);
+                const [added, setAdded] = React.useState(false);
+
+                return (
+                    <div
+                        className="group relative flex items-center bg-white rounded-xl overflow-hidden border border-gray-100 transition-all duration-200 cursor-pointer"
+                        style={{
+                            boxShadow: hovered
+                                ? "0 4px 16px rgba(0,0,0,0.07)"
+                                : "0 1px 3px rgba(0,0,0,0.04)",
+                            transform: hovered ? "translateY(-1px)" : "none",
+                        }}
+                        onMouseEnter={() => setHovered(true)}
+                        onMouseLeave={() => setHovered(false)}
+                    >
+                        {/* Left accent - thicker gradient bar */}
+                        <div
+                            className="w-[4px] self-stretch flex-shrink-0 rounded-l-xl"
+                            style={{
+                                background: `linear-gradient(180deg, ${template.color}, ${template.color}66)`,
+                            }}
+                        />
+
+                        {/* Content area - more padding */}
+                        <div className="flex-1 py-[16px] pl-[16px] pr-[8px] min-w-0">
+                            <span className="text-[14px] font-semibold text-gray-900 line-clamp-2 break-words leading-[1.4]">
+                                {template.work_name}
+                            </span>
+                            {subtitle && (
+                                <span className="text-[12px] text-gray-500 block truncate mt-[4px]">
+                                    {subtitle}
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-[6px] pr-[14px] flex-shrink-0">
+                            <button
+                                className="flex items-center justify-center w-7 h-7 rounded-full border-none cursor-pointer transition-all duration-150"
+                                style={{
+                                    background: hovered
+                                        ? "#F2F4F6"
+                                        : "transparent",
+                                    color: "#8B95A1",
+                                    fontSize: 14,
+                                    opacity: hovered ? 1 : 0,
+                                }}
+                            >
+                                <MoreOutlined />
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setAdded(true);
+                                    setTimeout(() => setAdded(false), 800);
+                                }}
+                                className="flex items-center justify-center w-[32px] h-[32px] rounded-full border-none cursor-pointer transition-all duration-200"
+                                style={{
+                                    background: added
+                                        ? "rgba(52, 199, 89, 0.12)"
+                                        : hovered
+                                        ? "rgba(49, 130, 246, 0.12)"
+                                        : "rgba(49, 130, 246, 0.06)",
+                                    color: added ? "#34C759" : "#3182F6",
+                                    fontSize: 12,
+                                }}
+                            >
+                                {added ? <CheckOutlined /> : <PlusOutlined />}
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            function OptionAHeader({ onAdd }) {
+                const [hovered, setHovered] = React.useState(false);
+                return (
+                    <div className="flex items-center justify-between px-[2px] py-[14px]">
+                        <h3 className="text-[17px] font-semibold text-gray-900 m-0">
+                            작업 프리셋
+                        </h3>
+                        <button
+                            onClick={onAdd}
+                            onMouseEnter={() => setHovered(true)}
+                            onMouseLeave={() => setHovered(false)}
+                            className="inline-flex items-center gap-[6px] border-none cursor-pointer rounded-full transition-all duration-200"
+                            style={{
+                                padding: "6px 14px 6px 10px",
+                                background: hovered
+                                    ? "rgba(49, 130, 246, 0.1)"
+                                    : "rgba(49, 130, 246, 0.05)",
+                                color: "#3182F6",
+                                fontSize: 13,
+                                fontWeight: 600,
+                            }}
+                        >
+                            <PlusOutlined style={{ fontSize: 11 }} />
+                            추가
+                        </button>
+                    </div>
+                );
+            }
+
+            function OptionA() {
+                return (
+                    <div className="p-[16px]">
+                        <OptionAHeader />
+                        <div className="flex flex-col gap-[10px]">
+                            {MOCK_TEMPLATES.map((t) => (
+                                <OptionACard key={t.id} template={t} />
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
+            // ========== OPTION B: "Card with Category Badge" ==========
+            // 카테고리 뱃지 표시 + 큰 추가 버튼 + 카드 내 충분한 여백
+            function OptionBCard({ template }) {
+                const [hovered, setHovered] = React.useState(false);
+                const [added, setAdded] = React.useState(false);
+
+                return (
+                    <div
+                        className="group relative flex items-stretch bg-white rounded-xl overflow-hidden transition-all duration-200"
+                        style={{
+                            border: hovered
+                                ? "1px solid #E5E8EB"
+                                : "1px solid #F2F4F6",
+                            boxShadow: hovered
+                                ? "0 4px 12px rgba(0,0,0,0.06)"
+                                : "0 1px 2px rgba(0,0,0,0.03)",
+                            transform: hovered ? "translateY(-1px)" : "none",
+                        }}
+                        onMouseEnter={() => setHovered(true)}
+                        onMouseLeave={() => setHovered(false)}
+                    >
+                        {/* Color accent */}
+                        <div
+                            className="w-[4px] flex-shrink-0"
+                            style={{ background: template.color }}
+                        />
+
+                        {/* Content */}
+                        <div className="flex-1 flex items-center py-[14px] pl-[14px] pr-[6px] min-w-0 gap-[12px]">
+                            {/* Text group */}
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-[8px] mb-[2px]">
+                                    <span className="text-[14px] font-semibold text-gray-900 truncate">
+                                        {template.work_name}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-[6px]">
+                                    <span
+                                        className="text-[11px] font-medium rounded-[4px] px-[6px] py-[1px]"
+                                        style={{
+                                            background: `${template.color}12`,
+                                            color: template.color,
+                                        }}
+                                    >
+                                        {template.category_name}
+                                    </span>
+                                    {template.task_name && (
+                                        <span className="text-[11px] text-gray-500">
+                                            {template.task_name}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex items-center gap-[4px] flex-shrink-0">
+                                <button
+                                    className="flex items-center justify-center w-7 h-7 rounded-md border-none cursor-pointer transition-all duration-150"
+                                    style={{
+                                        background: "transparent",
+                                        color: "#B0B8C1",
+                                        fontSize: 14,
+                                        opacity: hovered ? 1 : 0,
+                                    }}
+                                >
+                                    <MoreOutlined />
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setAdded(true);
+                                        setTimeout(() => setAdded(false), 800);
+                                    }}
+                                    className="flex items-center justify-center rounded-lg border-none cursor-pointer transition-all duration-200"
+                                    style={{
+                                        width: 32,
+                                        height: 32,
+                                        background: added
+                                            ? "rgba(52, 199, 89, 0.1)"
+                                            : "rgba(49, 130, 246, 0.06)",
+                                        color: added ? "#34C759" : "#3182F6",
+                                        fontSize: 12,
+                                    }}
+                                >
+                                    {added ? (
+                                        <CheckOutlined />
+                                    ) : (
+                                        <PlusOutlined />
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            function OptionBHeader({ onAdd }) {
+                const [hovered, setHovered] = React.useState(false);
+                return (
+                    <div className="flex items-center justify-between px-[2px] py-[14px]">
+                        <div className="flex items-center gap-[8px]">
+                            <h3 className="text-[17px] font-semibold text-gray-900 m-0">
+                                작업 프리셋
+                            </h3>
+                            <span
+                                className="text-[11px] font-semibold rounded-full px-[7px] py-[1px]"
+                                style={{
+                                    background: "rgba(49, 130, 246, 0.08)",
+                                    color: "#3182F6",
+                                }}
+                            >
+                                {MOCK_TEMPLATES.length}
+                            </span>
+                        </div>
+                        <button
+                            onClick={onAdd}
+                            onMouseEnter={() => setHovered(true)}
+                            onMouseLeave={() => setHovered(false)}
+                            className="inline-flex items-center justify-center border-none cursor-pointer rounded-lg transition-all duration-200"
+                            style={{
+                                width: 32,
+                                height: 32,
+                                background: hovered
+                                    ? "rgba(49, 130, 246, 0.12)"
+                                    : "#F2F4F6",
+                                color: hovered ? "#3182F6" : "#6B7684",
+                                fontSize: 14,
+                            }}
+                        >
+                            <PlusOutlined />
+                        </button>
+                    </div>
+                );
+            }
+
+            function OptionB() {
+                return (
+                    <div className="p-[16px]">
+                        <OptionBHeader />
+                        <div className="flex flex-col gap-[8px]">
+                            {MOCK_TEMPLATES.map((t) => (
+                                <OptionBCard key={t.id} template={t} />
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
+            // ========== OPTION C: "Prominent CTA + Rich Cards" ==========
+            // 상단에 눈에 띄는 CTA 버튼 + 카드에 아이콘/색상 원 + 풍성한 정보
+            function OptionCCard({ template }) {
+                const [hovered, setHovered] = React.useState(false);
+                const [added, setAdded] = React.useState(false);
+                const subtitle = [template.task_name, template.category_name]
+                    .filter(Boolean)
+                    .join(" · ");
+
+                return (
+                    <div
+                        className="group relative flex items-center bg-white rounded-xl overflow-hidden transition-all duration-200"
+                        style={{
+                            border: hovered
+                                ? "1px solid #D1D6DB"
+                                : "1px solid #E5E8EB",
+                            boxShadow: hovered
+                                ? "0 4px 16px rgba(0,0,0,0.06)"
+                                : "0 1px 3px rgba(0,0,0,0.03)",
+                            transform: hovered ? "translateY(-1px)" : "none",
+                        }}
+                        onMouseEnter={() => setHovered(true)}
+                        onMouseLeave={() => setHovered(false)}
+                    >
+                        {/* Color dot indicator */}
+                        <div className="flex items-center justify-center pl-[14px] self-stretch flex-shrink-0">
+                            <div
+                                className="w-[10px] h-[10px] rounded-full flex-shrink-0"
+                                style={{
+                                    background: template.color,
+                                    boxShadow: `0 0 0 3px ${template.color}20`,
+                                }}
+                            />
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 py-[16px] pl-[12px] pr-[8px] min-w-0">
+                            <span className="text-[14px] font-semibold text-gray-900 block truncate leading-[1.3]">
+                                {template.work_name}
+                            </span>
+                            {subtitle && (
+                                <span className="text-[12px] text-gray-500 block truncate mt-[3px]">
+                                    {subtitle}
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Right action area */}
+                        <div className="flex items-center gap-[6px] pr-[12px] flex-shrink-0">
+                            <button
+                                className="flex items-center justify-center w-7 h-7 rounded-md border-none cursor-pointer"
+                                style={{
+                                    background: "transparent",
+                                    color: "#B0B8C1",
+                                    fontSize: 14,
+                                    opacity: hovered ? 1 : 0,
+                                    transition: "all 150ms",
+                                }}
+                            >
+                                <MoreOutlined />
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setAdded(true);
+                                    setTimeout(() => setAdded(false), 800);
+                                }}
+                                className="flex items-center justify-center rounded-full border-none cursor-pointer transition-all duration-200"
+                                style={{
+                                    width: 34,
+                                    height: 34,
+                                    background: added
+                                        ? "rgba(52, 199, 89, 0.12)"
+                                        : hovered
+                                        ? "rgba(49, 130, 246, 0.12)"
+                                        : "rgba(49, 130, 246, 0.06)",
+                                    color: added ? "#34C759" : "#3182F6",
+                                    fontSize: 13,
+                                    transform: added
+                                        ? "scale(1.05)"
+                                        : "scale(1)",
+                                }}
+                            >
+                                {added ? <CheckOutlined /> : <PlusOutlined />}
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            function OptionCHeader({ onAdd }) {
+                const [btnHovered, setBtnHovered] = React.useState(false);
+                return (
+                    <div className="flex flex-col gap-[14px] pb-[14px]">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-[17px] font-semibold text-gray-900 m-0">
+                                작업 프리셋
+                            </h3>
+                        </div>
+                        <button
+                            onClick={onAdd}
+                            onMouseEnter={() => setBtnHovered(true)}
+                            onMouseLeave={() => setBtnHovered(false)}
+                            className="w-full inline-flex items-center justify-center gap-[6px] border-none cursor-pointer rounded-xl transition-all duration-200"
+                            style={{
+                                padding: "12px 0",
+                                background: btnHovered
+                                    ? "rgba(49, 130, 246, 0.08)"
+                                    : "#F9FAFB",
+                                color: btnHovered ? "#3182F6" : "#6B7684",
+                                fontSize: 13,
+                                fontWeight: 600,
+                                border: btnHovered
+                                    ? "1.5px dashed #3182F6"
+                                    : "1.5px dashed #D1D6DB",
+                            }}
+                        >
+                            <PlusOutlined style={{ fontSize: 12 }} />새 프리셋
+                            추가
+                        </button>
+                    </div>
+                );
+            }
+
+            function OptionC() {
+                return (
+                    <div className="p-[16px]">
+                        <OptionCHeader />
+                        <div className="flex flex-col gap-[10px]">
+                            {MOCK_TEMPLATES.map((t) => (
+                                <OptionCCard key={t.id} template={t} />
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
+            // ========== MAIN MOCKUP APP ==========
+            function MockupApp() {
+                return (
+                    <div>
+                        <div className="mockup-header">
+                            <h1>작업 프리셋 카드 리디자인</h1>
+                            <p>
+                                카드 두께 개선 / 추가 버튼 가시성 향상 / 토스
+                                스타일 적용
+                            </p>
+                        </div>
+
+                        {/* Current vs New Comparison */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">CURRENT</div>
+                            <div className="mockup-section-desc">
+                                현재 디자인 — 카드가 얇고, + 추가 버튼이 눈에 잘
+                                안 띕니다
+                            </div>
+                            <div className="mockup-comparison">
+                                <div>
+                                    <div
+                                        className="mockup-frame"
+                                        style={{ maxWidth: 380 }}
+                                    >
+                                        <CurrentDesign />
+                                    </div>
+                                </div>
+                                <div style={{ opacity: 0 }} />
+                            </div>
+                        </div>
+
+                        {/* Option A */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                OPTION A — Spacious & Soft
+                            </div>
+                            <div className="mockup-section-desc">
+                                <strong>변경점:</strong> 카드 패딩 증가(py
+                                12→16px) / 추가 버튼 pill 스타일(배경색 + 둥근
+                                모서리) / 플러스 버튼 32px로 확대 / 제목 17px로
+                                키움 / 호버 시 더보기 버튼 노출
+                            </div>
+                            <div className="mockup-comparison">
+                                <div>
+                                    <div
+                                        className="mockup-frame"
+                                        style={{ maxWidth: 380 }}
+                                    >
+                                        <OptionA />
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-[12px] pt-[8px]">
+                                    <div className="flex items-start gap-[8px]">
+                                        <span className="text-[11px] font-bold text-blue-500 bg-blue-50 rounded px-[6px] py-[2px] flex-shrink-0">
+                                            POINT 1
+                                        </span>
+                                        <span className="text-[13px] text-gray-700">
+                                            <strong>
+                                                추가 버튼이 pill 형태
+                                            </strong>
+                                            로 배경색이 있어 바로 눈에
+                                            들어옵니다
+                                        </span>
+                                    </div>
+                                    <div className="flex items-start gap-[8px]">
+                                        <span className="text-[11px] font-bold text-blue-500 bg-blue-50 rounded px-[6px] py-[2px] flex-shrink-0">
+                                            POINT 2
+                                        </span>
+                                        <span className="text-[13px] text-gray-700">
+                                            카드{" "}
+                                            <strong>세로 여백이 넉넉</strong>
+                                            해져 답답함이 줄어듭니다 (12→16px)
+                                        </span>
+                                    </div>
+                                    <div className="flex items-start gap-[8px]">
+                                        <span className="text-[11px] font-bold text-blue-500 bg-blue-50 rounded px-[6px] py-[2px] flex-shrink-0">
+                                            POINT 3
+                                        </span>
+                                        <span className="text-[13px] text-gray-700">
+                                            오른쪽{" "}
+                                            <strong>+ 버튼이 32px</strong>로
+                                            커져 터치/클릭이 쉬워집니다
+                                        </span>
+                                    </div>
+                                    <div className="flex items-start gap-[8px]">
+                                        <span className="text-[11px] font-bold text-blue-500 bg-blue-50 rounded px-[6px] py-[2px] flex-shrink-0">
+                                            POINT 4
+                                        </span>
+                                        <span className="text-[13px] text-gray-700">
+                                            제목{" "}
+                                            <strong>"작업 프리셋" 17px</strong>
+                                            로 위계가 명확합니다
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Option B */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                OPTION B — Category Badge
+                            </div>
+                            <div className="mockup-section-desc">
+                                <strong>변경점:</strong> 카테고리가 컬러 뱃지로
+                                표시 / 제목 옆 개수 표시 / 추가 버튼을 아이콘
+                                only 사각형 버튼으로 / 카드 간격 8px 유지하되
+                                내부 패딩 증가
+                            </div>
+                            <div className="mockup-comparison">
+                                <div>
+                                    <div
+                                        className="mockup-frame"
+                                        style={{ maxWidth: 380 }}
+                                    >
+                                        <OptionB />
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-[12px] pt-[8px]">
+                                    <div className="flex items-start gap-[8px]">
+                                        <span className="text-[11px] font-bold text-blue-500 bg-blue-50 rounded px-[6px] py-[2px] flex-shrink-0">
+                                            POINT 1
+                                        </span>
+                                        <span className="text-[13px] text-gray-700">
+                                            <strong>카테고리 컬러 뱃지</strong>
+                                            가 각 프리셋의 성격을 한눈에
+                                            보여줍니다
+                                        </span>
+                                    </div>
+                                    <div className="flex items-start gap-[8px]">
+                                        <span className="text-[11px] font-bold text-blue-500 bg-blue-50 rounded px-[6px] py-[2px] flex-shrink-0">
+                                            POINT 2
+                                        </span>
+                                        <span className="text-[13px] text-gray-700">
+                                            제목 옆 <strong>개수 뱃지</strong>로
+                                            전체 프리셋 수를 즉시 파악
+                                        </span>
+                                    </div>
+                                    <div className="flex items-start gap-[8px]">
+                                        <span className="text-[11px] font-bold text-blue-500 bg-blue-50 rounded px-[6px] py-[2px] flex-shrink-0">
+                                            POINT 3
+                                        </span>
+                                        <span className="text-[13px] text-gray-700">
+                                            추가 버튼이{" "}
+                                            <strong>
+                                                아이콘 only 사각 버튼
+                                            </strong>
+                                            으로 미니멀하면서도 명확
+                                        </span>
+                                    </div>
+                                    <div className="flex items-start gap-[8px]">
+                                        <span className="text-[11px] font-bold text-blue-500 bg-blue-50 rounded px-[6px] py-[2px] flex-shrink-0">
+                                            POINT 4
+                                        </span>
+                                        <span className="text-[13px] text-gray-700">
+                                            정보가 2줄(이름 + 카테고리)로{" "}
+                                            <strong>
+                                                카드 높이가 자연스럽게 확보
+                                            </strong>
+                                            됩니다
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Option C */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                OPTION C — Prominent CTA
+                            </div>
+                            <div className="mockup-section-desc">
+                                <strong>변경점:</strong> 상단에 full-width
+                                dashed 추가 버튼 / 카드에 컬러 도트 인디케이터 /
+                                플러스 버튼 34px 원형 / 카드 보더 강화 / 호버
+                                효과 강화
+                            </div>
+                            <div className="mockup-comparison">
+                                <div>
+                                    <div
+                                        className="mockup-frame"
+                                        style={{ maxWidth: 380 }}
+                                    >
+                                        <OptionC />
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-[12px] pt-[8px]">
+                                    <div className="flex items-start gap-[8px]">
+                                        <span className="text-[11px] font-bold text-blue-500 bg-blue-50 rounded px-[6px] py-[2px] flex-shrink-0">
+                                            POINT 1
+                                        </span>
+                                        <span className="text-[13px] text-gray-700">
+                                            <strong>
+                                                전체 너비 dashed 버튼
+                                            </strong>
+                                            이 "추가" 행동을 가장 강하게
+                                            유도합니다
+                                        </span>
+                                    </div>
+                                    <div className="flex items-start gap-[8px]">
+                                        <span className="text-[11px] font-bold text-blue-500 bg-blue-50 rounded px-[6px] py-[2px] flex-shrink-0">
+                                            POINT 2
+                                        </span>
+                                        <span className="text-[13px] text-gray-700">
+                                            <strong>컬러 도트 + 글로우</strong>
+                                            로 왼쪽 색상 표시가 더 세련되어
+                                            보입니다
+                                        </span>
+                                    </div>
+                                    <div className="flex items-start gap-[8px]">
+                                        <span className="text-[11px] font-bold text-blue-500 bg-blue-50 rounded px-[6px] py-[2px] flex-shrink-0">
+                                            POINT 3
+                                        </span>
+                                        <span className="text-[13px] text-gray-700">
+                                            <strong>34px 원형 추가 버튼</strong>
+                                            으로 각 카드에서의 추가 액션이 명확
+                                        </span>
+                                    </div>
+                                    <div className="flex items-start gap-[8px]">
+                                        <span className="text-[11px] font-bold text-blue-500 bg-blue-50 rounded px-[6px] py-[2px] flex-shrink-0">
+                                            POINT 4
+                                        </span>
+                                        <span className="text-[13px] text-gray-700">
+                                            카드 보더가{" "}
+                                            <strong>solid #E5E8EB</strong>로 더
+                                            뚜렷하게 구분됩니다
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Summary */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">SUMMARY</div>
+                            <div
+                                className="mockup-frame"
+                                style={{ padding: 24 }}
+                            >
+                                <table
+                                    style={{
+                                        width: "100%",
+                                        borderCollapse: "collapse",
+                                        fontSize: 13,
+                                    }}
+                                >
+                                    <thead>
+                                        <tr
+                                            style={{
+                                                borderBottom:
+                                                    "2px solid #E5E8EB",
+                                            }}
+                                        >
+                                            <th
+                                                style={{
+                                                    textAlign: "left",
+                                                    padding: "8px 12px",
+                                                    color: "#6B7684",
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                항목
+                                            </th>
+                                            <th
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "8px 12px",
+                                                    color: "#6B7684",
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                현재
+                                            </th>
+                                            <th
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "8px 12px",
+                                                    color: "#3182F6",
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                A: Spacious
+                                            </th>
+                                            <th
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "8px 12px",
+                                                    color: "#3182F6",
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                B: Badge
+                                            </th>
+                                            <th
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "8px 12px",
+                                                    color: "#3182F6",
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                C: CTA
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr
+                                            style={{
+                                                borderBottom:
+                                                    "1px solid #F2F4F6",
+                                            }}
+                                        >
+                                            <td
+                                                style={{
+                                                    padding: "10px 12px",
+                                                    fontWeight: 500,
+                                                    color: "#333D4B",
+                                                }}
+                                            >
+                                                카드 세로 패딩
+                                            </td>
+                                            <td
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "10px 12px",
+                                                    color: "#8B95A1",
+                                                }}
+                                            >
+                                                12px
+                                            </td>
+                                            <td
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "10px 12px",
+                                                    color: "#191F28",
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                16px
+                                            </td>
+                                            <td
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "10px 12px",
+                                                    color: "#191F28",
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                14px
+                                            </td>
+                                            <td
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "10px 12px",
+                                                    color: "#191F28",
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                16px
+                                            </td>
+                                        </tr>
+                                        <tr
+                                            style={{
+                                                borderBottom:
+                                                    "1px solid #F2F4F6",
+                                            }}
+                                        >
+                                            <td
+                                                style={{
+                                                    padding: "10px 12px",
+                                                    fontWeight: 500,
+                                                    color: "#333D4B",
+                                                }}
+                                            >
+                                                추가 버튼(헤더)
+                                            </td>
+                                            <td
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "10px 12px",
+                                                    color: "#8B95A1",
+                                                }}
+                                            >
+                                                텍스트
+                                            </td>
+                                            <td
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "10px 12px",
+                                                    color: "#191F28",
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                Pill 배경
+                                            </td>
+                                            <td
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "10px 12px",
+                                                    color: "#191F28",
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                아이콘 사각
+                                            </td>
+                                            <td
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "10px 12px",
+                                                    color: "#191F28",
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                Full-width
+                                            </td>
+                                        </tr>
+                                        <tr
+                                            style={{
+                                                borderBottom:
+                                                    "1px solid #F2F4F6",
+                                            }}
+                                        >
+                                            <td
+                                                style={{
+                                                    padding: "10px 12px",
+                                                    fontWeight: 500,
+                                                    color: "#333D4B",
+                                                }}
+                                            >
+                                                카드 + 버튼
+                                            </td>
+                                            <td
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "10px 12px",
+                                                    color: "#8B95A1",
+                                                }}
+                                            >
+                                                24px 원형
+                                            </td>
+                                            <td
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "10px 12px",
+                                                    color: "#191F28",
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                32px 원형
+                                            </td>
+                                            <td
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "10px 12px",
+                                                    color: "#191F28",
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                32px 사각
+                                            </td>
+                                            <td
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "10px 12px",
+                                                    color: "#191F28",
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                34px 원형
+                                            </td>
+                                        </tr>
+                                        <tr
+                                            style={{
+                                                borderBottom:
+                                                    "1px solid #F2F4F6",
+                                            }}
+                                        >
+                                            <td
+                                                style={{
+                                                    padding: "10px 12px",
+                                                    fontWeight: 500,
+                                                    color: "#333D4B",
+                                                }}
+                                            >
+                                                색상 표현
+                                            </td>
+                                            <td
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "10px 12px",
+                                                    color: "#8B95A1",
+                                                }}
+                                            >
+                                                3px bar
+                                            </td>
+                                            <td
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "10px 12px",
+                                                    color: "#191F28",
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                4px bar
+                                            </td>
+                                            <td
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "10px 12px",
+                                                    color: "#191F28",
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                4px bar + 뱃지
+                                            </td>
+                                            <td
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "10px 12px",
+                                                    color: "#191F28",
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                10px dot
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td
+                                                style={{
+                                                    padding: "10px 12px",
+                                                    fontWeight: 500,
+                                                    color: "#333D4B",
+                                                }}
+                                            >
+                                                특징
+                                            </td>
+                                            <td
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "10px 12px",
+                                                    color: "#8B95A1",
+                                                }}
+                                            >
+                                                기본
+                                            </td>
+                                            <td
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "10px 12px",
+                                                    color: "#191F28",
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                넉넉한 여백
+                                            </td>
+                                            <td
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "10px 12px",
+                                                    color: "#191F28",
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                정보 밀도
+                                            </td>
+                                            <td
+                                                style={{
+                                                    textAlign: "center",
+                                                    padding: "10px 12px",
+                                                    color: "#191F28",
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                CTA 강조
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            root.render(<MockupApp />);
+        </script>
+    </body>
+</html>

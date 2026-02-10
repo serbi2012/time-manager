@@ -7,6 +7,7 @@ export const TEMPLATE_CARD_TITLE = "작업 프리셋";
 
 // 버튼 텍스트
 export const BUTTON_ADD = "추가";
+export const BUTTON_ADD_FULL = "새 프리셋 추가";
 
 // Empty 상태 메시지
 export const EMPTY_TITLE = "아직 프리셋이 없어요";

@@ -17,6 +17,7 @@ import { UserMenu } from "./UserMenu";
 import { SyncIndicator } from "../SyncStatus";
 import type { SyncStatus } from "../../features/sync";
 import { APP_THEME_COLORS, type AppTheme } from "../../shared/config";
+import { FEATURE_FLAGS } from "../../shared/constants";
 
 const { Header } = Layout;
 const { Text } = Typography;
@@ -25,7 +26,9 @@ const { Text } = Typography;
 const PAGE_INFO: Record<string, { label: string; icon: React.ReactNode }> = {
     "/": { label: "일간 기록", icon: <HomeOutlined /> },
     "/weekly": { label: "주간 일정", icon: <CalendarOutlined /> },
-    "/suggestions": { label: "건의사항", icon: <MessageOutlined /> },
+    ...(FEATURE_FLAGS.suggestions.visible
+        ? { "/suggestions": { label: "건의사항", icon: <MessageOutlined /> } }
+        : {}),
     "/guide": { label: "설명서", icon: <BookOutlined /> },
 };
 
