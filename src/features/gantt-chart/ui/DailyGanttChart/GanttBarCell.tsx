@@ -1,6 +1,6 @@
 /**
- * 간트 바 셀 (Popover + Tooltip + 바 div + 리사이즈 핸들)
- * - 한 세션에 대한 바 하나 단위
+ * Gantt bar cell (Popover + Tooltip + bar div + resize handles)
+ * - One bar per session with colored shadow, shimmer for running
  */
 
 import { Popover, Tooltip } from "antd";
@@ -10,7 +10,6 @@ import { SessionContextMenu } from "./SessionContextMenu";
 import { SessionBarTooltip } from "./SessionBarTooltip";
 import type { BarStyle } from "../../lib/bar_calculator";
 
-/** 리사이즈 중 표시에 필요한 필드만 (record_id 불필요) */
 export interface ResizeStateDisplay {
     session_id: string;
     handle: "left" | "right";
@@ -54,9 +53,6 @@ const BAR_CLASS_NAMES = {
     conflict: "gantt-bar-conflict",
 };
 
-/**
- * 간트 바 셀 (Popover + Tooltip + 바)
- */
 export function GanttBarCell({
     record,
     session,
@@ -152,6 +148,8 @@ export function GanttBarCell({
                             }
                         />
                     )}
+                    {/* Shimmer effect for running sessions */}
+                    {is_running && <div className="gantt-bar-shimmer" />}
                     {resize_time_indicator}
                 </div>
             </Tooltip>

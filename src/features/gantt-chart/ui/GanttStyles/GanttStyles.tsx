@@ -1,17 +1,16 @@
 /**
- * 간트 차트 스타일 컴포넌트
+ * Clean Swim Lane gantt chart styles
  */
 
 import { useMemo } from "react";
 
 interface GanttStylesProps {
-    /** 그룹 작업 수 */
     grouped_works_count: number;
 }
 
-/**
- * 간트 차트 스타일 컴포넌트
- */
+const GANTT_LEFT_MARGIN = 140;
+const GANTT_ROW_HEIGHT = 44;
+
 export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
     const styles = useMemo(
         () => `
@@ -21,9 +20,12 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
         
         .gantt-container {
             position: relative;
-            min-height: ${Math.max(grouped_works_count * 40 + 40, 100)}px;
-            padding-top: 30px;
-            padding-left: 90px;
+            min-height: ${Math.max(
+                grouped_works_count * GANTT_ROW_HEIGHT + 40,
+                100
+            )}px;
+            padding-top: 32px;
+            padding-left: ${GANTT_LEFT_MARGIN}px;
         }
         
         .gantt-empty-container {
@@ -35,7 +37,7 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
         .gantt-time-header {
             position: absolute;
             top: 0;
-            left: 90px;
+            left: ${GANTT_LEFT_MARGIN}px;
             right: 0;
             height: 24px;
         }
@@ -52,13 +54,14 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
             position: absolute;
             transform: translateX(-50%);
             font-size: var(--font-size-xs);
-            color: var(--gray-500);
+            color: var(--gray-400);
+            font-weight: 500;
         }
         
         .gantt-grid {
             position: absolute;
             top: 24px;
-            left: 90px;
+            left: ${GANTT_LEFT_MARGIN}px;
             right: 0;
             bottom: 0;
             cursor: crosshair;
@@ -77,22 +80,23 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
             top: 0;
             bottom: 0;
             width: 1px;
-            background: var(--color-border-light);
+            background: var(--gray-100);
         }
         
+        /* --- Selection (E: spring bounce on appear) --- */
         .gantt-selection {
             position: absolute;
             top: 0;
             bottom: 0;
-            background: rgba(49, 130, 246, 0.2);
+            background: rgba(49, 130, 246, 0.15);
             border: 2px dashed var(--color-primary);
-            border-radius: var(--radius-xs);
+            border-radius: var(--radius-sm);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 100;
             pointer-events: none;
-            transition: background 0.15s, border-color 0.15s;
+            animation: selectionBounce 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
         }
         
         .gantt-selection-text {
@@ -104,31 +108,25 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
             white-space: nowrap;
         }
         
+        /* --- Lunch overlay (H: fade-in on load) --- */
         .gantt-lunch-overlay {
             position: absolute;
             top: 0;
             bottom: 0;
-            background: repeating-linear-gradient(
-                45deg,
-                rgba(0, 0, 0, 0.03),
-                rgba(0, 0, 0, 0.03) 10px,
-                rgba(0, 0, 0, 0.06) 10px,
-                rgba(0, 0, 0, 0.06) 20px
-            );
-            border-left: 2px dashed var(--color-border-dark);
-            border-right: 2px dashed var(--color-border-dark);
-            z-index: 1;
-            cursor: not-allowed;
-        }
-        
-        .gantt-lunch-overlay::before {
-            content: '🍽️';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 20px;
-            opacity: 0.5;
+            background:
+                repeating-linear-gradient(
+                    -45deg,
+                    transparent,
+                    transparent 6px,
+                    rgba(0, 0, 0, 0.018) 6px,
+                    rgba(0, 0, 0, 0.018) 12px
+                ),
+                rgba(242, 244, 246, 0.5);
+            border-left: 1px dashed var(--gray-300);
+            border-right: 1px dashed var(--gray-300);
+            z-index: 0;
+            pointer-events: none;
+            animation: fadeIn 0.6s ease-out both;
         }
         
         .gantt-empty-hint {
@@ -139,30 +137,57 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
             pointer-events: none;
         }
         
+        /* --- Bars container --- */
         .gantt-bars {
             position: relative;
-            min-height: ${Math.max(grouped_works_count * 40, 60)}px;
+            z-index: 2;
+            min-height: ${Math.max(
+                grouped_works_count * GANTT_ROW_HEIGHT,
+                60
+            )}px;
         }
         
+        /* --- Row (D: hover highlight) --- */
         .gantt-row {
             position: absolute;
-            left: -90px;
+            left: -${GANTT_LEFT_MARGIN}px;
             right: 0;
-            height: 32px;
+            height: ${GANTT_ROW_HEIGHT}px;
             display: flex;
             align-items: center;
         }
         
+        .gantt-row::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            left: ${GANTT_LEFT_MARGIN}px;
+            background: linear-gradient(90deg, rgba(49,130,246,0.03), transparent 60%);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+        }
+        
+        .gantt-row:hover::before {
+            opacity: 1;
+        }
+        
         .gantt-row-label {
-            width: 85px;
+            width: ${GANTT_LEFT_MARGIN}px;
             flex-shrink: 0;
-            padding: var(--spacing-xs) var(--spacing-sm);
-            background: var(--color-bg-light);
-            border-left: 3px solid var(--color-primary);
-            border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
-            margin-right: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: var(--spacing-sm);
+            padding-right: var(--spacing-md);
             overflow: hidden;
             pointer-events: none;
+            opacity: 0.8;
+            transition: opacity 0.2s ease;
+        }
+        
+        .gantt-row:hover .gantt-row-label {
+            opacity: 1;
         }
         
         .gantt-row-bars {
@@ -172,46 +197,58 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
             pointer-events: none;
         }
         
+        /* --- Bar (C: hover shadow expansion, F: resize snap-back, I: pop entrance) --- */
         .gantt-bar {
             position: absolute;
-            height: 20px;
-            top: 6px;
-            border-radius: var(--radius-xs);
+            height: 24px;
+            top: 10px;
+            border-radius: var(--radius-md);
             cursor: pointer;
-            transition: opacity 0.2s, transform 0.1s;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            transition: left 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+                        width 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+                        height 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        top 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        opacity 0.2s ease,
+                        box-shadow 0.25s ease,
+                        filter 0.25s ease;
             pointer-events: auto;
-        }
-        
-        .gantt-bar-running {
-            animation: pulse 2s ease-in-out infinite;
-            box-shadow: 0 0 8px rgba(49, 130, 246, 0.6);
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; }
+            opacity: 0.85;
+            animation: barPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
         }
         
         .gantt-bar:hover {
-            opacity: 0.85;
-            transform: scaleY(1.2);
+            height: 28px;
+            top: 8px;
+            opacity: 1;
             z-index: 10;
+            transform: scale(1.01);
+            filter: brightness(1.08) drop-shadow(0 2px 6px rgba(0,0,0,0.12));
         }
         
-        .gantt-bar-resizing {
+        .gantt-bar-running {
+            animation: runningPulse 2s ease-in-out infinite;
+            opacity: 1;
+        }
+        
+        .gantt-bar.gantt-bar-resizing,
+        .gantt-bar.gantt-bar-resizing:hover {
             z-index: 20;
-            transform: scaleY(1.3);
+            height: 28px;
+            top: 8px;
+            opacity: 0.7;
+            transform: scale(1.03);
+            filter: none;
+            transition: height 0.15s ease, top 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
         }
         
         .gantt-bar-conflict {
             animation: conflictPulse 1.2s ease-in-out infinite;
             border: 2px solid var(--color-error);
-            box-shadow: 0 0 8px rgba(240, 68, 82, 0.6);
         }
         
         .gantt-bar-conflict::before {
-            content: '⚠';
+            content: '\\26A0';
             position: absolute;
             top: -12px;
             right: -4px;
@@ -220,28 +257,29 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
             text-shadow: 0 0 4px white, 0 0 4px white;
         }
         
-        @keyframes conflictPulse {
-            0%, 100% { 
-                box-shadow: 0 0 6px rgba(240, 68, 82, 0.5);
-            }
-            50% { 
-                box-shadow: 0 0 12px rgba(240, 68, 82, 0.8);
-            }
+        .gantt-bar-zero {
+            animation: zeroPulse 1.5s ease-in-out infinite;
         }
         
+        .gantt-bar.gantt-bar-zero:hover {
+            animation: none;
+            opacity: 1;
+        }
+
+        /* --- Conflict overlay --- */
         .gantt-conflict-overlay {
             position: absolute;
             top: 0;
             bottom: 0;
             background: repeating-linear-gradient(
                 -45deg,
-                rgba(240, 68, 82, 0.15),
-                rgba(240, 68, 82, 0.15) 4px,
-                rgba(240, 68, 82, 0.30) 4px,
-                rgba(240, 68, 82, 0.30) 8px
+                rgba(240, 68, 82, 0.12),
+                rgba(240, 68, 82, 0.12) 4px,
+                rgba(240, 68, 82, 0.24) 4px,
+                rgba(240, 68, 82, 0.24) 8px
             );
             border: 2px dashed var(--color-error);
-            border-radius: var(--radius-xs);
+            border-radius: var(--radius-sm);
             z-index: 5;
             pointer-events: none;
         }
@@ -260,43 +298,61 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
             font-weight: var(--font-weight-semibold);
         }
         
-        .gantt-bar-zero {
-            animation: zeroPulse 1.5s ease-in-out infinite;
-        }
-        
-        @keyframes zeroPulse {
-            0%, 100% { opacity: 0.6; box-shadow: 0 0 4px var(--color-error); }
-            50% { opacity: 1; box-shadow: 0 0 8px var(--color-error); }
-        }
-        
+        /* --- Resize handles (Edge Stripe, F: spring-back transition) --- */
         .resize-handle {
             position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 10px;
+            top: 5px;
+            bottom: 5px;
+            width: 4px;
             cursor: ew-resize;
             z-index: 10;
+            background: rgba(255, 255, 255, 0.45);
+            border-radius: 1.5px;
             opacity: 0;
             transition: opacity 0.15s, background 0.15s;
         }
         
+        /* Invisible hit area (16px wide) */
+        .resize-handle::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            bottom: -5px;
+            left: -6px;
+            right: -6px;
+        }
+        
+        /* Visual stripe */
+        .resize-handle::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 1px;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.12);
+            border-radius: 0.5px;
+        }
+        
         .resize-handle-left {
-            left: -2px;
-            border-radius: var(--radius-xs) 0 0 var(--radius-xs);
+            left: 4px;
         }
         
         .resize-handle-right {
-            right: -2px;
-            border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+            right: 4px;
         }
         
         .gantt-bar:hover .resize-handle {
             opacity: 1;
-            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .gantt-bar.gantt-bar-resizing .resize-handle {
+            opacity: 1;
         }
         
         .resize-handle:hover {
-            background: rgba(255, 255, 255, 0.6) !important;
+            background: rgba(255, 255, 255, 0.8) !important;
         }
         
         .resize-time-indicator {
@@ -312,6 +368,132 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
             white-space: nowrap;
             z-index: 100;
             pointer-events: none;
+        }
+
+        /* --- Shimmer for running bars --- */
+        .gantt-bar-shimmer {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            border-radius: var(--radius-md);
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.35) 40%,
+                rgba(255, 255, 255, 0.5) 50%,
+                rgba(255, 255, 255, 0.35) 60%,
+                transparent 100%
+            );
+            background-size: 200% 100%;
+            animation: shimmer 2.5s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        /* --- Header animations (A: date slide, B: number slide) --- */
+        .gantt-date-slide-left {
+            animation: slideInFromLeft 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+        .gantt-date-slide-right {
+            animation: slideInFromRight 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+        .gantt-number-slide {
+            display: inline-block;
+            animation: slideUpIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+
+        /* --- Current time entrance (G: drop in) --- */
+        .gantt-current-time-enter {
+            animation: dropIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+            animation-delay: 0.3s;
+        }
+
+        /* --- Label entrance (J: slide from left) --- */
+        .gantt-label-enter {
+            animation: labelSlideIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+        }
+        
+        /* ==================== Keyframes ==================== */
+        
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes runningPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(49,130,246,0.3); }
+            50% { box-shadow: 0 0 0 4px rgba(49,130,246,0.08); }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        @keyframes currentTimePulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes conflictPulse {
+            0%, 100% { box-shadow: 0 0 6px rgba(240, 68, 82, 0.4); }
+            50% { box-shadow: 0 0 12px rgba(240, 68, 82, 0.7); }
+        }
+        
+        @keyframes zeroPulse {
+            0%, 100% { opacity: 0.6; box-shadow: 0 0 4px var(--color-error); }
+            50% { opacity: 1; box-shadow: 0 0 8px var(--color-error); }
+        }
+        
+        /* A: Date slide transitions */
+        @keyframes slideInFromLeft {
+            from { opacity: 0; transform: translateX(-12px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes slideInFromRight {
+            from { opacity: 0; transform: translateX(12px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        /* B: Number count-up slide */
+        @keyframes slideUpIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* E: Selection spring bounce */
+        @keyframes selectionBounce {
+            0% { opacity: 0; transform: scaleX(0.92); }
+            60% { opacity: 1; transform: scaleX(1.02); }
+            100% { opacity: 1; transform: scaleX(1); }
+        }
+        
+        /* G: Current time drop in */
+        @keyframes dropIn {
+            0% { opacity: 0; transform: translateY(-16px) scaleY(0.6); }
+            60% { opacity: 1; transform: translateY(2px) scaleY(1.02); }
+            100% { opacity: 1; transform: translateY(0) scaleY(1); }
+        }
+        
+        /* H: Lunch zone fade in */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* I: Bar pop entrance */
+        @keyframes barPop {
+            0% { opacity: 0; transform: scaleX(0.85) scaleY(0.7); }
+            60% { opacity: 0.9; transform: scaleX(1.03) scaleY(1.05); }
+            100% { opacity: 0.85; transform: scaleX(1) scaleY(1); }
+        }
+        
+        /* J: Label slide in from left */
+        @keyframes labelSlideIn {
+            from { opacity: 0; transform: translateX(-16px); }
+            to { opacity: 0.8; transform: translateX(0); }
         }
     `,
         [grouped_works_count]
