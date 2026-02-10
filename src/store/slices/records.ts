@@ -36,7 +36,6 @@ function findDuplicateRecord(
     return records.find(
         (r) =>
             !r.is_deleted &&
-            !r.is_completed &&
             r.work_name === work_name &&
             r.deal_name === deal_name
     );
@@ -67,55 +66,61 @@ export const createRecordsSlice: StateCreator<
             );
 
             if (existing) {
-                // Merge sessions from new record into existing
-                if (record.sessions && record.sessions.length > 0) {
-                    const existing_ids = new Set(
-                        existing.sessions.map((s) => s.id)
-                    );
-                    const new_sessions = record.sessions.filter(
-                        (s) => !existing_ids.has(s.id)
-                    );
-
-                    if (new_sessions.length > 0) {
-                        set(
-                            create((state) => {
-                                const rec = state.records.find(
-                                    (r) => r.id === existing.id
-                                );
-                                if (rec) {
-                                    rec.sessions.push(...new_sessions);
-                                    rec.sessions.sort((a, b) => {
-                                        const da = a.date || rec.date;
-                                        const db = b.date || rec.date;
-                                        if (da !== db)
-                                            return da.localeCompare(db);
-                                        return (
-                                            a.start_time || ""
-                                        ).localeCompare(b.start_time || "");
-                                    });
-                                    const total = rec.sessions.reduce(
-                                        (sum, s) => sum + getSessionMinutes(s),
-                                        0
-                                    );
-                                    rec.duration_minutes = Math.max(1, total);
-                                    rec.start_time =
-                                        rec.sessions[0]?.start_time ||
-                                        rec.start_time;
-                                    rec.end_time =
-                                        rec.sessions[rec.sessions.length - 1]
-                                            ?.end_time || rec.end_time;
-                                }
-                            })
-                        );
-                        const updated = get().records.find(
+                set(
+                    create((state) => {
+                        const rec = state.records.find(
                             (r) => r.id === existing.id
                         );
-                        if (updated) {
-                            syncRecord(updated).catch(console.error);
+                        if (!rec) return;
+
+                        // Move to today so it shows in daily view
+                        if (rec.date !== record.date) {
+                            rec.date = record.date;
                         }
-                    }
+
+                        // Reopen if completed
+                        if (rec.is_completed) {
+                            rec.is_completed = false;
+                            rec.completed_at = undefined;
+                        }
+
+                        // Merge sessions if new record has any
+                        if (record.sessions && record.sessions.length > 0) {
+                            const existing_ids = new Set(
+                                rec.sessions.map((s) => s.id)
+                            );
+                            const new_sessions = record.sessions.filter(
+                                (s) => !existing_ids.has(s.id)
+                            );
+                            if (new_sessions.length > 0) {
+                                rec.sessions.push(...new_sessions);
+                                rec.sessions.sort((a, b) => {
+                                    const da = a.date || rec.date;
+                                    const db = b.date || rec.date;
+                                    if (da !== db) return da.localeCompare(db);
+                                    return (a.start_time || "").localeCompare(
+                                        b.start_time || ""
+                                    );
+                                });
+                                const total = rec.sessions.reduce(
+                                    (sum, s) => sum + getSessionMinutes(s),
+                                    0
+                                );
+                                rec.duration_minutes = Math.max(1, total);
+                                rec.start_time =
+                                    rec.sessions[0]?.start_time ||
+                                    rec.start_time;
+                                rec.end_time =
+                                    rec.sessions[rec.sessions.length - 1]
+                                        ?.end_time || rec.end_time;
+                            }
+                        }
+                    })
+                );
+                const updated = get().records.find((r) => r.id === existing.id);
+                if (updated) {
+                    syncRecord(updated).catch(console.error);
                 }
-                // Skip creating duplicate record
                 return;
             }
         }
