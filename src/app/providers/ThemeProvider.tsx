@@ -1,16 +1,17 @@
 /**
  * 테마 프로바이더
- * Ant Design ConfigProvider + CSS Custom Properties 동기화
+ * Ant Design ConfigProvider + App + CSS Custom Properties 동기화
  */
 
 import { useEffect } from "react";
 import { StyleProvider } from "@ant-design/cssinjs";
-import { ConfigProvider, theme } from "antd";
+import { App, ConfigProvider, theme } from "antd";
 import koKR from "antd/locale/ko_KR";
 import dayjs from "dayjs";
 import "dayjs/locale/ko";
 import { useWorkStore } from "../../store/useWorkStore";
 import { APP_THEME_COLORS } from "../../shared/config";
+import { registerMessageInstance } from "../../shared/lib/message";
 
 dayjs.locale("ko");
 
@@ -42,6 +43,20 @@ function useSyncCssVariables(theme_colors: {
 }
 
 /**
+ * Captures context-aware message instance from App.useApp().
+ * Must be rendered inside <App>.
+ */
+function MessageInstanceCapture({ children }: { children: React.ReactNode }) {
+    const { message } = App.useApp();
+
+    useEffect(() => {
+        registerMessageInstance(message);
+    }, [message]);
+
+    return <>{children}</>;
+}
+
+/**
  * 앱 테마 프로바이더
  */
 export function ThemeProvider({ children }: ThemeProviderProps) {
@@ -64,7 +79,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
                     },
                 }}
             >
-                {children}
+                <App component={false}>
+                    <MessageInstanceCapture>{children}</MessageInstanceCapture>
+                </App>
             </ConfigProvider>
         </StyleProvider>
     );
