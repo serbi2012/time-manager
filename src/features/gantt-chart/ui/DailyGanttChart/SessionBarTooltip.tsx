@@ -1,5 +1,5 @@
 /**
- * 간트 바 호버 툴팁 내용
+ * Gantt bar hover tooltip (centered style)
  */
 
 import {
@@ -18,9 +18,6 @@ export interface SessionBarTooltipProps {
     is_conflicting: boolean;
 }
 
-/**
- * 간트 바 호버 시 표시되는 툴팁 내용
- */
 export function SessionBarTooltip({
     record,
     session,
@@ -31,15 +28,14 @@ export function SessionBarTooltip({
     const duration_formatted = formatDuration(getSessionMinutes(session));
 
     return (
-        <div>
-            <div>
-                <strong>{record.work_name}</strong>
+        <div className="text-center">
+            <div className="font-medium">{record.work_name}</div>
+            {record.deal_name && (
+                <div className="text-gray-300">{record.deal_name}</div>
+            )}
+            <div className="text-gray-300">
+                {session.start_time} - {session.end_time} ({duration_formatted})
             </div>
-            {record.deal_name && <div>{record.deal_name}</div>}
-            <div>
-                {session.start_time} ~ {session.end_time}
-            </div>
-            <div>{duration_formatted}</div>
             {is_conflicting && (
                 <div className="mt-xs text-error">
                     {GANTT_LABEL_CONFLICT_WARNING}

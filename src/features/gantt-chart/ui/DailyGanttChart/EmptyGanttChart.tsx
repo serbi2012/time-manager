@@ -1,15 +1,12 @@
 /**
- * 빈 간트 차트 (작업 기록 없을 때)
- * - 시간 헤더, 그리드, 점심 오버레이, 드래그 선택, 빈 상태 힌트
+ * Empty gantt chart (no work records)
+ * - Time header, grid, lunch overlay, drag selection, empty state hint
  */
 
-import { Empty, Tooltip, Typography } from "antd";
+import { Empty, Typography } from "antd";
 import { minutesToTime } from "../../../../shared/lib/time";
-import {
-    GANTT_LABEL_LUNCH,
-    GANTT_EMPTY_NO_RECORDS,
-    GANTT_EMPTY_HINT_DRAG,
-} from "../../constants";
+import { LunchZoneOverlay } from "./LunchZoneOverlay";
+import { GANTT_EMPTY_NO_RECORDS, GANTT_EMPTY_HINT_DRAG } from "../../constants";
 
 const { Text } = Typography;
 
@@ -64,12 +61,7 @@ export function EmptyGanttChart({
                 ))}
 
                 {lunch_overlay_style && (
-                    <Tooltip title={GANTT_LABEL_LUNCH}>
-                        <div
-                            className="gantt-lunch-overlay"
-                            style={lunch_overlay_style}
-                        />
-                    </Tooltip>
+                    <LunchZoneOverlay style={lunch_overlay_style} />
                 )}
             </div>
 

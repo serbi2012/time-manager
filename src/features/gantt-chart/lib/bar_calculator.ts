@@ -26,6 +26,9 @@ export interface BarStyle {
     backgroundColor: string;
     opacity?: number;
     animation?: string;
+    boxShadow?: string;
+    borderRadius?: string;
+    transition?: string;
 }
 
 /**
@@ -124,12 +127,13 @@ export function calculateBarStyle(
         left: `${left}%`,
         width: `${width}%`,
         backgroundColor: color,
+        boxShadow: `0 1px 3px ${color}30`,
+        borderRadius: "var(--radius-md)",
     };
 
-    // 진행 중인 세션에 애니메이션 효과
     if (is_running) {
-        style.opacity = 0.8;
-        style.animation = "pulse 2s ease-in-out infinite";
+        style.opacity = 1;
+        style.boxShadow = `0 2px 8px ${color}40`;
     }
 
     return style;
@@ -160,7 +164,6 @@ export function calculateResizingBarStyle(
         left: `${left}%`,
         width: `${Math.max(width, 0.5)}%`,
         backgroundColor: color,
-        opacity: 0.6,
     };
 }
 
@@ -243,18 +246,17 @@ export function calculateWorkColor(
     );
     if (template) return template.color;
 
-    // 해시 기반 색상 생성
     const colors = [
-        "#1890ff",
-        "#52c41a",
-        "#faad14",
-        "#f5222d",
-        "#722ed1",
-        "#13c2c2",
-        "#eb2f96",
-        "#fa8c16",
-        "#a0d911",
-        "#2f54eb",
+        "#3182F6",
+        "#34C759",
+        "#FF9500",
+        "#F04452",
+        "#6366F1",
+        "#00B8D9",
+        "#EC4899",
+        "#F97316",
+        "#84CC16",
+        "#2563EB",
     ];
     let hash = 0;
     const key = record.work_name + record.deal_name;

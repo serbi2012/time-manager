@@ -1,54 +1,44 @@
 /**
- * 모바일 일간 간트 차트 컴포넌트
- * - 모바일 전용 UI (스크롤 컨테이너 포함)
+ * Mobile daily gantt chart component
+ * - Clean Swim Lane design with scroll container
  */
 
-import { useState, useCallback, useEffect } from "react";
-import { Card, Typography, message } from "antd";
+import { useState, useCallback, useEffect, useMemo } from "react";
+import { Card, message } from "antd";
 import dayjs from "dayjs";
 import { useWorkStore } from "../../../../store/useWorkStore";
 import { minutesToTime } from "../../../../shared/lib/time";
 import { getSessionMinutes } from "../../../../shared/lib/session";
 import type { WorkRecord, WorkSession } from "../../../../shared/types";
 
-// 훅
 import { useGanttData } from "../../hooks/useGanttData";
 import { useGanttDrag } from "../../hooks/useGanttDrag";
 import { useGanttResize } from "../../hooks/useGanttResize";
 import { useGanttTime } from "../../hooks/useGanttTime";
 
-// lib 함수
 import {
     calculateLunchOverlayStyle,
     calculateSelectionStyle,
 } from "../../lib/bar_calculator";
 
-// UI 컴포넌트
 import { GanttAddModal } from "../GanttAddModal";
 import { GanttEditModal } from "../GanttEditModal";
 import { GanttStyles } from "../GanttStyles";
 import { EmptyGanttChart } from "./EmptyGanttChart";
 import { GanttChartContent } from "./GanttChartContent";
+import { GanttHeader } from "./GanttHeader";
 import {
     GANTT_MESSAGE_ACTIVE_SESSION_CANNOT_DELETE,
     GANTT_MESSAGE_SESSION_DELETED,
-    GANTT_TITLE_DAILY_TIMELINE,
-    GANTT_HINT_DRAG_TO_ADD,
 } from "../../constants";
 
-const { Text } = Typography;
-
-/**
- * 모바일 일간 간트 차트 메인 컴포넌트
- */
 export function MobileDailyGanttChart() {
-    const { selected_date, timer, deleteSession } = useWorkStore();
+    const { selected_date, timer, deleteSession, setSelectedDate } =
+        useWorkStore();
 
-    // 시간 관련 훅
     const { gantt_tick, lunch_time, calculateDurationExcludingLunch } =
         useGanttTime();
 
-    // 데이터 훅
     const {
         grouped_works,
         occupied_slots,
@@ -60,7 +50,6 @@ export function MobileDailyGanttChart() {
         getWorkColor,
     } = useGanttData(gantt_tick);
 
-    // 드래그 훅
     const {
         is_dragging,
         drag_selection,
@@ -70,7 +59,6 @@ export function MobileDailyGanttChart() {
         handleMouseUp,
     } = useGanttDrag({ time_range, occupied_slots });
 
-    // 리사이즈 훅
     const {
         resize_state,
         handleResizeStart,
@@ -78,25 +66,21 @@ export function MobileDailyGanttChart() {
         handleResizeEnd,
     } = useGanttResize({ time_range, selected_date });
 
-    // 모달 상태
     const [is_add_modal_open, setIsAddModalOpen] = useState(false);
     const [selected_time_range, setSelectedTimeRange] = useState<{
         start: string;
         end: string;
     } | null>(null);
 
-    // 수정 모달 상태
     const [is_edit_modal_open, setIsEditModalOpen] = useState(false);
     const [edit_record, setEditRecord] = useState<WorkRecord | null>(null);
     const [edit_session, setEditSession] = useState<WorkSession | null>(null);
 
-    // 우클릭 팝오버 상태
     const [context_menu, setContextMenu] = useState<{
         session: WorkSession;
         record: WorkRecord;
     } | null>(null);
 
-    // document 레벨 이벤트 리스너
     useEffect(() => {
         if (!is_dragging && !resize_state) return;
 
@@ -143,7 +127,6 @@ export function MobileDailyGanttChart() {
         grid_ref,
     ]);
 
-    // 더블클릭으로 수정 모달 열기
     const handleBarDoubleClick = useCallback(
         (record: WorkRecord, session: WorkSession, e: React.MouseEvent) => {
             e.stopPropagation();
@@ -155,7 +138,6 @@ export function MobileDailyGanttChart() {
         []
     );
 
-    // 우클릭 메뉴에서 수정
     const handleContextEdit = useCallback(() => {
         if (!context_menu) return;
         setEditRecord(context_menu.record);
@@ -164,7 +146,6 @@ export function MobileDailyGanttChart() {
         setContextMenu(null);
     }, [context_menu]);
 
-    // 우클릭 메뉴에서 세션 삭제
     const handleContextDeleteSession = useCallback(() => {
         if (!context_menu) return;
         const { session, record } = context_menu;
@@ -178,12 +159,19 @@ export function MobileDailyGanttChart() {
         setContextMenu(null);
     }, [context_menu, deleteSession, timer.active_session_id]);
 
-    // 총 소요 시간 계산
     const getTotalDuration = (sessions: WorkSession[]): number => {
         return sessions.reduce((sum, s) => sum + getSessionMinutes(s), 0);
     };
 
-    // 선택 영역 스타일
+    const total_work_minutes = useMemo(() => {
+        return grouped_works.reduce(
+            (sum, g) =>
+                sum +
+                g.sessions.reduce((s, sess) => s + getSessionMinutes(sess), 0),
+            0
+        );
+    }, [grouped_works]);
+
     const getSelectionStyle = () => {
         if (!drag_selection) return {};
         return calculateSelectionStyle(
@@ -193,37 +181,35 @@ export function MobileDailyGanttChart() {
         );
     };
 
-    // 점심시간 오버레이 스타일
     const lunch_overlay_style = calculateLunchOverlayStyle(
         lunch_time.start,
         lunch_time.end,
         time_range
     );
 
+    const handlePrevDay = useCallback(() => {
+        setSelectedDate(
+            dayjs(selected_date).subtract(1, "day").format("YYYY-MM-DD")
+        );
+    }, [selected_date, setSelectedDate]);
+
+    const handleNextDay = useCallback(() => {
+        setSelectedDate(
+            dayjs(selected_date).add(1, "day").format("YYYY-MM-DD")
+        );
+    }, [selected_date, setSelectedDate]);
+
     return (
         <>
-            <Card
-                title={
-                    <div className="flex items-center gap-md text-lg">
-                        <span className="font-semibold text-lg">
-                            {GANTT_TITLE_DAILY_TIMELINE}
-                        </span>
-                        <span className="text-gray-300">|</span>
-                        <span className="text-text-secondary font-medium">
-                            {dayjs(selected_date).format("YYYY년 M월 D일")} (
-                            {dayjs(selected_date).format("dd")})
-                        </span>
-                    </div>
-                }
-                size="small"
-                extra={
-                    <Text type="secondary" className="!text-sm">
-                        {GANTT_HINT_DRAG_TO_ADD}
-                    </Text>
-                }
-            >
+            <Card styles={{ body: { padding: 0 } }}>
+                <GanttHeader
+                    selected_date={selected_date}
+                    total_minutes={total_work_minutes}
+                    onPrevDay={handlePrevDay}
+                    onNextDay={handleNextDay}
+                />
                 <div className="gantt-scroll-container">
-                    <div className="gantt-wrapper gantt-mobile-scroll">
+                    <div className="gantt-wrapper gantt-mobile-scroll px-xl pt-lg pb-xl">
                         {grouped_works.length === 0 ? (
                             <EmptyGanttChart
                                 grid_ref={grid_ref}
@@ -267,7 +253,6 @@ export function MobileDailyGanttChart() {
                 <GanttStyles grouped_works_count={grouped_works.length} />
             </Card>
 
-            {/* 작업 추가 모달 */}
             <GanttAddModal
                 open={is_add_modal_open}
                 selected_time_range={selected_time_range}
@@ -281,7 +266,6 @@ export function MobileDailyGanttChart() {
                 }}
             />
 
-            {/* 작업 수정 모달 */}
             <GanttEditModal
                 open={is_edit_modal_open}
                 record={edit_record}

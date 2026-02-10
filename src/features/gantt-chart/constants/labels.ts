@@ -45,8 +45,8 @@ export const GANTT_MESSAGE_SESSION_DELETED = "세션이 삭제되었습니다.";
 /** 일간 타임라인 카드 제목 */
 export const GANTT_TITLE_DAILY_TIMELINE = "일간 타임라인";
 
-/** 빈 영역 드래그 힌트 (extra) */
-export const GANTT_HINT_DRAG_TO_ADD = "💡 빈 영역을 드래그하여 작업 추가";
+/** 빈 영역 드래그 힌트 */
+export const GANTT_HINT_DRAG_TO_ADD = "빈 영역을 드래그하여 작업 추가";
 
 // ---------- 빈 간트 상태 ----------
 
@@ -127,6 +127,9 @@ export const GANTT_FORM_PLACEHOLDER_CATEGORY = "카테고리";
 export const GANTT_FORM_PLACEHOLDER_NEW_CATEGORY = "새 카테고리";
 export const GANTT_FORM_LABEL_NOTE = "비고";
 export const GANTT_FORM_PLACEHOLDER_NOTE = "추가 메모";
+
+/** 점심 존 라벨 (간트 오버레이) */
+export const GANTT_LABEL_LUNCH_ZONE = "점심";
 
 // ---------- 점심 오버레이 (다른 간트) ----------
 
