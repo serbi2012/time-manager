@@ -210,11 +210,12 @@ export function GanttChartContent({
                                 >
                                     <div className="text-right min-w-0 flex-1">
                                         <div className="text-sm font-medium text-gray-800 truncate">
-                                            {group.record.work_name}
+                                            {group.record.deal_name ||
+                                                group.record.work_name}
                                         </div>
                                         {group.record.deal_name && (
                                             <div className="text-xs text-gray-400 truncate">
-                                                {group.record.deal_name}
+                                                {group.record.work_name}
                                             </div>
                                         )}
                                     </div>

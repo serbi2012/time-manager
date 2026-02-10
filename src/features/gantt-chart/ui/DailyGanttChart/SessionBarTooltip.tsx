@@ -29,9 +29,11 @@ export function SessionBarTooltip({
 
     return (
         <div className="text-center">
-            <div className="font-medium">{record.work_name}</div>
+            <div className="font-medium">
+                {record.deal_name || record.work_name}
+            </div>
             {record.deal_name && (
-                <div className="text-gray-300">{record.deal_name}</div>
+                <div className="text-gray-300">{record.work_name}</div>
             )}
             <div className="text-gray-300">
                 {session.start_time} - {session.end_time} ({duration_formatted})

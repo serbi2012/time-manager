@@ -1,6 +1,6 @@
 /**
  * Record header component
- * Combines DateNavigation, WeeklyCalendarStrip, InlineStats, MoreActionsMenu
+ * Combines DateNavigation, WeeklyCalendarStrip, MoreActionsMenu
  * 5-1: Press scale on buttons
  * 5-3: Ripple on primary button
  */
@@ -9,7 +9,6 @@ import { useState, useCallback } from "react";
 import { PlusOutlined, CalendarOutlined } from "@ant-design/icons";
 import type { Dayjs } from "dayjs";
 
-import type { TodayStats } from "../../lib/record_stats";
 import type { WorkRecord } from "../../../../shared/types";
 import { formatShortcutKeyForPlatform } from "../../../../hooks/useShortcuts";
 import { cn } from "../../../../shared/lib/cn";
@@ -24,7 +23,6 @@ import {
 
 import { DateNavigation } from "./DateNavigation";
 import { WeeklyCalendarStrip } from "./WeeklyCalendarStrip";
-import { InlineStats } from "./InlineStats";
 import { MoreActionsMenu } from "./MoreActionsMenu";
 
 const WEEKLY_TOGGLE_LABEL = "주간";
@@ -35,7 +33,6 @@ interface RecordHeaderProps {
     onPrevDay: () => void;
     onNextDay: () => void;
     onDateSelect: (date: string) => void;
-    stats: TodayStats;
     records: WorkRecord[];
     onAddNew: () => void;
     onOpenCompleted: () => void;
@@ -51,7 +48,6 @@ export function RecordHeader({
     onPrevDay,
     onNextDay,
     onDateSelect,
-    stats,
     records,
     onAddNew,
     onOpenCompleted,
@@ -67,15 +63,33 @@ export function RecordHeader({
     }, []);
 
     return (
-        <div className="p-xl pb-lg">
-            {/* Row 1: Date text (main) + toggle + actions */}
-            <div className="flex items-center justify-between mb-sm">
+        <div className="p-xl pb-xl">
+            <div className="flex items-center justify-between flex-wrap gap-sm">
                 <DateNavigation
                     selected_date={selected_date}
                     onDateChange={onDateChange}
                     onPrevDay={onPrevDay}
                     onNextDay={onNextDay}
                 />
+
+                {/* Weekly calendar (collapsible, inline center) */}
+                <AnimatePresence>
+                    {is_calendar_open && (
+                        <motion.div
+                            initial={SLIDE.up.initial}
+                            animate={SLIDE.up.animate}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={SPRING.toss}
+                        >
+                            <WeeklyCalendarStrip
+                                selected_date={selected_date}
+                                onDateSelect={onDateSelect}
+                                records={records}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
                 <div className="flex items-center gap-sm">
                     {/* 5-1: Press scale on toggle */}
                     <motion.button
@@ -119,29 +133,6 @@ export function RecordHeader({
                     />
                 </div>
             </div>
-
-            {/* Row 2: Weekly calendar (collapsible with animation) */}
-            <AnimatePresence>
-                {is_calendar_open && (
-                    <motion.div
-                        initial={SLIDE.up.initial}
-                        animate={SLIDE.up.animate}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={SPRING.toss}
-                        className="mt-md mb-sm"
-                    >
-                        <WeeklyCalendarStrip
-                            selected_date={selected_date}
-                            onDateSelect={onDateSelect}
-                            records={records}
-                        />
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* Divider + Stats */}
-            <div className="h-px bg-border-light mt-md mb-md" />
-            <InlineStats stats={stats} />
         </div>
     );
 }

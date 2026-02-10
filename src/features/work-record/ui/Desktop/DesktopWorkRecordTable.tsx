@@ -37,7 +37,6 @@ import { useDebouncedValue } from "../../../../hooks/useDebouncedValue";
 // Features - Hooks
 import {
     useRecordData,
-    useRecordStats,
     useRecordTimer,
     useRecordActions,
     useRecordModals,
@@ -106,8 +105,6 @@ export function DesktopWorkRecordTable() {
 
     const { display_records, completed_records, deleted_records } =
         useRecordData(search_text);
-
-    const { today_stats } = useRecordStats();
 
     const { startTimer, stopTimer, active_record_id } = useRecordTimer();
 
@@ -444,7 +441,6 @@ export function DesktopWorkRecordTable() {
                     onPrevDay={handlePrevDay}
                     onNextDay={handleNextDay}
                     onDateSelect={handleDateSelect}
-                    stats={today_stats}
                     records={records}
                     onAddNew={openAddModal}
                     onOpenCompleted={openCompletedModal}

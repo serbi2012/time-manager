@@ -35,10 +35,10 @@ export function SessionContextMenu({
     return (
         <div className="min-w-[160px]">
             <div className="mb-sm">
-                <strong>{record.work_name}</strong>
+                <strong>{record.deal_name || record.work_name}</strong>
                 {record.deal_name && (
                     <div className="text-text-secondary text-sm">
-                        {record.deal_name}
+                        {record.work_name}
                     </div>
                 )}
                 <div className="text-text-disabled text-sm mt-xs">
