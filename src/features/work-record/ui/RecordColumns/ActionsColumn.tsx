@@ -1,8 +1,10 @@
 /**
- * 액션 버튼 컬럼 (완료/수정/삭제)
+ * Actions column (hover-only visible, Toss style)
+ * 2-4: Hover scale on action buttons
+ * 5-1: Press scale
  */
 
-import { Space, Button, Tooltip, Popconfirm } from "antd";
+import { Tooltip, Popconfirm } from "antd";
 import {
     CheckOutlined,
     EditOutlined,
@@ -10,11 +12,8 @@ import {
     RollbackOutlined,
 } from "@ant-design/icons";
 import type { WorkRecord } from "../../../../shared/types";
-import {
-    RECORD_TOOLTIP,
-    RECORD_CONFIRM,
-    RECORD_SPACING,
-} from "../../constants";
+import { RECORD_TOOLTIP, RECORD_CONFIRM } from "../../constants";
+import { motion } from "../../../../shared/ui/animation";
 
 interface ActionsColumnProps {
     record: WorkRecord;
@@ -34,41 +33,46 @@ export function ActionsColumn({
     onDelete,
 }: ActionsColumnProps) {
     return (
-        <Space size={RECORD_SPACING.TINY}>
-            {/* 완료/완료 취소 버튼 (가상 레코드는 불가) */}
+        <div className="record-row-actions flex items-center gap-xs">
+            {/* Complete / Uncomplete */}
             {!is_active &&
                 (record.is_completed ? (
                     <Tooltip title={RECORD_TOOLTIP.UNCOMPLETE}>
-                        <Button
-                            type="text"
-                            icon={<RollbackOutlined />}
-                            size="small"
+                        <motion.button
+                            whileHover={{ scale: 1.15 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="w-7 h-7 rounded-md flex items-center justify-center text-text-secondary hover:bg-bg-grey hover:text-primary transition-colors"
                             onClick={() => onUncomplete(record)}
-                        />
+                        >
+                            <RollbackOutlined style={{ fontSize: 14 }} />
+                        </motion.button>
                     </Tooltip>
                 ) : (
                     <Tooltip title={RECORD_TOOLTIP.COMPLETE}>
-                        <Button
-                            type="text"
-                            className="!text-success"
-                            icon={<CheckOutlined />}
-                            size="small"
+                        <motion.button
+                            whileHover={{ scale: 1.15 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="w-7 h-7 rounded-md flex items-center justify-center text-success hover:bg-green-50 transition-colors"
                             onClick={() => onComplete(record)}
-                        />
+                        >
+                            <CheckOutlined style={{ fontSize: 14 }} />
+                        </motion.button>
                     </Tooltip>
                 ))}
 
-            {/* 수정 버튼 (가상 레코드도 가능) */}
+            {/* Edit */}
             <Tooltip title={RECORD_TOOLTIP.EDIT}>
-                <Button
-                    type="text"
-                    icon={<EditOutlined />}
-                    size="small"
+                <motion.button
+                    whileHover={{ scale: 1.15 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="w-7 h-7 rounded-md flex items-center justify-center text-text-secondary hover:bg-bg-grey hover:text-primary transition-colors"
                     onClick={() => onEdit(record)}
-                />
+                >
+                    <EditOutlined style={{ fontSize: 14 }} />
+                </motion.button>
             </Tooltip>
 
-            {/* 삭제 버튼 (가상 레코드는 불가) */}
+            {/* Delete */}
             {!is_active && (
                 <Popconfirm
                     title={RECORD_CONFIRM.DELETE.TITLE}
@@ -76,19 +80,17 @@ export function ActionsColumn({
                     onConfirm={() => onDelete(record.id)}
                     okText={RECORD_CONFIRM.DELETE.OK_TEXT}
                     cancelText={RECORD_CONFIRM.DELETE.CANCEL_TEXT}
-                    okButtonProps={{
-                        danger: true,
-                        autoFocus: true,
-                    }}
+                    okButtonProps={{ danger: true, autoFocus: true }}
                 >
-                    <Button
-                        type="text"
-                        danger
-                        icon={<DeleteOutlined />}
-                        size="small"
-                    />
+                    <motion.button
+                        whileHover={{ scale: 1.15 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="w-7 h-7 rounded-md flex items-center justify-center text-text-secondary hover:bg-red-50 hover:text-error transition-colors"
+                    >
+                        <DeleteOutlined style={{ fontSize: 14 }} />
+                    </motion.button>
                 </Popconfirm>
             )}
-        </Space>
+        </div>
     );
 }

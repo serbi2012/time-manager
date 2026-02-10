@@ -1,34 +1,27 @@
 /**
- * Desktop 전용 작업 레코드 테이블 컴포넌트
+ * Desktop work record table (Toss-style redesign)
  *
- * Desktop 특화 UI:
- * - Space size: medium
- * - DatePicker width: 160px
- * - 버튼 텍스트 + 단축키 힌트 표시
+ * Replaces Ant Design Card wrapper with custom container.
+ * Uses RecordHeader for date navigation, stats, and actions.
+ * Ant Design Table is retained with CSS overrides for Toss styling.
  */
 
 import { useMemo, useCallback } from "react";
+import { Table, message } from "antd";
 import {
-    Table,
-    Card,
-    DatePicker,
-    Button,
-    Space,
-    Tag,
-    Tooltip,
-    message,
-} from "antd";
-import {
-    ClockCircleOutlined,
-    PlusOutlined,
     CheckCircleOutlined,
     DeleteOutlined,
     CopyOutlined,
-    LeftOutlined,
-    RightOutlined,
+    CaretDownOutlined,
+    CaretRightOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
+import {
+    motion,
+    AnimatePresence,
+    SPRING,
+} from "../../../../shared/ui/animation";
 
 // Store
 import { useWorkStore, APP_THEME_COLORS } from "../../../../store/useWorkStore";
@@ -38,7 +31,6 @@ import { useShortcutStore } from "../../../../store/useShortcutStore";
 import type { WorkRecord } from "../../../../types";
 
 // Hooks
-import { formatShortcutKeyForPlatform } from "../../../../hooks/useShortcuts";
 import { useDebouncedValue } from "../../../../hooks/useDebouncedValue";
 
 // Features - Hooks
@@ -51,8 +43,6 @@ import {
 } from "../../hooks";
 
 // Features - UI Components
-import { DailyStats } from "../RecordTable";
-
 import {
     TimerActionColumn,
     DealNameColumn,
@@ -66,28 +56,28 @@ import {
 } from "../RecordColumns";
 
 import { RecordAddModal, RecordEditModal } from "../RecordModals";
-
 import { CompletedModal, TrashModal } from "../CompletedRecords";
 import { SessionEditTable } from "../SessionEditor";
+import { RecordHeader } from "./RecordHeader";
+import { RecordEmptyState } from "./RecordEmptyState";
 
 // Constants
 import {
     RECORD_SUCCESS,
-    RECORD_EMPTY,
     RECORD_WARNING,
     RECORD_TABLE_COLUMN,
-    RECORD_TOOLTIP,
     RECORD_BUTTON,
     RECORD_UI_TEXT,
     MARKDOWN_COPY,
     RECORD_COLUMN_WIDTH,
-    RECORD_SPACING,
     DATE_FORMAT,
-    DATE_FORMAT_WITH_DAY,
     CHAR_CODE_THRESHOLD,
     HANGUL_CHAR_WIDTH,
     ASCII_CHAR_WIDTH,
 } from "../../constants";
+
+const FOOTER_TOTAL_PREFIX = "총";
+const FOOTER_TOTAL_SUFFIX = "건";
 
 export function DesktopWorkRecordTable() {
     // ============================================
@@ -180,7 +170,6 @@ export function DesktopWorkRecordTable() {
             return;
         }
 
-        // 마크다운 표 형식으로 복사
         const columns = MARKDOWN_COPY.COLUMNS;
         const data = filtered.map((r) => [
             r.deal_name || r.work_name,
@@ -190,7 +179,6 @@ export function DesktopWorkRecordTable() {
             r.note || "",
         ]);
 
-        // 문자열 디스플레이 너비 계산
         const getDisplayWidth = (str: string) => {
             let width = 0;
             for (const char of str) {
@@ -211,14 +199,12 @@ export function DesktopWorkRecordTable() {
             return Math.max(header_width, max_data_width);
         });
 
-        // 문자열 패딩
         const padString = (str: string, width: number) => {
             const display_width = getDisplayWidth(str);
             const padding = width - display_width;
             return str + " ".repeat(Math.max(0, padding));
         };
 
-        // 마크다운 표 생성
         const header_row =
             MARKDOWN_COPY.CELL_PREFIX +
             columns
@@ -270,6 +256,13 @@ export function DesktopWorkRecordTable() {
         [setSelectedDate]
     );
 
+    const handleDateSelect = useCallback(
+        (date_str: string) => {
+            setSelectedDate(date_str);
+        },
+        [setSelectedDate]
+    );
+
     // ============================================
     // Table Columns
     // ============================================
@@ -310,7 +303,10 @@ export function DesktopWorkRecordTable() {
                 key: "work_name",
                 width: RECORD_COLUMN_WIDTH.WORK_NAME,
                 render: (_, record) => (
-                    <WorkNameColumn record={record} theme_color={theme_color} />
+                    <WorkNameColumn
+                        record={record}
+                        is_active={active_record_id === record.id}
+                    />
                 ),
             },
             {
@@ -337,7 +333,6 @@ export function DesktopWorkRecordTable() {
                     <DurationColumn
                         record={record}
                         selected_date={selected_date}
-                        theme_color={theme_color}
                     />
                 ),
             },
@@ -397,140 +392,158 @@ export function DesktopWorkRecordTable() {
         []
     );
 
+    // Custom expand icon (▸/▾)
+    const customExpandIcon = useCallback(
+        ({
+            expanded,
+            onExpand,
+            record,
+        }: {
+            expanded: boolean;
+            onExpand: (
+                record: WorkRecord,
+                e: React.MouseEvent<HTMLElement>
+            ) => void;
+            record: WorkRecord;
+        }) => {
+            if (!record.sessions || record.sessions.length === 0) {
+                return <span className="inline-block w-6" />;
+            }
+            return (
+                <button
+                    className="w-6 h-6 border-0 bg-transparent rounded flex items-center justify-center hover:bg-bg-grey transition-colors text-text-disabled cursor-pointer"
+                    onClick={(e) => onExpand(record, e)}
+                >
+                    {expanded ? (
+                        <CaretDownOutlined style={{ fontSize: 10 }} />
+                    ) : (
+                        <CaretRightOutlined style={{ fontSize: 10 }} />
+                    )}
+                </button>
+            );
+        },
+        []
+    );
+
     // ============================================
     // Shortcuts
     // ============================================
     const new_work_keys = shortcut_store.getShortcut("new-work")?.keys || "";
-    const prev_day_keys = shortcut_store.getShortcut("prev-day")?.keys || "";
-    const next_day_keys = shortcut_store.getShortcut("next-day")?.keys || "";
 
     // ============================================
     // Render
     // ============================================
     return (
         <>
-            <Card
-                title={
-                    <Space>
-                        <ClockCircleOutlined />
-                        <span>{RECORD_UI_TEXT.CARD_TITLE}</span>
-                        {timer.is_running && timer.active_form_data && (
-                            <Tag
-                                color={theme_color}
-                                icon={<ClockCircleOutlined spin />}
-                            >
-                                {timer.active_form_data.deal_name ||
-                                    timer.active_form_data.work_name}{" "}
-                                {RECORD_UI_TEXT.TIMER_RUNNING_SUFFIX}
-                            </Tag>
-                        )}
-                    </Space>
-                }
-                extra={
-                    <Space size={RECORD_SPACING.MEDIUM} wrap>
-                        {/* 날짜 네비게이션 */}
-                        <Space.Compact>
-                            <Tooltip
-                                title={RECORD_TOOLTIP.PREVIOUS_DATE(
-                                    formatShortcutKeyForPlatform(prev_day_keys)
-                                )}
-                            >
-                                <Button
-                                    icon={<LeftOutlined />}
-                                    onClick={handlePrevDay}
-                                />
-                            </Tooltip>
-                            <DatePicker
-                                value={dayjs(selected_date)}
-                                onChange={handleDateChange}
-                                format={DATE_FORMAT_WITH_DAY}
-                                allowClear={false}
-                                className="!w-[150px]"
-                            />
-                            <Tooltip
-                                title={RECORD_TOOLTIP.NEXT_DATE(
-                                    formatShortcutKeyForPlatform(next_day_keys)
-                                )}
-                            >
-                                <Button
-                                    icon={<RightOutlined />}
-                                    onClick={handleNextDay}
-                                />
-                            </Tooltip>
-                        </Space.Compact>
-
-                        {/* 주요 액션 버튼 */}
-                        <Button
-                            type="primary"
-                            icon={<PlusOutlined />}
-                            onClick={openAddModal}
-                        >
-                            {RECORD_BUTTON.NEW_WORK}{" "}
-                            <span className="text-xs opacity-85 ml-xs py-px px-xs bg-white/20 rounded-[3px]">
-                                {formatShortcutKeyForPlatform(new_work_keys)}
-                            </span>
-                        </Button>
-
-                        {/* 보조 액션 버튼들 */}
-                        <Tooltip title={RECORD_TOOLTIP.COMPLETED_LIST}>
-                            <Button
-                                icon={
-                                    <CheckCircleOutlined className="!text-success" />
-                                }
-                                onClick={openCompletedModal}
-                            >
-                                {RECORD_BUTTON.VIEW_COMPLETED}
-                            </Button>
-                        </Tooltip>
-
-                        <Tooltip title={RECORD_TOOLTIP.TRASH_LIST}>
-                            <Button
-                                icon={
-                                    <DeleteOutlined className="!text-error" />
-                                }
-                                onClick={openTrashModal}
-                            >
-                                {RECORD_BUTTON.VIEW_TRASH}
-                            </Button>
-                        </Tooltip>
-
-                        <Tooltip title={RECORD_TOOLTIP.COPY_RECORDS}>
-                            <Button
-                                icon={<CopyOutlined />}
-                                onClick={handleCopyToClipboard}
-                                disabled={display_records.length === 0}
-                            >
-                                {RECORD_BUTTON.COPY_RECORDS}
-                            </Button>
-                        </Tooltip>
-                    </Space>
-                }
-            >
-                {/* 통계 패널 */}
-                <DailyStats stats={today_stats} />
-
-                {/* 테이블 */}
-                <Table
-                    dataSource={display_records}
-                    columns={columns}
-                    rowKey="id"
-                    pagination={false}
-                    size="small"
-                    expandable={{
-                        expandedRowRender,
-                        rowExpandable: (record) =>
-                            !!(record.sessions && record.sessions.length > 0),
-                    }}
-                    locale={{
-                        emptyText: RECORD_EMPTY.NO_RECORDS,
-                    }}
+            <div className="toss-record-table bg-white rounded-xl overflow-hidden">
+                {/* Header */}
+                <RecordHeader
+                    selected_date={selected_date}
+                    onDateChange={handleDateChange}
+                    onPrevDay={handlePrevDay}
+                    onNextDay={handleNextDay}
+                    onDateSelect={handleDateSelect}
+                    stats={today_stats}
+                    records={records}
+                    onAddNew={openAddModal}
+                    onOpenCompleted={openCompletedModal}
+                    onOpenTrash={openTrashModal}
+                    onCopyRecords={handleCopyToClipboard}
+                    new_work_shortcut_keys={new_work_keys}
+                    disabled_copy={display_records.length === 0}
                 />
-            </Card>
 
-            {/* 작업 추가 모달 */}
+                {/* 2-1: Table with stagger entrance on date change */}
+                <div className="px-xl pb-0">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={selected_date}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={SPRING.toss}
+                        >
+                            <Table
+                                dataSource={display_records}
+                                columns={columns}
+                                rowKey="id"
+                                pagination={false}
+                                size="small"
+                                className="toss-table"
+                                expandable={{
+                                    expandedRowRender,
+                                    expandIcon: customExpandIcon,
+                                    rowExpandable: (record) =>
+                                        !!(
+                                            record.sessions &&
+                                            record.sessions.length > 0
+                                        ),
+                                }}
+                                rowClassName={(record) =>
+                                    record.id === active_record_id
+                                        ? "toss-active-row"
+                                        : ""
+                                }
+                                locale={{
+                                    emptyText: (
+                                        <RecordEmptyState
+                                            onAddNew={openAddModal}
+                                        />
+                                    ),
+                                }}
+                            />
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+
+                {/* Footer */}
+                <div className="px-xl py-md flex items-center justify-between border-t border-border-light mt-sm">
+                    <span className="text-sm text-text-secondary">
+                        {FOOTER_TOTAL_PREFIX} {display_records.length}
+                        {FOOTER_TOTAL_SUFFIX}
+                    </span>
+                    <div className="toss-footer-actions flex items-center gap-sm">
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            className="h-8 px-md rounded-md flex items-center gap-xs hover:bg-bg-grey transition-colors text-sm text-text-secondary cursor-pointer"
+                            onClick={openCompletedModal}
+                        >
+                            <CheckCircleOutlined
+                                style={{
+                                    color: "var(--color-success)",
+                                    fontSize: 13,
+                                }}
+                            />
+                            {RECORD_BUTTON.VIEW_COMPLETED} 목록
+                        </motion.button>
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            className="h-8 px-md rounded-md flex items-center gap-xs hover:bg-bg-grey transition-colors text-sm text-text-secondary cursor-pointer"
+                            onClick={openTrashModal}
+                        >
+                            <DeleteOutlined
+                                style={{
+                                    color: "var(--color-error)",
+                                    fontSize: 13,
+                                }}
+                            />
+                            {RECORD_BUTTON.VIEW_TRASH}
+                        </motion.button>
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            className="h-8 px-md rounded-md flex items-center gap-xs hover:bg-bg-grey transition-colors text-sm text-text-secondary cursor-pointer"
+                            onClick={handleCopyToClipboard}
+                        >
+                            <CopyOutlined style={{ fontSize: 13 }} />
+                            {RECORD_BUTTON.COPY_RECORDS}
+                        </motion.button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Modals */}
             <RecordAddModal open={is_add_open} onClose={closeAddModal} />
 
-            {/* 작업 수정 모달 */}
             <RecordEditModal
                 open={is_edit_open}
                 onClose={closeEditModal}
@@ -542,7 +555,6 @@ export function DesktopWorkRecordTable() {
                 }
             />
 
-            {/* 완료 목록 모달 */}
             <CompletedModal
                 open={is_completed_open}
                 on_close={closeCompletedModal}
@@ -550,7 +562,6 @@ export function DesktopWorkRecordTable() {
                 on_restore={(r) => markAsIncomplete(r.id)}
             />
 
-            {/* 휴지통 모달 */}
             <TrashModal
                 open={is_trash_open}
                 on_close={closeTrashModal}

@@ -1,14 +1,11 @@
 /**
- * 거래명 컬럼
+ * Deal name column (Toss-style with soft timer badge)
  */
 
-import { Space, Typography, Tag } from "antd";
 import { CheckCircleOutlined } from "@ant-design/icons";
 import type { WorkRecord } from "../../../../shared/types";
 import { formatTimer } from "../../../../shared/lib/time";
-import { RECORD_SPACING } from "../../constants";
-
-const { Text } = Typography;
+import { cn } from "../../../../shared/lib/cn";
 
 interface DealNameColumnProps {
     record: WorkRecord;
@@ -22,38 +19,31 @@ export function DealNameColumn({
     record,
     is_active,
     is_completed,
-    theme_color,
     elapsed_seconds,
 }: DealNameColumnProps) {
-    const text_color = is_active
-        ? theme_color
-        : is_completed
-        ? "var(--gray-500)"
-        : undefined;
-
-    const text_decoration = is_completed ? "line-through" : undefined;
-
     return (
-        <Space direction="vertical" size={RECORD_SPACING.NONE}>
-            <Space>
-                {is_completed && (
-                    <CheckCircleOutlined className="!text-success" />
+        <div className="flex items-center gap-sm">
+            {is_completed && (
+                <CheckCircleOutlined
+                    className="!text-success"
+                    style={{ fontSize: 14 }}
+                />
+            )}
+            <span
+                className={cn(
+                    "font-semibold text-md",
+                    is_active && "text-primary",
+                    is_completed && "text-text-disabled line-through",
+                    !is_active && !is_completed && "text-text-primary"
                 )}
-                <Text
-                    strong
-                    style={{
-                        color: text_color,
-                        textDecoration: text_decoration,
-                    }}
-                >
-                    {record.deal_name || record.work_name}
-                </Text>
-                {is_active && (
-                    <Tag color={theme_color} className="!ml-xs">
-                        {formatTimer(elapsed_seconds)}
-                    </Tag>
-                )}
-            </Space>
-        </Space>
+            >
+                {record.deal_name || record.work_name}
+            </span>
+            {is_active && (
+                <span className="inline-flex items-center px-sm py-xs bg-primary-light text-primary text-xs font-medium rounded-sm">
+                    {formatTimer(elapsed_seconds)}
+                </span>
+            )}
+        </div>
     );
 }

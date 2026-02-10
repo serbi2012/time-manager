@@ -1,8 +1,7 @@
 /**
- * 업무명 컬럼
+ * Task name column (Toss-style plain text)
  */
 
-import { Tag } from "antd";
 import type { WorkRecord } from "../../../../shared/types";
 import { RECORD_UI_TEXT } from "../../constants";
 
@@ -12,8 +11,8 @@ interface TaskNameColumnProps {
 
 export function TaskNameColumn({ record }: TaskNameColumnProps) {
     return record.task_name ? (
-        <Tag color="cyan">{record.task_name}</Tag>
+        <span className="text-md text-gray-700">{record.task_name}</span>
     ) : (
-        <>{RECORD_UI_TEXT.EMPTY_VALUE}</>
+        <span className="text-text-disabled">{RECORD_UI_TEXT.EMPTY_VALUE}</span>
     );
 }
