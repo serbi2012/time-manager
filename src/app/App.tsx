@@ -9,7 +9,6 @@ import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "./providers";
 import { DesktopLayout, MobileLayout } from "./layouts";
 import { useResponsive } from "../hooks/useResponsive";
-import "../styles/app.css";
 
 /**
  * 플랫폼별 레이아웃 선택 컴포넌트

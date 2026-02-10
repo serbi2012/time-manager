@@ -31,86 +31,90 @@
    ============================================================================ */
 
 @theme {
-    /* --- Colors --- */
-    --color-primary: var(--color-primary);
-    --color-primary-dark: var(--color-primary-dark);
-    --color-primary-light: var(--color-primary-light);
-    --color-success: var(--color-success);
-    --color-error: var(--color-error);
-    --color-warning: var(--color-warning);
-    --color-info: var(--color-info);
-    --color-disabled: var(--color-disabled);
+    /* --- Colors (defaults for blue theme; ThemeProvider overrides primary at runtime) --- */
+    --color-primary: #3182f6;
+    --color-primary-dark: #1b64da;
+    --color-primary-light: #ecf2fe;
+    --color-success: #34c759;
+    --color-error: #f04452;
+    --color-warning: #ff9500;
+    --color-info: #3182f6;
+    --color-disabled: #d1d6db;
 
-    --color-text-primary: var(--color-text-primary);
-    --color-text-secondary: var(--color-text-secondary);
-    --color-text-disabled: var(--color-text-disabled);
-    --color-text-hint: var(--color-text-hint);
-    --color-text-white: var(--color-text-white);
+    --color-text-primary: #191f28;
+    --color-text-secondary: #6b7684;
+    --color-text-disabled: #b0b8c1;
+    --color-text-hint: #d1d6db;
+    --color-text-white: #ffffff;
 
-    --color-bg-default: var(--color-bg-default);
-    --color-bg-light: var(--color-bg-light);
-    --color-bg-grey: var(--color-bg-grey);
-    --color-bg-dark: var(--color-bg-dark);
-    --color-bg-app: var(--color-bg-app);
+    --color-bg-default: #ffffff;
+    --color-bg-light: #f9fafb;
+    --color-bg-grey: #f2f4f6;
+    --color-bg-dark: #191f28;
+    --color-bg-app: #f9fafb;
 
-    --color-border-default: var(--color-border-default);
-    --color-border-light: var(--color-border-light);
-    --color-border-dark: var(--color-border-dark);
+    --color-border-default: #e5e8eb;
+    --color-border-light: #f2f4f6;
+    --color-border-dark: #d1d6db;
 
     /* --- Grayscale --- */
-    --color-gray-50: var(--gray-50);
-    --color-gray-100: var(--gray-100);
-    --color-gray-200: var(--gray-200);
-    --color-gray-300: var(--gray-300);
-    --color-gray-400: var(--gray-400);
-    --color-gray-500: var(--gray-500);
-    --color-gray-600: var(--gray-600);
-    --color-gray-700: var(--gray-700);
-    --color-gray-800: var(--gray-800);
-    --color-gray-900: var(--gray-900);
+    --color-gray-50: #f9fafb;
+    --color-gray-100: #f2f4f6;
+    --color-gray-200: #e5e8eb;
+    --color-gray-300: #d1d6db;
+    --color-gray-400: #b0b8c1;
+    --color-gray-500: #8b95a1;
+    --color-gray-600: #6b7684;
+    --color-gray-700: #4e5968;
+    --color-gray-800: #333d4b;
+    --color-gray-900: #191f28;
 
     /* --- Spacing --- */
-    --spacing-xs: var(--spacing-xs);
-    --spacing-sm: var(--spacing-sm);
-    --spacing-md: var(--spacing-md);
-    --spacing-lg: var(--spacing-lg);
-    --spacing-xl: var(--spacing-xl);
-    --spacing-2xl: var(--spacing-2xl);
-    --spacing-3xl: var(--spacing-3xl);
-    --spacing-section: var(--spacing-section);
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 12px;
+    --spacing-lg: 16px;
+    --spacing-xl: 24px;
+    --spacing-2xl: 32px;
+    --spacing-3xl: 40px;
+    --spacing-section: 48px;
 
     /* --- Border Radius --- */
-    --radius-xs: var(--radius-xs);
-    --radius-sm: var(--radius-sm);
-    --radius-md: var(--radius-md);
-    --radius-lg: var(--radius-lg);
-    --radius-xl: var(--radius-xl);
-    --radius-2xl: var(--radius-2xl);
-    --radius-full: var(--radius-full);
+    --radius-xs: 4px;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 20px;
+    --radius-full: 9999px;
 
-    /* --- Font Size --- */
-    --font-size-xs: var(--font-size-xs);
-    --font-size-sm: var(--font-size-sm);
-    --font-size-md: var(--font-size-md);
-    --font-size-lg: var(--font-size-lg);
-    --font-size-xl: var(--font-size-xl);
-    --font-size-2xl: var(--font-size-2xl);
-    --font-size-h3: var(--font-size-h3);
-    --font-size-h2: var(--font-size-h2);
-    --font-size-h1: var(--font-size-h1);
+    /* --- Font Size (--text-* namespace maps to text-* utilities) --- */
+    --text-xs: 11px;
+    --text-sm: 13px;
+    --text-md: 15px;
+    --text-lg: 17px;
+    --text-xl: 19px;
+    --text-2xl: 22px;
+    --text-h3: 24px;
+    --text-h2: 26px;
+    --text-h1: 28px;
 
     /* --- Font Family --- */
-    --font-family-base: var(--font-family-base);
-    --font-family-mono: var(--font-family-mono);
+    --font-family-base: "Pretendard Variable", Pretendard, -apple-system,
+        BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI",
+        "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+    --font-family-mono: "SF Mono", "Monaco", "Inconsolata", "Fira Code",
+        "Courier New", monospace;
 
     /* --- Z-Index --- */
-    --z-index-base: var(--z-base);
-    --z-index-dropdown: var(--z-dropdown);
-    --z-index-sticky: var(--z-sticky);
-    --z-index-fixed: var(--z-fixed);
-    --z-index-modal-backdrop: var(--z-modal-backdrop);
-    --z-index-modal: var(--z-modal);
-    --z-index-toast: var(--z-toast);
-    --z-index-tooltip: var(--z-tooltip);
-    --z-index-top: var(--z-top);
+    --z-index-base: 1;
+    --z-index-dropdown: 10;
+    --z-index-sticky: 20;
+    --z-index-fixed: 30;
+    --z-index-modal-backdrop: 100;
+    --z-index-modal: 1000;
+    --z-index-toast: 1100;
+    --z-index-tooltip: 1200;
+    --z-index-top: 9999;
 }
