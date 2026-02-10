@@ -3,7 +3,7 @@
  */
 
 import { useState, useCallback } from "react";
-import { message } from "antd";
+import { message } from "@/shared/lib/message";
 import dayjs from "dayjs";
 import { useWorkStore } from "../../../store/useWorkStore";
 import {

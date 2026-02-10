@@ -3,7 +3,8 @@
  */
 
 import { useState } from "react";
-import { Modal, Button, Tag, Typography, message } from "antd";
+import { Modal, Button, Tag, Typography } from "antd";
+import { message } from "@/shared/lib/message";
 import { useShortcutStore } from "@/store/useShortcutStore";
 import type { ShortcutDefinition } from "@/store/useShortcutStore";
 import { formatShortcutKeyForPlatform } from "@/hooks/useShortcuts";
@@ -119,7 +120,10 @@ export function ShortcutKeyEditor({
                     style={{ border: input_border }}
                 >
                     {pending_keys ? (
-                        <Tag color="blue" className="!font-mono !text-base !py-sm !px-lg">
+                        <Tag
+                            color="blue"
+                            className="!font-mono !text-base !py-sm !px-lg"
+                        >
                             {formatShortcutKeyForPlatform(pending_keys)}
                         </Tag>
                     ) : (

@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { message } from "antd";
+import { message } from "@/shared/lib/message";
 import type { User } from "firebase/auth";
 import {
     loadFromFirebase,

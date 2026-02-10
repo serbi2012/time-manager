@@ -2,7 +2,8 @@
  * 새 작업 추가 모달
  */
 
-import { Modal, Form, Button, message } from "antd";
+import { Modal, Form, Button } from "antd";
+import { message } from "@/shared/lib/message";
 import { useWorkStore } from "../../../../store/useWorkStore";
 import { useShortcutStore } from "../../../../store/useShortcutStore";
 import {

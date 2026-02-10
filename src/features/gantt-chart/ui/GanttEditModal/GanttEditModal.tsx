@@ -3,7 +3,8 @@
  */
 
 import { useEffect } from "react";
-import { Modal, Form, Space, Button, message, Typography } from "antd";
+import { Modal, Form, Space, Button, Typography } from "antd";
+import { message } from "@/shared/lib/message";
 import dayjs from "dayjs";
 import { useWorkStore } from "../../../../store/useWorkStore";
 import { useShortcutStore } from "../../../../store/useShortcutStore";

@@ -17,7 +17,7 @@ import {
     DEFAULT_TASK_OPTIONS,
     DEFAULT_CATEGORY_OPTIONS,
 } from "@/store/constants";
-import { message } from "antd";
+import { message } from "@/shared/lib/message";
 import { SUCCESS_MESSAGES } from "@/shared/constants/ui/messages";
 import {
     SETTINGS_AUTOCOMPLETE_DESC,

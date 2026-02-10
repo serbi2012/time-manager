@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 import { Layout, Card, Tabs, Empty, Badge } from "antd";
-import { message } from "antd";
+import { message } from "@/shared/lib/message";
 import {
     CalendarOutlined,
     DatabaseOutlined,

@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { message } from "antd";
+import { message } from "@/shared/lib/message";
 import type { SuggestionReply } from "@/types";
 import { SUGGESTION_MESSAGES } from "@/shared/constants";
 import {

@@ -3,7 +3,7 @@
  */
 
 import { CloseOutlined } from "@ant-design/icons";
-import { message } from "antd";
+import { message } from "@/shared/lib/message";
 import { HighlightText } from "../HighlightText";
 import type { HiddenAutoCompleteField } from "../../../store/types/store";
 

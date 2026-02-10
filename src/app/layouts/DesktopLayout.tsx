@@ -3,7 +3,8 @@
  */
 
 import { useMemo, useCallback, useState } from "react";
-import { Layout, Spin, message } from "antd";
+import { Layout, Spin } from "antd";
+import { message } from "@/shared/lib/message";
 import {
     useNavigate,
     useLocation,

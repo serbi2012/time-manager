@@ -6,7 +6,7 @@
  */
 
 import { useCallback } from "react";
-import { message } from "antd";
+import { message } from "@/shared/lib/message";
 import { useWorkStore } from "../../store/useWorkStore";
 import { SUCCESS_MESSAGES } from "../constants";
 import {

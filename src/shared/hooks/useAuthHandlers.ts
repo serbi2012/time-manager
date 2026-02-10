@@ -6,7 +6,7 @@
  */
 
 import { useCallback } from "react";
-import { message } from "antd";
+import { message } from "@/shared/lib/message";
 import { useAuth } from "../../firebase/useAuth";
 import { SUCCESS_MESSAGES, ERROR_MESSAGES } from "../constants";
 import type { User } from "firebase/auth";

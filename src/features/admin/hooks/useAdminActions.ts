@@ -3,7 +3,7 @@
  */
 
 import { useCallback } from "react";
-import { message } from "antd";
+import { message } from "@/shared/lib/message";
 import { useWorkStore } from "../../../store/useWorkStore";
 import type { WorkRecord } from "../../../shared/types";
 import { SUCCESS_MESSAGES, ERROR_MESSAGES } from "../../../shared/constants";

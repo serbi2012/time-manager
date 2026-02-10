@@ -6,7 +6,7 @@
  */
 
 import { useRef, useCallback } from "react";
-import { message } from "antd";
+import { message } from "@/shared/lib/message";
 import { useWorkStore } from "../../store/useWorkStore";
 import { useAuth } from "../../firebase/useAuth";
 import {

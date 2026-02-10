@@ -4,7 +4,8 @@
  */
 
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { Card, message } from "antd";
+import { Card } from "antd";
+import { message } from "@/shared/lib/message";
 import dayjs from "dayjs";
 import { useWorkStore } from "../../../../store/useWorkStore";
 import { minutesToTime } from "../../../../shared/lib/time";

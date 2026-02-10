@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Divider, Space, Select, Input, Button, Typography } from "antd";
 import { SettingOutlined } from "@ant-design/icons";
-import { message } from "antd";
+import { message } from "@/shared/lib/message";
 import type { SuggestionPost, SuggestionStatus } from "@/types";
 import { updateSuggestionStatus } from "@/firebase/suggestionService";
 import { SUGGESTION_MESSAGES } from "@/shared/constants";

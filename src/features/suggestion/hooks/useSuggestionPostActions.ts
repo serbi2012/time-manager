@@ -1,5 +1,6 @@
 import { useCallback } from "react";
-import { message, Form } from "antd";
+import { Form } from "antd";
+import { message } from "@/shared/lib/message";
 import type { SuggestionPost } from "@/types";
 import { SUGGESTION_MESSAGES } from "@/shared/constants";
 import {

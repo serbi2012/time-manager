@@ -8,7 +8,7 @@
 
 import { useMemo, useCallback } from "react";
 import { Table } from "antd";
-import { message } from "../../../../shared/lib/message";
+import { message } from "@/shared/lib/message";
 import {
     CheckCircleOutlined,
     DeleteOutlined,

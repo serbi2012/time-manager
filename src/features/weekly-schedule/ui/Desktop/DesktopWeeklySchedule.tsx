@@ -3,7 +3,8 @@
  */
 
 import { useState } from "react";
-import { Layout, Empty, message } from "antd";
+import { Layout, Empty } from "antd";
+import { message } from "@/shared/lib/message";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import { SUCCESS_MESSAGES } from "@/shared/constants";

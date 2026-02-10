@@ -8,7 +8,8 @@
  */
 
 import { useCallback, useState } from "react";
-import { Popconfirm, message } from "antd";
+import { Popconfirm } from "antd";
+import { message } from "@/shared/lib/message";
 import { DeleteOutlined, HistoryOutlined } from "@ant-design/icons";
 
 import { useWorkStore } from "../../../../store/useWorkStore";

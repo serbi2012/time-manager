@@ -16,7 +16,7 @@ import dayjs from "dayjs";
 import { useWorkStore } from "@/store/useWorkStore";
 import { APP_THEME_COLORS } from "@/shared/constants";
 import { SUCCESS_MESSAGES } from "@/shared/constants/ui/messages";
-import { message } from "antd";
+import { message } from "@/shared/lib/message";
 import {
     SETTINGS_DATA_TIME_TITLE,
     SETTINGS_DATA_LUNCH_TITLE,

@@ -18,7 +18,7 @@ import type { ShortcutDefinition } from "@/store/useShortcutStore";
 import { useWorkStore } from "@/store/useWorkStore";
 import { APP_THEME_COLORS } from "@/store/constants";
 import { formatShortcutKeyForPlatform } from "@/hooks/useShortcuts";
-import { message } from "antd";
+import { message } from "@/shared/lib/message";
 import { SUCCESS_MESSAGES } from "@/shared/constants/ui/messages";
 import {
     SETTINGS_SHORTCUTS_DESC,
@@ -131,11 +131,11 @@ export function ShortcutsTab({ is_mobile }: ShortcutsTabProps) {
                 <div className="blur-sm opacity-50 pointer-events-none select-none">
                     <div className="flex flex-col gap-sm">
                         {shortcuts.slice(0, 3).map((shortcut) => (
-                            <div key={shortcut.id} className="p-md bg-[#fafafa] rounded-lg border border-[#f0f0f0]">
-                                <Text
-                                    strong
-                                    className="!text-[13px] !block"
-                                >
+                            <div
+                                key={shortcut.id}
+                                className="p-md bg-[#fafafa] rounded-lg border border-[#f0f0f0]"
+                            >
+                                <Text strong className="!text-[13px] !block">
                                     {shortcut.name}
                                 </Text>
                                 <Text type="secondary" className="!text-[11px]">
