@@ -160,7 +160,8 @@ export async function loadFromFirebase(user: User): Promise<boolean> {
             custom_category_options: settings?.custom_category_options || [],
             ...(settings?.timer && { timer: settings.timer }),
             ...(settings?.hidden_autocomplete_options && {
-                hidden_autocomplete_options: settings.hidden_autocomplete_options,
+                hidden_autocomplete_options:
+                    settings.hidden_autocomplete_options,
             }),
             ...(settings?.app_theme && {
                 app_theme: settings.app_theme,
@@ -169,14 +170,16 @@ export async function loadFromFirebase(user: User): Promise<boolean> {
 
         // 4. 단축키 동기화
         if (settings?.shortcuts && settings.shortcuts.length > 0) {
-            const merged_shortcuts = DEFAULT_SHORTCUTS.map((default_shortcut) => {
-                const saved = settings.shortcuts!.find(
-                    (s) => s.id === default_shortcut.id
-                );
-                return saved
-                    ? { ...default_shortcut, enabled: saved.enabled }
-                    : default_shortcut;
-            });
+            const merged_shortcuts = DEFAULT_SHORTCUTS.map(
+                (default_shortcut) => {
+                    const saved = settings.shortcuts!.find(
+                        (s) => s.id === default_shortcut.id
+                    );
+                    return saved
+                        ? { ...default_shortcut, enabled: saved.enabled }
+                        : default_shortcut;
+                }
+            );
             useShortcutStore.getState().setShortcuts(merged_shortcuts);
         }
 
@@ -210,7 +213,8 @@ export async function refreshFromFirebase(user: User): Promise<boolean> {
             custom_category_options: settings?.custom_category_options || [],
             ...(settings?.timer && { timer: settings.timer }),
             ...(settings?.hidden_autocomplete_options && {
-                hidden_autocomplete_options: settings.hidden_autocomplete_options,
+                hidden_autocomplete_options:
+                    settings.hidden_autocomplete_options,
             }),
             ...(settings?.app_theme && {
                 app_theme: settings.app_theme,
@@ -219,14 +223,16 @@ export async function refreshFromFirebase(user: User): Promise<boolean> {
 
         // 단축키 동기화
         if (settings?.shortcuts && settings.shortcuts.length > 0) {
-            const merged_shortcuts = DEFAULT_SHORTCUTS.map((default_shortcut) => {
-                const saved = settings.shortcuts!.find(
-                    (s) => s.id === default_shortcut.id
-                );
-                return saved
-                    ? { ...default_shortcut, enabled: saved.enabled }
-                    : default_shortcut;
-            });
+            const merged_shortcuts = DEFAULT_SHORTCUTS.map(
+                (default_shortcut) => {
+                    const saved = settings.shortcuts!.find(
+                        (s) => s.id === default_shortcut.id
+                    );
+                    return saved
+                        ? { ...default_shortcut, enabled: saved.enabled }
+                        : default_shortcut;
+                }
+            );
             useShortcutStore.getState().setShortcuts(merged_shortcuts);
         }
 
@@ -303,7 +309,9 @@ export async function checkPendingSync(user: User): Promise<void> {
                 const age = Date.now() - backup_data.timestamp;
                 if (age < 5 * 60 * 1000) {
                     console.log(
-                        `[Sync] 미저장 백업 발견 (${Math.round(age / 1000)}초 전) - 새 구조에서는 자동 저장됨`
+                        `[Sync] 미저장 백업 발견 (${Math.round(
+                            age / 1000
+                        )}초 전) - 새 구조에서는 자동 저장됨`
                     );
                 }
             }
@@ -328,12 +336,12 @@ interface DuplicateGroup {
     records: WorkRecord[];
 }
 
-// 중복 레코드 그룹 찾기 (같은 work_name + deal_name, 미완료 상태)
+// 중복 레코드 그룹 찾기 (같은 work_name + deal_name, 완료 여부 무관)
 function findDuplicateGroups(records: WorkRecord[]): DuplicateGroup[] {
     const group_map = new Map<string, WorkRecord[]>();
 
     records
-        .filter((r) => !r.is_deleted && !r.is_completed)
+        .filter((r) => !r.is_deleted)
         .forEach((record) => {
             const key = `${record.work_name}||${record.deal_name}`;
             if (!group_map.has(key)) {

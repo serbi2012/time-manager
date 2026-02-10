@@ -10,7 +10,12 @@
 import type { StateCreator } from "zustand";
 import { create } from "mutative";
 import dayjs from "dayjs";
-import type { RecordsSlice, WorkStore, WorkSession } from "../types";
+import type {
+    RecordsSlice,
+    WorkStore,
+    WorkSession,
+    WorkRecord,
+} from "../types";
 import { syncRecord, syncDeleteRecord } from "@/firebase/syncService";
 import {
     getSessionMinutes,
@@ -18,6 +23,24 @@ import {
     timeToMinutes,
     minutesToTime,
 } from "../lib";
+
+/**
+ * Find existing non-deleted record with same work_name + deal_name.
+ * Prefers incomplete records; falls back to completed ones.
+ */
+function findDuplicateRecord(
+    records: WorkRecord[],
+    work_name: string,
+    deal_name: string
+): WorkRecord | undefined {
+    return records.find(
+        (r) =>
+            !r.is_deleted &&
+            !r.is_completed &&
+            r.work_name === work_name &&
+            r.deal_name === deal_name
+    );
+}
 
 export const createRecordsSlice: StateCreator<
     WorkStore,
@@ -35,6 +58,68 @@ export const createRecordsSlice: StateCreator<
     // ============================================
 
     addRecord: (record) => {
+        // Merge into existing record if same work_name + deal_name exists
+        if (record.work_name) {
+            const existing = findDuplicateRecord(
+                get().records,
+                record.work_name,
+                record.deal_name
+            );
+
+            if (existing) {
+                // Merge sessions from new record into existing
+                if (record.sessions && record.sessions.length > 0) {
+                    const existing_ids = new Set(
+                        existing.sessions.map((s) => s.id)
+                    );
+                    const new_sessions = record.sessions.filter(
+                        (s) => !existing_ids.has(s.id)
+                    );
+
+                    if (new_sessions.length > 0) {
+                        set(
+                            create((state) => {
+                                const rec = state.records.find(
+                                    (r) => r.id === existing.id
+                                );
+                                if (rec) {
+                                    rec.sessions.push(...new_sessions);
+                                    rec.sessions.sort((a, b) => {
+                                        const da = a.date || rec.date;
+                                        const db = b.date || rec.date;
+                                        if (da !== db)
+                                            return da.localeCompare(db);
+                                        return (
+                                            a.start_time || ""
+                                        ).localeCompare(b.start_time || "");
+                                    });
+                                    const total = rec.sessions.reduce(
+                                        (sum, s) => sum + getSessionMinutes(s),
+                                        0
+                                    );
+                                    rec.duration_minutes = Math.max(1, total);
+                                    rec.start_time =
+                                        rec.sessions[0]?.start_time ||
+                                        rec.start_time;
+                                    rec.end_time =
+                                        rec.sessions[rec.sessions.length - 1]
+                                            ?.end_time || rec.end_time;
+                                }
+                            })
+                        );
+                        const updated = get().records.find(
+                            (r) => r.id === existing.id
+                        );
+                        if (updated) {
+                            syncRecord(updated).catch(console.error);
+                        }
+                    }
+                }
+                // Skip creating duplicate record
+                return;
+            }
+        }
+
         set(
             create((state) => {
                 state.records.push(record);
@@ -357,7 +442,8 @@ export const createRecordsSlice: StateCreator<
                     rec.sessions.sort((a, b) => {
                         const date_a = a.date || rec.date;
                         const date_b = b.date || rec.date;
-                        if (date_a !== date_b) return date_a.localeCompare(date_b);
+                        if (date_a !== date_b)
+                            return date_a.localeCompare(date_b);
                         return (
                             timeToMinutes(a.start_time) -
                             timeToMinutes(b.start_time)
