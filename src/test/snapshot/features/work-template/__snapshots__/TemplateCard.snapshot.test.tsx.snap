@@ -42,15 +42,14 @@ exports[`TemplateCard 스냅샷 > 기본 렌더링 구조가 유지됨 1`] = `
         </span>
       </div>
       <div
-        class="ant-space css-dev-only-do-not-override-p45i5k ant-space-vertical css-var-root"
-        style="column-gap: 2px; row-gap: 2px; width: 100%;"
+        class="ant-space css-dev-only-do-not-override-p45i5k ant-space-vertical !w-full css-var-root"
+        style="column-gap: 2px; row-gap: 2px;"
       >
         <div
           class="ant-space-item"
         >
           <span
-            class="ant-typography ant-typography-secondary ant-typography-ellipsis ant-typography-ellipsis-single-line css-dev-only-do-not-override-p45i5k css-var-root"
-            style="font-size: 12px;"
+            class="ant-typography ant-typography-secondary ant-typography-ellipsis ant-typography-ellipsis-single-line !text-xs css-dev-only-do-not-override-p45i5k css-var-root"
           >
             컴포넌트 구현
           </span>
@@ -65,8 +64,7 @@ exports[`TemplateCard 스냅샷 > 기본 렌더링 구조가 유지됨 1`] = `
               개발
             </span>
             <span
-              class="ant-tag ant-tag-filled css-dev-only-do-not-override-p45i5k css-var-root"
-              style="margin-left: 4px;"
+              class="ant-tag ant-tag-filled !ml-xs css-dev-only-do-not-override-p45i5k css-var-root"
             >
               개발
             </span>
@@ -76,8 +74,7 @@ exports[`TemplateCard 스냅샷 > 기본 렌더링 구조가 유지됨 1`] = `
           class="ant-space-item"
         >
           <span
-            class="ant-typography ant-typography-secondary css-dev-only-do-not-override-p45i5k css-var-root"
-            style="font-size: 11px;"
+            class="ant-typography ant-typography-secondary !text-xs css-dev-only-do-not-override-p45i5k css-var-root"
           >
             A25_01234
           </span>
@@ -87,15 +84,15 @@ exports[`TemplateCard 스냅샷 > 기본 렌더링 구조가 유지됨 1`] = `
     <style>
       
                 .template-card {
-                    margin-bottom: 8px;
+                    margin-bottom: var(--spacing-sm);
                     transition: box-shadow 0.2s;
                 }
                 .template-card:hover {
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
                 }
                 .template-card-dragging {
                     opacity: 0.5;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
                 }
                 .template-card-content {
                     min-height: 60px;
@@ -103,19 +100,19 @@ exports[`TemplateCard 스냅샷 > 기본 렌더링 구조가 유지됨 1`] = `
                 .template-card-header {
                     display: flex;
                     align-items: center;
-                    gap: 8px;
-                    margin-bottom: 8px;
+                    gap: var(--spacing-sm);
+                    margin-bottom: var(--spacing-sm);
                 }
                 .template-icon {
-                    font-size: 20px;
+                    font-size: var(--font-size-2xl);
                 }
                 .drag-handle {
                     margin-left: auto;
                     cursor: grab;
-                    color: #999;
+                    color: var(--color-text-disabled);
                 }
                 .drag-handle:hover {
-                    color: #1890ff;
+                    color: var(--color-primary);
                 }
             
     </style>
@@ -274,15 +271,14 @@ exports[`TemplateCard 스냅샷 > 긴 텍스트 템플릿 구조가 유지됨 1`
         </span>
       </div>
       <div
-        class="ant-space css-dev-only-do-not-override-p45i5k ant-space-vertical css-var-root"
-        style="column-gap: 2px; row-gap: 2px; width: 100%;"
+        class="ant-space css-dev-only-do-not-override-p45i5k ant-space-vertical !w-full css-var-root"
+        style="column-gap: 2px; row-gap: 2px;"
       >
         <div
           class="ant-space-item"
         >
           <span
-            class="ant-typography ant-typography-secondary ant-typography-ellipsis ant-typography-ellipsis-single-line css-dev-only-do-not-override-p45i5k css-var-root"
-            style="font-size: 12px;"
+            class="ant-typography ant-typography-secondary ant-typography-ellipsis ant-typography-ellipsis-single-line !text-xs css-dev-only-do-not-override-p45i5k css-var-root"
           >
             아주 긴 거래명이 들어가서 줄바꿈이 필요한 경우
           </span>
@@ -297,8 +293,7 @@ exports[`TemplateCard 스냅샷 > 긴 텍스트 템플릿 구조가 유지됨 1`
               개발
             </span>
             <span
-              class="ant-tag ant-tag-filled css-dev-only-do-not-override-p45i5k css-var-root"
-              style="margin-left: 4px;"
+              class="ant-tag ant-tag-filled !ml-xs css-dev-only-do-not-override-p45i5k css-var-root"
             >
               개발
             </span>
@@ -308,8 +303,7 @@ exports[`TemplateCard 스냅샷 > 긴 텍스트 템플릿 구조가 유지됨 1`
           class="ant-space-item"
         >
           <span
-            class="ant-typography ant-typography-secondary css-dev-only-do-not-override-p45i5k css-var-root"
-            style="font-size: 11px;"
+            class="ant-typography ant-typography-secondary !text-xs css-dev-only-do-not-override-p45i5k css-var-root"
           >
             A25_01234
           </span>
@@ -319,15 +313,15 @@ exports[`TemplateCard 스냅샷 > 긴 텍스트 템플릿 구조가 유지됨 1`
     <style>
       
                 .template-card {
-                    margin-bottom: 8px;
+                    margin-bottom: var(--spacing-sm);
                     transition: box-shadow 0.2s;
                 }
                 .template-card:hover {
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
                 }
                 .template-card-dragging {
                     opacity: 0.5;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
                 }
                 .template-card-content {
                     min-height: 60px;
@@ -335,19 +329,19 @@ exports[`TemplateCard 스냅샷 > 긴 텍스트 템플릿 구조가 유지됨 1`
                 .template-card-header {
                     display: flex;
                     align-items: center;
-                    gap: 8px;
-                    margin-bottom: 8px;
+                    gap: var(--spacing-sm);
+                    margin-bottom: var(--spacing-sm);
                 }
                 .template-icon {
-                    font-size: 20px;
+                    font-size: var(--font-size-2xl);
                 }
                 .drag-handle {
                     margin-left: auto;
                     cursor: grab;
-                    color: #999;
+                    color: var(--color-text-disabled);
                 }
                 .drag-handle:hover {
-                    color: #1890ff;
+                    color: var(--color-primary);
                 }
             
     </style>
@@ -506,15 +500,14 @@ exports[`TemplateCard 스냅샷 > 다른 색상 템플릿 구조가 유지됨 1`
         </span>
       </div>
       <div
-        class="ant-space css-dev-only-do-not-override-p45i5k ant-space-vertical css-var-root"
-        style="column-gap: 2px; row-gap: 2px; width: 100%;"
+        class="ant-space css-dev-only-do-not-override-p45i5k ant-space-vertical !w-full css-var-root"
+        style="column-gap: 2px; row-gap: 2px;"
       >
         <div
           class="ant-space-item"
         >
           <span
-            class="ant-typography ant-typography-secondary ant-typography-ellipsis ant-typography-ellipsis-single-line css-dev-only-do-not-override-p45i5k css-var-root"
-            style="font-size: 12px;"
+            class="ant-typography ant-typography-secondary ant-typography-ellipsis ant-typography-ellipsis-single-line !text-xs css-dev-only-do-not-override-p45i5k css-var-root"
           >
             컴포넌트 구현
           </span>
@@ -529,8 +522,7 @@ exports[`TemplateCard 스냅샷 > 다른 색상 템플릿 구조가 유지됨 1`
               개발
             </span>
             <span
-              class="ant-tag ant-tag-filled css-dev-only-do-not-override-p45i5k css-var-root"
-              style="margin-left: 4px;"
+              class="ant-tag ant-tag-filled !ml-xs css-dev-only-do-not-override-p45i5k css-var-root"
             >
               개발
             </span>
@@ -540,8 +532,7 @@ exports[`TemplateCard 스냅샷 > 다른 색상 템플릿 구조가 유지됨 1`
           class="ant-space-item"
         >
           <span
-            class="ant-typography ant-typography-secondary css-dev-only-do-not-override-p45i5k css-var-root"
-            style="font-size: 11px;"
+            class="ant-typography ant-typography-secondary !text-xs css-dev-only-do-not-override-p45i5k css-var-root"
           >
             A25_01234
           </span>
@@ -551,15 +542,15 @@ exports[`TemplateCard 스냅샷 > 다른 색상 템플릿 구조가 유지됨 1`
     <style>
       
                 .template-card {
-                    margin-bottom: 8px;
+                    margin-bottom: var(--spacing-sm);
                     transition: box-shadow 0.2s;
                 }
                 .template-card:hover {
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
                 }
                 .template-card-dragging {
                     opacity: 0.5;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
                 }
                 .template-card-content {
                     min-height: 60px;
@@ -567,19 +558,19 @@ exports[`TemplateCard 스냅샷 > 다른 색상 템플릿 구조가 유지됨 1`
                 .template-card-header {
                     display: flex;
                     align-items: center;
-                    gap: 8px;
-                    margin-bottom: 8px;
+                    gap: var(--spacing-sm);
+                    margin-bottom: var(--spacing-sm);
                 }
                 .template-icon {
-                    font-size: 20px;
+                    font-size: var(--font-size-2xl);
                 }
                 .drag-handle {
                     margin-left: auto;
                     cursor: grab;
-                    color: #999;
+                    color: var(--color-text-disabled);
                 }
                 .drag-handle:hover {
-                    color: #1890ff;
+                    color: var(--color-primary);
                 }
             
     </style>
@@ -738,15 +729,14 @@ exports[`TemplateCard 스냅샷 > 드래그 중 상태 구조가 유지됨 1`] =
         </span>
       </div>
       <div
-        class="ant-space css-dev-only-do-not-override-p45i5k ant-space-vertical css-var-root"
-        style="column-gap: 2px; row-gap: 2px; width: 100%;"
+        class="ant-space css-dev-only-do-not-override-p45i5k ant-space-vertical !w-full css-var-root"
+        style="column-gap: 2px; row-gap: 2px;"
       >
         <div
           class="ant-space-item"
         >
           <span
-            class="ant-typography ant-typography-secondary ant-typography-ellipsis ant-typography-ellipsis-single-line css-dev-only-do-not-override-p45i5k css-var-root"
-            style="font-size: 12px;"
+            class="ant-typography ant-typography-secondary ant-typography-ellipsis ant-typography-ellipsis-single-line !text-xs css-dev-only-do-not-override-p45i5k css-var-root"
           >
             컴포넌트 구현
           </span>
@@ -761,8 +751,7 @@ exports[`TemplateCard 스냅샷 > 드래그 중 상태 구조가 유지됨 1`] =
               개발
             </span>
             <span
-              class="ant-tag ant-tag-filled css-dev-only-do-not-override-p45i5k css-var-root"
-              style="margin-left: 4px;"
+              class="ant-tag ant-tag-filled !ml-xs css-dev-only-do-not-override-p45i5k css-var-root"
             >
               개발
             </span>
@@ -772,8 +761,7 @@ exports[`TemplateCard 스냅샷 > 드래그 중 상태 구조가 유지됨 1`] =
           class="ant-space-item"
         >
           <span
-            class="ant-typography ant-typography-secondary css-dev-only-do-not-override-p45i5k css-var-root"
-            style="font-size: 11px;"
+            class="ant-typography ant-typography-secondary !text-xs css-dev-only-do-not-override-p45i5k css-var-root"
           >
             A25_01234
           </span>
@@ -783,15 +771,15 @@ exports[`TemplateCard 스냅샷 > 드래그 중 상태 구조가 유지됨 1`] =
     <style>
       
                 .template-card {
-                    margin-bottom: 8px;
+                    margin-bottom: var(--spacing-sm);
                     transition: box-shadow 0.2s;
                 }
                 .template-card:hover {
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
                 }
                 .template-card-dragging {
                     opacity: 0.5;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
                 }
                 .template-card-content {
                     min-height: 60px;
@@ -799,19 +787,19 @@ exports[`TemplateCard 스냅샷 > 드래그 중 상태 구조가 유지됨 1`] =
                 .template-card-header {
                     display: flex;
                     align-items: center;
-                    gap: 8px;
-                    margin-bottom: 8px;
+                    gap: var(--spacing-sm);
+                    margin-bottom: var(--spacing-sm);
                 }
                 .template-icon {
-                    font-size: 20px;
+                    font-size: var(--font-size-2xl);
                 }
                 .drag-handle {
                     margin-left: auto;
                     cursor: grab;
-                    color: #999;
+                    color: var(--color-text-disabled);
                 }
                 .drag-handle:hover {
-                    color: #1890ff;
+                    color: var(--color-primary);
                 }
             
     </style>

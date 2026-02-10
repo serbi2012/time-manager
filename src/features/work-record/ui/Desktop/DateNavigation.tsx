@@ -5,7 +5,7 @@
  * 1-4: "오늘" badge scale bounce (no flicker)
  */
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { DatePicker } from "antd";
 import {
     LeftOutlined,
@@ -43,18 +43,14 @@ export function DateNavigation({
     onNextDay,
 }: DateNavigationProps) {
     const picker_ref = useRef<ReturnType<typeof DatePicker> | null>(null);
-    const prev_date_ref = useRef(selected_date);
+    const [prev_date, setPrevDate] = useState(selected_date);
     const is_today = selected_date === dayjs().format(DATE_FORMAT);
 
-    // Compute direction without state (no extra re-render)
     let slide_x = 20;
-    if (prev_date_ref.current !== selected_date) {
-        const diff = dayjs(selected_date).diff(
-            dayjs(prev_date_ref.current),
-            "day"
-        );
+    if (prev_date !== selected_date) {
+        const diff = dayjs(selected_date).diff(dayjs(prev_date), "day");
         slide_x = diff > 0 ? 20 : -20;
-        prev_date_ref.current = selected_date;
+        setPrevDate(selected_date);
     }
 
     return (

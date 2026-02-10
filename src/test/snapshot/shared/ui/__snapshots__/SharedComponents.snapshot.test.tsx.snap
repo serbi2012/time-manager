@@ -60,7 +60,7 @@ exports[`공유 UI 컴포넌트 스냅샷 > TimeInput > 커스텀 너비 스냅�
 exports[`공유 UI 컴포넌트 스냅샷 > TimerDisplay > 기본 타이머 스냅샷 1`] = `
 <span
   class="ant-typography css-dev-only-do-not-override-p45i5k css-var-root"
-  style="font-family: monospace; font-size: 14px;"
+  style="font-family: monospace; font-size: var(--font-size-md);"
 >
   <strong>
     01:01
@@ -71,7 +71,7 @@ exports[`공유 UI 컴포넌트 스냅샷 > TimerDisplay > 기본 타이머 스�
 exports[`공유 UI 컴포넌트 스냅샷 > TimerDisplay > 실행 중 타이머 스냅샷 1`] = `
 <span
   class="ant-typography css-dev-only-do-not-override-p45i5k css-var-root"
-  style="font-family: monospace; font-size: 14px; color: #1890ff;"
+  style="font-family: monospace; font-size: var(--font-size-md); color: var(--color-primary);"
 >
   <strong>
     01:01
@@ -82,7 +82,7 @@ exports[`공유 UI 컴포넌트 스냅샷 > TimerDisplay > 실행 중 타이머 
 exports[`공유 UI 컴포넌트 스냅샷 > TimerDisplay > 초 포함 타이머 스냅샷 1`] = `
 <span
   class="ant-typography css-dev-only-do-not-override-p45i5k css-var-root"
-  style="font-family: monospace; font-size: 14px;"
+  style="font-family: monospace; font-size: var(--font-size-md);"
 >
   <strong>
     01:01:01

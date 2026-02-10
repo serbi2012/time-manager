@@ -67,6 +67,8 @@ describe("HeaderContent", () => {
         );
 
         const header_content = document.querySelector(".header-content");
-        expect(header_content).toHaveStyle({ cursor: "pointer" });
+        expect(header_content).toBeInTheDocument();
+        // cursor-pointer is applied via Tailwind class
+        expect(header_content?.className).toContain("cursor-pointer");
     });
 });

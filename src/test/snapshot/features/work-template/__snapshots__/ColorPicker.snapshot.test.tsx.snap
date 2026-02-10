@@ -6,22 +6,22 @@ exports[`ColorPicker 스냅샷 > 기본 렌더링 구조가 유지됨 1`] = `
 >
   <button
     class="color-swatch "
-    style="background-color: #1890ff;"
+    style="background-color: #3182F6;"
     type="button"
   />
   <button
     class="color-swatch "
-    style="background-color: #52c41a;"
+    style="background-color: #34C759;"
     type="button"
   />
   <button
     class="color-swatch "
-    style="background-color: #faad14;"
+    style="background-color: #FF9500;"
     type="button"
   />
   <button
     class="color-swatch "
-    style="background-color: #f5222d;"
+    style="background-color: #F04452;"
     type="button"
   />
   <button
@@ -89,43 +89,22 @@ exports[`ColorPicker 스냅샷 > 다른 색상 선택 시 구조가 유지됨 1`
 >
   <button
     class="color-swatch "
-    style="background-color: #1890ff;"
-    type="button"
-  />
-  <button
-    class="color-swatch color-swatch-selected"
-    style="background-color: #52c41a;"
-    type="button"
-  >
-    <span
-      aria-label="check"
-      class="anticon anticon-check"
-      role="img"
-      style="color: #fff;"
-    >
-      <svg
-        aria-hidden="true"
-        data-icon="check"
-        fill="currentColor"
-        focusable="false"
-        height="1em"
-        viewBox="64 64 896 896"
-        width="1em"
-      >
-        <path
-          d="M912 190h-69.9c-9.8 0-19.1 4.5-25.1 12.2L404.7 724.5 207 474a32 32 0 00-25.1-12.2H112c-6.7 0-10.4 7.7-6.3 12.9l273.9 347c12.8 16.2 37.4 16.2 50.3 0l488.4-618.9c4.1-5.1.4-12.8-6.3-12.8z"
-        />
-      </svg>
-    </span>
-  </button>
-  <button
-    class="color-swatch "
-    style="background-color: #faad14;"
+    style="background-color: #3182F6;"
     type="button"
   />
   <button
     class="color-swatch "
-    style="background-color: #f5222d;"
+    style="background-color: #34C759;"
+    type="button"
+  />
+  <button
+    class="color-swatch "
+    style="background-color: #FF9500;"
+    type="button"
+  />
+  <button
+    class="color-swatch "
+    style="background-color: #F04452;"
     type="button"
   />
   <button

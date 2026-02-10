@@ -59,15 +59,15 @@ describe("TimerDisplay", () => {
         it("isRunning=false일 때 기본 스타일", () => {
             const { container } = render(<TimerDisplay seconds={60} />);
             const text = container.querySelector("span");
-            expect(text).not.toHaveStyle({ color: "#1890ff" });
+            expect(text?.style.color).not.toBe("var(--color-primary)");
         });
 
-        it("isRunning=true일 때 파란색 스타일", () => {
+        it("isRunning=true일 때 프라이머리 컬러 스타일", () => {
             const { container } = render(
                 <TimerDisplay seconds={60} isRunning={true} />
             );
             const text = container.querySelector("span");
-            expect(text).toHaveStyle({ color: "#1890ff" });
+            expect(text?.style.color).toBe("var(--color-primary)");
         });
     });
 

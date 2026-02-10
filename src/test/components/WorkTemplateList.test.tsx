@@ -102,7 +102,9 @@ describe("WorkTemplateList", () => {
                 </TestWrapper>
             );
 
-            expect(screen.getByText("프리셋이 없습니다")).toBeInTheDocument();
+            expect(
+                screen.getByText("아직 프리셋이 없어요")
+            ).toBeInTheDocument();
         });
 
         it("추가 버튼이 표시됨", () => {
@@ -112,9 +114,9 @@ describe("WorkTemplateList", () => {
                 </TestWrapper>
             );
 
-            // '추가 Alt+P' 텍스트를 포함한 버튼 찾기
+            // '추가' 버튼 찾기 (단축키는 Tooltip으로 이동)
             expect(
-                screen.getByRole("button", { name: /추가.*Alt\+P/ })
+                screen.getByRole("button", { name: /추가/ })
             ).toBeInTheDocument();
         });
 
@@ -128,8 +130,9 @@ describe("WorkTemplateList", () => {
                 </TestWrapper>
             );
 
-            expect(screen.getByText("테스트 작업")).toBeInTheDocument();
+            // SortableTemplateCard: title = deal_name || work_name
             expect(screen.getByText("테스트 거래")).toBeInTheDocument();
+            expect(screen.getByText("개발 · 개발")).toBeInTheDocument();
         });
 
         it("여러 템플릿이 모두 표시됨", () => {
@@ -158,9 +161,10 @@ describe("WorkTemplateList", () => {
                 </TestWrapper>
             );
 
-            expect(screen.getByText("작업1")).toBeInTheDocument();
-            expect(screen.getByText("작업2")).toBeInTheDocument();
-            expect(screen.getByText("작업3")).toBeInTheDocument();
+            // SortableTemplateCard: title = deal_name || work_name
+            expect(screen.getByText("거래1")).toBeInTheDocument();
+            expect(screen.getByText("거래2")).toBeInTheDocument();
+            expect(screen.getByText("거래3")).toBeInTheDocument();
         });
     });
 
@@ -270,7 +274,7 @@ describe("WorkTemplateList", () => {
     // UI 요소 테스트
     // =====================================================
     describe("UI 요소", () => {
-        it("템플릿 작업명 태그가 표시됨", () => {
+        it("템플릿 제목(deal_name)이 표시됨", () => {
             const template = createTestTemplate({ color: "#ff4d4f" });
             useWorkStore.setState({ templates: [template] });
 
@@ -280,8 +284,9 @@ describe("WorkTemplateList", () => {
                 </TestWrapper>
             );
 
-            const tag = screen.getByText("테스트 작업");
-            expect(tag).toBeInTheDocument();
+            // SortableTemplateCard: title = deal_name || work_name
+            const title = screen.getByText("테스트 거래");
+            expect(title).toBeInTheDocument();
         });
 
         it("업무명과 카테고리가 표시됨", () => {
@@ -308,7 +313,7 @@ describe("WorkTemplateList", () => {
             );
 
             expect(
-                screen.getByText(/"추가" 버튼으로 추가하세요/)
+                screen.getByText("자주 쓰는 작업을 저장해 보세요")
             ).toBeInTheDocument();
         });
     });

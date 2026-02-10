@@ -4,7 +4,7 @@
  * - B: Duration number slides up on change
  */
 
-import { useRef, useEffect, useState } from "react";
+import { useState } from "react";
 import {
     LeftOutlined,
     RightOutlined,
@@ -30,16 +30,13 @@ export function GanttHeader({
     onPrevDay,
     onNextDay,
 }: GanttHeaderProps) {
-    const prev_date_ref = useRef(selected_date);
-    const [slide_dir, setSlideDir] = useState<"left" | "right" | null>(null);
+    const [prev_date, setPrevDate] = useState(selected_date);
 
-    useEffect(() => {
-        if (prev_date_ref.current !== selected_date) {
-            const is_forward = selected_date > prev_date_ref.current;
-            setSlideDir(is_forward ? "right" : "left");
-            prev_date_ref.current = selected_date;
-        }
-    }, [selected_date]);
+    let slide_dir: "left" | "right" | null = null;
+    if (prev_date !== selected_date) {
+        slide_dir = selected_date > prev_date ? "right" : "left";
+        setPrevDate(selected_date);
+    }
 
     const formatted_date = `${dayjs(selected_date).format(
         "YYYY년 M월 D일"

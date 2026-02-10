@@ -2,8 +2,7 @@
 
 exports[`HeaderContent 스냅샷 > 기본 렌더링 구조가 유지됨 1`] = `
 <div
-  class="header-content"
-  style="cursor: pointer;"
+  class="header-content cursor-pointer"
 >
   <span
     aria-label="clock-circle"

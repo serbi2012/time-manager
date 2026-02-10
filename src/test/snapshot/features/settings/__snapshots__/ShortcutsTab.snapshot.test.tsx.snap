@@ -3,7 +3,7 @@
 exports[`ShortcutsTab 스냅샷 > 기본 렌더링 구조가 유지됨 1`] = `
 <div>
   <div
-    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;"
+    class="flex justify-between items-center mb-lg"
   >
     <span
       class="ant-typography ant-typography-secondary css-dev-only-do-not-override-p45i5k css-var-root"
@@ -43,8 +43,7 @@ exports[`ShortcutsTab 스냅샷 > 기본 렌더링 구조가 유지됨 1`] = `
     </button>
   </div>
   <div
-    class="css-var-root ant-table-css-var ant-table-wrapper css-dev-only-do-not-override-p45i5k"
-    style="margin-top: 8px;"
+    class="css-var-root ant-table-css-var ant-table-wrapper !mt-sm css-dev-only-do-not-override-p45i5k"
   >
     <div
       class="ant-spin-nested-loading css-dev-only-do-not-override-p45i5k css-var-root"
@@ -126,8 +125,7 @@ exports[`ShortcutsTab 스냅샷 > 기본 렌더링 구조가 유지됨 1`] = `
                         </span>
                         <br />
                         <span
-                          class="ant-typography ant-typography-secondary css-dev-only-do-not-override-p45i5k css-var-root"
-                          style="font-size: 12px;"
+                          class="ant-typography ant-typography-secondary !text-xs css-dev-only-do-not-override-p45i5k css-var-root"
                         >
                           새로운 작업을 추가합니다
                         </span>
@@ -143,8 +141,7 @@ exports[`ShortcutsTab 스냅샷 > 기본 렌더링 구조가 유지됨 1`] = `
                           class="ant-space-item"
                         >
                           <span
-                            class="ant-tag ant-tag-filled css-dev-only-do-not-override-p45i5k css-var-root"
-                            style="font-family: monospace; font-size: 13px; padding: 4px 8px;"
+                            class="ant-tag ant-tag-filled !font-mono !text-[13px] !py-xs !px-sm css-dev-only-do-not-override-p45i5k css-var-root"
                           >
                             Alt+N
                           </span>
@@ -188,7 +185,7 @@ exports[`ShortcutsTab 스냅샷 > 기본 렌더링 구조가 유지됨 1`] = `
                     >
                       <span
                         class="ant-tag ant-tag-filled css-dev-only-do-not-override-p45i5k css-var-root"
-                        style="background-color: #e7f3fe; color: #1890ff;"
+                        style="background-color: #e8f1fc; color: #3182F6;"
                       >
                         일반
                       </span>
@@ -235,8 +232,7 @@ exports[`ShortcutsTab 스냅샷 > 기본 렌더링 구조가 유지됨 1`] = `
                         </span>
                         <br />
                         <span
-                          class="ant-typography ant-typography-secondary css-dev-only-do-not-override-p45i5k css-var-root"
-                          style="font-size: 12px;"
+                          class="ant-typography ant-typography-secondary !text-xs css-dev-only-do-not-override-p45i5k css-var-root"
                         >
                           타이머를 시작/정지합니다
                         </span>
@@ -252,8 +248,7 @@ exports[`ShortcutsTab 스냅샷 > 기본 렌더링 구조가 유지됨 1`] = `
                           class="ant-space-item"
                         >
                           <span
-                            class="ant-tag ant-tag-filled css-dev-only-do-not-override-p45i5k css-var-root"
-                            style="font-family: monospace; font-size: 13px; padding: 4px 8px;"
+                            class="ant-tag ant-tag-filled !font-mono !text-[13px] !py-xs !px-sm css-dev-only-do-not-override-p45i5k css-var-root"
                           >
                             Alt+S
                           </span>
@@ -297,7 +292,7 @@ exports[`ShortcutsTab 스냅샷 > 기본 렌더링 구조가 유지됨 1`] = `
                     >
                       <span
                         class="ant-tag ant-tag-filled css-dev-only-do-not-override-p45i5k css-var-root"
-                        style="background-color: #e7f3fe; color: #1890ff;"
+                        style="background-color: #e8f1fc; color: #3182F6;"
                       >
                         타이머
                       </span>
@@ -341,7 +336,7 @@ exports[`ShortcutsTab 스냅샷 > 기본 렌더링 구조가 유지됨 1`] = `
 exports[`ShortcutsTab 스냅샷 > 빈 단축키 목록 구조가 유지됨 1`] = `
 <div>
   <div
-    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;"
+    class="flex justify-between items-center mb-lg"
   >
     <span
       class="ant-typography ant-typography-secondary css-dev-only-do-not-override-p45i5k css-var-root"
@@ -381,8 +376,7 @@ exports[`ShortcutsTab 스냅샷 > 빈 단축키 목록 구조가 유지됨 1`] =
     </button>
   </div>
   <div
-    class="css-var-root ant-table-css-var ant-table-wrapper css-dev-only-do-not-override-p45i5k"
-    style="margin-top: 8px;"
+    class="css-var-root ant-table-css-var ant-table-wrapper !mt-sm css-dev-only-do-not-override-p45i5k"
   >
     <div
       class="ant-spin-nested-loading css-dev-only-do-not-override-p45i5k css-var-root"

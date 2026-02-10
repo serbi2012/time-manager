@@ -3,16 +3,15 @@
 exports[`ThemeTab 스냅샷 > 그린 테마 구조가 유지됨 1`] = `
 <div>
   <div
-    style="margin-bottom: 24px; text-align: center;"
+    class="mb-xl text-center"
   >
     <div
       style="width: 64px; height: 64px; border-radius: 16px; margin: 0px auto 12px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%); box-shadow: 0 8px 24px #52c41a33;"
     >
       <span
         aria-label="bg-colors"
-        class="anticon anticon-bg-colors"
+        class="anticon anticon-bg-colors !text-[28px] !text-white"
         role="img"
-        style="font-size: 28px; color: white;"
       >
         <svg
           aria-hidden="true"
@@ -30,22 +29,20 @@ exports[`ThemeTab 스냅샷 > 그린 테마 구조가 유지됨 1`] = `
       </span>
     </div>
     <span
-      class="ant-typography css-dev-only-do-not-override-p45i5k css-var-root"
-      style="font-size: 16px; display: block;"
+      class="ant-typography !text-base !block css-dev-only-do-not-override-p45i5k css-var-root"
     >
       <strong>
         테마 색상
       </strong>
     </span>
     <span
-      class="ant-typography ant-typography-secondary css-dev-only-do-not-override-p45i5k css-var-root"
-      style="font-size: 13px;"
+      class="ant-typography ant-typography-secondary !text-[13px] css-dev-only-do-not-override-p45i5k css-var-root"
     >
       앱 전체의 테마 색상을 선택하세요
     </span>
   </div>
   <div
-    style="display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 12px;"
+    class="grid grid-cols-[repeat(auto-fill,minmax(90px,1fr))] gap-md"
   >
     <div
       role="button"
@@ -53,7 +50,7 @@ exports[`ThemeTab 스냅샷 > 그린 테마 구조가 유지됨 1`] = `
       tabindex="0"
     >
       <div
-        style="height: 56px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%); box-shadow: none;"
+        style="height: 56px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; background: linear-gradient(135deg, #3182F6 0%, #1B64DA 100%); box-shadow: none;"
       />
       <span
         class="ant-typography css-dev-only-do-not-override-p45i5k css-var-root"
@@ -71,7 +68,7 @@ exports[`ThemeTab 스냅샷 > 그린 테마 구조가 유지됨 1`] = `
         style="height: 56px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%); box-shadow: 0 4px 12px #52c41a40;"
       >
         <div
-          style="width: 24px; height: 24px; border-radius: 50%; background: rgba(255, 255, 255, 0.9); display: flex; align-items: center; justify-content: center;"
+          class="w-6 h-6 rounded-full bg-white/90 flex items-center justify-center"
         >
           <span
             aria-label="check"
@@ -182,8 +179,7 @@ exports[`ThemeTab 스냅샷 > 그린 테마 구조가 유지됨 1`] = `
     style="margin-top: 24px; padding: 12px 16px; border-radius: 8px; background: #52c41a08; border: 1px solid #52c41a20;"
   >
     <span
-      class="ant-typography css-dev-only-do-not-override-p45i5k css-var-root"
-      style="font-size: 12px; color: #595959;"
+      class="ant-typography !text-xs !text-[#595959] css-dev-only-do-not-override-p45i5k css-var-root"
     >
       테마는 자동 저장됩니다. 로그인하면 모든 기기에 동일하게 적용됩니다.
     </span>
@@ -194,16 +190,15 @@ exports[`ThemeTab 스냅샷 > 그린 테마 구조가 유지됨 1`] = `
 exports[`ThemeTab 스냅샷 > 블루 테마 구조가 유지됨 1`] = `
 <div>
   <div
-    style="margin-bottom: 24px; text-align: center;"
+    class="mb-xl text-center"
   >
     <div
-      style="width: 64px; height: 64px; border-radius: 16px; margin: 0px auto 12px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%); box-shadow: 0 8px 24px #1890ff33;"
+      style="width: 64px; height: 64px; border-radius: 16px; margin: 0px auto 12px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #3182F6 0%, #1B64DA 100%); box-shadow: 0 8px 24px #3182F633;"
     >
       <span
         aria-label="bg-colors"
-        class="anticon anticon-bg-colors"
+        class="anticon anticon-bg-colors !text-[28px] !text-white"
         role="img"
-        style="font-size: 28px; color: white;"
       >
         <svg
           aria-hidden="true"
@@ -221,39 +216,37 @@ exports[`ThemeTab 스냅샷 > 블루 테마 구조가 유지됨 1`] = `
       </span>
     </div>
     <span
-      class="ant-typography css-dev-only-do-not-override-p45i5k css-var-root"
-      style="font-size: 16px; display: block;"
+      class="ant-typography !text-base !block css-dev-only-do-not-override-p45i5k css-var-root"
     >
       <strong>
         테마 색상
       </strong>
     </span>
     <span
-      class="ant-typography ant-typography-secondary css-dev-only-do-not-override-p45i5k css-var-root"
-      style="font-size: 13px;"
+      class="ant-typography ant-typography-secondary !text-[13px] css-dev-only-do-not-override-p45i5k css-var-root"
     >
       앱 전체의 테마 색상을 선택하세요
     </span>
   </div>
   <div
-    style="display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 12px;"
+    class="grid grid-cols-[repeat(auto-fill,minmax(90px,1fr))] gap-md"
   >
     <div
       role="button"
-      style="cursor: pointer; border-radius: 12px; padding: 4px; border: 2px solid #1890ff; transition: all 0.2s ease; background: #1890ff15;"
+      style="cursor: pointer; border-radius: 12px; padding: 4px; border: 2px solid #3182F6; transition: all 0.2s ease; background: #3182F615;"
       tabindex="0"
     >
       <div
-        style="height: 56px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%); box-shadow: 0 4px 12px #1890ff40;"
+        style="height: 56px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; background: linear-gradient(135deg, #3182F6 0%, #1B64DA 100%); box-shadow: 0 4px 12px #3182F640;"
       >
         <div
-          style="width: 24px; height: 24px; border-radius: 50%; background: rgba(255, 255, 255, 0.9); display: flex; align-items: center; justify-content: center;"
+          class="w-6 h-6 rounded-full bg-white/90 flex items-center justify-center"
         >
           <span
             aria-label="check"
             class="anticon anticon-check"
             role="img"
-            style="color: #1890ff; font-size: 14px;"
+            style="color: #3182F6; font-size: 14px;"
           >
             <svg
               aria-hidden="true"
@@ -273,7 +266,7 @@ exports[`ThemeTab 스냅샷 > 블루 테마 구조가 유지됨 1`] = `
       </div>
       <span
         class="ant-typography css-dev-only-do-not-override-p45i5k css-var-root"
-        style="display: block; text-align: center; font-size: 12px; font-weight: 600; color: #1890ff;"
+        style="display: block; text-align: center; font-size: 12px; font-weight: 600; color: #3182F6;"
       >
         파란색 (기본)
       </span>
@@ -370,11 +363,10 @@ exports[`ThemeTab 스냅샷 > 블루 테마 구조가 유지됨 1`] = `
     </div>
   </div>
   <div
-    style="margin-top: 24px; padding: 12px 16px; border-radius: 8px; background: #1890ff08; border: 1px solid #1890ff20;"
+    style="margin-top: 24px; padding: 12px 16px; border-radius: 8px; background: #3182F608; border: 1px solid #3182F620;"
   >
     <span
-      class="ant-typography css-dev-only-do-not-override-p45i5k css-var-root"
-      style="font-size: 12px; color: #595959;"
+      class="ant-typography !text-xs !text-[#595959] css-dev-only-do-not-override-p45i5k css-var-root"
     >
       테마는 자동 저장됩니다. 로그인하면 모든 기기에 동일하게 적용됩니다.
     </span>
@@ -385,16 +377,15 @@ exports[`ThemeTab 스냅샷 > 블루 테마 구조가 유지됨 1`] = `
 exports[`ThemeTab 스냅샷 > 퍼플 테마 구조가 유지됨 1`] = `
 <div>
   <div
-    style="margin-bottom: 24px; text-align: center;"
+    class="mb-xl text-center"
   >
     <div
       style="width: 64px; height: 64px; border-radius: 16px; margin: 0px auto 12px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #722ed1 0%, #531dab 100%); box-shadow: 0 8px 24px #722ed133;"
     >
       <span
         aria-label="bg-colors"
-        class="anticon anticon-bg-colors"
+        class="anticon anticon-bg-colors !text-[28px] !text-white"
         role="img"
-        style="font-size: 28px; color: white;"
       >
         <svg
           aria-hidden="true"
@@ -412,22 +403,20 @@ exports[`ThemeTab 스냅샷 > 퍼플 테마 구조가 유지됨 1`] = `
       </span>
     </div>
     <span
-      class="ant-typography css-dev-only-do-not-override-p45i5k css-var-root"
-      style="font-size: 16px; display: block;"
+      class="ant-typography !text-base !block css-dev-only-do-not-override-p45i5k css-var-root"
     >
       <strong>
         테마 색상
       </strong>
     </span>
     <span
-      class="ant-typography ant-typography-secondary css-dev-only-do-not-override-p45i5k css-var-root"
-      style="font-size: 13px;"
+      class="ant-typography ant-typography-secondary !text-[13px] css-dev-only-do-not-override-p45i5k css-var-root"
     >
       앱 전체의 테마 색상을 선택하세요
     </span>
   </div>
   <div
-    style="display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 12px;"
+    class="grid grid-cols-[repeat(auto-fill,minmax(90px,1fr))] gap-md"
   >
     <div
       role="button"
@@ -435,7 +424,7 @@ exports[`ThemeTab 스냅샷 > 퍼플 테마 구조가 유지됨 1`] = `
       tabindex="0"
     >
       <div
-        style="height: 56px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%); box-shadow: none;"
+        style="height: 56px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; background: linear-gradient(135deg, #3182F6 0%, #1B64DA 100%); box-shadow: none;"
       />
       <span
         class="ant-typography css-dev-only-do-not-override-p45i5k css-var-root"
@@ -468,7 +457,7 @@ exports[`ThemeTab 스냅샷 > 퍼플 테마 구조가 유지됨 1`] = `
         style="height: 56px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; background: linear-gradient(135deg, #722ed1 0%, #531dab 100%); box-shadow: 0 4px 12px #722ed140;"
       >
         <div
-          style="width: 24px; height: 24px; border-radius: 50%; background: rgba(255, 255, 255, 0.9); display: flex; align-items: center; justify-content: center;"
+          class="w-6 h-6 rounded-full bg-white/90 flex items-center justify-center"
         >
           <span
             aria-label="check"
@@ -564,8 +553,7 @@ exports[`ThemeTab 스냅샷 > 퍼플 테마 구조가 유지됨 1`] = `
     style="margin-top: 24px; padding: 12px 16px; border-radius: 8px; background: #722ed108; border: 1px solid #722ed120;"
   >
     <span
-      class="ant-typography css-dev-only-do-not-override-p45i5k css-var-root"
-      style="font-size: 12px; color: #595959;"
+      class="ant-typography !text-xs !text-[#595959] css-dev-only-do-not-override-p45i5k css-var-root"
     >
       테마는 자동 저장됩니다. 로그인하면 모든 기기에 동일하게 적용됩니다.
     </span>

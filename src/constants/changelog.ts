@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.15";
+export const CURRENT_VERSION = "2.0.16";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,41 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.16",
+        date: "2026-02-10",
+        title: "UI 리디자인",
+        changes: [
+            {
+                type: "style",
+                description: "전체 UI가 더 깔끔하고 현대적인 디자인으로 개선됨",
+            },
+            {
+                type: "improvement",
+                description:
+                    "간트차트에 현재 시간 표시기와 점심시간 오버레이 추가",
+            },
+            {
+                type: "improvement",
+                description:
+                    "간트차트 상단에 날짜 탐색 헤더 추가 (화살표로 이전/다음 날 이동)",
+            },
+            {
+                type: "style",
+                description:
+                    "작업 기록 카테고리, 날짜, 시간 컬럼의 시각적 표현 개선",
+            },
+            {
+                type: "style",
+                description:
+                    "프리셋 카드가 더 간결하고 보기 좋은 디자인으로 변경됨",
+            },
+            {
+                type: "style",
+                description: "설정 화면이 카드 기반 섹션 구조로 개선됨",
+            },
+        ],
+    },
     {
         version: "2.0.15",
         date: "2026-02-02",
