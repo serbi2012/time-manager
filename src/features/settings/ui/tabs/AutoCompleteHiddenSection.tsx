@@ -3,14 +3,12 @@
  */
 
 import { useState } from "react";
-import { Button, Tag, Typography } from "antd";
+import { Button, Tag } from "antd";
 import { EyeInvisibleOutlined, UndoOutlined } from "@ant-design/icons";
 import {
     SETTINGS_AUTOCOMPLETE_HIDDEN,
     SETTINGS_AUTOCOMPLETE_RESTORE_ALL,
 } from "../../constants";
-
-const { Text } = Typography;
 
 interface AutoCompleteHiddenSectionProps {
     hidden_list: string[];

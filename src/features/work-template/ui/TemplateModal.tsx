@@ -1,9 +1,9 @@
 /**
- * 템플릿 추가/수정 모달
+ * Template Add/Edit Modal (Toss-style redesign)
  */
 
 import { useEffect } from "react";
-import { Modal, Form, Button, message, ColorPicker } from "antd";
+import { Modal, Form, Button, message } from "antd";
 import type {
     WorkTemplate,
     WorkFormData,
@@ -13,18 +13,21 @@ import type { HiddenAutoCompleteField } from "../../../store/types/store";
 import { TEMPLATE_COLORS } from "../../../store/useWorkStore";
 import { WorkRecordFormFields } from "../../../shared/ui/form";
 import { SUCCESS_MESSAGES } from "../../../shared/constants";
-
+import { PresetColorGrid } from "./PresetColorGrid";
+import {
+    MODAL_TITLE_ADD,
+    MODAL_TITLE_EDIT,
+    MODAL_SUBMIT_ADD,
+    MODAL_SUBMIT_EDIT,
+    MODAL_CANCEL,
+    MODAL_COLOR_LABEL,
+} from "../constants";
 
 export interface TemplateModalProps {
-    /** 모달 열림 상태 */
     open: boolean;
-    /** 수정 모드 여부 */
     is_edit_mode: boolean;
-    /** 수정할 템플릿 */
     editing_template: WorkTemplate | null;
-    /** Form 인스턴스 */
     form: ReturnType<typeof Form.useForm>[0];
-    /** 스토어 props */
     records: unknown[];
     templates: unknown[];
     getAutoCompleteOptions: (field: keyof WorkFormData) => string[];
@@ -38,7 +41,6 @@ export interface TemplateModalProps {
         field: HiddenAutoCompleteField,
         value: string
     ) => void;
-    /** 제출 핸들러 */
     onSubmit: (values: {
         project_code?: string;
         work_name: string;
@@ -48,13 +50,9 @@ export interface TemplateModalProps {
         note?: string;
         color: string;
     }) => Promise<void>;
-    /** 모달 닫기 */
     onClose: () => void;
 }
 
-/**
- * 템플릿 추가/수정 모달
- */
 export function TemplateModal({
     open,
     is_edit_mode,
@@ -73,7 +71,6 @@ export function TemplateModal({
     onSubmit,
     onClose,
 }: TemplateModalProps) {
-    // 폼 초기화
     useEffect(() => {
         if (open) {
             if (is_edit_mode && editing_template) {
@@ -93,7 +90,6 @@ export function TemplateModal({
         }
     }, [open, is_edit_mode, editing_template, form]);
 
-    // 제출 처리
     const handleSubmit = async () => {
         try {
             const values = (await form.validateFields()) as {
@@ -103,12 +99,8 @@ export function TemplateModal({
                 task_name?: string;
                 category_name?: string;
                 note?: string;
-                color: string | { toHexString: () => string };
+                color: string;
             };
-            const color =
-                typeof values.color === "string"
-                    ? values.color
-                    : values.color?.toHexString() || TEMPLATE_COLORS[0];
 
             await onSubmit({
                 project_code: values.project_code,
@@ -117,7 +109,7 @@ export function TemplateModal({
                 task_name: values.task_name,
                 category_name: values.category_name,
                 note: values.note,
-                color,
+                color: values.color,
             });
 
             if (is_edit_mode) {
@@ -134,16 +126,18 @@ export function TemplateModal({
 
     return (
         <Modal
-            title={is_edit_mode ? "프리셋 수정" : "새 프리셋 추가"}
+            title={is_edit_mode ? MODAL_TITLE_EDIT : MODAL_TITLE_ADD}
             open={open}
             onCancel={onClose}
             footer={[
                 <Button key="ok" type="primary" onClick={handleSubmit}>
-                    {is_edit_mode ? "수정" : "추가"}{" "}
-                    <span className="text-[11px] opacity-85 ml-xs px-xs py-[1px] bg-white/20 rounded-[3px]">F8</span>
+                    {is_edit_mode ? MODAL_SUBMIT_EDIT : MODAL_SUBMIT_ADD}
+                    <span className="text-xs opacity-85 ml-xs px-xs py-px bg-white/20 rounded-[3px]">
+                        F8
+                    </span>
                 </Button>,
                 <Button key="cancel" onClick={onClose}>
-                    취소
+                    {MODAL_CANCEL}
                 </Button>,
             ]}
         >
@@ -174,17 +168,10 @@ export function TemplateModal({
 
                 <Form.Item
                     name="color"
-                    label="구분 색상"
+                    label={MODAL_COLOR_LABEL}
                     initialValue={TEMPLATE_COLORS[0]}
                 >
-                    <ColorPicker
-                        presets={[
-                            {
-                                label: "추천 색상",
-                                colors: TEMPLATE_COLORS,
-                            },
-                        ]}
-                    />
+                    <PresetColorGrid />
                 </Form.Item>
             </Form>
         </Modal>

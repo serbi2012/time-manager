@@ -69,25 +69,13 @@
     height: 100%;
     overflow: auto;
     flex-shrink: 0;
+    background-color: var(--color-bg-light) !important;
 }
 
 .app-sider .ant-layout-sider-children {
-    padding: var(--spacing-lg);
     display: flex;
     flex-direction: column;
     height: 100%;
-}
-
-.app-sider .ant-card {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-}
-
-.app-sider .ant-card-body {
-    flex: 1;
-    overflow: auto;
 }
 
 .app-content {
