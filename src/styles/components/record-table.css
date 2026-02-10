@@ -1,0 +1,198 @@
+/**
+ * Toss-style overrides for Ant Design Table in work record section.
+ * Scoped to `.toss-record-table` to prevent global conflicts.
+ */
+
+/* ============================================
+   Table container shadow
+   ============================================ */
+.toss-record-table {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+/* ============================================
+   Remove default Ant table wrapper styles
+   ============================================ */
+.toss-record-table .toss-table .ant-table {
+    background: transparent;
+}
+
+.toss-record-table .toss-table .ant-table-container {
+    border: none;
+}
+
+/* ============================================
+   Table header
+   ============================================ */
+.toss-record-table .toss-table .ant-table-thead > tr > th {
+    background: var(--color-bg-light) !important;
+    color: var(--color-text-secondary) !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    border-bottom: 1px solid var(--color-border-default) !important;
+    padding: 12px 16px !important;
+}
+
+/* ============================================
+   Table body rows
+   ============================================ */
+.toss-record-table .toss-table .ant-table-tbody > tr > td {
+    border-bottom: 1px solid var(--color-border-light) !important;
+    padding: 14px 16px !important;
+    vertical-align: middle;
+    font-size: 15px;
+    color: var(--color-text-primary);
+    transition: background 0.15s ease;
+}
+
+.toss-record-table .toss-table .ant-table-tbody > tr:last-child > td {
+    border-bottom: none !important;
+}
+
+/* Row hover */
+.toss-record-table .toss-table .ant-table-tbody > tr:hover > td {
+    background: var(--color-bg-light) !important;
+}
+
+/* Active row (timer running) */
+.toss-record-table .toss-table .ant-table-tbody > tr.toss-active-row > td {
+    background: var(--color-primary-light) !important;
+}
+
+/* ============================================
+   Hover actions visibility
+   ============================================ */
+.toss-record-table .toss-table .ant-table-tbody > tr .record-row-actions {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.toss-record-table .toss-table .ant-table-tbody > tr:hover .record-row-actions {
+    opacity: 1;
+}
+
+/* Always visible for active row */
+.toss-record-table
+    .toss-table
+    .ant-table-tbody
+    > tr.toss-active-row
+    .record-row-actions {
+    opacity: 1;
+}
+
+/* ============================================
+   Expanded row
+   ============================================ */
+.toss-record-table .toss-table .ant-table-expanded-row > td {
+    padding: 4px 16px 8px 48px !important;
+    background: transparent !important;
+    border-bottom: 1px solid var(--color-border-light) !important;
+}
+
+/* Fade-in for expanded row content */
+@keyframes toss-expand-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.toss-record-table .toss-table .ant-table-expanded-row .toss-session-panel {
+    animation: toss-expand-fade-in 0.25s ease both;
+}
+
+/* ============================================
+   Expand icon column styling
+   ============================================ */
+.toss-record-table .toss-table .ant-table-row-expand-icon-cell {
+    padding: 14px 8px !important;
+    width: 40px !important;
+}
+
+/* ============================================
+   Empty state inside table
+   ============================================ */
+.toss-record-table .toss-table .ant-table-placeholder > td {
+    border-bottom: none !important;
+}
+
+/* ============================================
+   Timer pulse animation
+   ============================================ */
+@keyframes pulse-ring {
+    0% {
+        box-shadow: 0 0 0 0 rgba(240, 68, 82, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 6px rgba(240, 68, 82, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(240, 68, 82, 0);
+    }
+}
+
+.toss-record-table .timer-pulse {
+    animation: pulse-ring 1.5s infinite;
+}
+
+/* ============================================
+   Reset native button styles for icon/action buttons
+   ============================================ */
+.toss-record-table .record-row-actions button,
+.toss-record-table .ant-table-row-expand-icon-cell button,
+.toss-record-table .toss-footer-actions button {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    outline: none;
+}
+
+/* ============================================
+   Session panel — Ant Input overrides
+   ============================================ */
+.toss-session-panel .ant-input {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    cursor: text;
+}
+
+.toss-session-panel .ant-input:focus,
+.toss-session-panel .ant-input-focused {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.toss-session-panel .ant-input:hover {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Wrapper — default: subtle gray underline */
+.toss-session-panel .ant-input-outlined {
+    border: none !important;
+    box-shadow: inset 0 -1.5px 0 0 var(--gray-300) !important;
+    background: var(--color-bg-grey) !important;
+    border-radius: 4px 4px 2px 2px !important;
+    transition: background 0.15s ease, box-shadow 0.15s ease !important;
+    cursor: text !important;
+}
+
+/* Wrapper — hover: bg darker + blue underline */
+.toss-session-panel .ant-input-outlined:hover {
+    background: var(--gray-200) !important;
+    box-shadow: inset 0 -1.5px 0 0 var(--color-primary) !important;
+}
+
+/* Wrapper — focus: white bg + thicker blue underline */
+.toss-session-panel .ant-input-outlined:focus-within {
+    background: #fff !important;
+    box-shadow: inset 0 -2px 0 0 var(--color-primary) !important;
+}

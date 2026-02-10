@@ -1,12 +1,9 @@
 /**
- * 날짜 컬럼
+ * Date column (Toss-style plain text)
  */
 
-import { Typography } from "antd";
 import dayjs from "dayjs";
 import { DATE_FORMAT, DATE_SLICE_START, RECORD_UI_TEXT } from "../../constants";
-
-const { Text } = Typography;
 
 interface DateColumnProps {
     date: string;
@@ -14,13 +11,12 @@ interface DateColumnProps {
 
 export function DateColumn({ date }: DateColumnProps) {
     const today = dayjs().format(DATE_FORMAT);
-    const is_past = date < today;
 
     return (
-        <Text type={is_past ? "warning" : "secondary"} className="!text-xs">
+        <span className="text-sm text-text-secondary">
             {date === today
                 ? RECORD_UI_TEXT.TODAY_TEXT
                 : date.slice(DATE_SLICE_START)}
-        </Text>
+        </span>
     );
 }

@@ -1,31 +1,23 @@
 /**
- * 소요 시간 컬럼
+ * Duration column (Toss-style plain text)
  */
 
-import { Typography } from "antd";
 import type { WorkRecord } from "../../../../shared/types";
 import { getRecordDurationForDate } from "../../lib/duration_calculator";
 import { RECORD_UI_TEXT } from "../../constants";
 
-const { Text } = Typography;
-
 interface DurationColumnProps {
     record: WorkRecord;
     selected_date: string;
-    theme_color: string;
 }
 
-export function DurationColumn({
-    record,
-    selected_date,
-    theme_color,
-}: DurationColumnProps) {
+export function DurationColumn({ record, selected_date }: DurationColumnProps) {
     const date_minutes = getRecordDurationForDate(record, selected_date);
 
     return (
-        <Text strong style={{ color: theme_color }}>
+        <span className="text-md font-medium text-text-primary">
             {date_minutes}
             {RECORD_UI_TEXT.MINUTE_UNIT}
-        </Text>
+        </span>
     );
 }
