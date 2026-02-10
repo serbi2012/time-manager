@@ -14,12 +14,7 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import type { Dayjs } from "dayjs";
-import {
-    motion,
-    AnimatePresence,
-    SPRING,
-    SCALE_BOUNCE,
-} from "../../../../shared/ui/animation";
+import { motion, AnimatePresence } from "../../../../shared/ui/animation";
 
 import { RECORD_UI_TEXT } from "../../constants";
 

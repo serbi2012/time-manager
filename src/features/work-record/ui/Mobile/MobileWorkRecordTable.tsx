@@ -308,9 +308,7 @@ export function MobileWorkRecordTable() {
                 dataIndex: "work_name",
                 key: "work_name",
                 width: RECORD_COLUMN_WIDTH.WORK_NAME,
-                render: (_, record) => (
-                    <WorkNameColumn record={record} theme_color={theme_color} />
-                ),
+                render: (_, record) => <WorkNameColumn record={record} />,
             },
             {
                 title: RECORD_TABLE_COLUMN.TASK_NAME,
@@ -336,7 +334,6 @@ export function MobileWorkRecordTable() {
                     <DurationColumn
                         record={record}
                         selected_date={selected_date}
-                        theme_color={theme_color}
                     />
                 ),
             },

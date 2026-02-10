@@ -20,6 +20,7 @@
         "mockup": "npx serve mockups -p 3456 --no-clipboard"
     },
     "dependencies": {
+        "@ant-design/cssinjs": "^2.1.0",
         "@ant-design/icons": "^6.1.0",
         "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/sortable": "^10.0.0",
