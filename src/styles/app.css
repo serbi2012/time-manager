@@ -24,6 +24,7 @@
 @import "./components/mobile-settings.css";
 
 /* Feature Components */
+@import "./components/work-template.css";
 @import "./components/suggestion.css";
 @import "./components/guide.css";
 @import "./components/demo.css";

@@ -17,16 +17,15 @@ import { useWorkStore } from "@/store/useWorkStore";
 export function useTemplateDnd() {
     const { reorderTemplates } = useWorkStore();
 
-    // dnd-kit 센서 설정 (모바일에서는 터치 센서 추가)
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 8, // 8px 이동해야 드래그 시작
+                distance: 8,
             },
         }),
         useSensor(TouchSensor, {
             activationConstraint: {
-                delay: 250, // 250ms 터치 유지해야 드래그 시작
+                delay: 250,
                 tolerance: 5,
             },
         }),
@@ -35,7 +34,6 @@ export function useTemplateDnd() {
         })
     );
 
-    // 드래그 종료 핸들러
     const handleDragEnd = useCallback(
         (event: DragEndEvent) => {
             const { active, over } = event;

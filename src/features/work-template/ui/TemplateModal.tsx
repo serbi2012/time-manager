@@ -129,6 +129,9 @@ export function TemplateModal({
             title={is_edit_mode ? MODAL_TITLE_EDIT : MODAL_TITLE_ADD}
             open={open}
             onCancel={onClose}
+            transitionName="template-modal-slide-up"
+            maskTransitionName="fade"
+            wrapClassName="template-modal-wrap"
             footer={[
                 <Button key="ok" type="primary" onClick={handleSubmit}>
                     {is_edit_mode ? MODAL_SUBMIT_EDIT : MODAL_SUBMIT_ADD}

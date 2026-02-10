@@ -11,3 +11,4 @@ export { SortableTemplateCard } from "./SortableTemplateCard";
 export { EmptyPresetState } from "./EmptyPresetState";
 export { PresetColorGrid } from "./PresetColorGrid";
 export { TemplateCardMenu } from "./TemplateCardMenu";
+export { AddPresetButton } from "./AddPresetButton";

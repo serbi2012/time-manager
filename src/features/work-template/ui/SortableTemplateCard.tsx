@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { Tooltip } from "antd";
 import { PlusOutlined, HolderOutlined, CheckOutlined } from "@ant-design/icons";
-import { useSortable } from "@dnd-kit/sortable";
+import { useSortable, type AnimateLayoutChanges } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { motion } from "framer-motion";
 import { cn } from "@/shared/lib/cn";
@@ -42,6 +42,8 @@ function useIsOverflowing(ref: React.RefObject<HTMLElement | null>) {
 
 const ADD_FEEDBACK_DURATION = 600;
 
+const animateLayoutChanges: AnimateLayoutChanges = ({ isSorting }) => isSorting;
+
 export function SortableTemplateCard({
     template,
     onEdit,
@@ -55,7 +57,7 @@ export function SortableTemplateCard({
         transform,
         transition,
         isDragging,
-    } = useSortable({ id: template.id });
+    } = useSortable({ id: template.id, animateLayoutChanges });
 
     const work_name_ref = useRef<HTMLSpanElement>(null);
     const deal_name_ref = useRef<HTMLSpanElement>(null);
@@ -66,10 +68,16 @@ export function SortableTemplateCard({
     const deal_name_overflowing = useIsOverflowing(deal_name_ref);
     const meta_overflowing = useIsOverflowing(meta_ref);
 
-    const drag_style: React.CSSProperties = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-    };
+    const drag_transform = transform ? CSS.Transform.toString(transform) : null;
+
+    const drag_style: React.CSSProperties = drag_transform
+        ? {
+              transform: isDragging
+                  ? `${drag_transform} scale(1.02) rotate(1deg)`
+                  : drag_transform,
+              transition,
+          }
+        : {};
 
     const has_deal = !!template.deal_name;
     const meta = [template.task_name, template.category_name]
@@ -87,26 +95,32 @@ export function SortableTemplateCard({
         [onAddRecordOnly, template.id]
     );
 
-    const work_name_element = (
+    const title_text = has_deal ? template.deal_name : template.work_name;
+    const title_ref = has_deal ? deal_name_ref : work_name_ref;
+    const title_overflowing = has_deal
+        ? deal_name_overflowing
+        : work_name_overflowing;
+
+    const title_element = (
         <span
-            ref={work_name_ref}
+            ref={title_ref}
             className="text-sm font-semibold text-text-primary block truncate leading-snug"
         >
-            {template.work_name}
+            {title_text}
         </span>
     );
 
-    const deal_name_element = has_deal ? (
+    const work_tag_element = has_deal ? (
         <div className="flex items-center mt-[3px] min-w-0">
             <span
-                ref={deal_name_ref}
+                ref={work_name_ref}
                 className="text-[10px] font-medium rounded-xs px-[5px] py-[1px] truncate max-w-full leading-[16px]"
                 style={{
                     background: `${template.color}14`,
                     color: template.color,
                 }}
             >
-                {template.deal_name}
+                {template.work_name}
             </span>
         </div>
     ) : null;
@@ -129,16 +143,16 @@ export function SortableTemplateCard({
                 "bg-white rounded-xl overflow-hidden",
                 "border border-border-default",
                 "shadow-xs",
-                "transition-all duration-200",
-                "hover:shadow-sm hover:-translate-y-px hover:border-border-dark",
-                isDragging &&
-                    "opacity-70 shadow-md scale-[1.02] z-50 border-primary/30"
+                "transition-[box-shadow,border-color,translate] duration-200",
+                !isDragging &&
+                    "hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:-translate-y-[2px] hover:border-border-dark",
+                isDragging && "shadow-lg z-50 border-primary/30"
             )}
         >
             {/* Left color stripe (tapered ends) */}
             <div className="flex items-center pl-[6px] self-stretch flex-shrink-0">
                 <div
-                    className="w-[3px] h-[60%] rounded-full"
+                    className="w-[3px] h-[60%] rounded-full transition-all duration-200 ease-out group-hover:w-[5px]"
                     style={{ background: template.color }}
                 />
             </div>
@@ -160,21 +174,19 @@ export function SortableTemplateCard({
 
             {/* Content */}
             <div className="flex-1 py-lg pl-sm pr-0 min-w-0">
-                {work_name_overflowing ? (
-                    <Tooltip title={template.work_name}>
-                        {work_name_element}
-                    </Tooltip>
+                {title_overflowing ? (
+                    <Tooltip title={title_text}>{title_element}</Tooltip>
                 ) : (
-                    work_name_element
+                    title_element
                 )}
 
-                {deal_name_element &&
-                    (deal_name_overflowing ? (
-                        <Tooltip title={template.deal_name}>
-                            {deal_name_element}
+                {work_tag_element &&
+                    (work_name_overflowing ? (
+                        <Tooltip title={template.work_name}>
+                            {work_tag_element}
                         </Tooltip>
                     ) : (
-                        deal_name_element
+                        work_tag_element
                     ))}
 
                 {meta_element &&

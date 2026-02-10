@@ -55,6 +55,7 @@ export function TemplateCardMenu({
                 menu={{ items, onClick: handleMenuClick }}
                 trigger={["click"]}
                 placement="bottomRight"
+                overlayClassName="template-card-dropdown"
             >
                 <button
                     type="button"
@@ -84,6 +85,7 @@ export function TemplateCardMenu({
                 okText={POPCONFIRM_OK_TEXT}
                 cancelText={POPCONFIRM_CANCEL_TEXT}
                 okButtonProps={{ danger: true }}
+                overlayClassName="template-card-popconfirm"
             >
                 <span />
             </Popconfirm>

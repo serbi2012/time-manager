@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>작업 프리셋 애니메이션 목업</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        spacing: {
+                            xs: "4px",
+                            sm: "8px",
+                            md: "12px",
+                            lg: "16px",
+                            xl: "24px",
+                            "2xl": "32px",
+                            section: "48px",
+                        },
+                        colors: {
+                            primary: "#3182F6",
+                            "primary-dark": "#1B64DA",
+                            "primary-light": "#ECF2FE",
+                            success: "#34C759",
+                            error: "#F04452",
+                            warning: "#FF9500",
+                            "text-primary": "#191F28",
+                            "text-secondary": "#6B7684",
+                            "text-disabled": "#B0B8C1",
+                            "text-hint": "#D1D6DB",
+                            "bg-default": "#FFFFFF",
+                            "bg-light": "#F9FAFB",
+                            "bg-grey": "#F2F4F6",
+                            "border-default": "#E5E8EB",
+                            "border-light": "#F2F4F6",
+                            "border-dark": "#D1D6DB",
+                        },
+                        borderRadius: {
+                            xs: "4px",
+                            sm: "6px",
+                            md: "8px",
+                            lg: "12px",
+                            xl: "16px",
+                            "2xl": "20px",
+                        },
+                        fontSize: {
+                            xs: "11px",
+                            sm: "13px",
+                            md: "15px",
+                            lg: "17px",
+                        },
+                    },
+                },
+            };
+        </script>
+
+        <script
+            crossorigin
+            src="https://unpkg.com/react@18/umd/react.development.js"
+        ></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+        ></script>
+        <script src="https://unpkg.com/dayjs@1/dayjs.min.js"></script>
+        <script src="https://unpkg.com/antd@5/dist/antd.min.js"></script>
+        <script src="https://unpkg.com/@ant-design/icons@5/dist/index.umd.min.js"></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+        <style>
+            body {
+                margin: 0;
+                padding: 24px;
+                background: #f5f5f5;
+                font-family: "Pretendard Variable", -apple-system,
+                    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            }
+            #root {
+                max-width: 1000px;
+                margin: 0 auto;
+            }
+            .mockup-header {
+                text-align: center;
+                margin-bottom: 32px;
+                padding-bottom: 16px;
+                border-bottom: 1px solid #e8e8e8;
+            }
+            .mockup-header h1 {
+                font-size: 20px;
+                font-weight: 700;
+                color: #333;
+                margin: 0 0 4px;
+            }
+            .mockup-header p {
+                font-size: 13px;
+                color: #999;
+                margin: 0;
+            }
+            .mockup-section {
+                margin-bottom: 48px;
+            }
+            .mockup-section-label {
+                font-size: 12px;
+                font-weight: 700;
+                letter-spacing: 0.5px;
+                color: #3182f6;
+                margin-bottom: 8px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .mockup-section-label .num {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                background: #3182f6;
+                color: white;
+                font-size: 11px;
+                font-weight: 700;
+            }
+            .mockup-desc {
+                font-size: 13px;
+                color: #6b7684;
+                margin-bottom: 16px;
+                line-height: 1.6;
+            }
+            .mockup-frame {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+                padding: 24px;
+                position: relative;
+                overflow: hidden;
+            }
+            .trigger-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 8px 16px;
+                border: 1.5px solid #3182f6;
+                border-radius: 8px;
+                background: white;
+                color: #3182f6;
+                font-size: 13px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s;
+                margin-bottom: 16px;
+                margin-right: 8px;
+            }
+            .trigger-btn:hover {
+                background: #ecf2fe;
+            }
+            .trigger-btn:active {
+                transform: scale(0.97);
+            }
+            .trigger-btn.danger {
+                border-color: #f04452;
+                color: #f04452;
+            }
+            .trigger-btn.danger:hover {
+                background: #fef0f1;
+            }
+            .trigger-btn.success {
+                border-color: #34c759;
+                color: #34c759;
+            }
+            .trigger-btn.success:hover {
+                background: #f0fff4;
+            }
+
+            /* ===== Animation Keyframes ===== */
+
+            /* #1: Card delete exit */
+            @keyframes card-exit {
+                0% {
+                    opacity: 1;
+                    transform: translateX(0) scale(1);
+                }
+                100% {
+                    opacity: 0;
+                    transform: translateX(-40px) scale(0.94);
+                }
+            }
+            .anim-exit {
+                animation: card-exit 0.35s cubic-bezier(0.32, 0.72, 0, 1)
+                    forwards;
+            }
+
+            /* #2: Card add entrance */
+            @keyframes card-enter {
+                0% {
+                    opacity: 0;
+                    transform: translateY(16px) scale(0.95);
+                }
+                50% {
+                    transform: translateY(-2px) scale(1.01);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+            .anim-enter {
+                animation: card-enter 0.45s cubic-bezier(0.32, 0.72, 0, 1)
+                    forwards;
+            }
+
+            /* #6: Empty state float */
+            @keyframes float-icon {
+                0%,
+                100% {
+                    transform: translateY(0);
+                }
+                50% {
+                    transform: translateY(-6px);
+                }
+            }
+            .anim-float {
+                animation: float-icon 2.5s ease-in-out infinite;
+            }
+
+            /* #7: Color select bounce */
+            @keyframes color-bounce {
+                0% {
+                    transform: scale(1);
+                }
+                30% {
+                    transform: scale(1.25);
+                }
+                60% {
+                    transform: scale(0.92);
+                }
+                100% {
+                    transform: scale(1);
+                }
+            }
+            .anim-color-bounce {
+                animation: color-bounce 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+            }
+
+            /* #7: Checkmark pop */
+            @keyframes check-pop {
+                0% {
+                    transform: scale(0) rotate(-90deg);
+                    opacity: 0;
+                }
+                60% {
+                    transform: scale(1.15) rotate(5deg);
+                    opacity: 1;
+                }
+                100% {
+                    transform: scale(1) rotate(0deg);
+                    opacity: 1;
+                }
+            }
+            .anim-check-pop {
+                animation: check-pop 0.35s cubic-bezier(0.32, 0.72, 0, 1)
+                    forwards;
+            }
+
+            /* #9: Popconfirm scale + shake */
+            @keyframes pop-shake {
+                0% {
+                    opacity: 0;
+                    transform: scale(0.85);
+                }
+                40% {
+                    opacity: 1;
+                    transform: scale(1.03);
+                }
+                55% {
+                    transform: scale(0.98) rotate(-0.5deg);
+                }
+                70% {
+                    transform: scale(1.01) rotate(0.5deg);
+                }
+                100% {
+                    transform: scale(1) rotate(0deg);
+                }
+            }
+            .anim-pop-shake {
+                animation: pop-shake 0.4s cubic-bezier(0.32, 0.72, 0, 1)
+                    forwards;
+            }
+
+            /* #10: Stripe expand */
+            .stripe-hover .stripe-bar {
+                transition: all 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+            }
+            .stripe-hover:hover .stripe-bar {
+                width: 5px !important;
+                filter: brightness(1.1);
+            }
+
+            /* Stagger helper */
+            .stagger-item {
+                opacity: 0;
+                transform: translateY(12px) scale(0.97);
+            }
+            .stagger-item.visible {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+            }
+
+            /* Modal overlay */
+            @keyframes modal-overlay-in {
+                0% {
+                    opacity: 0;
+                }
+                100% {
+                    opacity: 1;
+                }
+            }
+            @keyframes modal-content-in {
+                0% {
+                    opacity: 0;
+                    transform: translateY(20px) scale(0.96);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+            @keyframes modal-overlay-out {
+                0% {
+                    opacity: 1;
+                }
+                100% {
+                    opacity: 0;
+                }
+            }
+            @keyframes modal-content-out {
+                0% {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+                100% {
+                    opacity: 0;
+                    transform: translateY(12px) scale(0.97);
+                }
+            }
+
+            /* Dropdown fade-scale */
+            @keyframes dropdown-in {
+                0% {
+                    opacity: 0;
+                    transform: translateY(-4px) scale(0.95);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+            @keyframes dropdown-out {
+                0% {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+                100% {
+                    opacity: 0;
+                    transform: translateY(-4px) scale(0.95);
+                }
+            }
+
+            /* Ripple effect */
+            @keyframes ripple-expand {
+                0% {
+                    transform: scale(0);
+                    opacity: 0.4;
+                }
+                100% {
+                    transform: scale(2.5);
+                    opacity: 0;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const { Button, Tag, Tooltip, Popconfirm } = antd;
+            const { Text } = antd.Typography;
+            const {
+                PlusOutlined,
+                HolderOutlined,
+                CheckOutlined,
+                MoreOutlined,
+                EditOutlined,
+                DeleteOutlined,
+                FolderOpenOutlined,
+                PlayCircleOutlined,
+            } = icons;
+
+            const COLORS = [
+                "#3182F6",
+                "#34C759",
+                "#FF9500",
+                "#F04452",
+                "#AF52DE",
+                "#5AC8FA",
+                "#FF6482",
+            ];
+
+            const SAMPLE_CARDS = [
+                {
+                    id: "1",
+                    color: "#3182F6",
+                    work: "주간보고서 작성",
+                    deal: "삼성전자",
+                    meta: "보고서 · 관리",
+                },
+                {
+                    id: "2",
+                    color: "#34C759",
+                    work: "UI 디자인 리뷰",
+                    deal: "LG CNS",
+                    meta: "디자인 · 개발",
+                },
+                {
+                    id: "3",
+                    color: "#FF9500",
+                    work: "미팅 준비",
+                    deal: "",
+                    meta: "미팅 · 기획",
+                },
+                {
+                    id: "4",
+                    color: "#AF52DE",
+                    work: "코드 리뷰",
+                    deal: "네이버",
+                    meta: "개발 · 리뷰",
+                },
+            ];
+
+            /* ===================== CARD COMPONENT ===================== */
+            function TemplateCard({
+                card,
+                className,
+                style,
+                showActions,
+                onHoverStripe,
+                children,
+            }) {
+                return (
+                    <div
+                        className={`group relative flex items-center bg-white rounded-xl overflow-hidden border border-border-default shadow-[0_1px_2px_rgba(0,0,0,0.04)] ${
+                            className || ""
+                        } ${onHoverStripe ? "stripe-hover" : ""}`}
+                        style={style}
+                    >
+                        <div className="flex items-center pl-[6px] self-stretch flex-shrink-0">
+                            <div
+                                className={`w-[3px] h-[60%] rounded-full ${
+                                    onHoverStripe ? "stripe-bar" : ""
+                                }`}
+                                style={{ background: card.color, width: 3 }}
+                            />
+                        </div>
+                        <div className="flex items-center justify-center pl-sm pr-0 self-stretch cursor-grab text-text-hint opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <HolderOutlined style={{ fontSize: 11 }} />
+                        </div>
+                        <div className="flex-1 py-lg pl-sm pr-0 min-w-0">
+                            <span className="text-sm font-semibold text-text-primary block truncate leading-snug">
+                                {card.work}
+                            </span>
+                            {card.deal && (
+                                <div className="flex items-center mt-[3px] min-w-0">
+                                    <span
+                                        className="text-[10px] font-medium rounded-xs px-[5px] py-[1px] truncate max-w-full leading-[16px]"
+                                        style={{
+                                            background: `${card.color}14`,
+                                            color: card.color,
+                                        }}
+                                    >
+                                        {card.deal}
+                                    </span>
+                                </div>
+                            )}
+                            {card.meta && (
+                                <span className="text-xs text-text-disabled block truncate mt-[3px]">
+                                    {card.meta}
+                                </span>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-sm pr-md flex-shrink-0">
+                            {showActions && (
+                                <button className="flex items-center justify-center w-7 h-7 rounded-md border-none cursor-pointer bg-transparent text-text-disabled hover:bg-bg-grey hover:text-text-secondary transition-all duration-150 opacity-0 group-hover:opacity-100">
+                                    <MoreOutlined style={{ fontSize: 13 }} />
+                                </button>
+                            )}
+                            {children}
+                        </div>
+                    </div>
+                );
+            }
+
+            /* =================== DEMO SECTIONS =================== */
+
+            /* #11 + #10: Hover/Click Fix + Stripe Expand */
+            function Demo11_HoverFix() {
+                return (
+                    <div>
+                        <p className="mockup-desc">
+                            <b>Before (현재):</b> dnd-kit의 inline
+                            transform/transition이 CSS를 덮어씀 → 호버 리프트가
+                            작동 안 함<br />
+                            <b>After:</b> 드래그 중이 아닐 때는 inline
+                            transform을 제거하여 CSS 호버가 정상 작동 + 컬러
+                            스트라이프 확장
+                        </p>
+                        <div className="flex gap-6">
+                            <div className="flex-1">
+                                <div className="text-xs font-semibold text-error mb-2">
+                                    BEFORE (호버해도 변화 없음)
+                                </div>
+                                <div
+                                    style={{
+                                        transform: "translate3d(0px, 0px, 0)",
+                                        transition: "transform 250ms ease",
+                                    }}
+                                >
+                                    <TemplateCard
+                                        card={SAMPLE_CARDS[0]}
+                                        showActions
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex-1">
+                                <div className="text-xs font-semibold text-success mb-2">
+                                    AFTER (호버하면 살짝 떠오름 + 스트라이프
+                                    확장)
+                                </div>
+                                <div className="transition-all duration-200 hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:-translate-y-px">
+                                    <TemplateCard
+                                        card={SAMPLE_CARDS[0]}
+                                        showActions
+                                        onHoverStripe
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* #1: Card Delete Exit */
+            function Demo1_DeleteExit() {
+                const [cards, setCards] = React.useState([...SAMPLE_CARDS]);
+                const [exiting_id, setExitingId] = React.useState(null);
+
+                const handleDelete = (id) => {
+                    setExitingId(id);
+                    setTimeout(() => {
+                        setCards((prev) => prev.filter((c) => c.id !== id));
+                        setExitingId(null);
+                    }, 350);
+                };
+
+                const handleReset = () => setCards([...SAMPLE_CARDS]);
+
+                return (
+                    <div>
+                        <p className="mockup-desc">
+                            카드 삭제 시 왼쪽으로 슬라이드 + 페이드아웃 +
+                            스케일다운. 나머지 카드는 부드럽게 위로 올라옴.
+                        </p>
+                        <button
+                            className="trigger-btn danger"
+                            onClick={() =>
+                                cards.length > 0 && handleDelete(cards[0].id)
+                            }
+                        >
+                            <DeleteOutlined /> 첫 번째 카드 삭제
+                        </button>
+                        <button className="trigger-btn" onClick={handleReset}>
+                            초기화
+                        </button>
+                        <div className="flex flex-col gap-sm">
+                            {cards.map((card) => (
+                                <div
+                                    key={card.id}
+                                    className={
+                                        exiting_id === card.id
+                                            ? "anim-exit"
+                                            : ""
+                                    }
+                                    style={{
+                                        transition:
+                                            "all 0.3s cubic-bezier(0.32, 0.72, 0, 1)",
+                                    }}
+                                >
+                                    <TemplateCard
+                                        card={card}
+                                        showActions
+                                        onHoverStripe
+                                    />
+                                </div>
+                            ))}
+                            {cards.length === 0 && (
+                                <div className="text-center py-8 text-text-secondary text-sm">
+                                    모든 카드가 삭제되었어요
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+            }
+
+            /* #2: Card Add Entrance */
+            function Demo2_AddEntrance() {
+                const [cards, setCards] = React.useState([SAMPLE_CARDS[0]]);
+                const [new_id, setNewId] = React.useState(null);
+                let counter = React.useRef(1);
+
+                const handleAdd = () => {
+                    const idx = counter.current % SAMPLE_CARDS.length;
+                    const new_card = {
+                        ...SAMPLE_CARDS[idx],
+                        id: `new-${Date.now()}`,
+                    };
+                    counter.current++;
+                    setCards((prev) => [...prev, new_card]);
+                    setNewId(new_card.id);
+                    setTimeout(() => setNewId(null), 500);
+                };
+
+                const handleReset = () => {
+                    setCards([SAMPLE_CARDS[0]]);
+                    counter.current = 1;
+                };
+
+                return (
+                    <div>
+                        <p className="mockup-desc">
+                            새 카드 추가 시 아래에서 올라오며 + 살짝
+                            바운스(scale overshoot) 효과로 "톡" 하고 등장.
+                        </p>
+                        <button
+                            className="trigger-btn success"
+                            onClick={handleAdd}
+                        >
+                            <PlusOutlined /> 카드 추가
+                        </button>
+                        <button className="trigger-btn" onClick={handleReset}>
+                            초기화
+                        </button>
+                        <div className="flex flex-col gap-sm">
+                            {cards.map((card) => (
+                                <div
+                                    key={card.id}
+                                    className={
+                                        new_id === card.id ? "anim-enter" : ""
+                                    }
+                                >
+                                    <TemplateCard
+                                        card={card}
+                                        showActions
+                                        onHoverStripe
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
+            /* #3: Modal Enter/Exit */
+            function Demo3_Modal() {
+                const [is_open, setIsOpen] = React.useState(false);
+                const [is_closing, setIsClosing] = React.useState(false);
+
+                const handleOpen = () => setIsOpen(true);
+                const handleClose = () => {
+                    setIsClosing(true);
+                    setTimeout(() => {
+                        setIsOpen(false);
+                        setIsClosing(false);
+                    }, 250);
+                };
+
+                return (
+                    <div>
+                        <p className="mockup-desc">
+                            모달이 아래에서 올라오며 등장 (spring slide-up +
+                            fade). 닫을 때는 아래로 내려가며 퇴장.
+                        </p>
+                        <button className="trigger-btn" onClick={handleOpen}>
+                            <PlusOutlined /> 모달 열기
+                        </button>
+                        {is_open && (
+                            <div
+                                style={{
+                                    position: "fixed",
+                                    inset: 0,
+                                    zIndex: 1000,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        inset: 0,
+                                        background: "rgba(0,0,0,0.35)",
+                                        backdropFilter: "blur(4px)",
+                                        animation: is_closing
+                                            ? "modal-overlay-out 0.25s ease forwards"
+                                            : "modal-overlay-in 0.2s ease forwards",
+                                    }}
+                                    onClick={handleClose}
+                                />
+                                <div
+                                    style={{
+                                        position: "relative",
+                                        zIndex: 1,
+                                        background: "white",
+                                        borderRadius: 16,
+                                        width: 420,
+                                        padding: "24px",
+                                        boxShadow:
+                                            "0 8px 24px rgba(0,0,0,0.12)",
+                                        animation: is_closing
+                                            ? "modal-content-out 0.25s cubic-bezier(0.32, 0.72, 0, 1) forwards"
+                                            : "modal-content-in 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards",
+                                    }}
+                                >
+                                    <div className="flex justify-between items-center mb-4">
+                                        <span className="text-lg font-semibold text-text-primary">
+                                            새 프리셋 추가
+                                        </span>
+                                        <button
+                                            onClick={handleClose}
+                                            className="w-8 h-8 rounded-md border-none cursor-pointer bg-transparent text-text-disabled hover:bg-bg-grey hover:text-text-secondary transition-all duration-150 flex items-center justify-center"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <div className="bg-bg-grey rounded-md h-10 flex items-center px-3 text-sm text-text-disabled">
+                                            작업명 입력...
+                                        </div>
+                                        <div className="bg-bg-grey rounded-md h-10 flex items-center px-3 text-sm text-text-disabled">
+                                            거래처명 입력...
+                                        </div>
+                                        <div className="bg-bg-grey rounded-md h-10 flex items-center px-3 text-sm text-text-disabled">
+                                            업무 입력...
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-end gap-2 mt-6">
+                                        <button className="px-4 py-2 rounded-md bg-primary text-white border-none text-sm font-semibold cursor-pointer hover:brightness-95 transition-all duration-150">
+                                            추가하기{" "}
+                                            <span className="text-xs opacity-70 ml-1 px-1 py-px bg-white/20 rounded-[3px]">
+                                                F8
+                                            </span>
+                                        </button>
+                                        <button
+                                            onClick={handleClose}
+                                            className="px-4 py-2 rounded-md bg-bg-grey text-text-secondary border-none text-sm font-semibold cursor-pointer hover:bg-border-default transition-all duration-150"
+                                        >
+                                            취소
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+
+            /* #4: Drag Visual Feedback */
+            function Demo4_Drag() {
+                const [is_dragging, setIsDragging] = React.useState(false);
+
+                return (
+                    <div>
+                        <p className="mockup-desc">
+                            드래그 시작 시: scale(1.02) + 큰 그림자 + 미세
+                            회전(1deg) + 테두리 primary 색상.
+                            <br />
+                            드래그 종료 시: spring 물리로 부드럽게 원래 위치로
+                            착지.
+                        </p>
+                        <button
+                            className="trigger-btn"
+                            onMouseDown={() => setIsDragging(true)}
+                            onMouseUp={() => setIsDragging(false)}
+                            onMouseLeave={() => setIsDragging(false)}
+                        >
+                            <HolderOutlined /> 마우스 누르고 있기 = 드래그
+                            시뮬레이션
+                        </button>
+                        <div className="flex flex-col gap-sm">
+                            <div
+                                style={{
+                                    transition:
+                                        "all 0.3s cubic-bezier(0.32, 0.72, 0, 1)",
+                                    transform: is_dragging
+                                        ? "scale(1.02) rotate(1deg)"
+                                        : "scale(1) rotate(0deg)",
+                                    boxShadow: is_dragging
+                                        ? "0 8px 24px rgba(0,0,0,0.12)"
+                                        : "0 1px 2px rgba(0,0,0,0.04)",
+                                    borderRadius: 12,
+                                    border: is_dragging
+                                        ? "1px solid rgba(49,130,246,0.3)"
+                                        : "1px solid transparent",
+                                    zIndex: is_dragging ? 50 : 1,
+                                    position: "relative",
+                                }}
+                            >
+                                <TemplateCard
+                                    card={SAMPLE_CARDS[0]}
+                                    showActions
+                                />
+                            </div>
+                            <TemplateCard card={SAMPLE_CARDS[1]} showActions />
+                            <TemplateCard card={SAMPLE_CARDS[2]} showActions />
+                        </div>
+                    </div>
+                );
+            }
+
+            /* #5: Add Button Ripple */
+            function Demo5_AddButton() {
+                const [ripples, setRipples] = React.useState([]);
+                const btn_ref = React.useRef(null);
+
+                const handleClick = (e) => {
+                    const rect = btn_ref.current.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const id = Date.now();
+                    setRipples((prev) => [...prev, { id, x, y }]);
+                    setTimeout(
+                        () =>
+                            setRipples((prev) =>
+                                prev.filter((r) => r.id !== id)
+                            ),
+                        600
+                    );
+                };
+
+                return (
+                    <div>
+                        <p className="mockup-desc">
+                            "새 프리셋 추가" 버튼 클릭 시 물결(ripple) 효과 +
+                            press scale. 호버 시 배경/테두리 색상 전환.
+                        </p>
+                        <div className="max-w-[320px]">
+                            <button
+                                ref={btn_ref}
+                                onClick={handleClick}
+                                className="w-full relative overflow-hidden inline-flex items-center justify-center gap-sm py-md rounded-xl cursor-pointer text-sm font-semibold text-text-secondary bg-bg-light border-[1.5px] border-dashed border-border-dark hover:bg-primary/5 hover:text-primary hover:border-primary active:scale-[0.97] transition-all duration-200"
+                            >
+                                <PlusOutlined style={{ fontSize: 11 }} />새
+                                프리셋 추가
+                                {ripples.map((r) => (
+                                    <span
+                                        key={r.id}
+                                        style={{
+                                            position: "absolute",
+                                            left: r.x - 20,
+                                            top: r.y - 20,
+                                            width: 40,
+                                            height: 40,
+                                            borderRadius: "50%",
+                                            background:
+                                                "rgba(49, 130, 246, 0.15)",
+                                            animation:
+                                                "ripple-expand 0.6s ease-out forwards",
+                                            pointerEvents: "none",
+                                        }}
+                                    />
+                                ))}
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* #6: Empty State Float */
+            function Demo6_EmptyFloat() {
+                return (
+                    <div>
+                        <p className="mockup-desc">
+                            빈 상태 아이콘이 부드럽게 위아래로 떠다니는 float
+                            애니메이션. 시선을 자연스럽게 유도.
+                        </p>
+                        <div className="flex flex-col items-center justify-center py-section gap-md max-w-[320px] mx-auto">
+                            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-bg-grey anim-float">
+                                <FolderOpenOutlined
+                                    style={{ fontSize: 20, color: "#D1D6DB" }}
+                                />
+                            </div>
+                            <div className="flex flex-col items-center gap-xs">
+                                <span className="text-md font-semibold text-text-primary">
+                                    아직 프리셋이 없어요
+                                </span>
+                                <span className="text-sm text-text-secondary">
+                                    자주 쓰는 작업을 프리셋으로 등록해 보세요
+                                </span>
+                            </div>
+                            <button className="inline-flex items-center gap-xs px-lg py-sm rounded-md text-sm font-semibold text-primary bg-primary/5 border-none cursor-pointer hover:bg-primary/10 transition-colors duration-200 active:scale-[0.97]">
+                                <PlusOutlined style={{ fontSize: 11 }} />
+                                프리셋 만들기
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* #7: Color Selection Feedback */
+            function Demo7_ColorSelect() {
+                const [selected, setSelected] = React.useState(COLORS[0]);
+                const [bouncing, setBouncing] = React.useState(null);
+
+                const handleSelect = (color) => {
+                    setSelected(color);
+                    setBouncing(color);
+                    setTimeout(() => setBouncing(null), 400);
+                };
+
+                return (
+                    <div>
+                        <p className="mockup-desc">
+                            색상 선택 시 선택된 원이 바운스 + 체크마크가
+                            회전하며 팝업 등장. 이전 선택에서 부드럽게 전환.
+                        </p>
+                        <div className="flex flex-wrap gap-sm">
+                            {COLORS.map((color) => {
+                                const is_selected = selected === color;
+                                const is_bouncing = bouncing === color;
+                                return (
+                                    <button
+                                        key={color}
+                                        onClick={() => handleSelect(color)}
+                                        className={`w-8 h-8 rounded-full border-2 cursor-pointer flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 ${
+                                            is_bouncing
+                                                ? "anim-color-bounce"
+                                                : ""
+                                        } ${
+                                            is_selected
+                                                ? "border-gray-800 shadow-sm"
+                                                : "border-transparent"
+                                        }`}
+                                        style={{ backgroundColor: color }}
+                                    >
+                                        {is_selected && (
+                                            <span className="anim-check-pop inline-flex">
+                                                <CheckOutlined
+                                                    style={{
+                                                        color: "white",
+                                                        fontSize: 11,
+                                                    }}
+                                                />
+                                            </span>
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                );
+            }
+
+            /* #8: Dropdown Menu Enter */
+            function Demo8_Dropdown() {
+                const [is_open, setIsOpen] = React.useState(false);
+                const [is_closing, setIsClosing] = React.useState(false);
+
+                const handleToggle = () => {
+                    if (is_open) {
+                        setIsClosing(true);
+                        setTimeout(() => {
+                            setIsOpen(false);
+                            setIsClosing(false);
+                        }, 200);
+                    } else {
+                        setIsOpen(true);
+                    }
+                };
+
+                return (
+                    <div>
+                        <p className="mockup-desc">
+                            더보기 메뉴가 위에서 아래로 fade + scale로 펼쳐짐.
+                            닫힐 때는 역방향 애니메이션.
+                        </p>
+                        <div className="relative inline-block">
+                            <button
+                                onClick={handleToggle}
+                                className="flex items-center justify-center w-8 h-8 rounded-md border border-border-default cursor-pointer bg-white text-text-secondary hover:bg-bg-grey transition-all duration-150"
+                            >
+                                <MoreOutlined style={{ fontSize: 14 }} />
+                            </button>
+                            {is_open && (
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        top: "calc(100% + 4px)",
+                                        right: 0,
+                                        minWidth: 140,
+                                        background: "white",
+                                        borderRadius: 8,
+                                        boxShadow:
+                                            "0 4px 16px rgba(0,0,0,0.08)",
+                                        border: "1px solid #E5E8EB",
+                                        padding: "4px 0",
+                                        transformOrigin: "top right",
+                                        animation: is_closing
+                                            ? "dropdown-out 0.15s ease forwards"
+                                            : "dropdown-in 0.2s cubic-bezier(0.32, 0.72, 0, 1) forwards",
+                                        zIndex: 10,
+                                    }}
+                                >
+                                    <button className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-primary bg-transparent border-none cursor-pointer hover:bg-bg-light transition-colors duration-100">
+                                        <EditOutlined
+                                            style={{ fontSize: 13 }}
+                                        />{" "}
+                                        수정
+                                    </button>
+                                    <div className="mx-2 border-t border-border-light" />
+                                    <button className="w-full flex items-center gap-2 px-3 py-2 text-sm text-error bg-transparent border-none cursor-pointer hover:bg-red-50 transition-colors duration-100">
+                                        <DeleteOutlined
+                                            style={{ fontSize: 13 }}
+                                        />{" "}
+                                        삭제
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+            }
+
+            /* #9: Popconfirm Enter */
+            function Demo9_Popconfirm() {
+                const [is_open, setIsOpen] = React.useState(false);
+
+                return (
+                    <div>
+                        <p className="mockup-desc">
+                            삭제 확인 팝업이 scale + 미세 흔들림(shake)으로
+                            등장. 경고 느낌을 자연스럽게 전달.
+                        </p>
+                        <button
+                            className="trigger-btn danger"
+                            onClick={() => setIsOpen(!is_open)}
+                        >
+                            <DeleteOutlined /> 삭제 확인 팝업 토글
+                        </button>
+                        {is_open && (
+                            <div
+                                className="anim-pop-shake"
+                                style={{
+                                    display: "inline-block",
+                                    background: "white",
+                                    borderRadius: 12,
+                                    boxShadow: "0 4px 16px rgba(0,0,0,0.1)",
+                                    border: "1px solid #E5E8EB",
+                                    padding: "16px 20px",
+                                    maxWidth: 280,
+                                    marginTop: 8,
+                                }}
+                            >
+                                <div className="flex items-start gap-2 mb-3">
+                                    <span className="text-warning text-md mt-[1px]">
+                                        ⚠️
+                                    </span>
+                                    <div>
+                                        <div className="text-sm font-semibold text-text-primary">
+                                            프리셋을 삭제할까요?
+                                        </div>
+                                        <div className="text-xs text-text-secondary mt-1">
+                                            삭제한 프리셋은 복구할 수 없어요
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex justify-end gap-2">
+                                    <button
+                                        onClick={() => setIsOpen(false)}
+                                        className="px-3 py-[6px] rounded-md bg-bg-grey text-text-secondary border-none text-xs font-semibold cursor-pointer hover:bg-border-default transition-all duration-150"
+                                    >
+                                        취소
+                                    </button>
+                                    <button
+                                        onClick={() => setIsOpen(false)}
+                                        className="px-3 py-[6px] rounded-md bg-error text-white border-none text-xs font-semibold cursor-pointer hover:brightness-95 transition-all duration-150"
+                                    >
+                                        삭제
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+
+            /* #12: Stagger Load */
+            function Demo12_Stagger() {
+                const [visible, setVisible] = React.useState(false);
+
+                const handleAnimate = () => {
+                    setVisible(false);
+                    setTimeout(() => setVisible(true), 50);
+                };
+
+                return (
+                    <div>
+                        <p className="mockup-desc">
+                            리스트 첫 로드 시 카드가 순서대로(stagger 30ms)
+                            아래에서 올라오며 등장. 자연스러운 캐스케이드 효과.
+                        </p>
+                        <button className="trigger-btn" onClick={handleAnimate}>
+                            <PlayCircleOutlined /> Stagger 재생
+                        </button>
+                        <div className="flex flex-col gap-sm">
+                            {SAMPLE_CARDS.map((card, i) => (
+                                <div
+                                    key={card.id}
+                                    className={`stagger-item ${
+                                        visible ? "visible" : ""
+                                    }`}
+                                    style={{
+                                        transitionDelay: visible
+                                            ? `${i * 60}ms`
+                                            : "0ms",
+                                    }}
+                                >
+                                    <TemplateCard
+                                        card={card}
+                                        showActions
+                                        onHoverStripe
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
+            /* =================== MAIN APP =================== */
+            function MockupApp() {
+                const demos = [
+                    {
+                        num: "11",
+                        label: "호버/클릭 수정 + 컬러 스트라이프 확장",
+                        comp: Demo11_HoverFix,
+                    },
+                    {
+                        num: "1",
+                        label: "카드 삭제 퇴장 애니메이션",
+                        comp: Demo1_DeleteExit,
+                    },
+                    {
+                        num: "2",
+                        label: "카드 추가 진입 애니메이션",
+                        comp: Demo2_AddEntrance,
+                    },
+                    {
+                        num: "3",
+                        label: "모달 등장/퇴장 (Spring Slide-Up)",
+                        comp: Demo3_Modal,
+                    },
+                    {
+                        num: "4",
+                        label: "드래그 시각 피드백 강화",
+                        comp: Demo4_Drag,
+                    },
+                    {
+                        num: "5",
+                        label: "새 프리셋 추가 버튼 Ripple",
+                        comp: Demo5_AddButton,
+                    },
+                    {
+                        num: "6",
+                        label: "빈 상태 아이콘 Float",
+                        comp: Demo6_EmptyFloat,
+                    },
+                    {
+                        num: "7",
+                        label: "색상 선택 바운스 피드백",
+                        comp: Demo7_ColorSelect,
+                    },
+                    {
+                        num: "8",
+                        label: "드롭다운 메뉴 등장/퇴장",
+                        comp: Demo8_Dropdown,
+                    },
+                    {
+                        num: "9",
+                        label: "삭제 확인 팝업 등장 (Shake)",
+                        comp: Demo9_Popconfirm,
+                    },
+                    {
+                        num: "12",
+                        label: "리스트 Stagger 진입",
+                        comp: Demo12_Stagger,
+                    },
+                ];
+
+                return (
+                    <div>
+                        <div className="mockup-header">
+                            <h1>작업 프리셋 애니메이션</h1>
+                            <p>
+                                총 12가지 애니메이션 효과 프리뷰 — 각 섹션의
+                                버튼을 클릭하여 확인
+                            </p>
+                        </div>
+
+                        {demos.map(({ num, label, comp: Comp }) => (
+                            <div key={num} className="mockup-section">
+                                <div className="mockup-section-label">
+                                    <span className="num">{num}</span>
+                                    {label}
+                                </div>
+                                <div className="mockup-frame">
+                                    <Comp />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            root.render(<MockupApp />);
+        </script>
+    </body>
+</html>

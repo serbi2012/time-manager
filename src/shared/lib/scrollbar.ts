@@ -1,18 +1,20 @@
 const SCROLL_HIDE_DELAY = 1200;
 
 const STANDARD_SCROLLBAR_CSS = `
-* {
-    scrollbar-width: thin;
-    scrollbar-color: transparent transparent;
-    transition: scrollbar-color 0.3s ease-out;
-}
-*:hover {
-    scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
-    transition: scrollbar-color 0.2s ease-out;
-}
-.is-scrolling {
-    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-    transition: scrollbar-color 0.15s ease-out;
+@layer base {
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: transparent transparent;
+        transition: scrollbar-color 0.3s ease-out;
+    }
+    *:hover {
+        scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+        transition: scrollbar-color 0.2s ease-out;
+    }
+    .is-scrolling {
+        scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+        transition: scrollbar-color 0.15s ease-out;
+    }
 }
 `;
 

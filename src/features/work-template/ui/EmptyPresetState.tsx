@@ -1,10 +1,21 @@
 import { FolderOpenOutlined, PlusOutlined } from "@ant-design/icons";
+import { motion } from "framer-motion";
 import { cn } from "@/shared/lib/cn";
 import {
     EMPTY_TITLE,
     EMPTY_DESCRIPTION,
     EMPTY_CTA,
 } from "@/features/work-template/constants";
+
+const FLOAT_ANIMATION = {
+    y: [0, -6, 0],
+};
+
+const FLOAT_TRANSITION = {
+    duration: 2.5,
+    repeat: Infinity,
+    ease: "easeInOut" as const,
+};
 
 interface EmptyPresetStateProps {
     onAdd: () => void;
@@ -19,9 +30,13 @@ export function EmptyPresetState({ onAdd, className }: EmptyPresetStateProps) {
                 className
             )}
         >
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-bg-grey">
+            <motion.div
+                className="flex items-center justify-center w-12 h-12 rounded-full bg-bg-grey"
+                animate={FLOAT_ANIMATION}
+                transition={FLOAT_TRANSITION}
+            >
                 <FolderOpenOutlined className="text-xl text-text-hint" />
-            </div>
+            </motion.div>
 
             <div className="flex flex-col items-center gap-xs">
                 <span className="text-md font-semibold text-text-primary">

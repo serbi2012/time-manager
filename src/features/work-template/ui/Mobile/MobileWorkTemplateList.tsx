@@ -2,14 +2,12 @@
  * Mobile Work Template List (Toss-style with animations)
  */
 
-import { PlusOutlined } from "@ant-design/icons";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import {
     SortableContext,
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/shared/lib/cn";
 import { SPRING, STAGGER } from "@/shared/ui/animation";
 import { useWorkStore } from "@/store/useWorkStore";
 import {
@@ -20,11 +18,9 @@ import {
     useTemplateActions,
     useTemplateDnd,
 } from "@/features/work-template/hooks";
-import {
-    TEMPLATE_CARD_TITLE,
-    BUTTON_ADD_FULL,
-} from "@/features/work-template/constants";
+import { TEMPLATE_CARD_TITLE } from "@/features/work-template/constants";
 import { EmptyPresetState } from "../EmptyPresetState";
+import { AddPresetButton } from "../AddPresetButton";
 
 interface MobileWorkTemplateListProps {
     onAddRecordOnly?: (template_id: string) => void;
@@ -65,22 +61,7 @@ export function MobileWorkTemplateList({
                         {TEMPLATE_CARD_TITLE}
                     </h3>
 
-                    <button
-                        type="button"
-                        onClick={handleOpenAddModal}
-                        className={cn(
-                            "w-full inline-flex items-center justify-center gap-sm",
-                            "py-md rounded-xl cursor-pointer",
-                            "text-sm font-semibold text-text-secondary",
-                            "bg-bg-light border-[1.5px] border-dashed border-border-dark",
-                            "hover:bg-primary/5 hover:text-primary hover:border-primary",
-                            "active:scale-[0.99]",
-                            "transition-all duration-200"
-                        )}
-                    >
-                        <PlusOutlined className="text-xs" />
-                        {BUTTON_ADD_FULL}
-                    </button>
+                    <AddPresetButton onClick={handleOpenAddModal} />
                 </div>
 
                 {/* Content */}
@@ -119,7 +100,6 @@ export function MobileWorkTemplateList({
                                                     (template, index) => (
                                                         <motion.div
                                                             key={template.id}
-                                                            layout
                                                             variants={
                                                                 CARD_VARIANTS
                                                             }
@@ -130,7 +110,7 @@ export function MobileWorkTemplateList({
                                                                 ...SPRING.toss,
                                                                 delay:
                                                                     index *
-                                                                    (STAGGER.fast /
+                                                                    (STAGGER.normal /
                                                                         1000),
                                                             }}
                                                         >
