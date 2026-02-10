@@ -14,6 +14,7 @@ export interface EmptyGanttChartProps {
     grid_ref: React.RefObject<HTMLDivElement | null>;
     time_labels: string[];
     lunch_overlay_style: { left: string; width: string } | null;
+    lunch_time: { start: number; end: number };
     is_dragging: boolean;
     drag_selection: { start_mins: number; end_mins: number } | null;
     getSelectionStyle: () => { left?: string; width?: string };
@@ -24,6 +25,7 @@ export function EmptyGanttChart({
     grid_ref,
     time_labels,
     lunch_overlay_style,
+    lunch_time,
     is_dragging,
     drag_selection,
     getSelectionStyle,
@@ -61,7 +63,11 @@ export function EmptyGanttChart({
                 ))}
 
                 {lunch_overlay_style && (
-                    <LunchZoneOverlay style={lunch_overlay_style} />
+                    <LunchZoneOverlay
+                        style={lunch_overlay_style}
+                        lunch_start_mins={lunch_time.start}
+                        lunch_end_mins={lunch_time.end}
+                    />
                 )}
             </div>
 

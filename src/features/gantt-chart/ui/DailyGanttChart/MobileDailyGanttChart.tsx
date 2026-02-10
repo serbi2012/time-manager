@@ -215,6 +215,7 @@ export function MobileDailyGanttChart() {
                                 grid_ref={grid_ref}
                                 time_labels={time_labels}
                                 lunch_overlay_style={lunch_overlay_style}
+                                lunch_time={lunch_time}
                                 is_dragging={is_dragging}
                                 drag_selection={drag_selection}
                                 getSelectionStyle={getSelectionStyle}
@@ -227,6 +228,7 @@ export function MobileDailyGanttChart() {
                                 time_range={time_range}
                                 current_time_mins={current_time_mins}
                                 lunch_overlay_style={lunch_overlay_style}
+                                lunch_time={lunch_time}
                                 conflict_info={conflict_info}
                                 resize_state={resize_state}
                                 context_menu={context_menu}

@@ -124,8 +124,9 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
                 rgba(242, 244, 246, 0.5);
             border-left: 1px dashed var(--gray-300);
             border-right: 1px dashed var(--gray-300);
-            z-index: 0;
-            pointer-events: none;
+            z-index: 5;
+            pointer-events: auto;
+            cursor: default;
             animation: fadeIn 0.6s ease-out both;
         }
         

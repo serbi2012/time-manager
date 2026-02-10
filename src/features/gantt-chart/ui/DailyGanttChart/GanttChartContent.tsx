@@ -32,6 +32,7 @@ export interface GanttChartContentProps {
     time_range: { start: number; end: number };
     current_time_mins: number;
     lunch_overlay_style: { left: string; width: string } | null;
+    lunch_time: { start: number; end: number };
     conflict_info: {
         conflicting_sessions: Set<string>;
         conflict_ranges: Array<{ start: number; end: number }>;
@@ -76,6 +77,7 @@ export function GanttChartContent({
     time_range,
     current_time_mins,
     lunch_overlay_style,
+    lunch_time,
     conflict_info,
     resize_state,
     context_menu,
@@ -134,7 +136,11 @@ export function GanttChartContent({
 
                 {/* Lunch zone overlay */}
                 {lunch_overlay_style && (
-                    <LunchZoneOverlay style={lunch_overlay_style} />
+                    <LunchZoneOverlay
+                        style={lunch_overlay_style}
+                        lunch_start_mins={lunch_time.start}
+                        lunch_end_mins={lunch_time.end}
+                    />
                 )}
 
                 {/* Conflict overlays */}
