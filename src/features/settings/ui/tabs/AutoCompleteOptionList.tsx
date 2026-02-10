@@ -2,7 +2,7 @@
  * Card-based autocomplete option section with icon header and badge count
  */
 
-import { Badge, Button, Card, Empty, Popconfirm, Typography } from "antd";
+import { Badge, Button, Card, Empty, Popconfirm } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import { AutoCompleteChip } from "./AutoCompleteChip";
 import { AutoCompleteHiddenSection } from "./AutoCompleteHiddenSection";
@@ -13,8 +13,6 @@ import {
     SETTINGS_BULK_HIDE_OK,
     SETTINGS_CANCEL,
 } from "../../constants";
-
-const { Text } = Typography;
 
 export type AutoCompleteFieldType =
     | "work_name"
