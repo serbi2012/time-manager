@@ -55,6 +55,7 @@ export function useGanttResize(
             record: WorkRecord,
             handle: "left" | "right"
         ) => {
+            if (e.button !== 0) return;
             e.stopPropagation();
             e.preventDefault();
 

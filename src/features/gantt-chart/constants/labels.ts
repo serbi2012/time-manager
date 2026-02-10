@@ -16,11 +16,11 @@ export const GANTT_LABEL_DELETE_SESSION_DESC = (start: string, end: string) =>
     `이 세션(${start}~${end})을 삭제하시겠습니까?`;
 
 /** 툴팁 - 충돌 경고 문구 */
-export const GANTT_LABEL_CONFLICT_WARNING = "⚠️ 다른 작업과 시간이 충돌합니다";
+export const GANTT_LABEL_CONFLICT_WARNING = "다른 작업과 시간이 충돌해요";
 
-/** 툴팁 - 총 N회, M분 포맷 */
+/** 툴팁 - 총 N회 · M분 포맷 */
 export const GANTT_LABEL_TOTAL_SESSIONS = (count: number, duration: string) =>
-    `총 ${count}회, ${duration}`;
+    `총 ${count}회 · ${duration}`;
 
 /** 충돌 오버레이 툴팁 제목 */
 export const GANTT_LABEL_CONFLICT_DETECTED = "⚠️ 시간 충돌 감지";

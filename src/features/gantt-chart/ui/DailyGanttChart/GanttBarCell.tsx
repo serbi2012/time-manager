@@ -53,6 +53,17 @@ const BAR_CLASS_NAMES = {
     conflict: "gantt-bar-conflict",
 };
 
+const TOOLTIP_OVERLAY_STYLE: React.CSSProperties = { maxWidth: "none" };
+
+const TOOLTIP_INNER_STYLE: React.CSSProperties = {
+    padding: 0,
+    background: "white",
+    borderRadius: 12,
+    boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+    border: "1px solid #F2F4F6",
+    overflow: "hidden",
+};
+
 export function GanttBarCell({
     record,
     session,
@@ -127,7 +138,13 @@ export function GanttBarCell({
             placement="top"
             content={context_menu_content}
         >
-            <Tooltip title={tooltip_content} placement="top">
+            <Tooltip
+                title={tooltip_content}
+                placement="top"
+                arrow={false}
+                overlayStyle={TOOLTIP_OVERLAY_STYLE}
+                overlayInnerStyle={TOOLTIP_INNER_STYLE}
+            >
                 <div
                     className={bar_class}
                     style={bar_style || {}}

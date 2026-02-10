@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Scrollbar Design Mockup</title>
+
+        <!-- Tailwind CSS Play CDN -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        spacing: {
+                            xs: "4px",
+                            sm: "8px",
+                            md: "12px",
+                            lg: "16px",
+                            xl: "24px",
+                            "2xl": "32px",
+                        },
+                        colors: {
+                            primary: "#3182F6",
+                            "primary-dark": "#1B64DA",
+                            "primary-light": "#ECF2FE",
+                            gray: {
+                                50: "#F9FAFB",
+                                100: "#F2F4F6",
+                                200: "#E5E8EB",
+                                300: "#D1D6DB",
+                                400: "#B0B8C1",
+                                500: "#8B95A1",
+                                600: "#6B7684",
+                                700: "#4E5968",
+                                800: "#333D4B",
+                                900: "#191F28",
+                            },
+                        },
+                    },
+                },
+            };
+        </script>
+
+        <!-- React 18 UMD -->
+        <script
+            crossorigin
+            src="https://unpkg.com/react@18/umd/react.development.js"
+        ></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+        ></script>
+
+        <!-- Day.js -->
+        <script src="https://unpkg.com/dayjs@1/dayjs.min.js"></script>
+
+        <!-- Ant Design 5 UMD -->
+        <script src="https://unpkg.com/antd@5/dist/antd.min.js"></script>
+
+        <!-- Ant Design Icons UMD -->
+        <script src="https://unpkg.com/@ant-design/icons@5/dist/index.umd.min.js"></script>
+
+        <!-- Babel Standalone for JSX -->
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+        <style>
+            body {
+                margin: 0;
+                padding: 24px;
+                background: #f9fafb;
+                font-family: "Pretendard Variable", Pretendard, -apple-system,
+                    BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue",
+                    "Segoe UI", sans-serif;
+            }
+            #root {
+                max-width: 1100px;
+                margin: 0 auto;
+            }
+            .mockup-header {
+                text-align: center;
+                margin-bottom: 40px;
+                padding-bottom: 20px;
+                border-bottom: 1px solid #e5e8eb;
+            }
+            .mockup-header h1 {
+                font-size: 22px;
+                font-weight: 600;
+                color: #191f28;
+                margin: 0 0 6px;
+            }
+            .mockup-header p {
+                font-size: 13px;
+                color: #8b95a1;
+                margin: 0;
+            }
+            .mockup-section {
+                margin-bottom: 48px;
+            }
+            .mockup-section-label {
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                color: #3182f6;
+                margin-bottom: 12px;
+            }
+            .mockup-frame {
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04),
+                    0 4px 20px rgba(0, 0, 0, 0.06);
+                padding: 24px;
+            }
+
+            /* ========================================
+               SCROLLBAR CONTENT (shared)
+               ======================================== */
+            .scroll-demo {
+                height: 280px;
+                overflow-y: auto;
+                border-radius: 12px;
+                background: #f9fafb;
+                padding: 16px;
+            }
+
+            .scroll-demo-row {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 16px;
+                margin-bottom: 8px;
+                background: white;
+                border-radius: 8px;
+                border: 1px solid #f2f4f6;
+                transition: border-color 0.15s ease, box-shadow 0.15s ease;
+            }
+            .scroll-demo-row:hover {
+                border-color: #e5e8eb;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+            }
+            .scroll-demo-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                flex-shrink: 0;
+            }
+            .scroll-demo-text {
+                font-size: 14px;
+                color: #4e5968;
+                flex: 1;
+            }
+            .scroll-demo-time {
+                font-size: 12px;
+                color: #b0b8c1;
+                flex-shrink: 0;
+            }
+            .scroll-demo-tag {
+                font-size: 11px;
+                padding: 2px 8px;
+                border-radius: 4px;
+                flex-shrink: 0;
+                font-weight: 500;
+            }
+
+            /* Horizontal scroll demo */
+            .scroll-demo-h {
+                overflow-x: auto;
+                overflow-y: hidden;
+                white-space: nowrap;
+                border-radius: 12px;
+                background: #f9fafb;
+                padding: 16px;
+                margin-top: 12px;
+            }
+            .scroll-demo-h-card {
+                display: inline-block;
+                width: 180px;
+                height: 100px;
+                background: white;
+                border-radius: 10px;
+                border: 1px solid #f2f4f6;
+                padding: 14px;
+                margin-right: 10px;
+                vertical-align: top;
+                transition: border-color 0.15s ease;
+            }
+            .scroll-demo-h-card:hover {
+                border-color: #e5e8eb;
+            }
+
+            /* ========================================
+               A: MINIMAL ALWAYS-ON
+               ======================================== */
+            .scrollbar-a::-webkit-scrollbar {
+                width: 4px;
+                height: 4px;
+            }
+            .scrollbar-a::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .scrollbar-a::-webkit-scrollbar-thumb {
+                background: #d1d6db;
+                border-radius: 4px;
+            }
+            .scrollbar-a::-webkit-scrollbar-thumb:hover {
+                background: #b0b8c1;
+            }
+            /* Firefox */
+            .scrollbar-a {
+                scrollbar-width: thin;
+                scrollbar-color: #d1d6db transparent;
+            }
+
+            /* ========================================
+               B: HOVER EXPAND
+               ======================================== */
+            .scrollbar-b::-webkit-scrollbar {
+                width: 4px;
+                height: 4px;
+                transition: width 0.2s ease;
+            }
+            .scrollbar-b::-webkit-scrollbar-track {
+                background: transparent;
+                border-radius: 4px;
+            }
+            .scrollbar-b::-webkit-scrollbar-thumb {
+                background: #d1d6db;
+                border-radius: 4px;
+                transition: background 0.2s ease;
+            }
+            .scrollbar-b:hover::-webkit-scrollbar {
+                width: 8px;
+                height: 8px;
+            }
+            .scrollbar-b:hover::-webkit-scrollbar-thumb {
+                background: #b0b8c1;
+            }
+            .scrollbar-b::-webkit-scrollbar-thumb:hover {
+                background: #8b95a1;
+            }
+            /* Firefox */
+            .scrollbar-b {
+                scrollbar-width: thin;
+                scrollbar-color: #d1d6db transparent;
+            }
+
+            /* ========================================
+               C: AUTO-HIDE (CSS-only fade)
+               ======================================== */
+            .scrollbar-c-wrapper {
+                position: relative;
+            }
+            .scrollbar-c::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+            .scrollbar-c::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .scrollbar-c::-webkit-scrollbar-thumb {
+                background: rgba(0, 0, 0, 0);
+                border-radius: 6px;
+                transition: background 0.3s ease;
+            }
+            .scrollbar-c:hover::-webkit-scrollbar-thumb {
+                background: rgba(0, 0, 0, 0.15);
+            }
+            .scrollbar-c:hover::-webkit-scrollbar-thumb:hover {
+                background: rgba(0, 0, 0, 0.25);
+            }
+            /* Scrolling state (toggled via JS) */
+            .scrollbar-c.is-scrolling::-webkit-scrollbar-thumb {
+                background: rgba(0, 0, 0, 0.18);
+            }
+            /* Firefox */
+            .scrollbar-c {
+                scrollbar-width: thin;
+                scrollbar-color: transparent transparent;
+            }
+            .scrollbar-c:hover {
+                scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+            }
+
+            /* ========================================
+               D: OVERLAY FLOAT
+               ======================================== */
+            .scrollbar-d {
+                overflow-y: overlay !important;
+            }
+            .scrollbar-d::-webkit-scrollbar {
+                width: 10px;
+                height: 10px;
+            }
+            .scrollbar-d::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .scrollbar-d::-webkit-scrollbar-thumb {
+                background: rgba(0, 0, 0, 0.12);
+                border-radius: 10px;
+                border: 3px solid transparent;
+                background-clip: content-box;
+            }
+            .scrollbar-d::-webkit-scrollbar-thumb:hover {
+                background: rgba(0, 0, 0, 0.22);
+                border: 3px solid transparent;
+                background-clip: content-box;
+            }
+            /* Firefox */
+            .scrollbar-d {
+                scrollbar-width: thin;
+                scrollbar-color: rgba(0, 0, 0, 0.12) transparent;
+            }
+
+            /* ========================================
+               E: PRIMARY ACCENT
+               ======================================== */
+            .scrollbar-e::-webkit-scrollbar {
+                width: 5px;
+                height: 5px;
+            }
+            .scrollbar-e::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .scrollbar-e::-webkit-scrollbar-thumb {
+                background: #d1d6db;
+                border-radius: 5px;
+                transition: background 0.2s ease;
+            }
+            .scrollbar-e::-webkit-scrollbar-thumb:hover {
+                background: #3182f6;
+            }
+            /* Firefox */
+            .scrollbar-e {
+                scrollbar-width: thin;
+                scrollbar-color: #d1d6db transparent;
+            }
+
+            /* ========================================
+               COMPARISON GRID
+               ======================================== */
+            .compare-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+            .compare-card {
+                background: white;
+                border-radius: 14px;
+                border: 1px solid #e5e8eb;
+                overflow: hidden;
+                transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            }
+            .compare-card:hover {
+                border-color: #d1d6db;
+                box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            }
+            .compare-card-header {
+                padding: 16px 20px 12px;
+                border-bottom: 1px solid #f2f4f6;
+            }
+            .compare-card-body {
+                padding: 0;
+            }
+            .compare-card-body .scroll-demo {
+                border-radius: 0;
+                background: #fafbfc;
+            }
+
+            /* Badge for recommended */
+            .badge-recommend {
+                display: inline-block;
+                font-size: 10px;
+                font-weight: 600;
+                padding: 2px 8px;
+                border-radius: 4px;
+                background: #ecf2fe;
+                color: #3182f6;
+                margin-left: 8px;
+                vertical-align: middle;
+            }
+
+            /* Feature tag */
+            .feature-tag {
+                display: inline-block;
+                font-size: 11px;
+                padding: 2px 8px;
+                border-radius: 4px;
+                background: #f2f4f6;
+                color: #6b7684;
+                margin-right: 4px;
+                margin-top: 6px;
+            }
+
+            /* ========================================
+               FULL-WIDTH VARIANT (for side-by-side)
+               ======================================== */
+            .full-compare {
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04),
+                    0 4px 20px rgba(0, 0, 0, 0.06);
+                overflow: hidden;
+            }
+            .full-compare-header {
+                padding: 20px 24px 16px;
+                border-bottom: 1px solid #f2f4f6;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            .full-compare-body {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                min-height: 0;
+            }
+            .full-compare-cell {
+                padding: 16px;
+                position: relative;
+            }
+            .full-compare-cell + .full-compare-cell {
+                border-left: 1px solid #f2f4f6;
+            }
+            .full-compare-cell-label {
+                font-size: 12px;
+                font-weight: 600;
+                color: #6b7684;
+                margin-bottom: 10px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            /* Spec table */
+            .spec-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 13px;
+            }
+            .spec-table th {
+                text-align: left;
+                font-weight: 600;
+                color: #6b7684;
+                padding: 10px 16px;
+                background: #f9fafb;
+                border-bottom: 1px solid #f2f4f6;
+                font-size: 12px;
+            }
+            .spec-table td {
+                padding: 10px 16px;
+                border-bottom: 1px solid #f9fafb;
+                color: #4e5968;
+            }
+            .spec-table tr:last-child td {
+                border-bottom: none;
+            }
+            .spec-table .spec-label {
+                font-weight: 500;
+                color: #333d4b;
+                width: 140px;
+            }
+            .spec-check {
+                color: #34c759;
+                font-weight: 600;
+            }
+            .spec-partial {
+                color: #ff9500;
+                font-weight: 600;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const { Typography, Tag, Space } = antd;
+            const { Text } = Typography;
+            const { CheckCircleFilled, StarFilled } = icons;
+
+            /* =============================================
+             *  SAMPLE DATA
+             * ============================================= */
+            const WORK_ITEMS = [
+                {
+                    name: "API \uc5d4\ub4dc\ud3ec\uc778\ud2b8 \uc124\uacc4",
+                    color: "#3182F6",
+                    tag: "\uac1c\ubc1c",
+                    tagBg: "#ECF2FE",
+                    tagColor: "#3182F6",
+                    time: "09:00 - 10:30",
+                },
+                {
+                    name: "\ub514\uc790\uc778 \ub9ac\ubdf0 \ubbf8\ud305",
+                    color: "#34C759",
+                    tag: "\ubbf8\ud305",
+                    tagBg: "#E8F8ED",
+                    tagColor: "#34C759",
+                    time: "10:30 - 11:00",
+                },
+                {
+                    name: "\uc0ac\uc6a9\uc790 \uc778\uc99d \ubaa8\ub4c8 \uad6c\ud604",
+                    color: "#FF9500",
+                    tag: "\uac1c\ubc1c",
+                    tagBg: "#FFF4E5",
+                    tagColor: "#FF9500",
+                    time: "11:00 - 12:30",
+                },
+                {
+                    name: "\uc8fc\uac04 \ubcf4\uace0\uc11c \uc791\uc131",
+                    color: "#8B95A1",
+                    tag: "\ubb38\uc11c",
+                    tagBg: "#F2F4F6",
+                    tagColor: "#6B7684",
+                    time: "13:30 - 14:00",
+                },
+                {
+                    name: "\ud504\ub860\ud2b8\uc5d4\ub4dc \ubc84\uadf8 \uc218\uc815",
+                    color: "#F04452",
+                    tag: "\ubc84\uadf8",
+                    tagBg: "#FEECEE",
+                    tagColor: "#F04452",
+                    time: "14:00 - 15:30",
+                },
+                {
+                    name: "\ub370\uc774\ud130\ubca0\uc774\uc2a4 \ub9c8\uc774\uadf8\ub808\uc774\uc158",
+                    color: "#9B59B6",
+                    tag: "\uac1c\ubc1c",
+                    tagBg: "#F3EAFA",
+                    tagColor: "#9B59B6",
+                    time: "15:30 - 16:30",
+                },
+                {
+                    name: "QA \ud14c\uc2a4\ud2b8 \ucf00\uc774\uc2a4 \uc791\uc131",
+                    color: "#3182F6",
+                    tag: "\ud14c\uc2a4\ud2b8",
+                    tagBg: "#ECF2FE",
+                    tagColor: "#3182F6",
+                    time: "16:30 - 17:00",
+                },
+                {
+                    name: "\ud300 \uc2a4\ud504\ub9b0\ud2b8 \ud50c\ub798\ub2dd",
+                    color: "#34C759",
+                    tag: "\ubbf8\ud305",
+                    tagBg: "#E8F8ED",
+                    tagColor: "#34C759",
+                    time: "17:00 - 17:30",
+                },
+                {
+                    name: "\uc131\ub2a5 \ubaa8\ub2c8\ud130\ub9c1 \ub300\uc2dc\ubcf4\ub4dc",
+                    color: "#FF9500",
+                    tag: "\uac1c\ubc1c",
+                    tagBg: "#FFF4E5",
+                    tagColor: "#FF9500",
+                    time: "09:00 - 10:00",
+                },
+                {
+                    name: "CI/CD \ud30c\uc774\ud504\ub77c\uc778 \uac1c\uc120",
+                    color: "#6B7684",
+                    tag: "\uc778\ud504\ub77c",
+                    tagBg: "#F2F4F6",
+                    tagColor: "#6B7684",
+                    time: "10:00 - 11:30",
+                },
+                {
+                    name: "\uc0ac\uc6a9\uc790 \ud53c\ub4dc\ubc31 \ubd84\uc11d",
+                    color: "#3182F6",
+                    tag: "\ubd84\uc11d",
+                    tagBg: "#ECF2FE",
+                    tagColor: "#3182F6",
+                    time: "11:30 - 12:00",
+                },
+                {
+                    name: "\ubaa8\ubc14\uc77c \ub808\uc774\uc544\uc6c3 \ucd5c\uc801\ud654",
+                    color: "#F04452",
+                    tag: "\uac1c\ubc1c",
+                    tagBg: "#FEECEE",
+                    tagColor: "#F04452",
+                    time: "13:00 - 14:30",
+                },
+            ];
+
+            const H_CARDS = [
+                {
+                    title: "\uc624\ub298\uc758 \uc791\uc5c5",
+                    sub: "6\uac74 \ub4f1\ub85d\ub428",
+                    color: "#3182F6",
+                },
+                {
+                    title: "\uc8fc\uac04 \uc694\uc57d",
+                    sub: "32\uc2dc\uac04 \uadfc\ubb34",
+                    color: "#34C759",
+                },
+                {
+                    title: "\ud504\ub85c\uc81d\ud2b8 A",
+                    sub: "\uc9c4\ud589\ub960 78%",
+                    color: "#FF9500",
+                },
+                {
+                    title: "\ud504\ub85c\uc81d\ud2b8 B",
+                    sub: "\uc9c4\ud589\ub960 45%",
+                    color: "#9B59B6",
+                },
+                {
+                    title: "\ubc84\uadf8 \ud604\ud669",
+                    sub: "3\uac74 \ub0a8\uc74c",
+                    color: "#F04452",
+                },
+                {
+                    title: "\ubbf8\ud305 \uc77c\uc815",
+                    sub: "\ub0b4\uc77c 2\uac74",
+                    color: "#8B95A1",
+                },
+                {
+                    title: "\ub9ac\ubdf0 \ub300\uae30",
+                    sub: "PR 5\uac74",
+                    color: "#3182F6",
+                },
+                {
+                    title: "\ubc30\ud3ec \uc608\uc815",
+                    sub: "v2.1.0",
+                    color: "#34C759",
+                },
+            ];
+
+            /* =============================================
+             *  SCROLL CONTENT COMPONENTS
+             * ============================================= */
+            function ScrollContent() {
+                return (
+                    <div>
+                        {WORK_ITEMS.map((item, i) => (
+                            <div className="scroll-demo-row" key={i}>
+                                <div
+                                    className="scroll-demo-dot"
+                                    style={{ background: item.color }}
+                                />
+                                <span className="scroll-demo-text">
+                                    {item.name}
+                                </span>
+                                <span
+                                    className="scroll-demo-tag"
+                                    style={{
+                                        background: item.tagBg,
+                                        color: item.tagColor,
+                                    }}
+                                >
+                                    {item.tag}
+                                </span>
+                                <span className="scroll-demo-time">
+                                    {item.time}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                );
+            }
+
+            function HScrollContent() {
+                return (
+                    <div>
+                        {H_CARDS.map((card, i) => (
+                            <div className="scroll-demo-h-card" key={i}>
+                                <div
+                                    style={{
+                                        width: 6,
+                                        height: 6,
+                                        borderRadius: "50%",
+                                        background: card.color,
+                                        marginBottom: 10,
+                                    }}
+                                />
+                                <div
+                                    style={{
+                                        fontSize: 14,
+                                        fontWeight: 600,
+                                        color: "#333D4B",
+                                        marginBottom: 4,
+                                    }}
+                                >
+                                    {card.title}
+                                </div>
+                                <div style={{ fontSize: 12, color: "#8B95A1" }}>
+                                    {card.sub}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                );
+            }
+
+            /* =============================================
+             *  AUTO-HIDE HOOK (for variant C)
+             * ============================================= */
+            function useAutoHideScrollbar(ref) {
+                React.useEffect(() => {
+                    const el = ref.current;
+                    if (!el) return;
+
+                    let timer = null;
+                    const onScroll = () => {
+                        el.classList.add("is-scrolling");
+                        clearTimeout(timer);
+                        timer = setTimeout(() => {
+                            el.classList.remove("is-scrolling");
+                        }, 1200);
+                    };
+                    el.addEventListener("scroll", onScroll, { passive: true });
+                    return () => {
+                        el.removeEventListener("scroll", onScroll);
+                        clearTimeout(timer);
+                    };
+                }, [ref]);
+            }
+
+            /* =============================================
+             *  INDIVIDUAL VARIANT PREVIEW
+             * ============================================= */
+            function VariantPreview({
+                id,
+                title,
+                subtitle,
+                features,
+                className,
+                recommended,
+                useRef: useRefProp,
+            }) {
+                const scrollRef = React.useRef(null);
+
+                if (id === "c") {
+                    useAutoHideScrollbar(scrollRef);
+                }
+
+                return (
+                    <div className="compare-card">
+                        <div className="compare-card-header">
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 8,
+                                    marginBottom: 4,
+                                }}
+                            >
+                                <span
+                                    style={{
+                                        fontSize: 15,
+                                        fontWeight: 600,
+                                        color: "#191F28",
+                                    }}
+                                >
+                                    {title}
+                                </span>
+                                {recommended && (
+                                    <span className="badge-recommend">
+                                        Recommended
+                                    </span>
+                                )}
+                            </div>
+                            <div
+                                style={{
+                                    fontSize: 12,
+                                    color: "#8B95A1",
+                                    marginBottom: 8,
+                                }}
+                            >
+                                {subtitle}
+                            </div>
+                            <div>
+                                {features.map((f, i) => (
+                                    <span className="feature-tag" key={i}>
+                                        {f}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="compare-card-body">
+                            <div
+                                ref={scrollRef}
+                                className={`scroll-demo ${className}`}
+                                style={{ height: 260, borderRadius: 0 }}
+                            >
+                                <ScrollContent />
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* =============================================
+             *  SPEC COMPARISON TABLE
+             * ============================================= */
+            function SpecTable() {
+                return (
+                    <table className="spec-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>A. Minimal</th>
+                                <th>B. Hover Expand</th>
+                                <th>C. Auto-hide</th>
+                                <th>D. Overlay</th>
+                                <th>E. Accent</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td className="spec-label">Thumb width</td>
+                                <td>4px</td>
+                                <td>4px → 8px</td>
+                                <td>6px</td>
+                                <td>4px (10px track)</td>
+                                <td>5px</td>
+                            </tr>
+                            <tr>
+                                <td className="spec-label">Visibility</td>
+                                <td>Always</td>
+                                <td>Always</td>
+                                <td>Scroll/Hover only</td>
+                                <td>Always (overlay)</td>
+                                <td>Always</td>
+                            </tr>
+                            <tr>
+                                <td className="spec-label">Hover effect</td>
+                                <td>Color darken</td>
+                                <td>Expand + darken</td>
+                                <td>Fade in</td>
+                                <td>Color darken</td>
+                                <td>Primary color</td>
+                            </tr>
+                            <tr>
+                                <td className="spec-label">Content overlap</td>
+                                <td className="spec-check">No</td>
+                                <td className="spec-partial">Slight shift</td>
+                                <td className="spec-check">No</td>
+                                <td className="spec-check">Yes (overlay)</td>
+                                <td className="spec-check">No</td>
+                            </tr>
+                            <tr>
+                                <td className="spec-label">Chrome/Edge</td>
+                                <td className="spec-check">&#10003;</td>
+                                <td className="spec-check">&#10003;</td>
+                                <td className="spec-check">&#10003;</td>
+                                <td className="spec-check">&#10003;</td>
+                                <td className="spec-check">&#10003;</td>
+                            </tr>
+                            <tr>
+                                <td className="spec-label">Firefox</td>
+                                <td className="spec-check">&#10003; thin</td>
+                                <td className="spec-partial">
+                                    &#9675; thin only
+                                </td>
+                                <td className="spec-partial">
+                                    &#9675; limited
+                                </td>
+                                <td className="spec-check">&#10003; thin</td>
+                                <td className="spec-check">&#10003; thin</td>
+                            </tr>
+                            <tr>
+                                <td className="spec-label">Safari</td>
+                                <td className="spec-check">&#10003;</td>
+                                <td className="spec-partial">
+                                    &#9675; no expand
+                                </td>
+                                <td className="spec-check">&#10003;</td>
+                                <td className="spec-check">&#10003;</td>
+                                <td className="spec-check">&#10003;</td>
+                            </tr>
+                            <tr>
+                                <td className="spec-label">JS required</td>
+                                <td className="spec-check">No</td>
+                                <td className="spec-check">No</td>
+                                <td className="spec-partial">
+                                    Yes (scroll detect)
+                                </td>
+                                <td className="spec-check">No</td>
+                                <td className="spec-check">No</td>
+                            </tr>
+                            <tr>
+                                <td className="spec-label">Complexity</td>
+                                <td style={{ color: "#34C759" }}>Low</td>
+                                <td style={{ color: "#FF9500" }}>Medium</td>
+                                <td style={{ color: "#FF9500" }}>Medium</td>
+                                <td style={{ color: "#34C759" }}>Low</td>
+                                <td style={{ color: "#34C759" }}>Low</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                );
+            }
+
+            /* =============================================
+             *  HORIZONTAL SCROLL COMPARISON
+             * ============================================= */
+            function HorizontalComparison() {
+                const scrollRefC = React.useRef(null);
+                useAutoHideScrollbar(scrollRefC);
+
+                return (
+                    <div className="full-compare">
+                        <div className="full-compare-header">
+                            <span
+                                style={{
+                                    fontSize: 15,
+                                    fontWeight: 600,
+                                    color: "#191F28",
+                                }}
+                            >
+                                Horizontal Scroll
+                            </span>
+                            <span style={{ fontSize: 12, color: "#8B95A1" }}>
+                                &#8212; Scrollbar also works horizontally
+                            </span>
+                        </div>
+                        <div
+                            className="full-compare-body"
+                            style={{ gridTemplateColumns: "1fr 1fr 1fr" }}
+                        >
+                            <div className="full-compare-cell">
+                                <div className="full-compare-cell-label">
+                                    A. Minimal
+                                </div>
+                                <div className="scroll-demo-h scrollbar-a">
+                                    <HScrollContent />
+                                </div>
+                            </div>
+                            <div
+                                className="full-compare-cell"
+                                style={{ borderLeft: "1px solid #f2f4f6" }}
+                            >
+                                <div className="full-compare-cell-label">
+                                    B. Hover Expand
+                                </div>
+                                <div className="scroll-demo-h scrollbar-b">
+                                    <HScrollContent />
+                                </div>
+                            </div>
+                            <div
+                                className="full-compare-cell"
+                                style={{ borderLeft: "1px solid #f2f4f6" }}
+                            >
+                                <div className="full-compare-cell-label">
+                                    D. Overlay Float
+                                </div>
+                                <div
+                                    className="scroll-demo-h scrollbar-d"
+                                    style={{ overflowX: "auto" }}
+                                >
+                                    <HScrollContent />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* =============================================
+             *  DARK CONTAINER PREVIEW
+             * ============================================= */
+            function DarkPreview() {
+                return (
+                    <div className="full-compare">
+                        <div className="full-compare-header">
+                            <span
+                                style={{
+                                    fontSize: 15,
+                                    fontWeight: 600,
+                                    color: "#191F28",
+                                }}
+                            >
+                                Dark Background
+                            </span>
+                            <span style={{ fontSize: 12, color: "#8B95A1" }}>
+                                &#8212; Scrollbar behavior on dark containers
+                            </span>
+                        </div>
+                        <div className="full-compare-body">
+                            <div className="full-compare-cell">
+                                <div className="full-compare-cell-label">
+                                    A. Minimal (on dark)
+                                </div>
+                                <div
+                                    className="scroll-demo scrollbar-a"
+                                    style={{
+                                        background: "#191F28",
+                                        height: 200,
+                                    }}
+                                >
+                                    {WORK_ITEMS.slice(0, 8).map((item, i) => (
+                                        <div
+                                            key={i}
+                                            className="scroll-demo-row"
+                                            style={{
+                                                background: "#242B35",
+                                                borderColor: "#333D4B",
+                                            }}
+                                        >
+                                            <div
+                                                className="scroll-demo-dot"
+                                                style={{
+                                                    background: item.color,
+                                                }}
+                                            />
+                                            <span
+                                                className="scroll-demo-text"
+                                                style={{ color: "#E5E8EB" }}
+                                            >
+                                                {item.name}
+                                            </span>
+                                            <span
+                                                className="scroll-demo-time"
+                                                style={{ color: "#6B7684" }}
+                                            >
+                                                {item.time}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div
+                                className="full-compare-cell"
+                                style={{ borderLeft: "1px solid #f2f4f6" }}
+                            >
+                                <div className="full-compare-cell-label">
+                                    D. Overlay (on dark)
+                                </div>
+                                <div
+                                    className="scroll-demo scrollbar-d"
+                                    style={{
+                                        background: "#191F28",
+                                        height: 200,
+                                    }}
+                                >
+                                    {WORK_ITEMS.slice(0, 8).map((item, i) => (
+                                        <div
+                                            key={i}
+                                            className="scroll-demo-row"
+                                            style={{
+                                                background: "#242B35",
+                                                borderColor: "#333D4B",
+                                            }}
+                                        >
+                                            <div
+                                                className="scroll-demo-dot"
+                                                style={{
+                                                    background: item.color,
+                                                }}
+                                            />
+                                            <span
+                                                className="scroll-demo-text"
+                                                style={{ color: "#E5E8EB" }}
+                                            >
+                                                {item.name}
+                                            </span>
+                                            <span
+                                                className="scroll-demo-time"
+                                                style={{ color: "#6B7684" }}
+                                            >
+                                                {item.time}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* =============================================
+             *  MAIN APP
+             * ============================================= */
+            function MockupApp() {
+                return (
+                    <div>
+                        {/* Header */}
+                        <div className="mockup-header">
+                            <h1>Scrollbar Design Candidates</h1>
+                            <p>
+                                Toss-inspired custom scrollbar \u00b7 5 variants
+                                \u00b7 Scroll to compare
+                            </p>
+                        </div>
+
+                        {/* Section 1: 5 Variants Grid */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                VERTICAL SCROLL COMPARISON
+                            </div>
+                            <div className="compare-grid">
+                                <VariantPreview
+                                    id="a"
+                                    title="A. Minimal Always-on"
+                                    subtitle="4px ultra-thin, always visible, unobtrusive"
+                                    features={[
+                                        "4px",
+                                        "Always visible",
+                                        "CSS only",
+                                        "Cross-browser",
+                                    ]}
+                                    className="scrollbar-a"
+                                    recommended={true}
+                                />
+                                <VariantPreview
+                                    id="b"
+                                    title="B. Hover Expand"
+                                    subtitle="4px \u2192 8px on hover with smooth transition"
+                                    features={[
+                                        "4\u21928px",
+                                        "Expand on hover",
+                                        "CSS only",
+                                        "Chrome/Edge",
+                                    ]}
+                                    className="scrollbar-b"
+                                />
+                                <VariantPreview
+                                    id="c"
+                                    title="C. Auto-hide"
+                                    subtitle="Invisible until scroll or hover, macOS-style"
+                                    features={[
+                                        "6px",
+                                        "Auto-hide",
+                                        "JS required",
+                                        "Fade animation",
+                                    ]}
+                                    className="scrollbar-c"
+                                />
+                                <VariantPreview
+                                    id="d"
+                                    title="D. Overlay Float"
+                                    subtitle="Floats over content, takes no space, transparent"
+                                    features={[
+                                        "4px thumb",
+                                        "Overlay",
+                                        "CSS only",
+                                        "No layout shift",
+                                    ]}
+                                    className="scrollbar-d"
+                                    recommended={true}
+                                />
+                                <VariantPreview
+                                    id="e"
+                                    title="E. Primary Accent"
+                                    subtitle="Gray by default, turns primary blue on hover"
+                                    features={[
+                                        "5px",
+                                        "Primary hover",
+                                        "CSS only",
+                                        "Brand color",
+                                    ]}
+                                    className="scrollbar-e"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Section 2: Horizontal */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                HORIZONTAL SCROLL
+                            </div>
+                            <HorizontalComparison />
+                        </div>
+
+                        {/* Section 3: Dark */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                DARK BACKGROUND TEST
+                            </div>
+                            <DarkPreview />
+                        </div>
+
+                        {/* Section 4: Spec Table */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                SPECIFICATION COMPARISON
+                            </div>
+                            <div
+                                className="mockup-frame"
+                                style={{ padding: 0, overflow: "hidden" }}
+                            >
+                                <SpecTable />
+                            </div>
+                        </div>
+
+                        {/* Section 5: Recommendation */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                RECOMMENDATION
+                            </div>
+                            <div className="mockup-frame">
+                                <div style={{ display: "flex", gap: 20 }}>
+                                    <div
+                                        style={{
+                                            flex: 1,
+                                            padding: "16px 20px",
+                                            background: "#ECF2FE",
+                                            borderRadius: 12,
+                                            border: "1px solid rgba(49, 130, 246, 0.15)",
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                fontSize: 13,
+                                                fontWeight: 600,
+                                                color: "#3182F6",
+                                                marginBottom: 8,
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: 6,
+                                            }}
+                                        >
+                                            <span>\u2605</span> Best for Clean
+                                            UI
+                                        </div>
+                                        <div
+                                            style={{
+                                                fontSize: 15,
+                                                fontWeight: 600,
+                                                color: "#191F28",
+                                                marginBottom: 4,
+                                            }}
+                                        >
+                                            A. Minimal Always-on
+                                        </div>
+                                        <div
+                                            style={{
+                                                fontSize: 13,
+                                                color: "#6B7684",
+                                                lineHeight: 1.6,
+                                            }}
+                                        >
+                                            Always visible, simple to implement.
+                                            Cross-browser compatible. Perfect
+                                            for Toss's "clean & light"
+                                            philosophy.
+                                        </div>
+                                    </div>
+                                    <div
+                                        style={{
+                                            flex: 1,
+                                            padding: "16px 20px",
+                                            background: "#F9FAFB",
+                                            borderRadius: 12,
+                                            border: "1px solid #E5E8EB",
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                fontSize: 13,
+                                                fontWeight: 600,
+                                                color: "#4E5968",
+                                                marginBottom: 8,
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: 6,
+                                            }}
+                                        >
+                                            <span>\u2606</span> Best for Modern
+                                            UX
+                                        </div>
+                                        <div
+                                            style={{
+                                                fontSize: 15,
+                                                fontWeight: 600,
+                                                color: "#191F28",
+                                                marginBottom: 4,
+                                            }}
+                                        >
+                                            D. Overlay Float
+                                        </div>
+                                        <div
+                                            style={{
+                                                fontSize: 13,
+                                                color: "#6B7684",
+                                                lineHeight: 1.6,
+                                            }}
+                                        >
+                                            No layout shift, content uses full
+                                            width. Great for dashboards and
+                                            data-heavy views.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    style={{
+                                        marginTop: 16,
+                                        padding: "12px 16px",
+                                        background: "#F9FAFB",
+                                        borderRadius: 8,
+                                        fontSize: 12,
+                                        color: "#8B95A1",
+                                        lineHeight: 1.6,
+                                    }}
+                                >
+                                    <strong style={{ color: "#6B7684" }}>
+                                        Tip:
+                                    </strong>{" "}
+                                    You can also combine variants. For example,
+                                    use <strong>A (Minimal)</strong> globally
+                                    and <strong>D (Overlay)</strong> for
+                                    specific scrollable containers like tables
+                                    or sidebars.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            root.render(<MockupApp />);
+        </script>
+    </body>
+</html>

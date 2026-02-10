@@ -92,6 +92,7 @@ export function useGanttDrag(options: UseGanttDragOptions): UseGanttDragReturn {
     // 드래그 시작
     const handleMouseDown = useCallback(
         (e: React.MouseEvent) => {
+            if (e.button !== 0) return;
             if (!grid_ref.current) return;
 
             // 기존 바 클릭은 무시

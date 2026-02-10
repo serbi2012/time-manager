@@ -1,19 +1,8 @@
-/* Scrollbar Styles */
-
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #d9d9d9;
-    border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #bfbfbf;
-}
+/* Custom Scrollbar styles are fully managed by JS (shared/lib/scrollbar.ts).
+ * Browser detection determines whether to use ::-webkit-scrollbar (Chrome/Edge/Safari)
+ * or scrollbar-color/scrollbar-width (Firefox).
+ *
+ * IMPORTANT: Do NOT add scrollbar-color or scrollbar-width here.
+ * Chrome 121+ supports scrollbar-color as a standard property,
+ * which causes it to ignore ::-webkit-scrollbar custom styles entirely.
+ */

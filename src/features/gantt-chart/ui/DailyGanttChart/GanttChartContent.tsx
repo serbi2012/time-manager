@@ -96,6 +96,9 @@ export function GanttChartContent({
     handleContextDeleteSession,
 }: GanttChartContentProps) {
     const total_range = time_range.end - time_range.start;
+    const is_time_in_range =
+        current_time_mins >= time_range.start &&
+        current_time_mins <= time_range.end;
     const current_time_pct = `${
         ((current_time_mins - time_range.start) / total_range) * 100
     }%`;
@@ -173,7 +176,9 @@ export function GanttChartContent({
                 })}
 
                 {/* Current time indicator */}
-                <CurrentTimeIndicator left_pct={current_time_pct} />
+                {is_time_in_range && (
+                    <CurrentTimeIndicator left_pct={current_time_pct} />
+                )}
 
                 {/* Drag selection */}
                 {is_dragging && drag_selection && (

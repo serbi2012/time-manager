@@ -3,11 +3,25 @@
  */
 
 import { Tooltip } from "antd";
-import { EditOutlined } from "@ant-design/icons";
+import { ClockCircleOutlined, EditOutlined } from "@ant-design/icons";
 import type { GanttBarProps } from "../../lib/types";
 import { ResizeHandle } from "../ResizeHandle";
 import { formatDuration } from "../../../../shared/lib/time";
 import { getSessionMinutes } from "../../../../shared/lib/session";
+
+const CLOCK_ICON_STYLE: React.CSSProperties = {
+    color: "#8B95A1",
+    fontSize: 13,
+};
+const TOOLTIP_OVERLAY_STYLE: React.CSSProperties = { maxWidth: "none" };
+const TOOLTIP_INNER_STYLE: React.CSSProperties = {
+    padding: 0,
+    background: "white",
+    borderRadius: 12,
+    boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+    border: "1px solid #F2F4F6",
+    overflow: "hidden",
+};
 
 /**
  * 간트 바 컴포넌트
@@ -27,15 +41,34 @@ export function GanttBar({
 }: GanttBarProps) {
     const duration_mins = getSessionMinutes(session);
     const tooltip_content = (
-        <div>
-            <div className="font-semibold mb-xs">
-                {record.deal_name || record.work_name}
+        <div style={{ width: 260 }}>
+            <div className="px-lg pt-lg pb-md">
+                <div className="text-md font-semibold text-gray-900 leading-snug">
+                    {record.deal_name || record.work_name}
+                </div>
+                {record.deal_name && (
+                    <div className="text-sm text-gray-500 mt-xs leading-snug">
+                        {record.work_name}
+                    </div>
+                )}
             </div>
-            <div>
-                {session.start_time} ~ {session.end_time || "진행중"}
+            <div className="mx-lg h-px bg-gray-100" />
+            <div className="px-lg py-md flex items-center gap-sm">
+                <ClockCircleOutlined style={CLOCK_ICON_STYLE} />
+                <span className="text-sm text-gray-700">
+                    {session.start_time} - {session.end_time || "진행 중"}
+                </span>
+                <span className="text-sm font-semibold text-primary ml-auto">
+                    {formatDuration(duration_mins)}
+                </span>
             </div>
-            <div>{formatDuration(duration_mins)}</div>
-            {is_running && <div className="text-success mt-xs">진행 중</div>}
+            {is_running && (
+                <div className="px-lg pb-md">
+                    <span className="text-xs font-medium text-success">
+                        타이머 진행 중
+                    </span>
+                </div>
+            )}
         </div>
     );
 
@@ -53,7 +86,13 @@ export function GanttBar({
     };
 
     return (
-        <Tooltip title={tooltip_content} placement="top">
+        <Tooltip
+            title={tooltip_content}
+            placement="top"
+            arrow={false}
+            overlayStyle={TOOLTIP_OVERLAY_STYLE}
+            overlayInnerStyle={TOOLTIP_INNER_STYLE}
+        >
             <div
                 className={`gantt-bar ${is_running ? "gantt-bar-running" : ""}`}
                 style={bar_style}

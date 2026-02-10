@@ -23,7 +23,18 @@ function useIsOverflowing(ref: React.RefObject<HTMLElement | null>) {
     useEffect(() => {
         const el = ref.current;
         if (!el) return;
-        setIsOverflowing(el.scrollHeight > el.clientHeight);
+
+        const checkOverflow = () => {
+            setIsOverflowing(
+                el.scrollWidth > el.clientWidth ||
+                    el.scrollHeight > el.clientHeight
+            );
+        };
+
+        const observer = new ResizeObserver(checkOverflow);
+        observer.observe(el);
+
+        return () => observer.disconnect();
     }, [ref]);
 
     return is_overflowing;
@@ -46,20 +57,22 @@ export function SortableTemplateCard({
         isDragging,
     } = useSortable({ id: template.id });
 
-    const title_ref = useRef<HTMLSpanElement>(null);
-    const subtitle_ref = useRef<HTMLSpanElement>(null);
+    const work_name_ref = useRef<HTMLSpanElement>(null);
+    const deal_name_ref = useRef<HTMLSpanElement>(null);
+    const meta_ref = useRef<HTMLSpanElement>(null);
     const [show_check, setShowCheck] = useState(false);
 
-    const title_overflowing = useIsOverflowing(title_ref);
-    const subtitle_overflowing = useIsOverflowing(subtitle_ref);
+    const work_name_overflowing = useIsOverflowing(work_name_ref);
+    const deal_name_overflowing = useIsOverflowing(deal_name_ref);
+    const meta_overflowing = useIsOverflowing(meta_ref);
 
     const drag_style: React.CSSProperties = {
         transform: CSS.Transform.toString(transform),
         transition,
     };
 
-    const title = template.deal_name || template.work_name;
-    const subtitle = [template.task_name, template.category_name]
+    const has_deal = !!template.deal_name;
+    const meta = [template.task_name, template.category_name]
         .filter(Boolean)
         .join(" · ");
 
@@ -74,21 +87,36 @@ export function SortableTemplateCard({
         [onAddRecordOnly, template.id]
     );
 
-    const title_element = (
+    const work_name_element = (
         <span
-            ref={title_ref}
-            className="text-sm font-semibold text-text-primary line-clamp-2 break-words leading-snug"
+            ref={work_name_ref}
+            className="text-sm font-semibold text-text-primary block truncate leading-snug"
         >
-            {title}
+            {template.work_name}
         </span>
     );
 
-    const subtitle_element = subtitle ? (
+    const deal_name_element = has_deal ? (
+        <div className="flex items-center mt-[3px] min-w-0">
+            <span
+                ref={deal_name_ref}
+                className="text-[10px] font-medium rounded-xs px-[5px] py-[1px] truncate max-w-full leading-[16px]"
+                style={{
+                    background: `${template.color}14`,
+                    color: template.color,
+                }}
+            >
+                {template.deal_name}
+            </span>
+        </div>
+    ) : null;
+
+    const meta_element = meta ? (
         <span
-            ref={subtitle_ref}
-            className="text-xs text-text-secondary block truncate mt-[3px]"
+            ref={meta_ref}
+            className="text-xs text-text-disabled block truncate mt-[3px]"
         >
-            {subtitle}
+            {meta}
         </span>
     ) : null;
 
@@ -132,17 +160,28 @@ export function SortableTemplateCard({
 
             {/* Content */}
             <div className="flex-1 py-lg pl-sm pr-0 min-w-0">
-                {title_overflowing ? (
-                    <Tooltip title={title}>{title_element}</Tooltip>
+                {work_name_overflowing ? (
+                    <Tooltip title={template.work_name}>
+                        {work_name_element}
+                    </Tooltip>
                 ) : (
-                    title_element
+                    work_name_element
                 )}
 
-                {subtitle_element &&
-                    (subtitle_overflowing ? (
-                        <Tooltip title={subtitle}>{subtitle_element}</Tooltip>
+                {deal_name_element &&
+                    (deal_name_overflowing ? (
+                        <Tooltip title={template.deal_name}>
+                            {deal_name_element}
+                        </Tooltip>
                     ) : (
-                        subtitle_element
+                        deal_name_element
+                    ))}
+
+                {meta_element &&
+                    (meta_overflowing ? (
+                        <Tooltip title={meta}>{meta_element}</Tooltip>
+                    ) : (
+                        meta_element
                     ))}
             </div>
 
