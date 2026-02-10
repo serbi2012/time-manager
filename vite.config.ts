@@ -54,7 +54,7 @@ export default defineConfig({
                 skipWaiting: true,
                 clientsClaim: true,
                 globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-                maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3MB
+                maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, // 4MB
                 runtimeCaching: [
                     {
                         urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
