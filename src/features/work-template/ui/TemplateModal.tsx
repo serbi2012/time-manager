@@ -130,7 +130,6 @@ export function TemplateModal({
             open={open}
             onCancel={onClose}
             transitionName="template-modal-slide-up"
-            maskTransitionName="fade"
             wrapClassName="template-modal-wrap"
             footer={[
                 <Button key="ok" type="primary" onClick={handleSubmit}>

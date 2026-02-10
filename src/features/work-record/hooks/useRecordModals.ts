@@ -2,7 +2,7 @@
  * 레코드 모달 상태 관리 훅
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 export interface ModalState {
     /** 추가 모달 열림 여부 */
@@ -66,6 +66,17 @@ export function useRecordModals(): UseRecordModalsReturn {
     const closeAddModal = useCallback(() => {
         setState((prev) => ({ ...prev, is_add_open: false }));
     }, []);
+
+    useEffect(() => {
+        const handleShortcut = () => openAddModal();
+        window.addEventListener("shortcut:openNewWorkModal", handleShortcut);
+        return () => {
+            window.removeEventListener(
+                "shortcut:openNewWorkModal",
+                handleShortcut
+            );
+        };
+    }, [openAddModal]);
 
     const openEditModal = useCallback((record_id: string) => {
         setState((prev) => ({
