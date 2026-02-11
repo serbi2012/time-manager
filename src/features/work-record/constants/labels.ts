@@ -178,11 +178,13 @@ export const RECORD_UI_TEXT = {
 // ========================================
 export const MOBILE_RECORD_LABEL = {
     RUNNING_SECTION: "진행 중",
+    RUNNING_TIMER_LABEL: "타이머 진행 중",
     RECORD_LIST_SECTION: "작업 목록",
     IN_PROGRESS: "진행 중",
     WEEKLY_TOGGLE: "주간",
     SPEED_DIAL_NEW_RECORD: "새 작업",
     SPEED_DIAL_PRESET: "프리셋",
+    RECORD_COUNT_SUFFIX: "개",
 } as const;
 
 // ========================================

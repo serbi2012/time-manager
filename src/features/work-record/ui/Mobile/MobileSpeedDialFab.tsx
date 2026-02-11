@@ -63,7 +63,7 @@ export function MobileSpeedDialFab({
                         ? "opacity-100 translate-y-0"
                         : "opacity-0 translate-y-4 pointer-events-none"
                 )}
-                style={{ bottom: 192 }}
+                style={{ bottom: 208 }}
             >
                 <span className="text-sm font-medium text-white bg-gray-800/80 px-sm py-xs rounded-md whitespace-nowrap">
                     {MOBILE_RECORD_LABEL.SPEED_DIAL_PRESET}
@@ -88,7 +88,7 @@ export function MobileSpeedDialFab({
                         ? "opacity-100 translate-y-0"
                         : "opacity-0 translate-y-4 pointer-events-none"
                 )}
-                style={{ bottom: 134 }}
+                style={{ bottom: 150 }}
             >
                 <span className="text-sm font-medium text-white bg-gray-800/80 px-sm py-xs rounded-md whitespace-nowrap">
                     {MOBILE_RECORD_LABEL.SPEED_DIAL_NEW_RECORD}
@@ -106,7 +106,7 @@ export function MobileSpeedDialFab({
             <button
                 className="fixed right-lg z-[99] w-14 h-14 rounded-full flex items-center justify-center border-0 cursor-pointer text-white transition-transform duration-200 outline-none select-none"
                 style={{
-                    bottom: 72,
+                    bottom: 88,
                     background: theme_colors.gradient,
                     boxShadow: `0 4px 12px ${theme_colors.primary}66`,
                     transform: is_open ? "rotate(45deg)" : "rotate(0deg)",

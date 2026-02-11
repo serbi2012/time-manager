@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.18";
+export const CURRENT_VERSION = "2.0.19";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,38 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.19",
+        date: "2026-02-11",
+        title: "모바일 UI 전체 다듬기",
+        changes: [
+            {
+                type: "style",
+                description:
+                    "모바일 전체 배경색 통일 — 헤더와 콘텐츠 사이 색상 차이 제거",
+            },
+            {
+                type: "feature",
+                description:
+                    "날짜 이동 바 추가 — 좌/우 화살표로 하루씩 빠르게 이동 가능",
+            },
+            {
+                type: "style",
+                description:
+                    "모바일 UI 크기 확대 — 캘린더, 타이머, 작업 목록 등 전체적으로 더 크고 읽기 쉽게 개선",
+            },
+            {
+                type: "style",
+                description:
+                    "주간 일정 모바일 디자인 개편 — 깔끔한 헤더, 주간 네비게이션, 필터 버튼 개선",
+            },
+            {
+                type: "style",
+                description:
+                    "사용설명서 모바일 디자인 개편 — 검색 바 개선, 메뉴를 칩 스타일로 변경",
+            },
+        ],
+    },
     {
         version: "2.0.18",
         date: "2026-02-11",

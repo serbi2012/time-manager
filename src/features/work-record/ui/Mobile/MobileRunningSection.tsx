@@ -1,67 +1,87 @@
 /**
- * Mobile running section — "진행 중" group with red-bordered cards
- * Animations: H (section header slide-down, card scale-in), D (breathing glow)
+ * Mobile running section — dark gradient timer card
+ * Redesigned to match Toss-inspired dark card mockup
  */
 
 import type { WorkRecord } from "../../../../shared/types";
+import { formatTimer } from "../../../../shared/lib/time";
 import { MOBILE_RECORD_LABEL } from "../../constants";
-
-import { MobileRecordItem } from "./MobileRecordItem";
 
 interface MobileRunningSectionProps {
     records: WorkRecord[];
     active_record_id: string | null;
     elapsed_seconds: number;
     onToggle: (record: WorkRecord) => void;
-    /** Key that changes to re-trigger entrance animations */
     animation_key?: string;
 }
 
+const DARK_CARD_GRADIENT: React.CSSProperties = {
+    background: "linear-gradient(135deg, #191F28 0%, #333D4B 100%)",
+};
+
+const STOP_ICON_STYLE: React.CSSProperties = {
+    display: "inline-block",
+    width: 14,
+    height: 14,
+    borderRadius: 3,
+    background: "white",
+};
+
 export function MobileRunningSection({
     records,
-    active_record_id,
     elapsed_seconds,
     onToggle,
-    animation_key,
 }: MobileRunningSectionProps) {
     if (records.length === 0) return null;
 
-    return (
-        <div className="pt-md">
-            {/* Section label — H: slide-down */}
-            <div
-                className="px-lg pb-sm mobile-section-slide-down"
-                key={`running-header-${animation_key}`}
-            >
-                <span className="text-xs font-semibold text-error tracking-wide">
-                    {MOBILE_RECORD_LABEL.RUNNING_SECTION}
-                </span>
-            </div>
+    const record = records[0];
+    const display_name = record.deal_name || record.work_name;
+    const category = record.category_name || "";
+    const start_time = record.start_time || "";
+    const sub_info = [category, start_time ? `${start_time} ~` : ""]
+        .filter(Boolean)
+        .join(" · ");
 
-            {/* Running record cards — D: breathing glow + H: scale-in */}
-            <div className="px-lg flex flex-col gap-sm">
-                {records.map((record, i) => (
-                    <div
-                        key={record.id}
-                        className="rounded-lg overflow-hidden border-[1.5px] border-error mobile-card-glow mobile-scale-in"
-                        style={{
-                            background: "white",
-                            animationDelay: `${0.1 + i * 0.07}s`,
-                        }}
-                    >
-                        <MobileRecordItem
-                            record={record}
-                            is_active={record.id === active_record_id}
-                            elapsed_seconds={
-                                record.id === active_record_id
-                                    ? elapsed_seconds
-                                    : 0
-                            }
-                            onToggle={() => onToggle(record)}
-                            animation_key={animation_key}
-                        />
+    return (
+        <div className="px-xl pt-xl pb-md">
+            <div
+                className="rounded-2xl overflow-hidden"
+                style={DARK_CARD_GRADIENT}
+            >
+                <div className="p-xl">
+                    {/* Running indicator */}
+                    <div className="flex items-center gap-sm mb-md">
+                        <div className="w-[7px] h-[7px] rounded-full bg-success animate-pulse" />
+                        <span className="text-sm font-medium text-success">
+                            {MOBILE_RECORD_LABEL.RUNNING_TIMER_LABEL}
+                        </span>
                     </div>
-                ))}
+
+                    {/* Content row */}
+                    <div className="flex items-center justify-between">
+                        <div className="min-w-0 flex-1 mr-md">
+                            <div className="text-lg font-semibold text-white truncate">
+                                {display_name}
+                            </div>
+                            {sub_info && (
+                                <div className="text-sm text-gray-400 mt-xs truncate">
+                                    {sub_info}
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-lg shrink-0">
+                            <span className="text-h1 font-bold text-white tabular-nums">
+                                {formatTimer(elapsed_seconds)}
+                            </span>
+                            <button
+                                className="w-[48px] h-[48px] rounded-full bg-error/90 border-0 flex items-center justify-center cursor-pointer"
+                                onClick={() => onToggle(record)}
+                            >
+                                <span style={STOP_ICON_STYLE} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );

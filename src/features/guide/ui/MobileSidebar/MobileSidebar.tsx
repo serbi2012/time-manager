@@ -1,8 +1,14 @@
-import { useMemo } from "react";
-import { Card, Menu, Input, List, Empty, Tag } from "antd";
-import { SearchOutlined, FileTextOutlined } from "@ant-design/icons";
+/**
+ * Mobile guide sidebar — Toss-inspired redesign
+ * Search input + horizontal scroll chip menu
+ */
+
+import { useMemo, useRef, useEffect } from "react";
+import { Empty } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
 import { TABLE_OF_CONTENTS, type SearchResult } from "@/docs";
 import { GUIDE_LABELS } from "../../constants";
+import { cn } from "@/shared/lib/cn";
 
 interface MobileSidebarProps {
     current_section: string;
@@ -26,59 +32,110 @@ export function MobileSidebar({
             TABLE_OF_CONTENTS.map((item) => ({
                 key: item.id,
                 label: item.title,
-                icon: <FileTextOutlined />,
             })),
         []
     );
 
+    const active_ref = useRef<HTMLButtonElement>(null);
+
+    useEffect(() => {
+        if (active_ref.current) {
+            active_ref.current.scrollIntoView({
+                behavior: "smooth",
+                block: "nearest",
+                inline: "center",
+            });
+        }
+    }, [current_section]);
+
     return (
-        <Card className="guide-book-mobile-header" size="small">
-            <Input
-                prefix={<SearchOutlined />}
-                placeholder={GUIDE_LABELS.searchPlaceholder}
-                value={search_query}
-                onChange={(e) => on_search(e.target.value)}
-                allowClear
-                className="!mb-md"
-            />
+        <div className="bg-white">
+            {/* Search */}
+            <div className="px-xl pt-md pb-md">
+                <div className="flex items-center gap-sm bg-gray-50 rounded-xl px-md h-[44px]">
+                    <SearchOutlined
+                        className="text-gray-400"
+                        style={{ fontSize: 16 }}
+                    />
+                    <input
+                        className="flex-1 border-0 bg-transparent text-md text-gray-800 outline-none placeholder:text-gray-400"
+                        placeholder={GUIDE_LABELS.searchPlaceholder}
+                        value={search_query}
+                        onChange={(e) => on_search(e.target.value)}
+                    />
+                    {search_query && (
+                        <button
+                            className="border-0 bg-transparent text-gray-400 cursor-pointer text-md p-0"
+                            onClick={() => on_search("")}
+                        >
+                            ✕
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {/* Search results or menu */}
             {search_query ? (
                 search_results.length === 0 ? (
-                    <Empty
-                        image={Empty.PRESENTED_IMAGE_SIMPLE}
-                        description={GUIDE_LABELS.searchNoResults}
-                    />
+                    <div className="py-lg">
+                        <Empty
+                            image={Empty.PRESENTED_IMAGE_SIMPLE}
+                            description={GUIDE_LABELS.searchNoResults}
+                        />
+                    </div>
                 ) : (
-                    <List
-                        size="small"
-                        dataSource={search_results}
-                        renderItem={(item) => (
-                            <List.Item
+                    <div className="px-xl pb-md space-y-sm">
+                        {search_results.map((item) => (
+                            <button
+                                key={item.id}
+                                className="w-full text-left p-md rounded-xl bg-gray-50 border-0 cursor-pointer"
                                 onClick={() =>
                                     on_search_result_click(
                                         item.id,
                                         search_query
                                     )
                                 }
+                                style={{
+                                    WebkitTapHighlightColor: "transparent",
+                                }}
                             >
-                                <div className="flex gap-sm items-center w-full">
-                                    <Tag color="blue">{item.title}</Tag>
-                                    <span className="text-[#999] text-sm flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
-                                        {item.preview}
-                                    </span>
+                                <div className="text-md font-medium text-primary">
+                                    {item.title}
                                 </div>
-                            </List.Item>
-                        )}
-                    />
+                                <div className="text-sm text-gray-400 mt-xs truncate">
+                                    {item.preview}
+                                </div>
+                            </button>
+                        ))}
+                    </div>
                 )
             ) : (
-                <Menu
-                    mode="horizontal"
-                    selectedKeys={[current_section]}
-                    items={menu_items}
-                    onClick={(info) => on_menu_click(info.key)}
-                    className="!border-none"
-                />
+                <div className="overflow-x-auto scrollbar-none pb-md">
+                    <div className="flex gap-sm px-xl">
+                        {menu_items.map((item) => {
+                            const is_active = current_section === item.key;
+                            return (
+                                <button
+                                    key={item.key}
+                                    ref={is_active ? active_ref : undefined}
+                                    className={cn(
+                                        "shrink-0 h-[36px] px-lg rounded-full border-0 text-sm font-medium cursor-pointer whitespace-nowrap transition-colors",
+                                        is_active
+                                            ? "bg-primary text-white"
+                                            : "bg-gray-100 text-gray-600"
+                                    )}
+                                    onClick={() => on_menu_click(item.key)}
+                                    style={{
+                                        WebkitTapHighlightColor: "transparent",
+                                    }}
+                                >
+                                    {item.label}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
             )}
-        </Card>
+        </div>
     );
 }

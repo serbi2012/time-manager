@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Mobile Full Redesign Mockup</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        spacing: {
+                            xs: "4px",
+                            sm: "8px",
+                            md: "12px",
+                            lg: "16px",
+                            xl: "24px",
+                            "2xl": "32px",
+                            "3xl": "40px",
+                        },
+                        colors: {
+                            primary: "#3182F6",
+                            "primary-dark": "#1B64DA",
+                            "primary-light": "#ECF2FE",
+                            "toss-blue-50": "#EBF4FF",
+                            "gray-50": "#F9FAFB",
+                            "gray-100": "#F2F4F6",
+                            "gray-200": "#E5E8EB",
+                            "gray-300": "#D1D6DB",
+                            "gray-400": "#B0B8C1",
+                            "gray-500": "#8B95A1",
+                            "gray-600": "#6B7684",
+                            "gray-700": "#4E5968",
+                            "gray-800": "#333D4B",
+                            "gray-900": "#191F28",
+                            success: "#34C759",
+                            error: "#F04452",
+                            warning: "#FF9500",
+                        },
+                        borderRadius: {
+                            xs: "4px",
+                            sm: "6px",
+                            md: "8px",
+                            lg: "12px",
+                            xl: "16px",
+                            "2xl": "20px",
+                            "3xl": "24px",
+                            "4xl": "28px",
+                        },
+                        fontSize: {
+                            "2xs": "10px",
+                            xs: "11px",
+                            sm: "13px",
+                            md: "15px",
+                            lg: "17px",
+                            xl: "19px",
+                            "2xl": "22px",
+                            h3: "24px",
+                            h2: "26px",
+                            h1: "28px",
+                        },
+                    },
+                },
+            };
+        </script>
+
+        <script
+            crossorigin
+            src="https://unpkg.com/react@18/umd/react.development.js"
+        ></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+        ></script>
+        <script src="https://unpkg.com/dayjs@1/dayjs.min.js"></script>
+        <script src="https://unpkg.com/antd@5/dist/antd.min.js"></script>
+        <script src="https://unpkg.com/@ant-design/icons@5/dist/index.umd.min.js"></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+        <link
+            rel="stylesheet"
+            as="style"
+            crossorigin
+            href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+        />
+
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                padding: 20px;
+                background: #eceef0;
+                font-family: "Pretendard Variable", Pretendard, -apple-system,
+                    BlinkMacSystemFont, system-ui, sans-serif;
+                -webkit-font-smoothing: antialiased;
+            }
+            #root {
+                max-width: 1600px;
+                margin: 0 auto;
+            }
+            .phone-frame {
+                width: 375px;
+                height: 812px;
+                background: white;
+                border-radius: 44px;
+                overflow: hidden;
+                box-shadow: 0 25px 80px rgba(0, 0, 0, 0.12),
+                    0 0 0 1px rgba(0, 0, 0, 0.06);
+                position: relative;
+                flex-shrink: 0;
+            }
+            .phone-screen {
+                width: 100%;
+                height: 100%;
+                overflow-y: auto;
+                overflow-x: hidden;
+                position: relative;
+            }
+            .phone-screen::-webkit-scrollbar {
+                display: none;
+            }
+            @keyframes pulse-dot {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.4;
+                }
+            }
+            .animate-pulse-dot {
+                animation: pulse-dot 1.5s ease-in-out infinite;
+            }
+            @keyframes shimmer {
+                0% {
+                    background-position: -200% 0;
+                }
+                100% {
+                    background-position: 200% 0;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const {
+                HomeOutlined,
+                HomeFilled,
+                CalendarOutlined,
+                CalendarFilled,
+                BookOutlined,
+                BookFilled,
+                SettingOutlined,
+                ClockCircleOutlined,
+                PlusOutlined,
+                LeftOutlined,
+                RightOutlined,
+                CheckCircleFilled,
+                PlayCircleFilled,
+                PauseCircleFilled,
+                CaretRightFilled,
+                DownOutlined,
+                UpOutlined,
+                SwapOutlined,
+                AppstoreOutlined,
+                EllipsisOutlined,
+                FireOutlined,
+            } = icons;
+
+            /* =============================================
+               SHARED
+            ============================================= */
+
+            function PhoneFrame({ children, label, desc }) {
+                return (
+                    <div className="flex flex-col items-center gap-lg">
+                        <div className="phone-frame">
+                            <div className="phone-screen">{children}</div>
+                        </div>
+                        <div className="text-center max-w-[340px]">
+                            <div className="text-lg font-semibold text-gray-800">
+                                {label}
+                            </div>
+                            <div className="text-sm text-gray-500 mt-xs">
+                                {desc}
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            function StatusBar({ color = "#191F28" }) {
+                return (
+                    <div
+                        className="h-[50px] flex items-end justify-between px-xl pb-[6px] text-[12px] font-semibold"
+                        style={{ color }}
+                    >
+                        <span>9:41</span>
+                        <span style={{ letterSpacing: 2 }}>●●●</span>
+                    </div>
+                );
+            }
+
+            // Segment bar - shared timeline component
+            function TimelineBar({ segments, hours }) {
+                return (
+                    <div className="relative">
+                        {/* Hour labels */}
+                        <div className="flex justify-between mb-[4px]">
+                            {hours.map((h) => (
+                                <span
+                                    key={h}
+                                    className="text-2xs text-gray-400 tabular-nums"
+                                >
+                                    {h}
+                                </span>
+                            ))}
+                        </div>
+                        {/* Bar */}
+                        <div className="h-[8px] bg-gray-100 rounded-full relative overflow-hidden">
+                            {segments.map((seg, i) => (
+                                <div
+                                    key={i}
+                                    className="absolute h-full rounded-full"
+                                    style={{
+                                        left: seg.left,
+                                        width: seg.width,
+                                        background: seg.color,
+                                    }}
+                                />
+                            ))}
+                            {/* Current time indicator */}
+                            <div
+                                className="absolute h-full w-[2px] bg-error rounded-full"
+                                style={{ left: "82%" }}
+                            >
+                                <div className="absolute -top-[3px] left-1/2 -translate-x-1/2 w-[8px] h-[8px] rounded-full bg-error" />
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            const SAMPLE_SEGMENTS = [
+                { left: "30%", width: "8%", color: "#3182F6" },
+                { left: "42%", width: "15%", color: "#34C759" },
+                { left: "60%", width: "5%", color: "#FF9500" },
+                { left: "72%", width: "10%", color: "#3182F6" },
+            ];
+
+            const SAMPLE_HOURS = [
+                "9",
+                "10",
+                "11",
+                "12",
+                "13",
+                "14",
+                "15",
+                "16",
+                "17",
+                "18",
+            ];
+
+            const TASKS = [
+                {
+                    name: "팀장님 작업 싱크 회의",
+                    cat: "관리업무",
+                    time: "35분",
+                    color: "#34C759",
+                    sessions: "16:54 ~ 17:41",
+                    badge: "회의",
+                    running: false,
+                },
+                {
+                    name: "환경세팅",
+                    cat: "관리업무",
+                    time: "12분",
+                    color: "#FF9500",
+                    sessions: "16:30 ~ 16:42",
+                    badge: "환경 세팅",
+                    running: false,
+                },
+                {
+                    name: "회의",
+                    cat: "관리업무",
+                    time: "1분",
+                    color: "#3182F6",
+                    sessions: "17:04 ~ 17:04",
+                    badge: null,
+                    running: false,
+                },
+            ];
+
+            const WEEKDAYS = [
+                { day: "월", date: 9 },
+                { day: "화", date: 10 },
+                { day: "수", date: 11, active: true, today: true },
+                { day: "목", date: 12 },
+                { day: "금", date: 13 },
+                { day: "토", date: 14 },
+                { day: "일", date: 15 },
+            ];
+
+            /* =============================================
+               PROPOSAL A — "Unified Stream"
+               날짜 통합, 타임라인+작업목록 하나의 흐름
+            ============================================= */
+
+            function ProposalA() {
+                const [active_tab, setActiveTab] = React.useState("daily");
+                const [expanded, setExpanded] = React.useState(false);
+
+                return (
+                    <PhoneFrame
+                        label="안 A — Unified Stream"
+                        desc="날짜 1곳 통합, 타임라인과 작업이 하나의 자연스러운 흐름"
+                    >
+                        <div className="relative h-full bg-gray-50 flex flex-col">
+                            <StatusBar />
+
+                            {/* Top Area - Date + Actions */}
+                            <div className="bg-white px-xl pt-sm pb-lg">
+                                {/* Title row */}
+                                <div className="flex items-center justify-between mb-md">
+                                    <div className="text-h3 font-bold text-gray-900">
+                                        일간 기록
+                                    </div>
+                                    <div className="flex items-center gap-sm">
+                                        <button className="w-[34px] h-[34px] rounded-full bg-gray-100 flex items-center justify-center text-gray-500 border-0 cursor-pointer hover:bg-gray-200 transition-colors">
+                                            <SettingOutlined
+                                                style={{ fontSize: 16 }}
+                                            />
+                                        </button>
+                                        <div className="w-[34px] h-[34px] rounded-full bg-primary flex items-center justify-center text-white text-sm font-semibold">
+                                            G
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Unified Date Selector */}
+                                <div className="flex items-center gap-md mb-lg">
+                                    <button className="w-[28px] h-[28px] rounded-full bg-gray-50 flex items-center justify-center text-gray-400 border-0 cursor-pointer">
+                                        <LeftOutlined
+                                            style={{ fontSize: 11 }}
+                                        />
+                                    </button>
+                                    <div className="flex-1 text-center">
+                                        <span className="text-md font-semibold text-gray-800">
+                                            2월 11일
+                                        </span>
+                                        <span className="text-md text-gray-400 ml-xs">
+                                            수요일
+                                        </span>
+                                    </div>
+                                    <button className="w-[28px] h-[28px] rounded-full bg-gray-50 flex items-center justify-center text-gray-400 border-0 cursor-pointer">
+                                        <RightOutlined
+                                            style={{ fontSize: 11 }}
+                                        />
+                                    </button>
+                                </div>
+
+                                {/* Calendar strip */}
+                                <div className="flex justify-between">
+                                    {WEEKDAYS.map((d) => (
+                                        <div
+                                            key={d.day}
+                                            className="flex flex-col items-center gap-[4px]"
+                                        >
+                                            <span
+                                                className={`text-2xs ${
+                                                    d.active
+                                                        ? "text-primary font-semibold"
+                                                        : "text-gray-400"
+                                                }`}
+                                            >
+                                                {d.day}
+                                            </span>
+                                            <div
+                                                className={`w-[32px] h-[32px] rounded-full flex items-center justify-center text-sm font-medium transition-all ${
+                                                    d.active
+                                                        ? "bg-primary text-white"
+                                                        : "text-gray-700 hover:bg-gray-100"
+                                                }`}
+                                            >
+                                                {d.date}
+                                            </div>
+                                            {d.today && (
+                                                <div className="w-[4px] h-[4px] rounded-full bg-primary" />
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Main Content - Scrollable */}
+                            <div className="flex-1 overflow-y-auto pb-[90px]">
+                                {/* Timeline Section */}
+                                <div className="px-xl pt-xl pb-md">
+                                    <div className="flex items-center justify-between mb-md">
+                                        <span className="text-sm font-semibold text-gray-500">
+                                            타임라인
+                                        </span>
+                                        <div className="flex items-center gap-xs text-sm text-primary font-semibold">
+                                            <ClockCircleOutlined
+                                                style={{ fontSize: 13 }}
+                                            />
+                                            <span>3시간 42분</span>
+                                        </div>
+                                    </div>
+                                    <TimelineBar
+                                        segments={SAMPLE_SEGMENTS}
+                                        hours={SAMPLE_HOURS}
+                                    />
+                                </div>
+
+                                {/* Running Task */}
+                                <div className="px-xl mb-md">
+                                    <div className="bg-primary rounded-2xl p-lg relative overflow-hidden">
+                                        <div className="flex items-center gap-sm mb-sm">
+                                            <div className="w-[6px] h-[6px] rounded-full bg-white animate-pulse-dot" />
+                                            <span className="text-xs font-medium text-white/80">
+                                                진행 중
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <div className="text-md font-semibold text-white">
+                                                    팀장님 작업 싱크 회의
+                                                </div>
+                                                <div className="text-xs text-white/60 mt-xs">
+                                                    관리업무 · 17:41 ~
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-md">
+                                                <span className="text-xl font-bold text-white tabular-nums">
+                                                    02:35
+                                                </span>
+                                                <button className="w-[36px] h-[36px] rounded-full bg-white/20 border-0 flex items-center justify-center cursor-pointer">
+                                                    <PauseCircleFilled
+                                                        style={{
+                                                            fontSize: 24,
+                                                            color: "white",
+                                                        }}
+                                                    />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Task List */}
+                                <div className="px-xl">
+                                    <div className="flex items-center justify-between mb-md">
+                                        <span className="text-sm font-semibold text-gray-500">
+                                            작업 목록
+                                        </span>
+                                        <span className="text-xs text-gray-400">
+                                            3개
+                                        </span>
+                                    </div>
+
+                                    <div className="space-y-[8px]">
+                                        {TASKS.map((task, i) => (
+                                            <div
+                                                key={i}
+                                                className="bg-white rounded-xl p-lg flex items-center gap-md shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
+                                            >
+                                                <div
+                                                    className="w-[4px] h-[36px] rounded-full shrink-0"
+                                                    style={{
+                                                        background: task.color,
+                                                    }}
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-md font-medium text-gray-800 truncate">
+                                                        {task.name}
+                                                    </div>
+                                                    <div className="text-xs text-gray-400 mt-[2px]">
+                                                        {task.cat} ·{" "}
+                                                        {task.sessions}
+                                                    </div>
+                                                </div>
+                                                <div className="text-right shrink-0">
+                                                    <div className="text-md font-semibold text-gray-700">
+                                                        {task.time}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* FAB */}
+                            <button className="absolute bottom-[88px] right-[20px] w-[52px] h-[52px] rounded-full bg-primary text-white border-0 cursor-pointer flex items-center justify-center z-20 shadow-[0_4px_16px_rgba(49,130,246,0.4)]">
+                                <PlusOutlined style={{ fontSize: 22 }} />
+                            </button>
+
+                            {/* Bottom Nav */}
+                            <div className="absolute bottom-0 left-0 right-0 z-10">
+                                <div className="bg-white border-t border-gray-100 flex items-start pt-[10px] pb-[20px] px-xl">
+                                    {[
+                                        {
+                                            id: "daily",
+                                            icon: <HomeOutlined />,
+                                            activeIcon: <HomeFilled />,
+                                            label: "일간",
+                                        },
+                                        {
+                                            id: "weekly",
+                                            icon: <CalendarOutlined />,
+                                            activeIcon: <CalendarFilled />,
+                                            label: "주간",
+                                        },
+                                        {
+                                            id: "guide",
+                                            icon: <BookOutlined />,
+                                            activeIcon: <BookFilled />,
+                                            label: "설명서",
+                                        },
+                                    ].map((tab) => (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setActiveTab(tab.id)}
+                                            className={`flex-1 flex flex-col items-center gap-[3px] border-0 bg-transparent cursor-pointer transition-all duration-200 ${
+                                                active_tab === tab.id
+                                                    ? "text-primary"
+                                                    : "text-gray-400"
+                                            }`}
+                                        >
+                                            <span style={{ fontSize: 21 }}>
+                                                {active_tab === tab.id
+                                                    ? tab.activeIcon
+                                                    : tab.icon}
+                                            </span>
+                                            <span
+                                                className={`text-2xs ${
+                                                    active_tab === tab.id
+                                                        ? "font-semibold"
+                                                        : "font-medium"
+                                                }`}
+                                            >
+                                                {tab.label}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </PhoneFrame>
+                );
+            }
+
+            /* =============================================
+               PROPOSAL B — "Tab Switch Layout"
+               상단 요약 고정, 내부 탭으로 타임라인/작업목록 전환
+            ============================================= */
+
+            function ProposalB() {
+                const [nav, setNav] = React.useState("daily");
+                const [inner_tab, setInnerTab] = React.useState("tasks");
+
+                return (
+                    <PhoneFrame
+                        label="안 B — Tab Switch"
+                        desc="요약 카드 고정, 타임라인/작업 목록을 내부 탭으로 전환"
+                    >
+                        <div className="relative h-full bg-white flex flex-col">
+                            <StatusBar />
+
+                            {/* Compact Header */}
+                            <div className="flex items-center justify-between px-xl py-[6px]">
+                                <div className="flex items-center gap-md">
+                                    <div className="w-[28px] h-[28px] rounded-md bg-primary flex items-center justify-center">
+                                        <ClockCircleOutlined
+                                            style={{
+                                                fontSize: 14,
+                                                color: "white",
+                                            }}
+                                        />
+                                    </div>
+                                    <span className="text-lg font-semibold text-gray-900">
+                                        일간 기록
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-xs">
+                                    <button className="w-[32px] h-[32px] rounded-full flex items-center justify-center text-gray-500 border-0 bg-transparent cursor-pointer">
+                                        <SettingOutlined
+                                            style={{ fontSize: 17 }}
+                                        />
+                                    </button>
+                                    <div className="w-[32px] h-[32px] rounded-full bg-primary text-white flex items-center justify-center text-xs font-semibold">
+                                        G
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Summary Card */}
+                            <div
+                                className="mx-xl mt-sm mb-md rounded-2xl overflow-hidden"
+                                style={{
+                                    background:
+                                        "linear-gradient(135deg, #3182F6 0%, #1B64DA 100%)",
+                                }}
+                            >
+                                <div className="p-lg">
+                                    {/* Date nav */}
+                                    <div className="flex items-center justify-between mb-lg">
+                                        <button className="w-[24px] h-[24px] rounded-full bg-white/15 flex items-center justify-center border-0 cursor-pointer">
+                                            <LeftOutlined
+                                                style={{
+                                                    fontSize: 10,
+                                                    color: "white",
+                                                }}
+                                            />
+                                        </button>
+                                        <span className="text-sm font-medium text-white/90">
+                                            2026년 2월 11일 수요일
+                                        </span>
+                                        <button className="w-[24px] h-[24px] rounded-full bg-white/15 flex items-center justify-center border-0 cursor-pointer">
+                                            <RightOutlined
+                                                style={{
+                                                    fontSize: 10,
+                                                    color: "white",
+                                                }}
+                                            />
+                                        </button>
+                                    </div>
+
+                                    {/* Stats */}
+                                    <div className="flex items-end justify-between mb-lg">
+                                        <div>
+                                            <div className="text-xs text-white/60 mb-[2px]">
+                                                총 작업 시간
+                                            </div>
+                                            <div className="text-h2 font-bold text-white leading-none">
+                                                3h 42m
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-lg">
+                                            <div className="text-center">
+                                                <div className="text-xs text-white/60 mb-[2px]">
+                                                    작업
+                                                </div>
+                                                <div className="text-lg font-semibold text-white">
+                                                    3개
+                                                </div>
+                                            </div>
+                                            <div className="text-center">
+                                                <div className="text-xs text-white/60 mb-[2px]">
+                                                    달성
+                                                </div>
+                                                <div className="text-lg font-semibold text-white">
+                                                    46%
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Mini timeline */}
+                                    <div className="h-[6px] bg-white/15 rounded-full relative overflow-hidden">
+                                        {SAMPLE_SEGMENTS.map((seg, i) => (
+                                            <div
+                                                key={i}
+                                                className="absolute h-full rounded-full"
+                                                style={{
+                                                    left: seg.left,
+                                                    width: seg.width,
+                                                    background:
+                                                        "rgba(255,255,255,0.6)",
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Week strip in card */}
+                                <div className="flex justify-between px-lg py-md bg-white/10">
+                                    {WEEKDAYS.map((d) => (
+                                        <div
+                                            key={d.day}
+                                            className="flex flex-col items-center gap-[3px]"
+                                        >
+                                            <span
+                                                className={`text-2xs ${
+                                                    d.active
+                                                        ? "text-white font-semibold"
+                                                        : "text-white/50"
+                                                }`}
+                                            >
+                                                {d.day}
+                                            </span>
+                                            <div
+                                                className={`w-[28px] h-[28px] rounded-full flex items-center justify-center text-xs font-medium ${
+                                                    d.active
+                                                        ? "bg-white text-primary"
+                                                        : "text-white/70"
+                                                }`}
+                                            >
+                                                {d.date}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Inner Tabs */}
+                            <div className="flex mx-xl mb-md bg-gray-100 rounded-lg p-[3px]">
+                                {[
+                                    { id: "tasks", label: "작업 목록" },
+                                    { id: "timeline", label: "타임라인" },
+                                ].map((t) => (
+                                    <button
+                                        key={t.id}
+                                        onClick={() => setInnerTab(t.id)}
+                                        className={`flex-1 py-[7px] rounded-md border-0 cursor-pointer text-sm font-medium transition-all duration-200 ${
+                                            inner_tab === t.id
+                                                ? "bg-white text-gray-800 shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+                                                : "bg-transparent text-gray-500"
+                                        }`}
+                                    >
+                                        {t.label}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Content Area */}
+                            <div className="flex-1 overflow-y-auto pb-[80px]">
+                                {inner_tab === "tasks" ? (
+                                    <div className="px-xl">
+                                        {/* Running */}
+                                        <div className="mb-lg">
+                                            <div className="flex items-center gap-sm mb-md">
+                                                <div className="w-[6px] h-[6px] rounded-full bg-error animate-pulse-dot" />
+                                                <span className="text-xs font-semibold text-error">
+                                                    진행 중
+                                                </span>
+                                            </div>
+                                            <div className="rounded-xl border-2 border-primary/30 bg-primary-light p-lg">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <div className="text-md font-semibold text-gray-800">
+                                                            팀장님 작업 싱크
+                                                            회의
+                                                        </div>
+                                                        <div className="text-xs text-gray-500 mt-[2px]">
+                                                            관리업무 · 17:41 ~
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-sm">
+                                                        <span className="text-lg font-bold text-primary tabular-nums">
+                                                            02:35
+                                                        </span>
+                                                        <button className="w-[32px] h-[32px] rounded-full bg-error border-0 flex items-center justify-center cursor-pointer">
+                                                            <span
+                                                                style={{
+                                                                    display:
+                                                                        "inline-block",
+                                                                    width: 10,
+                                                                    height: 10,
+                                                                    borderRadius: 2,
+                                                                    background:
+                                                                        "white",
+                                                                }}
+                                                            />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Task list */}
+                                        <div className="flex items-center justify-between mb-md">
+                                            <span className="text-sm font-semibold text-gray-600">
+                                                전체 작업
+                                            </span>
+                                            <span className="text-xs text-gray-400">
+                                                3개
+                                            </span>
+                                        </div>
+
+                                        {TASKS.map((task, i) => (
+                                            <div
+                                                key={i}
+                                                className="flex items-center gap-md py-[14px] border-b border-gray-100 last:border-0"
+                                            >
+                                                {/* Play button */}
+                                                <button className="w-[32px] h-[32px] rounded-full bg-gray-100 border-0 flex items-center justify-center text-gray-500 cursor-pointer shrink-0 hover:bg-gray-200 transition-colors">
+                                                    <CaretRightFilled
+                                                        style={{ fontSize: 14 }}
+                                                    />
+                                                </button>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-sm">
+                                                        <div
+                                                            className="w-[3px] h-[14px] rounded-full"
+                                                            style={{
+                                                                background:
+                                                                    task.color,
+                                                            }}
+                                                        />
+                                                        <span className="text-md font-medium text-gray-800 truncate">
+                                                            {task.name}
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-xs text-gray-400 mt-[2px] ml-[11px]">
+                                                        {task.cat} ·{" "}
+                                                        {task.sessions}
+                                                    </div>
+                                                </div>
+                                                <span className="text-md font-semibold text-gray-700 shrink-0">
+                                                    {task.time}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="px-xl">
+                                        {/* Full timeline view */}
+                                        <div className="mb-xl">
+                                            <TimelineBar
+                                                segments={SAMPLE_SEGMENTS}
+                                                hours={SAMPLE_HOURS}
+                                            />
+                                        </div>
+
+                                        {/* Timeline entries */}
+                                        <div className="relative pl-[20px] border-l-2 border-gray-200">
+                                            {[
+                                                {
+                                                    time: "17:41",
+                                                    name: "팀장님 작업 싱크 회의",
+                                                    end: "진행 중",
+                                                    color: "#34C759",
+                                                    active: true,
+                                                },
+                                                {
+                                                    time: "17:04",
+                                                    name: "회의",
+                                                    end: "17:04",
+                                                    color: "#3182F6",
+                                                    active: false,
+                                                },
+                                                {
+                                                    time: "16:54",
+                                                    name: "팀장님 작업 싱크 회의",
+                                                    end: "17:41",
+                                                    color: "#34C759",
+                                                    active: false,
+                                                },
+                                                {
+                                                    time: "16:30",
+                                                    name: "환경세팅",
+                                                    end: "16:42",
+                                                    color: "#FF9500",
+                                                    active: false,
+                                                },
+                                            ].map((entry, i) => (
+                                                <div
+                                                    key={i}
+                                                    className="mb-xl relative"
+                                                >
+                                                    <div
+                                                        className={`absolute -left-[25px] top-[2px] w-[10px] h-[10px] rounded-full border-2 ${
+                                                            entry.active
+                                                                ? "bg-error border-error"
+                                                                : "bg-white border-gray-300"
+                                                        }`}
+                                                    />
+                                                    <div className="text-xs text-gray-400 mb-[2px]">
+                                                        {entry.time} ~{" "}
+                                                        {entry.end}
+                                                    </div>
+                                                    <div className="flex items-center gap-sm">
+                                                        <div
+                                                            className="w-[3px] h-[12px] rounded-full"
+                                                            style={{
+                                                                background:
+                                                                    entry.color,
+                                                            }}
+                                                        />
+                                                        <span
+                                                            className={`text-md ${
+                                                                entry.active
+                                                                    ? "font-semibold text-gray-800"
+                                                                    : "text-gray-700"
+                                                            }`}
+                                                        >
+                                                            {entry.name}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* FAB */}
+                            <button className="absolute bottom-[80px] right-[20px] w-[52px] h-[52px] rounded-full bg-primary text-white border-0 cursor-pointer flex items-center justify-center z-20 shadow-[0_4px_16px_rgba(49,130,246,0.4)]">
+                                <PlusOutlined style={{ fontSize: 22 }} />
+                            </button>
+
+                            {/* Bottom Nav */}
+                            <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex items-start pt-[10px] pb-[20px] px-xl z-10">
+                                {[
+                                    {
+                                        id: "daily",
+                                        icon: <HomeOutlined />,
+                                        activeIcon: <HomeFilled />,
+                                        label: "일간",
+                                    },
+                                    {
+                                        id: "weekly",
+                                        icon: <CalendarOutlined />,
+                                        activeIcon: <CalendarFilled />,
+                                        label: "주간",
+                                    },
+                                    {
+                                        id: "guide",
+                                        icon: <BookOutlined />,
+                                        activeIcon: <BookFilled />,
+                                        label: "설명서",
+                                    },
+                                ].map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setNav(tab.id)}
+                                        className={`flex-1 flex flex-col items-center gap-[3px] border-0 bg-transparent cursor-pointer transition-all duration-200 ${
+                                            nav === tab.id
+                                                ? "text-primary"
+                                                : "text-gray-400"
+                                        }`}
+                                    >
+                                        <span style={{ fontSize: 21 }}>
+                                            {nav === tab.id
+                                                ? tab.activeIcon
+                                                : tab.icon}
+                                        </span>
+                                        <span
+                                            className={`text-2xs ${
+                                                nav === tab.id
+                                                    ? "font-semibold"
+                                                    : "font-medium"
+                                            }`}
+                                        >
+                                            {tab.label}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </PhoneFrame>
+                );
+            }
+
+            /* =============================================
+               PROPOSAL C — "Card Stack"
+               모든 정보를 카드 단위로 쌓되, 컴팩트하게
+            ============================================= */
+
+            function ProposalC() {
+                const [nav, setNav] = React.useState("daily");
+
+                return (
+                    <PhoneFrame
+                        label="안 C — Card Stack"
+                        desc="깔끔한 카드 단위 구성, 요약→타이머→타임라인→작업 흐름"
+                    >
+                        <div className="relative h-full bg-gray-50 flex flex-col">
+                            <StatusBar />
+
+                            {/* Sticky Top */}
+                            <div className="bg-white px-xl py-md border-b border-gray-100">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="text-xs text-gray-400">
+                                            2026년 2월 11일 수요일
+                                        </div>
+                                        <div className="text-xl font-bold text-gray-900 mt-[1px]">
+                                            일간 기록
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-sm">
+                                        <div className="flex items-center gap-[4px] px-md py-[5px] bg-gray-100 rounded-full">
+                                            <CheckCircleFilled
+                                                style={{
+                                                    fontSize: 12,
+                                                    color: "#34C759",
+                                                }}
+                                            />
+                                            <span className="text-xs text-gray-600">
+                                                동기화
+                                            </span>
+                                        </div>
+                                        <button className="w-[34px] h-[34px] rounded-full bg-gray-100 flex items-center justify-center text-gray-500 border-0 cursor-pointer">
+                                            <SettingOutlined
+                                                style={{ fontSize: 15 }}
+                                            />
+                                        </button>
+                                        <div className="w-[34px] h-[34px] rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold">
+                                            G
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Calendar Strip */}
+                            <div className="bg-white px-xl py-md flex justify-between shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                                {WEEKDAYS.map((d) => (
+                                    <div
+                                        key={d.day}
+                                        className="flex flex-col items-center gap-[4px]"
+                                    >
+                                        <span
+                                            className={`text-2xs ${
+                                                d.active
+                                                    ? "text-primary font-semibold"
+                                                    : "text-gray-400"
+                                            }`}
+                                        >
+                                            {d.day}
+                                        </span>
+                                        <div
+                                            className={`w-[34px] h-[34px] rounded-xl flex items-center justify-center text-sm font-medium transition-all ${
+                                                d.active
+                                                    ? "bg-primary text-white shadow-[0_2px_8px_rgba(49,130,246,0.3)]"
+                                                    : "text-gray-700"
+                                            }`}
+                                        >
+                                            {d.date}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Scrollable Content */}
+                            <div className="flex-1 overflow-y-auto pb-[90px]">
+                                {/* Stats Row */}
+                                <div className="flex gap-sm px-xl pt-xl pb-sm">
+                                    <div className="flex-1 bg-white rounded-xl p-md text-center shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                                        <div className="text-2xs text-gray-400">
+                                            총 시간
+                                        </div>
+                                        <div className="text-lg font-bold text-gray-800 mt-[2px]">
+                                            3h 42m
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 bg-white rounded-xl p-md text-center shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                                        <div className="text-2xs text-gray-400">
+                                            작업 수
+                                        </div>
+                                        <div className="text-lg font-bold text-gray-800 mt-[2px]">
+                                            3개
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 bg-white rounded-xl p-md text-center shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                                        <div className="text-2xs text-gray-400">
+                                            목표
+                                        </div>
+                                        <div className="text-lg font-bold text-primary mt-[2px]">
+                                            46%
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Timer Card */}
+                                <div className="px-xl pt-sm pb-md">
+                                    <div
+                                        className="rounded-2xl overflow-hidden"
+                                        style={{
+                                            background:
+                                                "linear-gradient(135deg, #191F28 0%, #333D4B 100%)",
+                                        }}
+                                    >
+                                        <div className="p-lg">
+                                            <div className="flex items-center gap-sm mb-sm">
+                                                <div className="w-[6px] h-[6px] rounded-full bg-success animate-pulse-dot" />
+                                                <span className="text-xs font-medium text-success">
+                                                    타이머 진행 중
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <div className="text-md font-semibold text-white">
+                                                        팀장님 작업 싱크 회의
+                                                    </div>
+                                                    <div className="text-xs text-gray-400 mt-xs">
+                                                        관리업무 · 17:41 ~
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-md">
+                                                    <span className="text-2xl font-bold text-white tabular-nums">
+                                                        02:35
+                                                    </span>
+                                                    <button className="w-[40px] h-[40px] rounded-full bg-error/90 border-0 flex items-center justify-center cursor-pointer">
+                                                        <span
+                                                            style={{
+                                                                display:
+                                                                    "inline-block",
+                                                                width: 12,
+                                                                height: 12,
+                                                                borderRadius: 2,
+                                                                background:
+                                                                    "white",
+                                                            }}
+                                                        />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Timeline Card */}
+                                <div className="px-xl pb-md">
+                                    <div className="bg-white rounded-xl p-lg shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                                        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-md">
+                                            타임라인
+                                        </div>
+                                        <TimelineBar
+                                            segments={SAMPLE_SEGMENTS}
+                                            hours={SAMPLE_HOURS}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Task List Card */}
+                                <div className="px-xl pb-md">
+                                    <div className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
+                                        <div className="flex items-center justify-between p-lg pb-sm">
+                                            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                                작업 목록
+                                            </span>
+                                            <span className="text-xs text-gray-400">
+                                                3개
+                                            </span>
+                                        </div>
+
+                                        {TASKS.map((task, i, arr) => (
+                                            <div
+                                                key={i}
+                                                className={`flex items-center gap-md px-lg py-[14px] ${
+                                                    i < arr.length - 1
+                                                        ? "border-b border-gray-100"
+                                                        : ""
+                                                }`}
+                                            >
+                                                <button className="w-[30px] h-[30px] rounded-lg bg-gray-50 border-0 flex items-center justify-center text-gray-400 cursor-pointer shrink-0">
+                                                    <CaretRightFilled
+                                                        style={{ fontSize: 12 }}
+                                                    />
+                                                </button>
+                                                <div
+                                                    className="w-[3px] h-[28px] rounded-full shrink-0"
+                                                    style={{
+                                                        background: task.color,
+                                                    }}
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-md font-medium text-gray-800 truncate">
+                                                        {task.name}
+                                                    </div>
+                                                    <div className="text-xs text-gray-400 mt-[1px]">
+                                                        {task.cat} ·{" "}
+                                                        {task.sessions}
+                                                    </div>
+                                                </div>
+                                                <div className="text-right shrink-0">
+                                                    <div className="text-md font-semibold text-gray-700">
+                                                        {task.time}
+                                                    </div>
+                                                    {task.badge && (
+                                                        <div className="text-2xs text-gray-400 mt-[1px]">
+                                                            {task.badge}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* FAB */}
+                            <button className="absolute bottom-[88px] right-[20px] w-[52px] h-[52px] rounded-full bg-primary text-white border-0 cursor-pointer flex items-center justify-center z-20 shadow-[0_4px_16px_rgba(49,130,246,0.4)]">
+                                <PlusOutlined style={{ fontSize: 22 }} />
+                            </button>
+
+                            {/* Glass Bottom Nav */}
+                            <div className="absolute bottom-0 left-0 right-0 z-10">
+                                <div
+                                    className="mx-lg mb-[16px] rounded-2xl flex items-center py-[8px] px-sm"
+                                    style={{
+                                        background: "rgba(255,255,255,0.88)",
+                                        backdropFilter: "blur(20px)",
+                                        WebkitBackdropFilter: "blur(20px)",
+                                        boxShadow:
+                                            "0 4px 24px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)",
+                                    }}
+                                >
+                                    {[
+                                        {
+                                            id: "daily",
+                                            icon: <HomeOutlined />,
+                                            activeIcon: <HomeFilled />,
+                                            label: "일간",
+                                        },
+                                        {
+                                            id: "weekly",
+                                            icon: <CalendarOutlined />,
+                                            activeIcon: <CalendarFilled />,
+                                            label: "주간",
+                                        },
+                                        {
+                                            id: "guide",
+                                            icon: <BookOutlined />,
+                                            activeIcon: <BookFilled />,
+                                            label: "설명서",
+                                        },
+                                    ].map((tab) => (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setNav(tab.id)}
+                                            className={`flex-1 flex flex-col items-center gap-[3px] border-0 bg-transparent cursor-pointer transition-all duration-200 py-[4px] rounded-xl ${
+                                                nav === tab.id
+                                                    ? "text-primary"
+                                                    : "text-gray-400"
+                                            }`}
+                                            style={
+                                                nav === tab.id
+                                                    ? {
+                                                          background:
+                                                              "rgba(49,130,246,0.06)",
+                                                      }
+                                                    : {}
+                                            }
+                                        >
+                                            <span style={{ fontSize: 20 }}>
+                                                {nav === tab.id
+                                                    ? tab.activeIcon
+                                                    : tab.icon}
+                                            </span>
+                                            <span
+                                                className={`text-2xs ${
+                                                    nav === tab.id
+                                                        ? "font-semibold"
+                                                        : "font-medium"
+                                                }`}
+                                            >
+                                                {tab.label}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </PhoneFrame>
+                );
+            }
+
+            /* =============================================
+               MAIN
+            ============================================= */
+
+            function MockupApp() {
+                return (
+                    <div>
+                        <div className="text-center mb-2xl">
+                            <h1 className="text-h1 font-bold text-gray-900 mb-sm">
+                                모바일 전체 레이아웃 리디자인
+                            </h1>
+                            <p className="text-md text-gray-500 max-w-[600px] mx-auto">
+                                헤더 · 타임라인 · 작업목록 · 네비게이션을 포함한
+                                전체 화면 재설계
+                                <br />
+                                날짜 네비게이션 통합, "건의" 탭 제거, 토스
+                                디자인 시스템 적용
+                            </p>
+                        </div>
+
+                        {/* 3 proposals */}
+                        <div className="flex flex-wrap justify-center gap-2xl mb-3xl">
+                            <ProposalA />
+                            <ProposalB />
+                            <ProposalC />
+                        </div>
+
+                        {/* Comparison */}
+                        <div className="max-w-[1100px] mx-auto">
+                            <h2 className="text-xl font-semibold text-gray-800 mb-lg">
+                                디자인 비교
+                            </h2>
+
+                            {/* Table */}
+                            <div className="bg-white rounded-2xl overflow-hidden shadow-sm mb-xl">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="bg-gray-50 text-left">
+                                            <th className="px-xl py-md font-semibold text-gray-600 w-[160px]">
+                                                요소
+                                            </th>
+                                            <th className="px-xl py-md font-semibold text-primary">
+                                                A — Unified Stream
+                                            </th>
+                                            <th className="px-xl py-md font-semibold text-primary">
+                                                B — Tab Switch
+                                            </th>
+                                            <th className="px-xl py-md font-semibold text-primary">
+                                                C — Card Stack
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="text-gray-700">
+                                        <tr className="border-t border-gray-100">
+                                            <td className="px-xl py-md font-medium text-gray-800">
+                                                헤더
+                                            </td>
+                                            <td className="px-xl py-md">
+                                                헤더 없음, 콘텐츠 내 타이틀
+                                            </td>
+                                            <td className="px-xl py-md">
+                                                초소형 앱바 (아이콘+타이틀)
+                                            </td>
+                                            <td className="px-xl py-md">
+                                                심플 바 (날짜+타이틀+액션)
+                                            </td>
+                                        </tr>
+                                        <tr className="border-t border-gray-100 bg-gray-50/50">
+                                            <td className="px-xl py-md font-medium text-gray-800">
+                                                날짜
+                                            </td>
+                                            <td className="px-xl py-md">
+                                                상단 통합 (화살표+캘린더 스트립)
+                                            </td>
+                                            <td className="px-xl py-md">
+                                                블루 카드 안에 통합
+                                            </td>
+                                            <td className="px-xl py-md">
+                                                헤더 아래 캘린더 스트립
+                                            </td>
+                                        </tr>
+                                        <tr className="border-t border-gray-100">
+                                            <td className="px-xl py-md font-medium text-gray-800">
+                                                타임라인
+                                            </td>
+                                            <td className="px-xl py-md">
+                                                콘텐츠 상단에 항상 표시
+                                            </td>
+                                            <td className="px-xl py-md">
+                                                내부 탭으로 전환 (타임라인 뷰)
+                                            </td>
+                                            <td className="px-xl py-md">
+                                                독립 카드로 배치
+                                            </td>
+                                        </tr>
+                                        <tr className="border-t border-gray-100 bg-gray-50/50">
+                                            <td className="px-xl py-md font-medium text-gray-800">
+                                                작업 목록
+                                            </td>
+                                            <td className="px-xl py-md">
+                                                개별 카드 리스트
+                                            </td>
+                                            <td className="px-xl py-md">
+                                                내부 탭으로 전환 + 플레이 버튼
+                                            </td>
+                                            <td className="px-xl py-md">
+                                                하나의 카드 안에 리스트
+                                            </td>
+                                        </tr>
+                                        <tr className="border-t border-gray-100">
+                                            <td className="px-xl py-md font-medium text-gray-800">
+                                                진행 중 타이머
+                                            </td>
+                                            <td className="px-xl py-md">
+                                                블루 카드 (프라이머리 강조)
+                                            </td>
+                                            <td className="px-xl py-md">
+                                                블루 보더 카드 (경량)
+                                            </td>
+                                            <td className="px-xl py-md">
+                                                다크 카드 (강한 대비)
+                                            </td>
+                                        </tr>
+                                        <tr className="border-t border-gray-100 bg-gray-50/50">
+                                            <td className="px-xl py-md font-medium text-gray-800">
+                                                하단 네비
+                                            </td>
+                                            <td className="px-xl py-md">
+                                                클린 화이트 바
+                                            </td>
+                                            <td className="px-xl py-md">
+                                                클린 화이트 바
+                                            </td>
+                                            <td className="px-xl py-md">
+                                                플로팅 글래스 바
+                                            </td>
+                                        </tr>
+                                        <tr className="border-t border-gray-100">
+                                            <td className="px-xl py-md font-medium text-gray-800">
+                                                스크롤 길이
+                                            </td>
+                                            <td className="px-xl py-md">
+                                                중간 (타임라인+작업 연속)
+                                            </td>
+                                            <td className="px-xl py-md">
+                                                짧음 (탭 전환으로 분리)
+                                            </td>
+                                            <td className="px-xl py-md">
+                                                긴 편 (모든 카드 나열)
+                                            </td>
+                                        </tr>
+                                        <tr className="border-t border-gray-100 bg-gray-50/50">
+                                            <td className="px-xl py-md font-medium text-gray-800">
+                                                핵심 장점
+                                            </td>
+                                            <td className="px-xl py-md text-primary font-medium">
+                                                자연스러운 정보 흐름
+                                            </td>
+                                            <td className="px-xl py-md text-primary font-medium">
+                                                화면 활용도 최대
+                                            </td>
+                                            <td className="px-xl py-md text-primary font-medium">
+                                                시각적 위계 명확
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Common changes */}
+                            <div className="bg-primary-light rounded-2xl p-xl">
+                                <div className="text-md font-semibold text-gray-800 mb-md">
+                                    공통 변경사항 (현재 대비)
+                                </div>
+                                <div className="grid grid-cols-2 gap-md text-sm text-gray-700">
+                                    <div className="flex items-start gap-sm">
+                                        <CheckCircleFilled
+                                            style={{
+                                                color: "#3182F6",
+                                                fontSize: 14,
+                                                marginTop: 2,
+                                            }}
+                                        />
+                                        <span>
+                                            <strong>
+                                                날짜 네비게이션 1곳 통합
+                                            </strong>{" "}
+                                            — 간트/레코드 중복 제거
+                                        </span>
+                                    </div>
+                                    <div className="flex items-start gap-sm">
+                                        <CheckCircleFilled
+                                            style={{
+                                                color: "#3182F6",
+                                                fontSize: 14,
+                                                marginTop: 2,
+                                            }}
+                                        />
+                                        <span>
+                                            <strong>"건의" 탭 완전 제거</strong>{" "}
+                                            — 3탭 구성 (일간/주간/설명서)
+                                        </span>
+                                    </div>
+                                    <div className="flex items-start gap-sm">
+                                        <CheckCircleFilled
+                                            style={{
+                                                color: "#3182F6",
+                                                fontSize: 14,
+                                                marginTop: 2,
+                                            }}
+                                        />
+                                        <span>
+                                            <strong>
+                                                그라데이션 헤더 제거
+                                            </strong>{" "}
+                                            — 화이트/그레이 기반 깔끔한 톤
+                                        </span>
+                                    </div>
+                                    <div className="flex items-start gap-sm">
+                                        <CheckCircleFilled
+                                            style={{
+                                                color: "#3182F6",
+                                                fontSize: 14,
+                                                marginTop: 2,
+                                            }}
+                                        />
+                                        <span>
+                                            <strong>
+                                                토스 디자인 토큰 적용
+                                            </strong>{" "}
+                                            — 컬러, 폰트, 여백, 라운딩
+                                        </span>
+                                    </div>
+                                    <div className="flex items-start gap-sm">
+                                        <CheckCircleFilled
+                                            style={{
+                                                color: "#3182F6",
+                                                fontSize: 14,
+                                                marginTop: 2,
+                                            }}
+                                        />
+                                        <span>
+                                            <strong>진행 중 타이머 강조</strong>{" "}
+                                            — 별도 카드로 시각적 분리
+                                        </span>
+                                    </div>
+                                    <div className="flex items-start gap-sm">
+                                        <CheckCircleFilled
+                                            style={{
+                                                color: "#3182F6",
+                                                fontSize: 14,
+                                                marginTop: 2,
+                                            }}
+                                        />
+                                        <span>
+                                            <strong>
+                                                Filled/Outlined 아이콘
+                                            </strong>{" "}
+                                            — 활성 탭 명확한 피드백
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            root.render(<MockupApp />);
+        </script>
+    </body>
+</html>

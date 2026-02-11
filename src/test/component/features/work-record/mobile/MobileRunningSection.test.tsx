@@ -22,7 +22,7 @@ describe("MobileRunningSection", () => {
         expect(container.firstChild).toBeNull();
     });
 
-    it("레코드가 있으면 '진행 중' 섹션 라벨이 표시된다", () => {
+    it("레코드가 있으면 '타이머 진행 중' 라벨이 표시된다", () => {
         const record = createMockRecord({
             work_name: "진행 중 작업",
             deal_name: "",
@@ -41,7 +41,7 @@ describe("MobileRunningSection", () => {
         );
 
         expect(
-            screen.getByText(MOBILE_RECORD_LABEL.RUNNING_SECTION)
+            screen.getByText(MOBILE_RECORD_LABEL.RUNNING_TIMER_LABEL)
         ).toBeInTheDocument();
     });
 

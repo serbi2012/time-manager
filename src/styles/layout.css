@@ -134,8 +134,8 @@
 
     .app-body {
         height: auto;
-        min-height: calc(100vh - 52px);
-        padding-bottom: 56px;
+        min-height: 100vh;
+        padding-bottom: 80px;
         overflow: visible;
     }
 

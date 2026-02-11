@@ -1,9 +1,9 @@
 /**
- * 모바일 주간 일정 컴포넌트
+ * Mobile weekly schedule — Toss-inspired redesign
  */
 
 import { useState } from "react";
-import { Layout, Empty } from "antd";
+import { Empty } from "antd";
 import { message } from "@/shared/lib/message";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
@@ -12,14 +12,11 @@ import { useWeeklyData } from "../../hooks/useWeeklyData";
 import { useCopyFormat } from "../../hooks/useCopyFormat";
 import { generateWeeklyCopyText } from "../../lib/weekly_copy_text";
 import { MobileWeeklyHeader } from "./MobileWeeklyHeader";
-import { WeekRangeText } from "../WeeklySchedule/WeekRangeText";
 import { DayCard } from "../WeeklySchedule/DayCard";
 import { CopyPreviewSection } from "../WeeklySchedule/CopyPreviewSection";
 import { WEEKLY_LABELS } from "../../constants";
 
 dayjs.extend(isoWeek);
-
-const { Content } = Layout;
 
 export function MobileWeeklySchedule() {
     const [selected_week_start, setSelectedWeekStart] = useState(
@@ -54,11 +51,10 @@ export function MobileWeeklySchedule() {
         });
     };
 
-    const week_end = selected_week_start.add(6, "day");
-
     return (
-        <Content className="weekly-schedule-content">
-            <div className="weekly-schedule-container">
+        <div className="flex flex-col min-h-screen bg-white">
+            {/* Sticky header */}
+            <div className="sticky top-0 z-30">
                 <MobileWeeklyHeader
                     selected_week_start={selected_week_start}
                     on_prev_week={handlePrevWeek}
@@ -70,16 +66,16 @@ export function MobileWeeklySchedule() {
                     on_copy={handleCopy}
                     copy_disabled={day_groups.length === 0}
                 />
+            </div>
 
-                <WeekRangeText
-                    week_start={selected_week_start}
-                    week_end={week_end}
-                />
-
+            {/* Content */}
+            <div className="flex-1 pb-[90px]">
                 {day_groups.length === 0 ? (
-                    <Empty description={WEEKLY_LABELS.emptyDescription} />
+                    <div className="py-[80px]">
+                        <Empty description={WEEKLY_LABELS.emptyDescription} />
+                    </div>
                 ) : (
-                    <div className="weekly-schedule-list">
+                    <div className="px-xl pt-md space-y-md">
                         {day_groups.map((day_group) => (
                             <DayCard
                                 key={day_group.date}
@@ -91,13 +87,15 @@ export function MobileWeeklySchedule() {
                 )}
 
                 {day_groups.length > 0 && (
-                    <CopyPreviewSection
-                        day_groups={day_groups}
-                        copy_format={copy_format}
-                        on_format_change={setCopyFormat}
-                    />
+                    <div className="px-xl pt-xl">
+                        <CopyPreviewSection
+                            day_groups={day_groups}
+                            copy_format={copy_format}
+                            on_format_change={setCopyFormat}
+                        />
+                    </div>
                 )}
             </div>
-        </Content>
+        </div>
     );
 }

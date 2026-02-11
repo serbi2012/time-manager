@@ -80,53 +80,55 @@ export function MobileCalendarStrip({
     };
 
     return (
-        <div className="flex gap-[3px] justify-center px-lg pb-sm">
+        <div className="px-xl py-md flex justify-between">
             {days.map((d) => {
                 const is_selected = d.date_str === selected_date;
                 return (
                     <button
                         key={d.key}
+                        className="flex flex-col items-center gap-[6px] cursor-pointer border-0 bg-transparent p-0"
                         onClick={() => handleSelect(d.date_str)}
-                        className={cn(
-                            "flex flex-col items-center py-sm px-[10px] border-0 rounded-lg relative cursor-pointer transition-all duration-150",
-                            is_selected
-                                ? "bg-primary text-white shadow-sm"
-                                : d.is_weekend
-                                ? "bg-transparent text-text-disabled"
-                                : "bg-transparent text-text-secondary hover:bg-bg-grey"
-                        )}
-                        style={{
-                            minWidth: 40,
-                            WebkitTapHighlightColor: "transparent",
-                        }}
+                        style={{ WebkitTapHighlightColor: "transparent" }}
                     >
                         <span
                             className={cn(
                                 "text-xs font-medium",
-                                is_selected && "text-white/80"
+                                is_selected
+                                    ? "text-primary font-semibold"
+                                    : "text-gray-400"
                             )}
                         >
                             {d.day_label}
                         </span>
-                        <span
+                        <div
                             className={cn(
-                                "text-sm font-semibold mt-[1px]",
-                                is_selected && "mobile-calendar-pop"
-                            )}
-                            key={
+                                "w-[40px] h-[40px] rounded-xl flex items-center justify-center text-md font-medium transition-all relative",
                                 is_selected
-                                    ? `pop-${pop_key}`
-                                    : `static-${d.key}`
-                            }
+                                    ? "bg-primary text-white shadow-[0_2px_8px_rgba(49,130,246,0.3)]"
+                                    : d.is_weekend
+                                    ? "text-text-disabled"
+                                    : "text-gray-700"
+                            )}
                         >
-                            {d.date_num}
-                        </span>
-                        {d.is_today && !is_selected && (
-                            <span className="absolute -bottom-[1px] w-1 h-1 rounded-full bg-primary" />
-                        )}
-                        {d.has_records && !is_selected && !d.is_today && (
-                            <span className="absolute -bottom-[1px] w-1 h-1 rounded-full bg-gray-300" />
-                        )}
+                            <span
+                                className={cn(
+                                    is_selected && "mobile-calendar-pop"
+                                )}
+                                key={
+                                    is_selected
+                                        ? `pop-${pop_key}`
+                                        : `static-${d.key}`
+                                }
+                            >
+                                {d.date_num}
+                            </span>
+                            {d.is_today && !is_selected && (
+                                <span className="absolute -bottom-[3px] w-[5px] h-[5px] rounded-full bg-primary" />
+                            )}
+                            {d.has_records && !is_selected && !d.is_today && (
+                                <span className="absolute -bottom-[3px] w-[5px] h-[5px] rounded-full bg-gray-300" />
+                            )}
+                        </div>
                     </button>
                 );
             })}

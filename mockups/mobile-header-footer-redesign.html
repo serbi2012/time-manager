@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Mobile Header/Footer Redesign Mockup</title>
+
+        <!-- Tailwind CSS Play CDN -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        spacing: {
+                            xs: "4px",
+                            sm: "8px",
+                            md: "12px",
+                            lg: "16px",
+                            xl: "24px",
+                            "2xl": "32px",
+                            "3xl": "40px",
+                        },
+                        colors: {
+                            primary: "#3182F6",
+                            "primary-dark": "#1B64DA",
+                            "primary-light": "#ECF2FE",
+                            "gray-50": "#F9FAFB",
+                            "gray-100": "#F2F4F6",
+                            "gray-200": "#E5E8EB",
+                            "gray-300": "#D1D6DB",
+                            "gray-400": "#B0B8C1",
+                            "gray-500": "#8B95A1",
+                            "gray-600": "#6B7684",
+                            "gray-700": "#4E5968",
+                            "gray-800": "#333D4B",
+                            "gray-900": "#191F28",
+                            success: "#34C759",
+                            error: "#F04452",
+                        },
+                        borderRadius: {
+                            xs: "4px",
+                            sm: "6px",
+                            md: "8px",
+                            lg: "12px",
+                            xl: "16px",
+                            "2xl": "20px",
+                            "3xl": "24px",
+                        },
+                        fontFamily: {
+                            sans: [
+                                "Pretendard Variable",
+                                "Pretendard",
+                                "-apple-system",
+                                "BlinkMacSystemFont",
+                                "system-ui",
+                                "sans-serif",
+                            ],
+                        },
+                        fontSize: {
+                            xs: "11px",
+                            sm: "13px",
+                            md: "15px",
+                            lg: "17px",
+                            xl: "19px",
+                            "2xl": "22px",
+                            h3: "24px",
+                            h2: "26px",
+                        },
+                    },
+                },
+            };
+        </script>
+
+        <!-- React 18 UMD -->
+        <script
+            crossorigin
+            src="https://unpkg.com/react@18/umd/react.development.js"
+        ></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+        ></script>
+
+        <!-- Day.js -->
+        <script src="https://unpkg.com/dayjs@1/dayjs.min.js"></script>
+
+        <!-- Ant Design 5 UMD -->
+        <script src="https://unpkg.com/antd@5/dist/antd.min.js"></script>
+
+        <!-- Ant Design Icons UMD -->
+        <script src="https://unpkg.com/@ant-design/icons@5/dist/index.umd.min.js"></script>
+
+        <!-- Babel Standalone for JSX -->
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+        <!-- Pretendard -->
+        <link
+            rel="stylesheet"
+            as="style"
+            crossorigin
+            href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+        />
+
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                padding: 24px;
+                background: #f0f1f3;
+                font-family: "Pretendard Variable", Pretendard, -apple-system,
+                    BlinkMacSystemFont, system-ui, sans-serif;
+            }
+            #root {
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+            .phone-frame {
+                width: 375px;
+                height: 812px;
+                background: white;
+                border-radius: 40px;
+                overflow: hidden;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15),
+                    0 0 0 1px rgba(0, 0, 0, 0.05);
+                position: relative;
+            }
+            .phone-screen {
+                width: 100%;
+                height: 100%;
+                overflow-y: auto;
+                position: relative;
+            }
+            .phone-screen::-webkit-scrollbar {
+                display: none;
+            }
+            .phone-notch {
+                position: absolute;
+                top: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 150px;
+                height: 30px;
+                background: black;
+                border-radius: 0 0 20px 20px;
+                z-index: 50;
+            }
+            .status-bar {
+                height: 50px;
+                display: flex;
+                align-items: flex-end;
+                justify-content: space-between;
+                padding: 0 24px 4px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const { Typography, Badge, Avatar } = antd;
+            const { Text } = Typography;
+            const {
+                HomeOutlined,
+                HomeFilled,
+                CalendarOutlined,
+                CalendarFilled,
+                BookOutlined,
+                BookFilled,
+                SettingOutlined,
+                SettingFilled,
+                ClockCircleOutlined,
+                ClockCircleFilled,
+                BellOutlined,
+                UserOutlined,
+                SearchOutlined,
+                PlusOutlined,
+                RightOutlined,
+                CheckCircleFilled,
+                PlayCircleFilled,
+                PauseCircleFilled,
+                AppstoreOutlined,
+                AppstoreFilled,
+                FieldTimeOutlined,
+            } = icons;
+
+            // ===== Common Components =====
+
+            function PhoneFrame({ children, label }) {
+                return (
+                    <div className="flex flex-col items-center gap-lg">
+                        <div className="phone-frame">
+                            <div className="phone-screen">{children}</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-md font-semibold text-gray-800">
+                                {label}
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // ===== Proposal A: Floating Tab Bar =====
+
+            function ProposalA() {
+                const [active, setActive] = React.useState("daily");
+
+                return (
+                    <PhoneFrame label="안 A — Floating Tab Bar">
+                        <div className="relative h-full bg-gray-50">
+                            {/* Status bar area */}
+                            <div className="status-bar bg-white">
+                                <span>9:41</span>
+                                <span>●●●</span>
+                            </div>
+
+                            {/* Content area - no header */}
+                            <div className="px-xl pt-lg pb-[120px]">
+                                {/* Greeting + Actions */}
+                                <div className="flex items-center justify-between mb-xl">
+                                    <div>
+                                        <div className="text-sm text-gray-500 mb-[2px]">
+                                            2월 11일 수요일
+                                        </div>
+                                        <div className="text-h3 font-semibold text-gray-900 leading-tight">
+                                            일간 기록
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-md">
+                                        <button className="w-[36px] h-[36px] rounded-full bg-gray-100 flex items-center justify-center text-gray-600 border-0 cursor-pointer">
+                                            <SettingOutlined
+                                                style={{ fontSize: 17 }}
+                                            />
+                                        </button>
+                                        <div className="w-[36px] h-[36px] rounded-full bg-primary flex items-center justify-center text-white text-sm font-semibold cursor-pointer">
+                                            G
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Summary Card */}
+                                <div className="bg-white rounded-xl p-lg mb-lg shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+                                    <div className="flex items-center justify-between mb-md">
+                                        <span className="text-sm text-gray-500">
+                                            오늘 작업 시간
+                                        </span>
+                                        <span className="text-xs text-success font-medium flex items-center gap-xs">
+                                            <CheckCircleFilled /> 동기화됨
+                                        </span>
+                                    </div>
+                                    <div className="text-2xl font-semibold text-gray-900">
+                                        3시간 42분
+                                    </div>
+                                    <div className="flex items-center gap-sm mt-md">
+                                        <div className="flex-1 h-[6px] bg-gray-100 rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-primary rounded-full"
+                                                style={{ width: "46%" }}
+                                            ></div>
+                                        </div>
+                                        <span className="text-xs text-gray-400">
+                                            8시간
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Timer Card */}
+                                <div className="bg-primary rounded-xl p-lg mb-lg">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <div className="text-sm text-white/70 mb-xs">
+                                                진행 중
+                                            </div>
+                                            <div className="text-lg font-semibold text-white">
+                                                팀장님 작업 싱크 회의
+                                            </div>
+                                            <div className="text-sm text-white/60 mt-xs">
+                                                관리업무 · 17:41~
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-center gap-sm">
+                                            <div className="text-2xl font-semibold text-white tabular-nums">
+                                                02:35
+                                            </div>
+                                            <button className="w-[40px] h-[40px] rounded-full bg-white/20 border-0 flex items-center justify-center cursor-pointer">
+                                                <PauseCircleFilled
+                                                    style={{
+                                                        fontSize: 28,
+                                                        color: "white",
+                                                    }}
+                                                />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Task List */}
+                                <div className="mb-lg">
+                                    <div className="flex items-center justify-between mb-md">
+                                        <span className="text-md font-semibold text-gray-800">
+                                            작업 목록
+                                        </span>
+                                        <span className="text-sm text-gray-400">
+                                            3개
+                                        </span>
+                                    </div>
+
+                                    {/* Task Items */}
+                                    {[
+                                        {
+                                            name: "회의",
+                                            cat: "관리업무",
+                                            time: "1분",
+                                            color: "#3182F6",
+                                            sessions: "17:04 ~ 17:04",
+                                        },
+                                        {
+                                            name: "팀장님 작업 싱크 회의",
+                                            cat: "관리업무",
+                                            time: "35분",
+                                            color: "#34C759",
+                                            sessions: "16:54 ~ 17:41",
+                                        },
+                                        {
+                                            name: "환경세팅",
+                                            cat: "관리업무",
+                                            time: "12분",
+                                            color: "#FF9500",
+                                            sessions: "16:30 ~ 16:42",
+                                        },
+                                    ].map((task, i) => (
+                                        <div
+                                            key={i}
+                                            className="bg-white rounded-xl p-lg mb-sm shadow-[0_1px_2px_rgba(0,0,0,0.04)] flex items-center gap-md"
+                                        >
+                                            <div
+                                                className="w-[4px] h-[40px] rounded-full shrink-0"
+                                                style={{
+                                                    background: task.color,
+                                                }}
+                                            ></div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-md font-medium text-gray-800 truncate">
+                                                    {task.name}
+                                                </div>
+                                                <div className="text-xs text-gray-400 mt-[2px]">
+                                                    {task.cat} · {task.sessions}
+                                                </div>
+                                            </div>
+                                            <div className="text-md font-semibold text-gray-700 shrink-0">
+                                                {task.time}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Floating Tab Bar */}
+                            <div className="absolute bottom-[24px] left-1/2 -translate-x-1/2 z-10">
+                                <div
+                                    className="flex items-center bg-gray-900 rounded-full px-sm py-[6px] gap-[2px]"
+                                    style={{
+                                        boxShadow:
+                                            "0 8px 32px rgba(0,0,0,0.25)",
+                                    }}
+                                >
+                                    {[
+                                        {
+                                            id: "daily",
+                                            icon: <HomeFilled />,
+                                            label: "일간",
+                                        },
+                                        {
+                                            id: "weekly",
+                                            icon: <CalendarOutlined />,
+                                            label: "주간",
+                                        },
+                                        {
+                                            id: "guide",
+                                            icon: <BookOutlined />,
+                                            label: "설명서",
+                                        },
+                                    ].map((tab) => (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setActive(tab.id)}
+                                            className={`flex items-center gap-[6px] px-lg py-[10px] rounded-full border-0 cursor-pointer transition-all duration-200 text-sm font-medium ${
+                                                active === tab.id
+                                                    ? "bg-white text-gray-900"
+                                                    : "bg-transparent text-gray-400 hover:text-gray-300"
+                                            }`}
+                                        >
+                                            <span
+                                                style={{
+                                                    fontSize: 16,
+                                                    lineHeight: 1,
+                                                }}
+                                            >
+                                                {tab.icon}
+                                            </span>
+                                            {active === tab.id && (
+                                                <span>{tab.label}</span>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </PhoneFrame>
+                );
+            }
+
+            // ===== Proposal B: Minimal Top + Clean Bottom =====
+
+            function ProposalB() {
+                const [active, setActive] = React.useState("daily");
+
+                return (
+                    <PhoneFrame label="안 B — Minimal Top + Clean Bottom">
+                        <div className="relative h-full bg-white flex flex-col">
+                            {/* Status bar */}
+                            <div className="status-bar">
+                                <span>9:41</span>
+                                <span>●●●</span>
+                            </div>
+
+                            {/* Minimal Top Bar */}
+                            <div className="flex items-center justify-between px-xl py-md">
+                                <div className="flex items-center gap-md">
+                                    <div className="w-[32px] h-[32px] rounded-lg bg-primary flex items-center justify-center">
+                                        <ClockCircleOutlined
+                                            style={{
+                                                fontSize: 16,
+                                                color: "white",
+                                            }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <div className="text-lg font-semibold text-gray-900 leading-tight">
+                                            일간 기록
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-sm">
+                                    <button className="w-[36px] h-[36px] rounded-full bg-transparent border-0 flex items-center justify-center text-gray-500 cursor-pointer hover:bg-gray-100 transition-colors">
+                                        <SettingOutlined
+                                            style={{ fontSize: 18 }}
+                                        />
+                                    </button>
+                                    <div
+                                        className="w-[36px] h-[36px] rounded-full bg-cover bg-center border-2 border-gray-100"
+                                        style={{
+                                            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Ccircle cx='18' cy='18' r='18' fill='%233182F6'/%3E%3Ctext x='18' y='23' text-anchor='middle' fill='white' font-size='16' font-weight='600' font-family='sans-serif'%3EG%3C/text%3E%3C/svg%3E")`,
+                                        }}
+                                    ></div>
+                                </div>
+                            </div>
+
+                            {/* Date Selector */}
+                            <div className="px-xl pb-md">
+                                <div className="text-sm text-gray-500">
+                                    2026년 2월 11일 수요일
+                                </div>
+                            </div>
+
+                            {/* Divider */}
+                            <div className="h-[1px] bg-gray-100 mx-xl"></div>
+
+                            {/* Content */}
+                            <div className="flex-1 overflow-y-auto px-xl pt-lg pb-[80px]">
+                                {/* Active Timer */}
+                                <div className="rounded-xl bg-primary-light border border-primary/20 p-lg mb-lg">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-md">
+                                            <div className="w-[8px] h-[8px] rounded-full bg-primary animate-pulse"></div>
+                                            <div>
+                                                <div className="text-sm font-medium text-primary">
+                                                    진행 중
+                                                </div>
+                                                <div className="text-md font-semibold text-gray-800 mt-[2px]">
+                                                    팀장님 작업 싱크 회의
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="text-xl font-semibold text-primary tabular-nums">
+                                            02:35
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Stats Row */}
+                                <div className="flex gap-md mb-xl">
+                                    <div className="flex-1 bg-gray-50 rounded-xl p-md text-center">
+                                        <div className="text-xs text-gray-400 mb-xs">
+                                            총 작업
+                                        </div>
+                                        <div className="text-lg font-semibold text-gray-800">
+                                            3개
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 bg-gray-50 rounded-xl p-md text-center">
+                                        <div className="text-xs text-gray-400 mb-xs">
+                                            작업 시간
+                                        </div>
+                                        <div className="text-lg font-semibold text-gray-800">
+                                            3h 42m
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 bg-gray-50 rounded-xl p-md text-center">
+                                        <div className="text-xs text-gray-400 mb-xs">
+                                            달성률
+                                        </div>
+                                        <div className="text-lg font-semibold text-primary">
+                                            46%
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Section Title */}
+                                <div className="flex items-center justify-between mb-md">
+                                    <span className="text-md font-semibold text-gray-800">
+                                        작업 목록
+                                    </span>
+                                </div>
+
+                                {/* Task Cards */}
+                                {[
+                                    {
+                                        name: "회의",
+                                        cat: "관리업무",
+                                        time: "1분",
+                                        color: "#3182F6",
+                                        sessions: "17:04 ~ 17:04",
+                                    },
+                                    {
+                                        name: "팀장님 작업 싱크 회의",
+                                        cat: "관리업무",
+                                        time: "35분",
+                                        color: "#34C759",
+                                        sessions: "16:54 ~ 17:41",
+                                    },
+                                    {
+                                        name: "환경세팅",
+                                        cat: "관리업무",
+                                        time: "12분",
+                                        color: "#FF9500",
+                                        sessions: "16:30 ~ 16:42",
+                                    },
+                                ].map((task, i) => (
+                                    <div
+                                        key={i}
+                                        className="flex items-center gap-md py-lg border-b border-gray-100 last:border-0"
+                                    >
+                                        <div
+                                            className="w-[4px] h-[36px] rounded-full shrink-0"
+                                            style={{ background: task.color }}
+                                        ></div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-md text-gray-800 font-medium truncate">
+                                                {task.name}
+                                            </div>
+                                            <div className="text-xs text-gray-400 mt-[2px]">
+                                                {task.cat} · {task.sessions}
+                                            </div>
+                                        </div>
+                                        <div className="text-md font-semibold text-gray-700 shrink-0">
+                                            {task.time}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Clean Bottom Nav */}
+                            <div
+                                className="absolute bottom-0 left-0 right-0 h-[72px] bg-white border-t border-gray-100 flex items-start pt-[10px] px-xl z-10"
+                                style={{
+                                    paddingBottom:
+                                        "env(safe-area-inset-bottom, 8px)",
+                                }}
+                            >
+                                {[
+                                    {
+                                        id: "daily",
+                                        icon: <HomeOutlined />,
+                                        activeIcon: <HomeFilled />,
+                                        label: "일간",
+                                    },
+                                    {
+                                        id: "weekly",
+                                        icon: <CalendarOutlined />,
+                                        activeIcon: <CalendarFilled />,
+                                        label: "주간",
+                                    },
+                                    {
+                                        id: "guide",
+                                        icon: <BookOutlined />,
+                                        activeIcon: <BookFilled />,
+                                        label: "설명서",
+                                    },
+                                ].map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActive(tab.id)}
+                                        className={`flex-1 flex flex-col items-center gap-[3px] border-0 bg-transparent cursor-pointer transition-colors duration-200 pt-[2px] ${
+                                            active === tab.id
+                                                ? "text-primary"
+                                                : "text-gray-400"
+                                        }`}
+                                    >
+                                        <span style={{ fontSize: 22 }}>
+                                            {active === tab.id
+                                                ? tab.activeIcon
+                                                : tab.icon}
+                                        </span>
+                                        <span
+                                            className={`text-[10px] ${
+                                                active === tab.id
+                                                    ? "font-semibold"
+                                                    : "font-medium"
+                                            }`}
+                                        >
+                                            {tab.label}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </PhoneFrame>
+                );
+            }
+
+            // ===== Proposal C: Immersive Glass =====
+
+            function ProposalC() {
+                const [active, setActive] = React.useState("daily");
+
+                return (
+                    <PhoneFrame label="안 C — Immersive + Glass Nav">
+                        <div className="relative h-full bg-gray-50 flex flex-col">
+                            {/* Status bar - transparent overlay */}
+                            <div
+                                className="status-bar relative z-20"
+                                style={{ color: "white" }}
+                            >
+                                <span>9:41</span>
+                                <span>●●●</span>
+                            </div>
+
+                            {/* Hero Section - Gradient */}
+                            <div
+                                className="relative z-10 px-xl pb-xl -mt-[4px]"
+                                style={{
+                                    background:
+                                        "linear-gradient(135deg, #3182F6 0%, #1B64DA 100%)",
+                                    borderRadius: "0 0 24px 24px",
+                                }}
+                            >
+                                {/* Top actions */}
+                                <div className="flex items-center justify-between mb-lg pt-sm">
+                                    <div className="text-sm text-white/70">
+                                        2월 11일 수요일
+                                    </div>
+                                    <div className="flex items-center gap-sm">
+                                        <button className="w-[32px] h-[32px] rounded-full bg-white/15 border-0 flex items-center justify-center cursor-pointer">
+                                            <SettingOutlined
+                                                style={{
+                                                    fontSize: 15,
+                                                    color: "white",
+                                                }}
+                                            />
+                                        </button>
+                                        <div className="w-[32px] h-[32px] rounded-full bg-white/25 flex items-center justify-center text-white text-xs font-semibold">
+                                            G
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Title */}
+                                <div className="text-h2 font-bold text-white leading-tight mb-lg">
+                                    일간 기록
+                                </div>
+
+                                {/* Stats in hero */}
+                                <div className="flex gap-md">
+                                    <div className="flex-1 bg-white/15 rounded-xl p-md backdrop-blur-sm">
+                                        <div className="text-xs text-white/60 mb-xs">
+                                            작업 시간
+                                        </div>
+                                        <div className="text-xl font-semibold text-white">
+                                            3h 42m
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 bg-white/15 rounded-xl p-md backdrop-blur-sm">
+                                        <div className="text-xs text-white/60 mb-xs">
+                                            작업 수
+                                        </div>
+                                        <div className="text-xl font-semibold text-white">
+                                            3개
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 bg-white/15 rounded-xl p-md backdrop-blur-sm">
+                                        <div className="text-xs text-white/60 mb-xs">
+                                            달성률
+                                        </div>
+                                        <div className="text-xl font-semibold text-white">
+                                            46%
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1 overflow-y-auto px-xl pt-xl pb-[100px]">
+                                {/* Active Timer */}
+                                <div
+                                    className="rounded-2xl p-lg mb-lg relative overflow-hidden"
+                                    style={{
+                                        background:
+                                            "linear-gradient(135deg, #191F28 0%, #333D4B 100%)",
+                                    }}
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <div className="flex items-center gap-sm mb-sm">
+                                                <div className="w-[6px] h-[6px] rounded-full bg-success animate-pulse"></div>
+                                                <span className="text-xs text-success font-medium">
+                                                    타이머 진행 중
+                                                </span>
+                                            </div>
+                                            <div className="text-md font-semibold text-white">
+                                                팀장님 작업 싱크 회의
+                                            </div>
+                                            <div className="text-xs text-gray-400 mt-xs">
+                                                관리업무 · 17:41 ~
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-center">
+                                            <div className="text-2xl font-bold text-white tabular-nums mb-sm">
+                                                02:35
+                                            </div>
+                                            <div className="w-[36px] h-[36px] rounded-full bg-error flex items-center justify-center cursor-pointer">
+                                                <span
+                                                    style={{
+                                                        display: "inline-block",
+                                                        width: 12,
+                                                        height: 12,
+                                                        borderRadius: 2,
+                                                        background: "white",
+                                                    }}
+                                                ></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Tasks */}
+                                <div className="flex items-center justify-between mb-md">
+                                    <span className="text-md font-semibold text-gray-800">
+                                        작업 목록
+                                    </span>
+                                    <span className="text-xs text-gray-400">
+                                        3개
+                                    </span>
+                                </div>
+
+                                <div className="bg-white rounded-2xl overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
+                                    {[
+                                        {
+                                            name: "회의",
+                                            cat: "관리업무",
+                                            time: "1분",
+                                            color: "#3182F6",
+                                            sessions: "17:04 ~ 17:04",
+                                        },
+                                        {
+                                            name: "팀장님 작업 싱크 회의",
+                                            cat: "관리업무",
+                                            time: "35분",
+                                            color: "#34C759",
+                                            sessions: "16:54 ~ 17:41",
+                                        },
+                                        {
+                                            name: "환경세팅",
+                                            cat: "관리업무",
+                                            time: "12분",
+                                            color: "#FF9500",
+                                            sessions: "16:30 ~ 16:42",
+                                        },
+                                    ].map((task, i, arr) => (
+                                        <div
+                                            key={i}
+                                            className={`flex items-center gap-md px-lg py-[14px] ${
+                                                i < arr.length - 1
+                                                    ? "border-b border-gray-100"
+                                                    : ""
+                                            }`}
+                                        >
+                                            <div
+                                                className="w-[4px] h-[32px] rounded-full shrink-0"
+                                                style={{
+                                                    background: task.color,
+                                                }}
+                                            ></div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-md text-gray-800 font-medium truncate">
+                                                    {task.name}
+                                                </div>
+                                                <div className="text-xs text-gray-400 mt-[1px]">
+                                                    {task.cat} · {task.sessions}
+                                                </div>
+                                            </div>
+                                            <div className="text-md font-semibold text-gray-700 shrink-0">
+                                                {task.time}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Glass Bottom Nav */}
+                            <div
+                                className="absolute bottom-0 left-0 right-0 z-10"
+                                style={{
+                                    paddingBottom:
+                                        "env(safe-area-inset-bottom, 0px)",
+                                }}
+                            >
+                                <div
+                                    className="mx-lg mb-lg rounded-2xl flex items-center py-[10px] px-sm"
+                                    style={{
+                                        background: "rgba(255,255,255,0.85)",
+                                        backdropFilter: "blur(20px)",
+                                        WebkitBackdropFilter: "blur(20px)",
+                                        boxShadow:
+                                            "0 4px 24px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)",
+                                    }}
+                                >
+                                    {[
+                                        {
+                                            id: "daily",
+                                            icon: <HomeOutlined />,
+                                            activeIcon: <HomeFilled />,
+                                            label: "일간",
+                                        },
+                                        {
+                                            id: "weekly",
+                                            icon: <CalendarOutlined />,
+                                            activeIcon: <CalendarFilled />,
+                                            label: "주간",
+                                        },
+                                        {
+                                            id: "guide",
+                                            icon: <BookOutlined />,
+                                            activeIcon: <BookFilled />,
+                                            label: "설명서",
+                                        },
+                                    ].map((tab) => (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setActive(tab.id)}
+                                            className={`flex-1 flex flex-col items-center gap-[3px] border-0 bg-transparent cursor-pointer transition-all duration-200 py-[4px] rounded-xl ${
+                                                active === tab.id
+                                                    ? "text-primary"
+                                                    : "text-gray-400"
+                                            }`}
+                                            style={
+                                                active === tab.id
+                                                    ? {
+                                                          background:
+                                                              "rgba(49,130,246,0.08)",
+                                                      }
+                                                    : {}
+                                            }
+                                        >
+                                            <span style={{ fontSize: 20 }}>
+                                                {active === tab.id
+                                                    ? tab.activeIcon
+                                                    : tab.icon}
+                                            </span>
+                                            <span
+                                                className={`text-[10px] ${
+                                                    active === tab.id
+                                                        ? "font-semibold"
+                                                        : "font-medium"
+                                                }`}
+                                            >
+                                                {tab.label}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </PhoneFrame>
+                );
+            }
+
+            // ===== Main App =====
+
+            function MockupApp() {
+                return (
+                    <div>
+                        <div className="text-center mb-2xl">
+                            <h1 className="text-h2 font-bold text-gray-900 mb-sm">
+                                모바일 헤더/푸터 리디자인
+                            </h1>
+                            <p className="text-md text-gray-500">
+                                토스 스타일 디자인 후보 3종 — "건의" 탭 제거
+                                완료
+                            </p>
+                        </div>
+
+                        {/* 3 proposals side by side */}
+                        <div className="flex flex-wrap justify-center gap-2xl">
+                            <ProposalA />
+                            <ProposalB />
+                            <ProposalC />
+                        </div>
+
+                        {/* Description Section */}
+                        <div className="max-w-[900px] mx-auto mt-3xl">
+                            <h2 className="text-xl font-semibold text-gray-800 mb-lg">
+                                디자인 비교
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
+                                {/* A */}
+                                <div className="bg-white rounded-xl p-xl shadow-sm">
+                                    <div className="text-md font-semibold text-gray-800 mb-md">
+                                        안 A — Floating Tab Bar
+                                    </div>
+                                    <ul className="text-sm text-gray-600 space-y-sm pl-lg list-disc">
+                                        <li>
+                                            <strong>헤더 제거</strong> — 페이지
+                                            타이틀이 콘텐츠 영역에 자연스럽게
+                                            배치
+                                        </li>
+                                        <li>
+                                            <strong>다크 필 탭바</strong> —
+                                            화면과 대비되는 떠있는 네비게이션
+                                        </li>
+                                        <li>
+                                            <strong>활성 탭만 라벨 표시</strong>{" "}
+                                            — 미니멀한 공간 활용
+                                        </li>
+                                        <li>
+                                            <strong>콘텐츠 최대화</strong> —
+                                            헤더 영역을 콘텐츠에 활용
+                                        </li>
+                                    </ul>
+                                </div>
+                                {/* B */}
+                                <div className="bg-white rounded-xl p-xl shadow-sm">
+                                    <div className="text-md font-semibold text-gray-800 mb-md">
+                                        안 B — Minimal Top + Clean Bottom
+                                    </div>
+                                    <ul className="text-sm text-gray-600 space-y-sm pl-lg list-disc">
+                                        <li>
+                                            <strong>초경량 상단바</strong> — 앱
+                                            아이콘 + 타이틀 + 설정/프로필만
+                                        </li>
+                                        <li>
+                                            <strong>클린 하단 네비</strong> —
+                                            Filled/Outlined 아이콘 토글
+                                        </li>
+                                        <li>
+                                            <strong>익숙한 패턴</strong> — 가장
+                                            보편적인 모바일 UX
+                                        </li>
+                                        <li>
+                                            <strong>그라데이션 제거</strong> —
+                                            흰색 기반 깨끗한 느낌
+                                        </li>
+                                    </ul>
+                                </div>
+                                {/* C */}
+                                <div className="bg-white rounded-xl p-xl shadow-sm">
+                                    <div className="text-md font-semibold text-gray-800 mb-md">
+                                        안 C — Immersive + Glass Nav
+                                    </div>
+                                    <ul className="text-sm text-gray-600 space-y-sm pl-lg list-disc">
+                                        <li>
+                                            <strong>히어로 섹션</strong> —
+                                            그라데이션 영역에 제목 + 요약 통계
+                                        </li>
+                                        <li>
+                                            <strong>글래스모피즘 네비</strong> —
+                                            반투명 블러 효과의 떠있는 바
+                                        </li>
+                                        <li>
+                                            <strong>시각적 임팩트</strong> —
+                                            강렬한 첫인상, 앱다운 느낌
+                                        </li>
+                                        <li>
+                                            <strong>다크 타이머 카드</strong> —
+                                            진행 중인 작업을 강하게 강조
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div className="bg-gray-100 rounded-xl p-xl mt-lg">
+                                <div className="text-md font-semibold text-gray-800 mb-sm">
+                                    공통 변경사항
+                                </div>
+                                <ul className="text-sm text-gray-600 space-y-xs pl-lg list-disc">
+                                    <li>
+                                        "건의" 탭 완전 제거 (일간 / 주간 /
+                                        설명서 3탭 구성)
+                                    </li>
+                                    <li>
+                                        Pretendard 폰트 + 토스 컬러 시스템 적용
+                                    </li>
+                                    <li>
+                                        넉넉한 여백, 부드러운 라운딩 (12~20px)
+                                    </li>
+                                    <li>기존 그라데이션 헤더의 투박함 제거</li>
+                                    <li>동기화/설정/프로필 접근성 유지</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            root.render(<MockupApp />);
+        </script>
+    </body>
+</html>

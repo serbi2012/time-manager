@@ -1,5 +1,9 @@
+/**
+ * Mobile guide book — Toss-inspired redesign
+ * Page title + search/menu sidebar + markdown content
+ */
+
 import { useMemo, useCallback, isValidElement, cloneElement } from "react";
-import { Layout, Card } from "antd";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Typography } from "antd";
@@ -10,8 +14,8 @@ import { MobileSidebar } from "../MobileSidebar";
 import { NavButtons } from "../NavButtons";
 import { MermaidDiagram } from "../MermaidDiagram";
 import { WikiLink } from "../WikiLink";
+import { GUIDE_LABELS } from "../../constants";
 
-const { Content } = Layout;
 const { Title } = Typography;
 
 export function MobileGuideBook() {
@@ -203,7 +207,6 @@ export function MobileGuideBook() {
                                 </strong>
                             ),
                             a: ({ href, children }) => {
-                                // wiki: prefix handling
                                 if (href && href.startsWith("wiki:")) {
                                     const section_id = href.replace(
                                         "wiki:",
@@ -218,12 +221,10 @@ export function MobileGuideBook() {
                                         </WikiLink>
                                     );
                                 }
-                                // External or other links
                                 return (
                                     <a
                                         href={href}
                                         onClick={(e) => {
-                                            // Prevent navigation for relative/invalid URLs
                                             if (
                                                 !href ||
                                                 (!href.startsWith("http") &&
@@ -263,8 +264,19 @@ export function MobileGuideBook() {
     );
 
     return (
-        <Layout className="guide-book-layout">
-            <Content className="guide-book-content" ref={content_ref}>
+        <div className="flex flex-col min-h-screen bg-white" ref={content_ref}>
+            {/* Sticky header */}
+            <div className="sticky top-0 z-30 bg-white">
+                {/* Page title */}
+                <div className="px-xl pt-xl pb-md">
+                    <div className="text-2xl font-bold text-gray-900">
+                        {GUIDE_LABELS.pageTitle}
+                    </div>
+                </div>
+
+                <div className="mx-xl border-b border-gray-100" />
+
+                {/* Search + Menu */}
                 <MobileSidebar
                     current_section={current_section}
                     search_query={search_query}
@@ -273,18 +285,21 @@ export function MobileGuideBook() {
                     on_menu_click={handleMenuClick}
                     on_search_result_click={handleSearchResultClick}
                 />
+            </div>
 
+            {/* Content */}
+            <div className="flex-1 px-xl pt-md pb-[90px]">
                 <div className="guide-book-docs">
-                    <Card className="guide-book-card">
+                    <div className="guide-book-card-content">
                         {renderContent(current_doc.content)}
-                    </Card>
+                    </div>
 
                     <NavButtons
                         current_section={current_section}
                         on_navigate={navigateToSection}
                     />
                 </div>
-            </Content>
-        </Layout>
+            </div>
+        </div>
     );
 }
