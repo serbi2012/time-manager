@@ -1,28 +1,93 @@
-/* Mobile Gantt Chart Styles */
+/* Mobile Gantt Chart Styles - Segment Bar + Card List design */
 
-@media (max-width: 480px) {
-    .gantt-scroll-container {
-        overflow-x: auto;
-        overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-        max-width: 100%;
+@layer components {
+    /* Shimmer animation for running session segments */
+    .mobile-gantt-shimmer {
+        background-image: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.35) 40%,
+            rgba(255, 255, 255, 0.5) 50%,
+            rgba(255, 255, 255, 0.35) 60%,
+            transparent 100%
+        );
+        background-size: 200% 100%;
+        animation: mobile-gantt-shimmer 2.5s ease-in-out infinite;
     }
 
-    .gantt-scroll-container::-webkit-scrollbar {
-        display: none;
+    /* Pulse dot for running indicator */
+    .mobile-gantt-pulse-dot {
+        animation: mobile-gantt-pulse 1.5s ease-in-out infinite;
     }
 
-    .gantt-mobile-scroll {
-        min-width: 600px;
+    /* Date slide animations */
+    .mobile-gantt-date-slide-left {
+        animation: mobile-gantt-slide-from-left 0.25s
+            cubic-bezier(0.4, 0, 0.2, 1) both;
     }
 
-    .gantt-time-label {
-        font-size: 10px;
+    .mobile-gantt-date-slide-right {
+        animation: mobile-gantt-slide-from-right 0.25s
+            cubic-bezier(0.4, 0, 0.2, 1) both;
     }
 
-    .gantt-bar-label {
-        font-size: 10px;
+    /* Number slide-up on change */
+    .mobile-gantt-number-slide {
+        display: inline-block;
+        animation: mobile-gantt-slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+}
+
+/* Keyframes */
+
+@keyframes mobile-gantt-shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes mobile-gantt-pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.4;
+    }
+}
+
+@keyframes mobile-gantt-slide-from-left {
+    from {
+        opacity: 0;
+        transform: translateX(-12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes mobile-gantt-slide-from-right {
+    from {
+        opacity: 0;
+        transform: translateX(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes mobile-gantt-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }

@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.16";
+export const CURRENT_VERSION = "2.0.17";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,27 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.17",
+        date: "2026-02-11",
+        title: "모바일 타임라인 재설계",
+        changes: [
+            {
+                type: "style",
+                description:
+                    "모바일 일간 타임라인이 세그먼트 바 + 카드 리스트 디자인으로 전면 개선됨",
+            },
+            {
+                type: "feature",
+                description:
+                    "모바일 타임라인 작업 목록 접기/펼치기 기능 추가 (설정 동기화 지원)",
+            },
+            {
+                type: "improvement",
+                description: "모바일에서 세션 시간 칩을 탭하여 바로 수정 가능",
+            },
+        ],
+    },
     {
         version: "2.0.16",
         date: "2026-02-10",

@@ -11,7 +11,12 @@ import {
 } from "firebase/firestore";
 import type { Unsubscribe } from "firebase/firestore";
 import { db } from "./config";
-import type { WorkRecord, WorkTemplate, TimerState, HiddenAutoCompleteOptions } from "../types";
+import type {
+    WorkRecord,
+    WorkTemplate,
+    TimerState,
+    HiddenAutoCompleteOptions,
+} from "../types";
 import type { ShortcutDefinition } from "../store/useShortcutStore";
 import type { AppTheme } from "../store/useWorkStore";
 
@@ -111,6 +116,7 @@ export interface UserSettings {
     lunch_end_time?: string; // 점심시간 종료 (HH:mm)
     transition_enabled?: boolean; // 트랜지션 활성화 여부
     transition_speed?: TransitionSpeed; // 트랜지션 속도
+    mobile_gantt_list_expanded?: boolean; // 모바일 간트 작업 목록 펼침 상태
     updated_at: string;
     migrated?: boolean; // 마이그레이션 완료 여부
 }
@@ -125,10 +131,13 @@ export async function saveRecord(
     record: WorkRecord
 ): Promise<void> {
     const record_ref = doc(db, "users", user_id, "records", record.id);
-    await setDoc(record_ref, removeUndefined({
-        ...record,
-        updated_at: new Date().toISOString(),
-    }));
+    await setDoc(
+        record_ref,
+        removeUndefined({
+            ...record,
+            updated_at: new Date().toISOString(),
+        })
+    );
 }
 
 // 여러 레코드 일괄 저장 (배치 사용)
@@ -146,10 +155,13 @@ export async function saveRecordsBatch(
 
         for (const record of chunk) {
             const record_ref = doc(db, "users", user_id, "records", record.id);
-            batch.set(record_ref, removeUndefined({
-                ...record,
-                updated_at: new Date().toISOString(),
-            }));
+            batch.set(
+                record_ref,
+                removeUndefined({
+                    ...record,
+                    updated_at: new Date().toISOString(),
+                })
+            );
         }
 
         await batch.commit();
@@ -166,9 +178,7 @@ export async function deleteRecordFromFirestore(
 }
 
 // 모든 레코드 로드
-export async function loadAllRecords(
-    user_id: string
-): Promise<WorkRecord[]> {
+export async function loadAllRecords(user_id: string): Promise<WorkRecord[]> {
     const records_ref = collection(db, "users", user_id, "records");
     const snapshot = await getDocs(records_ref);
 
@@ -210,7 +220,13 @@ export async function saveTemplatesBatch(
     const batch = writeBatch(db);
 
     for (const template of templates) {
-        const template_ref = doc(db, "users", user_id, "templates", template.id);
+        const template_ref = doc(
+            db,
+            "users",
+            user_id,
+            "templates",
+            template.id
+        );
         batch.set(template_ref, {
             ...template,
             updated_at: new Date().toISOString(),

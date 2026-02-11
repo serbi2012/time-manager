@@ -166,6 +166,9 @@ export async function loadFromFirebase(user: User): Promise<boolean> {
             ...(settings?.app_theme && {
                 app_theme: settings.app_theme,
             }),
+            ...(settings?.mobile_gantt_list_expanded !== undefined && {
+                mobile_gantt_list_expanded: settings.mobile_gantt_list_expanded,
+            }),
         });
 
         // 4. 단축키 동기화
@@ -218,6 +221,9 @@ export async function refreshFromFirebase(user: User): Promise<boolean> {
             }),
             ...(settings?.app_theme && {
                 app_theme: settings.app_theme,
+            }),
+            ...(settings?.mobile_gantt_list_expanded !== undefined && {
+                mobile_gantt_list_expanded: settings.mobile_gantt_list_expanded,
             }),
         });
 

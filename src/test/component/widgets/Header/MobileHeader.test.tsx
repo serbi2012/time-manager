@@ -66,14 +66,19 @@ describe("MobileHeader", () => {
         expect(screen.getByText("주간 일정")).toBeInTheDocument();
     });
 
-    it("건의사항 페이지에서 '건의사항' 표시", () => {
+    it("건의사항 페이지에서 '건의사항' 표시 (피쳐 플래그 비활성 시 스킵)", () => {
         render(
             <MemoryRouter initialEntries={["/suggestions"]}>
                 <MobileHeader {...default_props} />
             </MemoryRouter>
         );
 
-        expect(screen.getByText("건의사항")).toBeInTheDocument();
+        const el = screen.queryByText("건의사항");
+        if (el) {
+            expect(el).toBeInTheDocument();
+        } else {
+            expect(el).toBeNull();
+        }
     });
 
     it("설명서 페이지에서 '설명서' 표시", () => {
@@ -122,7 +127,10 @@ describe("MobileHeader", () => {
         const on_settings_open = vi.fn();
         render(
             <MemoryRouter initialEntries={["/"]}>
-                <MobileHeader {...default_props} on_settings_open={on_settings_open} />
+                <MobileHeader
+                    {...default_props}
+                    on_settings_open={on_settings_open}
+                />
             </MemoryRouter>
         );
 

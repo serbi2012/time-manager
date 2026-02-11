@@ -24,6 +24,7 @@ import {
     DEFAULT_TRANSITION_ENABLED,
     DEFAULT_TRANSITION_SPEED,
     DEFAULT_USE_POSTFIX_ON_PRESET_ADD,
+    DEFAULT_MOBILE_GANTT_LIST_EXPANDED,
 } from "../constants";
 import { syncSettings } from "@/firebase/syncService";
 
@@ -45,6 +46,7 @@ export const createSettingsSlice: StateCreator<
     lunch_end_time: DEFAULT_LUNCH_END_TIME,
     transition_enabled: DEFAULT_TRANSITION_ENABLED,
     transition_speed: DEFAULT_TRANSITION_SPEED,
+    mobile_gantt_list_expanded: DEFAULT_MOBILE_GANTT_LIST_EXPANDED,
 
     // ============================================
     // Custom Options Actions
@@ -98,7 +100,8 @@ export const createSettingsSlice: StateCreator<
         set(
             create((state) => {
                 const index = state.custom_category_options.indexOf(option);
-                if (index !== -1) state.custom_category_options.splice(index, 1);
+                if (index !== -1)
+                    state.custom_category_options.splice(index, 1);
             })
         );
 
@@ -180,5 +183,12 @@ export const createSettingsSlice: StateCreator<
     setTransitionSpeed: (speed: TransitionSpeed) => {
         set({ transition_speed: speed });
         syncSettings({ transition_speed: speed }).catch(console.error);
+    },
+
+    setMobileGanttListExpanded: (expanded: boolean) => {
+        set({ mobile_gantt_list_expanded: expanded });
+        syncSettings({ mobile_gantt_list_expanded: expanded }).catch(
+            console.error
+        );
     },
 });

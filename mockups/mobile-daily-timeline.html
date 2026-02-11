@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Mobile Daily Timeline Redesign</title>
+
+        <!-- Tailwind CSS Play CDN -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        spacing: {
+                            xs: "4px",
+                            sm: "8px",
+                            md: "12px",
+                            lg: "16px",
+                            xl: "24px",
+                            "2xl": "32px",
+                        },
+                        colors: {
+                            primary: "#3182F6",
+                            "primary-dark": "#1B64DA",
+                            "primary-light": "#ECF2FE",
+                        },
+                    },
+                },
+            };
+        </script>
+
+        <!-- React 18 UMD -->
+        <script
+            crossorigin
+            src="https://unpkg.com/react@18/umd/react.development.js"
+        ></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+        ></script>
+
+        <!-- Day.js -->
+        <script src="https://unpkg.com/dayjs@1/dayjs.min.js"></script>
+
+        <!-- Ant Design 5 UMD -->
+        <script src="https://unpkg.com/antd@5/dist/antd.min.js"></script>
+
+        <!-- Ant Design Icons UMD -->
+        <script src="https://unpkg.com/@ant-design/icons@5/dist/index.umd.min.js"></script>
+
+        <!-- Babel Standalone for JSX -->
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+        <style>
+            @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
+
+            * {
+                font-family: "Pretendard Variable", Pretendard, -apple-system,
+                    BlinkMacSystemFont, system-ui, sans-serif;
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                padding: 24px;
+                background: #f2f4f6;
+            }
+            #root {
+                max-width: 900px;
+                margin: 0 auto;
+            }
+
+            /* Phone frame */
+            .phone-frame {
+                width: 375px;
+                height: 720px;
+                background: #f9fafb;
+                border-radius: 24px;
+                overflow: hidden;
+                box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+                position: relative;
+                display: flex;
+                flex-direction: column;
+            }
+
+            /* Scrollable content inside phone */
+            .phone-scroll {
+                flex: 1;
+                overflow-y: auto;
+                overflow-x: hidden;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+            .phone-scroll::-webkit-scrollbar {
+                display: none;
+            }
+
+            /* Running animation */
+            @keyframes pulse-dot {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.4;
+                }
+            }
+            @keyframes shimmer {
+                0% {
+                    background-position: -200% 0;
+                }
+                100% {
+                    background-position: 200% 0;
+                }
+            }
+            .shimmer-bar {
+                background: linear-gradient(
+                    90deg,
+                    transparent 0%,
+                    rgba(255, 255, 255, 0.3) 50%,
+                    transparent 100%
+                );
+                background-size: 200% 100%;
+                animation: shimmer 2s infinite;
+            }
+
+            /* Segment bar tooltip */
+            .segment-tooltip {
+                position: absolute;
+                bottom: calc(100% + 8px);
+                left: 50%;
+                transform: translateX(-50%);
+                background: #191f28;
+                color: white;
+                padding: 6px 10px;
+                border-radius: 8px;
+                font-size: 11px;
+                white-space: nowrap;
+                pointer-events: none;
+                opacity: 0;
+                transition: opacity 0.15s;
+                z-index: 10;
+            }
+            .segment-tooltip::after {
+                content: "";
+                position: absolute;
+                top: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+                border: 4px solid transparent;
+                border-top-color: #191f28;
+            }
+            .segment-active .segment-tooltip {
+                opacity: 1;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const { useState } = React;
+            const {
+                LeftOutlined,
+                RightOutlined,
+                ClockCircleOutlined,
+                CalendarOutlined,
+            } = icons;
+
+            // ============================================
+            // Mock Data
+            // ============================================
+            const MOCK_WORKS = [
+                {
+                    id: "1",
+                    work_name: "탭/프리셋 — 뷰모델 리팩토링",
+                    deal_name: "세트메뉴설정 (구_메뉴트리)",
+                    category: "개발",
+                    color: "#34C759",
+                    sessions: [
+                        { start: "09:00", end: "10:30", duration: 90 },
+                        { start: "14:00", end: "15:20", duration: 80 },
+                    ],
+                    total_minutes: 170,
+                },
+                {
+                    id: "2",
+                    work_name: "검색 폼에서 접기 버튼 오류 수정",
+                    deal_name: "세트메뉴설정 (구_메뉴트리)",
+                    category: "버그수정",
+                    color: "#3182F6",
+                    sessions: [
+                        { start: "10:30", end: "11:40", duration: 70 },
+                        { start: "12:40", end: "13:30", duration: 50 },
+                    ],
+                    total_minutes: 120,
+                },
+                {
+                    id: "3",
+                    work_name: "팀장님 작업 싱크 회의",
+                    deal_name: "관리업무",
+                    category: "회의",
+                    color: "#FF9500",
+                    sessions: [{ start: "13:30", end: "14:00", duration: 30 }],
+                    total_minutes: 30,
+                },
+                {
+                    id: "4",
+                    work_name: "코드 리뷰 (PR #245)",
+                    deal_name: "관리업무",
+                    category: "리뷰",
+                    color: "#AF52DE",
+                    sessions: [{ start: "15:20", end: "16:10", duration: 50 }],
+                    total_minutes: 50,
+                },
+                {
+                    id: "5",
+                    work_name: "일일 스탠드업",
+                    deal_name: "관리업무",
+                    category: "회의",
+                    color: "#FF9500",
+                    sessions: [{ start: "16:10", end: "16:30", duration: 20 }],
+                    total_minutes: 20,
+                    is_running: true,
+                },
+            ];
+
+            const TOTAL_WORK_MINUTES = 390;
+            const FORMATTED_TOTAL = "6시간 30분";
+            const SELECTED_DATE = "2026년 2월 11일 (수)";
+
+            // Time helpers
+            function timeToMinutes(t) {
+                const [h, m] = t.split(":").map(Number);
+                return h * 60 + m;
+            }
+            function formatTime(t) {
+                return t;
+            }
+            function formatDuration(mins) {
+                const h = Math.floor(mins / 60);
+                const m = mins % 60;
+                if (h === 0) return `${m}분`;
+                if (m === 0) return `${h}시간`;
+                return `${h}시간 ${m}분`;
+            }
+
+            // ============================================
+            // CANDIDATE A: Vertical Block Timeline
+            // ============================================
+            function CandidateA() {
+                const [active_id, setActiveId] = useState(null);
+
+                const TIME_START = 9 * 60; // 09:00
+                const TIME_END = 17 * 60; // 17:00
+                const TOTAL = TIME_END - TIME_START;
+                const LUNCH_START = 11 * 60 + 40;
+                const LUNCH_END = 12 * 60 + 40;
+
+                // Flatten all sessions with work info
+                const all_sessions = [];
+                MOCK_WORKS.forEach((w) => {
+                    w.sessions.forEach((s) => {
+                        all_sessions.push({ ...s, work: w });
+                    });
+                });
+                all_sessions.sort(
+                    (a, b) => timeToMinutes(a.start) - timeToMinutes(b.start)
+                );
+
+                return (
+                    <div className="phone-frame">
+                        {/* Header */}
+                        <div className="bg-white px-5 pt-4 pb-3">
+                            <div className="flex items-center justify-between mb-3">
+                                <span className="text-[17px] font-semibold text-gray-900">
+                                    일간 타임라인
+                                </span>
+                                <div className="flex items-center gap-1.5 bg-primary-light px-3 py-1.5 rounded-full">
+                                    <ClockCircleOutlined
+                                        style={{
+                                            fontSize: 12,
+                                            color: "#3182F6",
+                                        }}
+                                    />
+                                    <span className="text-[13px] font-semibold text-primary">
+                                        {FORMATTED_TOTAL}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-center gap-3">
+                                <button className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 border-0 bg-transparent cursor-pointer">
+                                    <LeftOutlined style={{ fontSize: 12 }} />
+                                </button>
+                                <span className="text-[13px] font-medium text-gray-700">
+                                    {SELECTED_DATE}
+                                </span>
+                                <button className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 border-0 bg-transparent cursor-pointer">
+                                    <RightOutlined style={{ fontSize: 12 }} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Scrollable timeline */}
+                        <div className="phone-scroll">
+                            {/* Summary bar at top */}
+                            <div className="px-5 py-3">
+                                <div className="h-2 rounded-full bg-gray-100 overflow-hidden flex">
+                                    {MOCK_WORKS.map((w) => {
+                                        const pct =
+                                            (w.total_minutes / TOTAL) * 100;
+                                        return (
+                                            <div
+                                                key={w.id}
+                                                className="h-full rounded-full"
+                                                style={{
+                                                    width: `${pct}%`,
+                                                    background: w.color,
+                                                    marginRight: 1,
+                                                }}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Vertical timeline */}
+                            <div className="px-5 pb-6">
+                                {all_sessions.map((session, idx) => {
+                                    const is_active =
+                                        active_id ===
+                                        session.work.id + session.start;
+                                    const is_running = session.work.is_running;
+                                    const is_last =
+                                        idx === all_sessions.length - 1;
+                                    const is_lunch_gap =
+                                        idx < all_sessions.length - 1 &&
+                                        timeToMinutes(session.end) <=
+                                            LUNCH_START &&
+                                        timeToMinutes(
+                                            all_sessions[idx + 1].start
+                                        ) >= LUNCH_END;
+
+                                    return (
+                                        <React.Fragment
+                                            key={
+                                                session.work.id + session.start
+                                            }
+                                        >
+                                            <div
+                                                className={`relative flex gap-3 cursor-pointer transition-all duration-200 ${
+                                                    is_active
+                                                        ? "scale-[1.01]"
+                                                        : ""
+                                                }`}
+                                                onClick={() =>
+                                                    setActiveId(
+                                                        is_active
+                                                            ? null
+                                                            : session.work.id +
+                                                                  session.start
+                                                    )
+                                                }
+                                            >
+                                                {/* Time column */}
+                                                <div className="flex flex-col items-center w-12 flex-shrink-0">
+                                                    <span className="text-[11px] font-medium text-gray-500 tabular-nums">
+                                                        {session.start}
+                                                    </span>
+                                                    <div
+                                                        className="w-0.5 flex-1 my-1 rounded-full"
+                                                        style={{
+                                                            background:
+                                                                session.work
+                                                                    .color,
+                                                            opacity: 0.3,
+                                                        }}
+                                                    />
+                                                    <span className="text-[11px] text-gray-400 tabular-nums">
+                                                        {session.end ||
+                                                            "진행 중"}
+                                                    </span>
+                                                </div>
+
+                                                {/* Card */}
+                                                <div
+                                                    className={`flex-1 rounded-xl p-3.5 mb-2 transition-all duration-200 ${
+                                                        is_active
+                                                            ? "bg-white shadow-md border border-gray-100"
+                                                            : "bg-white border border-gray-100/80"
+                                                    }`}
+                                                    style={{
+                                                        borderLeft: `3px solid ${session.work.color}`,
+                                                    }}
+                                                >
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <div className="min-w-0 flex-1">
+                                                            <div className="text-[13px] font-semibold text-gray-900 truncate leading-tight">
+                                                                {
+                                                                    session.work
+                                                                        .deal_name
+                                                                }
+                                                            </div>
+                                                            <div className="text-[11px] text-gray-500 truncate mt-0.5">
+                                                                {
+                                                                    session.work
+                                                                        .work_name
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-1 flex-shrink-0">
+                                                            {is_running && (
+                                                                <div
+                                                                    className="w-1.5 h-1.5 rounded-full bg-green-500"
+                                                                    style={{
+                                                                        animation:
+                                                                            "pulse-dot 1.5s infinite",
+                                                                    }}
+                                                                />
+                                                            )}
+                                                            <span className="text-[11px] font-semibold text-gray-600 tabular-nums">
+                                                                {formatDuration(
+                                                                    session.duration
+                                                                )}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Duration bar */}
+                                                    <div className="mt-2.5 h-1.5 rounded-full bg-gray-50 overflow-hidden">
+                                                        <div
+                                                            className={`h-full rounded-full ${
+                                                                is_running
+                                                                    ? "shimmer-bar"
+                                                                    : ""
+                                                            }`}
+                                                            style={{
+                                                                width: `${Math.min(
+                                                                    (session.duration /
+                                                                        120) *
+                                                                        100,
+                                                                    100
+                                                                )}%`,
+                                                                background:
+                                                                    session.work
+                                                                        .color,
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Lunch break indicator */}
+                                            {is_lunch_gap && (
+                                                <div className="flex items-center gap-3 my-1">
+                                                    <div className="w-12 flex-shrink-0 flex justify-center">
+                                                        <span className="text-[16px]">
+                                                            🍽️
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex-1 flex items-center gap-2">
+                                                        <div
+                                                            className="flex-1 h-px bg-gray-200"
+                                                            style={{
+                                                                background:
+                                                                    "repeating-linear-gradient(90deg, #E5E8EB 0, #E5E8EB 4px, transparent 4px, transparent 8px)",
+                                                            }}
+                                                        />
+                                                        <span className="text-[11px] text-gray-400 font-medium">
+                                                            점심시간 11:40 ~
+                                                            12:40
+                                                        </span>
+                                                        <div
+                                                            className="flex-1 h-px"
+                                                            style={{
+                                                                background:
+                                                                    "repeating-linear-gradient(90deg, #E5E8EB 0, #E5E8EB 4px, transparent 4px, transparent 8px)",
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </React.Fragment>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // ============================================
+            // CANDIDATE B: Segment Bar + Card List
+            // ============================================
+            function CandidateB() {
+                const [active_id, setActiveId] = useState(null);
+
+                const TIME_START = 9 * 60;
+                const TIME_END = 17 * 60;
+                const TOTAL = TIME_END - TIME_START;
+                const LUNCH_START = 11 * 60 + 40;
+                const LUNCH_END = 12 * 60 + 40;
+
+                // All sessions flattened for the segment bar
+                const all_segments = [];
+                MOCK_WORKS.forEach((w) => {
+                    w.sessions.forEach((s) => {
+                        const start_mins = timeToMinutes(s.start);
+                        const end_mins = timeToMinutes(s.end);
+                        const left = ((start_mins - TIME_START) / TOTAL) * 100;
+                        const width = ((end_mins - start_mins) / TOTAL) * 100;
+                        all_segments.push({ ...s, work: w, left, width });
+                    });
+                });
+
+                const lunch_left = ((LUNCH_START - TIME_START) / TOTAL) * 100;
+                const lunch_width = ((LUNCH_END - LUNCH_START) / TOTAL) * 100;
+
+                // Current time indicator
+                const now_mins = 16 * 60 + 30;
+                const now_left = ((now_mins - TIME_START) / TOTAL) * 100;
+
+                return (
+                    <div className="phone-frame">
+                        {/* Header */}
+                        <div className="bg-white px-5 pt-4 pb-4">
+                            <div className="flex items-center justify-between mb-3">
+                                <span className="text-[17px] font-semibold text-gray-900">
+                                    일간 타임라인
+                                </span>
+                                <div className="flex items-center gap-1.5 bg-primary-light px-3 py-1.5 rounded-full">
+                                    <ClockCircleOutlined
+                                        style={{
+                                            fontSize: 12,
+                                            color: "#3182F6",
+                                        }}
+                                    />
+                                    <span className="text-[13px] font-semibold text-primary">
+                                        {FORMATTED_TOTAL}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-center gap-3 mb-4">
+                                <button className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 border-0 bg-transparent cursor-pointer">
+                                    <LeftOutlined style={{ fontSize: 12 }} />
+                                </button>
+                                <span className="text-[13px] font-medium text-gray-700">
+                                    {SELECTED_DATE}
+                                </span>
+                                <button className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 border-0 bg-transparent cursor-pointer">
+                                    <RightOutlined style={{ fontSize: 12 }} />
+                                </button>
+                            </div>
+
+                            {/* Segment bar */}
+                            <div className="relative">
+                                {/* Time labels */}
+                                <div className="flex justify-between mb-1.5 px-0.5">
+                                    {[9, 10, 11, 12, 13, 14, 15, 16, 17].map(
+                                        (h) => (
+                                            <span
+                                                key={h}
+                                                className="text-[10px] text-gray-400 tabular-nums"
+                                            >
+                                                {h}
+                                            </span>
+                                        )
+                                    )}
+                                </div>
+
+                                {/* Bar track */}
+                                <div className="relative h-10 rounded-xl bg-gray-50 overflow-hidden">
+                                    {/* Lunch zone */}
+                                    <div
+                                        className="absolute top-0 h-full"
+                                        style={{
+                                            left: `${lunch_left}%`,
+                                            width: `${lunch_width}%`,
+                                            background:
+                                                "repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(0,0,0,0.03) 3px, rgba(0,0,0,0.03) 6px)",
+                                        }}
+                                    />
+
+                                    {/* Work segments */}
+                                    {all_segments.map((seg, idx) => {
+                                        const is_active =
+                                            active_id === seg.work.id;
+                                        const is_running = seg.work.is_running;
+                                        return (
+                                            <div
+                                                key={idx}
+                                                className={`absolute top-1 bottom-1 rounded-lg cursor-pointer transition-all duration-200 ${
+                                                    is_active
+                                                        ? "ring-2 ring-offset-1 scale-y-110"
+                                                        : "hover:brightness-110"
+                                                } ${
+                                                    is_running
+                                                        ? "shimmer-bar"
+                                                        : ""
+                                                }`}
+                                                style={{
+                                                    left: `${seg.left}%`,
+                                                    width: `${seg.width}%`,
+                                                    background: seg.work.color,
+                                                    ringColor: seg.work.color,
+                                                    zIndex: is_active ? 5 : 1,
+                                                }}
+                                                onClick={() =>
+                                                    setActiveId(
+                                                        is_active
+                                                            ? null
+                                                            : seg.work.id
+                                                    )
+                                                }
+                                            />
+                                        );
+                                    })}
+
+                                    {/* Current time indicator */}
+                                    <div
+                                        className="absolute top-0 h-full w-0.5 bg-red-500 z-10"
+                                        style={{ left: `${now_left}%` }}
+                                    >
+                                        <div className="w-2 h-2 rounded-full bg-red-500 absolute -top-1 -left-[3px]" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Work card list */}
+                        <div className="phone-scroll">
+                            <div className="px-5 pt-3 pb-2">
+                                <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                                    작업 목록
+                                </span>
+                            </div>
+                            <div className="px-5 pb-6 flex flex-col gap-2">
+                                {MOCK_WORKS.map((work) => {
+                                    const is_active = active_id === work.id;
+                                    const is_running = work.is_running;
+                                    return (
+                                        <div
+                                            key={work.id}
+                                            className={`rounded-xl p-3.5 transition-all duration-200 cursor-pointer ${
+                                                is_active
+                                                    ? "bg-white shadow-md border border-gray-100 scale-[1.01]"
+                                                    : "bg-white border border-gray-100/60"
+                                            }`}
+                                            onClick={() =>
+                                                setActiveId(
+                                                    is_active ? null : work.id
+                                                )
+                                            }
+                                        >
+                                            <div className="flex items-start gap-3">
+                                                {/* Color indicator */}
+                                                <div
+                                                    className="w-1 h-10 rounded-full flex-shrink-0 mt-0.5"
+                                                    style={{
+                                                        background: work.color,
+                                                    }}
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <div className="min-w-0 flex-1">
+                                                            <div className="text-[13px] font-semibold text-gray-900 truncate">
+                                                                {work.deal_name}
+                                                            </div>
+                                                            <div className="text-[11px] text-gray-500 truncate mt-0.5">
+                                                                {work.work_name}
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                                                            {is_running && (
+                                                                <div
+                                                                    className="w-1.5 h-1.5 rounded-full bg-green-500"
+                                                                    style={{
+                                                                        animation:
+                                                                            "pulse-dot 1.5s infinite",
+                                                                    }}
+                                                                />
+                                                            )}
+                                                            <span className="text-[13px] font-semibold text-gray-800 tabular-nums">
+                                                                {formatDuration(
+                                                                    work.total_minutes
+                                                                )}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Session chips */}
+                                                    <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                                                        {work.sessions.map(
+                                                            (s, i) => (
+                                                                <span
+                                                                    key={i}
+                                                                    className="text-[10px] font-medium px-2 py-0.5 rounded-md tabular-nums"
+                                                                    style={{
+                                                                        background: `${work.color}15`,
+                                                                        color: work.color,
+                                                                    }}
+                                                                >
+                                                                    {s.start} ~{" "}
+                                                                    {s.end ||
+                                                                        "진행 중"}
+                                                                </span>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // ============================================
+            // CANDIDATE C: Compact Block View (시간 블록)
+            // ============================================
+            function CandidateC() {
+                const [active_id, setActiveId] = useState(null);
+
+                const TIME_START = 9 * 60;
+                const TIME_END = 17 * 60;
+                const TOTAL_RANGE = TIME_END - TIME_START;
+                const LUNCH_START = 11 * 60 + 40;
+                const LUNCH_END = 12 * 60 + 40;
+
+                // Build hour rows
+                const hours = [9, 10, 11, 12, 13, 14, 15, 16];
+
+                // Map sessions to hour blocks
+                function getSessionsInHour(hour) {
+                    const hour_start = hour * 60;
+                    const hour_end = (hour + 1) * 60;
+                    const results = [];
+                    MOCK_WORKS.forEach((w) => {
+                        w.sessions.forEach((s) => {
+                            const s_start = timeToMinutes(s.start);
+                            const s_end = timeToMinutes(s.end);
+                            if (s_start < hour_end && s_end > hour_start) {
+                                const clipped_start = Math.max(
+                                    s_start,
+                                    hour_start
+                                );
+                                const clipped_end = Math.min(s_end, hour_end);
+                                const left =
+                                    ((clipped_start - hour_start) / 60) * 100;
+                                const width =
+                                    ((clipped_end - clipped_start) / 60) * 100;
+                                results.push({ ...s, work: w, left, width });
+                            }
+                        });
+                    });
+                    return results;
+                }
+
+                const is_lunch_hour = (h) => h === 11 || h === 12;
+
+                return (
+                    <div className="phone-frame">
+                        {/* Header */}
+                        <div className="bg-white px-5 pt-4 pb-4 border-b border-gray-100">
+                            <div className="flex items-center justify-between mb-3">
+                                <span className="text-[17px] font-semibold text-gray-900">
+                                    일간 타임라인
+                                </span>
+                                <div className="flex items-center gap-1.5 bg-primary-light px-3 py-1.5 rounded-full">
+                                    <ClockCircleOutlined
+                                        style={{
+                                            fontSize: 12,
+                                            color: "#3182F6",
+                                        }}
+                                    />
+                                    <span className="text-[13px] font-semibold text-primary">
+                                        {FORMATTED_TOTAL}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-center gap-3">
+                                <button className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 border-0 bg-transparent cursor-pointer">
+                                    <LeftOutlined style={{ fontSize: 12 }} />
+                                </button>
+                                <span className="text-[13px] font-medium text-gray-700">
+                                    {SELECTED_DATE}
+                                </span>
+                                <button className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 border-0 bg-transparent cursor-pointer">
+                                    <RightOutlined style={{ fontSize: 12 }} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Hour blocks */}
+                        <div className="phone-scroll">
+                            <div className="px-4 py-3">
+                                {hours.map((hour, idx) => {
+                                    const sessions = getSessionsInHour(hour);
+                                    const is_lunch = hour === 11;
+                                    const lunch_in_this_hour =
+                                        is_lunch_hour(hour);
+
+                                    return (
+                                        <div
+                                            key={hour}
+                                            className="flex gap-2.5 mb-0.5"
+                                        >
+                                            {/* Hour label */}
+                                            <div className="w-10 flex-shrink-0 pt-1 text-right">
+                                                <span className="text-[11px] font-semibold text-gray-500 tabular-nums">
+                                                    {hour
+                                                        .toString()
+                                                        .padStart(2, "0")}
+                                                    :00
+                                                </span>
+                                            </div>
+
+                                            {/* Hour block */}
+                                            <div className="flex-1">
+                                                <div
+                                                    className={`relative h-14 rounded-lg ${
+                                                        lunch_in_this_hour
+                                                            ? "bg-orange-50/50"
+                                                            : "bg-gray-50"
+                                                    } overflow-hidden border border-gray-100/50`}
+                                                >
+                                                    {/* 15-min grid lines */}
+                                                    {[1, 2, 3].map((q) => (
+                                                        <div
+                                                            key={q}
+                                                            className="absolute top-0 h-full w-px bg-gray-100/60"
+                                                            style={{
+                                                                left: `${
+                                                                    (q / 4) *
+                                                                    100
+                                                                }%`,
+                                                            }}
+                                                        />
+                                                    ))}
+
+                                                    {/* Lunch zone overlay in specific hour */}
+                                                    {hour === 11 && (
+                                                        <div
+                                                            className="absolute top-0 h-full"
+                                                            style={{
+                                                                left: `${
+                                                                    ((LUNCH_START -
+                                                                        11 *
+                                                                            60) /
+                                                                        60) *
+                                                                    100
+                                                                }%`,
+                                                                right: 0,
+                                                                background:
+                                                                    "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,149,0,0.06) 2px, rgba(255,149,0,0.06) 4px)",
+                                                            }}
+                                                        />
+                                                    )}
+                                                    {hour === 12 && (
+                                                        <div
+                                                            className="absolute top-0 h-full"
+                                                            style={{
+                                                                left: 0,
+                                                                width: `${
+                                                                    ((LUNCH_END -
+                                                                        12 *
+                                                                            60) /
+                                                                        60) *
+                                                                    100
+                                                                }%`,
+                                                                background:
+                                                                    "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,149,0,0.06) 2px, rgba(255,149,0,0.06) 4px)",
+                                                            }}
+                                                        />
+                                                    )}
+
+                                                    {/* Session bars */}
+                                                    {sessions.map((seg, i) => {
+                                                        const is_running =
+                                                            seg.work.is_running;
+                                                        return (
+                                                            <div
+                                                                key={i}
+                                                                className={`absolute top-1.5 bottom-1.5 rounded-md cursor-pointer transition-all duration-200 flex items-center px-1.5 overflow-hidden ${
+                                                                    active_id ===
+                                                                    seg.work.id
+                                                                        ? "ring-2 ring-offset-1 brightness-105"
+                                                                        : ""
+                                                                }`}
+                                                                style={{
+                                                                    left: `${seg.left}%`,
+                                                                    width: `${seg.width}%`,
+                                                                    background:
+                                                                        seg.work
+                                                                            .color,
+                                                                    minWidth: 20,
+                                                                }}
+                                                                onClick={() =>
+                                                                    setActiveId(
+                                                                        active_id ===
+                                                                            seg
+                                                                                .work
+                                                                                .id
+                                                                            ? null
+                                                                            : seg
+                                                                                  .work
+                                                                                  .id
+                                                                    )
+                                                                }
+                                                            >
+                                                                {seg.width >
+                                                                    25 && (
+                                                                    <span className="text-[9px] font-medium text-white truncate">
+                                                                        {
+                                                                            seg
+                                                                                .work
+                                                                                .deal_name
+                                                                        }
+                                                                    </span>
+                                                                )}
+                                                                {is_running && (
+                                                                    <div className="absolute inset-0 shimmer-bar" />
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+
+                                {/* Last hour label */}
+                                <div className="flex gap-2.5">
+                                    <div className="w-10 flex-shrink-0 text-right">
+                                        <span className="text-[11px] font-semibold text-gray-500 tabular-nums">
+                                            17:00
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Active work detail card */}
+                            {active_id &&
+                                (() => {
+                                    const work = MOCK_WORKS.find(
+                                        (w) => w.id === active_id
+                                    );
+                                    if (!work) return null;
+                                    return (
+                                        <div className="px-4 pb-4">
+                                            <div
+                                                className="rounded-xl bg-white border border-gray-100 p-4 shadow-sm"
+                                                style={{
+                                                    borderLeft: `3px solid ${work.color}`,
+                                                }}
+                                            >
+                                                <div className="text-[13px] font-semibold text-gray-900">
+                                                    {work.deal_name}
+                                                </div>
+                                                <div className="text-[11px] text-gray-500 mt-0.5">
+                                                    {work.work_name}
+                                                </div>
+                                                <div className="flex items-center gap-2 mt-2.5">
+                                                    <span className="text-[13px] font-semibold text-gray-800">
+                                                        {formatDuration(
+                                                            work.total_minutes
+                                                        )}
+                                                    </span>
+                                                    <span className="text-[11px] text-gray-400">
+                                                        ·
+                                                    </span>
+                                                    <span className="text-[11px] text-gray-400">
+                                                        {work.sessions.length}개
+                                                        세션
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                                                    {work.sessions.map(
+                                                        (s, i) => (
+                                                            <span
+                                                                key={i}
+                                                                className="text-[10px] font-medium px-2 py-0.5 rounded-md tabular-nums"
+                                                                style={{
+                                                                    background: `${work.color}15`,
+                                                                    color: work.color,
+                                                                }}
+                                                            >
+                                                                {s.start} ~{" "}
+                                                                {s.end ||
+                                                                    "진행 중"}
+                                                            </span>
+                                                        )
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+                        </div>
+                    </div>
+                );
+            }
+
+            // ============================================
+            // CANDIDATE D: Donut Chart + Minimal List
+            // ============================================
+            function CandidateD() {
+                const [active_id, setActiveId] = useState(null);
+
+                const total_active = MOCK_WORKS.reduce(
+                    (s, w) => s + w.total_minutes,
+                    0
+                );
+                const WORK_DAY = 8 * 60; // 480 mins
+                const fill_pct = (total_active / WORK_DAY) * 100;
+
+                // SVG donut
+                const RADIUS = 58;
+                const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+                const GAP = 3; // gap degrees between segments
+
+                let accumulated = 0;
+                const segments = MOCK_WORKS.map((w) => {
+                    const pct = w.total_minutes / WORK_DAY;
+                    const angle = pct * 360 - GAP;
+                    const start = accumulated;
+                    accumulated += pct * 360;
+                    return {
+                        ...w,
+                        pct,
+                        angle,
+                        start,
+                        dash: pct * CIRCUMFERENCE,
+                        offset: (start / 360) * CIRCUMFERENCE,
+                    };
+                });
+
+                return (
+                    <div className="phone-frame">
+                        {/* Header */}
+                        <div className="bg-white px-5 pt-4 pb-3 border-b border-gray-100">
+                            <div className="flex items-center justify-between mb-3">
+                                <span className="text-[17px] font-semibold text-gray-900">
+                                    일간 타임라인
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-center gap-3">
+                                <button className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 border-0 bg-transparent cursor-pointer">
+                                    <LeftOutlined style={{ fontSize: 12 }} />
+                                </button>
+                                <span className="text-[13px] font-medium text-gray-700">
+                                    {SELECTED_DATE}
+                                </span>
+                                <button className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 border-0 bg-transparent cursor-pointer">
+                                    <RightOutlined style={{ fontSize: 12 }} />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="phone-scroll">
+                            {/* Donut section */}
+                            <div className="flex items-center justify-center py-6">
+                                <div className="relative">
+                                    <svg
+                                        width="160"
+                                        height="160"
+                                        viewBox="0 0 160 160"
+                                    >
+                                        {/* Background circle */}
+                                        <circle
+                                            cx="80"
+                                            cy="80"
+                                            r={RADIUS}
+                                            fill="none"
+                                            stroke="#F2F4F6"
+                                            strokeWidth="14"
+                                        />
+                                        {/* Segments */}
+                                        {segments.map((seg, idx) => (
+                                            <circle
+                                                key={seg.id}
+                                                cx="80"
+                                                cy="80"
+                                                r={RADIUS}
+                                                fill="none"
+                                                stroke={seg.color}
+                                                strokeWidth={
+                                                    active_id === seg.id
+                                                        ? "16"
+                                                        : "14"
+                                                }
+                                                strokeDasharray={`${seg.dash} ${CIRCUMFERENCE}`}
+                                                strokeDashoffset={-seg.offset}
+                                                strokeLinecap="round"
+                                                transform="rotate(-90 80 80)"
+                                                className="cursor-pointer transition-all duration-200"
+                                                style={{
+                                                    opacity:
+                                                        active_id &&
+                                                        active_id !== seg.id
+                                                            ? 0.3
+                                                            : 1,
+                                                }}
+                                                onClick={() =>
+                                                    setActiveId(
+                                                        active_id === seg.id
+                                                            ? null
+                                                            : seg.id
+                                                    )
+                                                }
+                                            />
+                                        ))}
+                                    </svg>
+                                    {/* Center text */}
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                        <span className="text-[22px] font-semibold text-gray-900 tabular-nums">
+                                            {FORMATTED_TOTAL}
+                                        </span>
+                                        <span className="text-[11px] text-gray-400 mt-0.5">
+                                            {Math.round(fill_pct)}% 달성
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Legend / Work list */}
+                            <div className="px-5 pb-6">
+                                <div className="flex flex-col gap-1.5">
+                                    {MOCK_WORKS.map((work) => {
+                                        const is_active = active_id === work.id;
+                                        const is_running = work.is_running;
+                                        const pct = Math.round(
+                                            (work.total_minutes / WORK_DAY) *
+                                                100
+                                        );
+
+                                        return (
+                                            <div
+                                                key={work.id}
+                                                className={`rounded-xl p-3.5 transition-all duration-200 cursor-pointer ${
+                                                    is_active
+                                                        ? "bg-white shadow-md border border-gray-100"
+                                                        : "bg-white/60 border border-transparent hover:bg-white"
+                                                }`}
+                                                onClick={() =>
+                                                    setActiveId(
+                                                        is_active
+                                                            ? null
+                                                            : work.id
+                                                    )
+                                                }
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div
+                                                        className="w-3 h-3 rounded-full flex-shrink-0"
+                                                        style={{
+                                                            background:
+                                                                work.color,
+                                                        }}
+                                                    />
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-[13px] font-medium text-gray-900 truncate">
+                                                                {work.deal_name}
+                                                            </span>
+                                                            <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                                                                {is_running && (
+                                                                    <div
+                                                                        className="w-1.5 h-1.5 rounded-full bg-green-500"
+                                                                        style={{
+                                                                            animation:
+                                                                                "pulse-dot 1.5s infinite",
+                                                                        }}
+                                                                    />
+                                                                )}
+                                                                <span className="text-[13px] font-semibold text-gray-800 tabular-nums">
+                                                                    {formatDuration(
+                                                                        work.total_minutes
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        {is_active && (
+                                                            <div className="mt-2">
+                                                                <div className="text-[11px] text-gray-500 mb-1.5">
+                                                                    {
+                                                                        work.work_name
+                                                                    }
+                                                                </div>
+                                                                <div className="flex items-center gap-1.5 flex-wrap">
+                                                                    {work.sessions.map(
+                                                                        (
+                                                                            s,
+                                                                            i
+                                                                        ) => (
+                                                                            <span
+                                                                                key={
+                                                                                    i
+                                                                                }
+                                                                                className="text-[10px] font-medium px-2 py-0.5 rounded-md tabular-nums"
+                                                                                style={{
+                                                                                    background: `${work.color}15`,
+                                                                                    color: work.color,
+                                                                                }}
+                                                                            >
+                                                                                {
+                                                                                    s.start
+                                                                                }{" "}
+                                                                                ~{" "}
+                                                                                {s.end ||
+                                                                                    "진행 중"}
+                                                                            </span>
+                                                                        )
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                {/* Progress bar */}
+                                                <div className="mt-2 ml-6 h-1 rounded-full bg-gray-100 overflow-hidden">
+                                                    <div
+                                                        className="h-full rounded-full transition-all duration-300"
+                                                        style={{
+                                                            width: `${pct}%`,
+                                                            background:
+                                                                work.color,
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // ============================================
+            // Main App - Show all candidates
+            // ============================================
+            function MockupApp() {
+                return (
+                    <div>
+                        <div
+                            style={{
+                                textAlign: "center",
+                                marginBottom: 40,
+                                paddingBottom: 16,
+                                borderBottom: "1px solid #E5E8EB",
+                            }}
+                        >
+                            <h1
+                                style={{
+                                    fontSize: 22,
+                                    fontWeight: 700,
+                                    color: "#191F28",
+                                    margin: "0 0 6px",
+                                }}
+                            >
+                                모바일 일간 타임라인 리디자인
+                            </h1>
+                            <p
+                                style={{
+                                    fontSize: 13,
+                                    color: "#6B7684",
+                                    margin: 0,
+                                }}
+                            >
+                                4가지 디자인 후보 · 폰에서 터치하거나 카드를
+                                클릭해 인터랙션을 확인하세요
+                            </p>
+                        </div>
+
+                        {/* Candidate Grid */}
+                        <div
+                            style={{
+                                display: "grid",
+                                gridTemplateColumns: "repeat(auto-fit, 375px)",
+                                gap: 32,
+                                justifyContent: "center",
+                            }}
+                        >
+                            {/* A */}
+                            <div>
+                                <div style={{ marginBottom: 12 }}>
+                                    <div
+                                        style={{
+                                            fontSize: 11,
+                                            fontWeight: 700,
+                                            textTransform: "uppercase",
+                                            letterSpacing: 1,
+                                            color: "#3182F6",
+                                            marginBottom: 4,
+                                        }}
+                                    >
+                                        후보 A
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: 15,
+                                            fontWeight: 600,
+                                            color: "#191F28",
+                                        }}
+                                    >
+                                        수직 카드 타임라인
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: 12,
+                                            color: "#6B7684",
+                                            marginTop: 2,
+                                        }}
+                                    >
+                                        시간 순서대로 세션을 카드로 나열 ·
+                                        점심시간 구분자
+                                    </div>
+                                </div>
+                                <CandidateA />
+                            </div>
+
+                            {/* B */}
+                            <div>
+                                <div style={{ marginBottom: 12 }}>
+                                    <div
+                                        style={{
+                                            fontSize: 11,
+                                            fontWeight: 700,
+                                            textTransform: "uppercase",
+                                            letterSpacing: 1,
+                                            color: "#3182F6",
+                                            marginBottom: 4,
+                                        }}
+                                    >
+                                        후보 B
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: 15,
+                                            fontWeight: 600,
+                                            color: "#191F28",
+                                        }}
+                                    >
+                                        세그먼트 바 + 카드 리스트
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: 12,
+                                            color: "#6B7684",
+                                            marginTop: 2,
+                                        }}
+                                    >
+                                        상단 타임바로 하루 전체를 한눈에 · 하단
+                                        카드로 상세 확인
+                                    </div>
+                                </div>
+                                <CandidateB />
+                            </div>
+
+                            {/* C */}
+                            <div>
+                                <div style={{ marginBottom: 12 }}>
+                                    <div
+                                        style={{
+                                            fontSize: 11,
+                                            fontWeight: 700,
+                                            textTransform: "uppercase",
+                                            letterSpacing: 1,
+                                            color: "#3182F6",
+                                            marginBottom: 4,
+                                        }}
+                                    >
+                                        후보 C
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: 15,
+                                            fontWeight: 600,
+                                            color: "#191F28",
+                                        }}
+                                    >
+                                        시간 블록 뷰
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: 12,
+                                            color: "#6B7684",
+                                            marginTop: 2,
+                                        }}
+                                    >
+                                        시간대별 가로 블록 · 15분 그리드 ·
+                                        탭하면 상세 카드
+                                    </div>
+                                </div>
+                                <CandidateC />
+                            </div>
+
+                            {/* D */}
+                            <div>
+                                <div style={{ marginBottom: 12 }}>
+                                    <div
+                                        style={{
+                                            fontSize: 11,
+                                            fontWeight: 700,
+                                            textTransform: "uppercase",
+                                            letterSpacing: 1,
+                                            color: "#3182F6",
+                                            marginBottom: 4,
+                                        }}
+                                    >
+                                        후보 D
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: 15,
+                                            fontWeight: 600,
+                                            color: "#191F28",
+                                        }}
+                                    >
+                                        도넛 차트 + 리스트
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: 12,
+                                            color: "#6B7684",
+                                            marginTop: 2,
+                                        }}
+                                    >
+                                        원형 차트로 비율 시각화 · 달성률 표시 ·
+                                        탭하면 세션 상세
+                                    </div>
+                                </div>
+                                <CandidateD />
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            root.render(<MockupApp />);
+        </script>
+    </body>
+</html>

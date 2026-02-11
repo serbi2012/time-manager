@@ -80,3 +80,6 @@ export const DEFAULT_HIDDEN_AUTOCOMPLETE_OPTIONS: HiddenAutoCompleteOptions = {
 
 /** 기본 프리셋 추가 시 구분자 사용 여부 */
 export const DEFAULT_USE_POSTFIX_ON_PRESET_ADD = false;
+
+/** 모바일 간트 작업 목록 기본 펼침 상태 */
+export const DEFAULT_MOBILE_GANTT_LIST_EXPANDED = true;

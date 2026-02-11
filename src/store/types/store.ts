@@ -125,6 +125,7 @@ export interface SettingsSlice {
     lunch_end_time: string;
     transition_enabled: boolean;
     transition_speed: TransitionSpeed;
+    mobile_gantt_list_expanded: boolean;
 
     // Actions - Custom Options
     addCustomTaskOption: (option: string) => void;
@@ -149,6 +150,7 @@ export interface SettingsSlice {
     getLunchTimeMinutes: () => { start: number; end: number; duration: number };
     setTransitionEnabled: (enabled: boolean) => void;
     setTransitionSpeed: (speed: TransitionSpeed) => void;
+    setMobileGanttListExpanded: (expanded: boolean) => void;
 }
 
 // ============================================

@@ -152,6 +152,23 @@ export const GANTT_MODAL_ACTIVE_SESSION_HINT =
     "💡 진행 중인 세션은 시작 시간만 수정할 수 있습니다";
 export const GANTT_MODAL_DURATION_LABEL = "소요";
 
+// ---------- 모바일 전용 ----------
+
+/** 모바일 작업 목록 섹션 라벨 */
+export const GANTT_MOBILE_SECTION_WORK_LIST = "작업 목록";
+
+/** 모바일 진행 중 라벨 */
+export const GANTT_MOBILE_RUNNING_LABEL = "진행 중";
+
+/** 모바일 세션 개수 포맷 */
+export const GANTT_MOBILE_SESSION_COUNT = (count: number) => `${count}개 세션`;
+
+/** 모바일 빈 상태 힌트 */
+export const GANTT_MOBILE_EMPTY_HINT = "아직 기록이 없어요";
+
+/** 모바일 빈 상태 서브 힌트 */
+export const GANTT_MOBILE_EMPTY_SUB_HINT = "프리셋에서 작업을 추가해 보세요";
+
 // ---------- 폼 검증 메시지 ----------
 
 export const GANTT_FORM_VALIDATE_WORK_NAME_REQUIRED = "작업명을 입력하세요";

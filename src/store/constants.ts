@@ -16,6 +16,7 @@ export {
     DEFAULT_TIMER,
     DEFAULT_HIDDEN_AUTOCOMPLETE_OPTIONS,
     DEFAULT_USE_POSTFIX_ON_PRESET_ADD,
+    DEFAULT_MOBILE_GANTT_LIST_EXPANDED,
 } from "@/shared/constants/app";
 
 // ============================================

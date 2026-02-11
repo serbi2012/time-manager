@@ -1557,5 +1557,24 @@ describe("useWorkStore", () => {
             store.setTransitionSpeed("normal");
             expect(useWorkStore.getState().transition_speed).toBe("normal");
         });
+
+        it("mobile_gantt_list_expanded 기본값은 true", () => {
+            const state = useWorkStore.getState();
+            expect(state.mobile_gantt_list_expanded).toBe(true);
+        });
+
+        it("setMobileGanttListExpanded로 접기/펼치기 토글", () => {
+            const store = useWorkStore.getState();
+
+            store.setMobileGanttListExpanded(false);
+            expect(useWorkStore.getState().mobile_gantt_list_expanded).toBe(
+                false
+            );
+
+            store.setMobileGanttListExpanded(true);
+            expect(useWorkStore.getState().mobile_gantt_list_expanded).toBe(
+                true
+            );
+        });
     });
 });
