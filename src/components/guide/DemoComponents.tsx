@@ -66,7 +66,7 @@ interface DemoTemplate {
     deal_name: string;
     task_name: string;
     category_name: string;
-    project_code: string;
+    project_code?: string;
     color: string;
 }
 
