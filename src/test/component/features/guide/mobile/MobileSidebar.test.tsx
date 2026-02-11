@@ -55,7 +55,9 @@ describe("MobileSidebar", () => {
     });
 
     it("검색 결과가 있으면 결과 목록이 표시된다", () => {
-        const results = [{ id: "overview", title: "개요", preview: "앱 소개" }];
+        const results = [
+            { id: "overview", title: "개요", preview: "앱 소개", matches: 1 },
+        ];
         render(
             <MobileSidebar
                 {...DEFAULT_PROPS}
@@ -68,7 +70,9 @@ describe("MobileSidebar", () => {
 
     it("검색 결과 클릭 시 on_search_result_click이 호출된다", () => {
         const on_click = vi.fn();
-        const results = [{ id: "overview", title: "개요", preview: "앱 소개" }];
+        const results = [
+            { id: "overview", title: "개요", preview: "앱 소개", matches: 1 },
+        ];
         render(
             <MobileSidebar
                 {...DEFAULT_PROPS}
