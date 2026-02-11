@@ -173,6 +173,21 @@ export const RECORD_UI_TEXT = {
 // ========================================
 // 마크다운 복사 관련
 // ========================================
+// ========================================
+// 모바일 전용 라벨
+// ========================================
+export const MOBILE_RECORD_LABEL = {
+    RUNNING_SECTION: "진행 중",
+    RECORD_LIST_SECTION: "작업 목록",
+    IN_PROGRESS: "진행 중",
+    WEEKLY_TOGGLE: "주간",
+    SPEED_DIAL_NEW_RECORD: "새 작업",
+    SPEED_DIAL_PRESET: "프리셋",
+} as const;
+
+// ========================================
+// 마크다운 복사 관련
+// ========================================
 export const MARKDOWN_COPY = {
     COLUMNS: ["거래명", "작업명", "시간", "카테고리", "비고"],
     CELL_PREFIX: "| ",

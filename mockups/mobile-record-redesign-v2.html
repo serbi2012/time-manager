@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Mobile Record Redesign v2</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        spacing: {
+                            xs: "4px",
+                            sm: "8px",
+                            md: "12px",
+                            lg: "16px",
+                            xl: "24px",
+                            "2xl": "32px",
+                        },
+                        colors: {
+                            primary: "#3182F6",
+                            "primary-dark": "#1B64DA",
+                            "primary-light": "#ECF2FE",
+                            success: "#34C759",
+                            error: "#F04452",
+                            "error-light": "#FEF0F1",
+                            warning: "#FF9500",
+                            "text-primary": "#191F28",
+                            "text-secondary": "#6B7684",
+                            "text-disabled": "#B0B8C1",
+                            "text-hint": "#D1D6DB",
+                            "bg-default": "#FFFFFF",
+                            "bg-light": "#F9FAFB",
+                            "bg-grey": "#F2F4F6",
+                            "border-default": "#E5E8EB",
+                            "border-light": "#F2F4F6",
+                            gray: {
+                                50: "#F9FAFB",
+                                100: "#F2F4F6",
+                                200: "#E5E8EB",
+                                300: "#D1D6DB",
+                                400: "#B0B8C1",
+                                500: "#8B95A1",
+                                600: "#6B7684",
+                                700: "#4E5968",
+                                800: "#333D4B",
+                                900: "#191F28",
+                            },
+                        },
+                        fontSize: {
+                            xs: "11px",
+                            sm: "13px",
+                            md: "15px",
+                            lg: "17px",
+                            xl: "19px",
+                            "2xl": "22px",
+                        },
+                        borderRadius: {
+                            xs: "4px",
+                            sm: "6px",
+                            md: "8px",
+                            lg: "12px",
+                            xl: "16px",
+                            "2xl": "20px",
+                        },
+                    },
+                },
+            };
+        </script>
+
+        <script
+            crossorigin
+            src="https://unpkg.com/react@18/umd/react.development.js"
+        ></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+        ></script>
+        <script src="https://unpkg.com/dayjs@1/dayjs.min.js"></script>
+        <script src="https://unpkg.com/antd@5/dist/antd.min.js"></script>
+        <script src="https://unpkg.com/@ant-design/icons@5/dist/index.umd.min.js"></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                padding: 0;
+                background: #f2f4f6;
+                font-family: "Pretendard Variable", Pretendard, -apple-system,
+                    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                -webkit-font-smoothing: antialiased;
+            }
+            #root {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 24px;
+            }
+            .candidate-nav {
+                display: flex;
+                gap: 8px;
+                justify-content: center;
+                margin-bottom: 24px;
+                flex-wrap: wrap;
+            }
+            .candidate-nav button {
+                padding: 8px 20px;
+                border: 1px solid #e5e8eb;
+                border-radius: 20px;
+                background: white;
+                color: #4e5968;
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.15s ease;
+            }
+            .candidate-nav button:hover {
+                background: #f9fafb;
+            }
+            .candidate-nav button.active {
+                background: #3182f6;
+                color: white;
+                border-color: #3182f6;
+            }
+            .phone-frame {
+                width: 375px;
+                min-height: 720px;
+                margin: 0 auto;
+                background: #f9fafb;
+                border-radius: 32px;
+                border: 6px solid #191f28;
+                overflow: hidden;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+                position: relative;
+            }
+            .phone-frame::before {
+                content: "";
+                display: block;
+                width: 120px;
+                height: 24px;
+                background: #191f28;
+                border-radius: 0 0 16px 16px;
+                margin: 0 auto;
+                position: relative;
+                z-index: 10;
+            }
+            .phone-content {
+                height: calc(100% - 24px);
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .phone-content::-webkit-scrollbar {
+                display: none;
+            }
+
+            @keyframes pulse-ring {
+                0% {
+                    box-shadow: 0 0 0 0 rgba(240, 68, 82, 0.4);
+                }
+                70% {
+                    box-shadow: 0 0 0 6px rgba(240, 68, 82, 0);
+                }
+                100% {
+                    box-shadow: 0 0 0 0 rgba(240, 68, 82, 0);
+                }
+            }
+            .timer-pulse {
+                animation: pulse-ring 1.5s infinite;
+            }
+
+            @keyframes slideUp {
+                from {
+                    transform: translateY(6px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+            .animate-slide-up {
+                animation: slideUp 0.25s ease-out forwards;
+            }
+
+            .mock-bottom-nav {
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+                padding: 8px 0 12px;
+                background: white;
+                border-top: 1px solid #f2f4f6;
+                position: sticky;
+                bottom: 0;
+            }
+            .mock-bottom-nav-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 2px;
+                font-size: 10px;
+                color: #b0b8c1;
+                cursor: pointer;
+            }
+            .mock-bottom-nav-item.active {
+                color: #3182f6;
+            }
+
+            .section-header {
+                text-align: center;
+                margin-bottom: 32px;
+                padding-bottom: 16px;
+                border-bottom: 1px solid #e5e8eb;
+            }
+            .section-header h1 {
+                font-size: 22px;
+                font-weight: 700;
+                color: #191f28;
+                margin: 0 0 4px;
+            }
+            .section-header p {
+                font-size: 13px;
+                color: #8b95a1;
+                margin: 0;
+            }
+            .design-notes {
+                max-width: 375px;
+                margin: 24px auto 0;
+                background: white;
+                border-radius: 12px;
+                padding: 20px;
+                border: 1px solid #e5e8eb;
+            }
+            .design-notes h3 {
+                font-size: 15px;
+                font-weight: 600;
+                color: #191f28;
+                margin: 0 0 12px;
+            }
+            .design-notes ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+            .design-notes li {
+                font-size: 13px;
+                color: #4e5968;
+                padding: 4px 0;
+                padding-left: 16px;
+                position: relative;
+            }
+            .design-notes li::before {
+                content: "•";
+                position: absolute;
+                left: 0;
+                color: #3182f6;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const {
+                CalendarOutlined,
+                LeftOutlined,
+                RightOutlined,
+                PlusOutlined,
+                PlayCircleOutlined,
+                PauseCircleOutlined,
+                PlayCircleFilled,
+                PauseCircleFilled,
+                EditOutlined,
+                CheckCircleOutlined,
+                DeleteOutlined,
+                CopyOutlined,
+                EllipsisOutlined,
+                FieldTimeOutlined,
+                AppstoreOutlined,
+                HistoryOutlined,
+                ClockCircleOutlined,
+            } = icons;
+
+            // =============================================
+            // MOCK DATA
+            // =============================================
+            const WEEK_DAYS = [
+                {
+                    key: "mon",
+                    label: "월",
+                    date: 9,
+                    date_str: "2026-02-09",
+                    is_weekend: false,
+                    is_today: false,
+                    has_records: true,
+                },
+                {
+                    key: "tue",
+                    label: "화",
+                    date: 10,
+                    date_str: "2026-02-10",
+                    is_weekend: false,
+                    is_today: true,
+                    has_records: true,
+                },
+                {
+                    key: "wed",
+                    label: "수",
+                    date: 11,
+                    date_str: "2026-02-11",
+                    is_weekend: false,
+                    is_today: false,
+                    has_records: true,
+                },
+                {
+                    key: "thu",
+                    label: "목",
+                    date: 12,
+                    date_str: "2026-02-12",
+                    is_weekend: false,
+                    is_today: false,
+                    has_records: false,
+                },
+                {
+                    key: "fri",
+                    label: "금",
+                    date: 13,
+                    date_str: "2026-02-13",
+                    is_weekend: false,
+                    is_today: false,
+                    has_records: true,
+                },
+                {
+                    key: "sat",
+                    label: "토",
+                    date: 14,
+                    date_str: "2026-02-14",
+                    is_weekend: true,
+                    is_today: false,
+                    has_records: false,
+                },
+                {
+                    key: "sun",
+                    label: "일",
+                    date: 15,
+                    date_str: "2026-02-15",
+                    is_weekend: true,
+                    is_today: false,
+                    has_records: false,
+                },
+            ];
+
+            const MOCK_RECORDS = [
+                {
+                    id: "1",
+                    deal_name: "관리업무",
+                    work_name: "회의",
+                    task_name: "작업",
+                    category_name: "회의",
+                    category_color: "#3182F6",
+                    duration_minutes: 85,
+                    start_time: "09:00",
+                    end_time: "",
+                    is_running: true,
+                    elapsed_display: "01:25",
+                    sessions: [{ start: "09:00", end: "", duration: 85 }],
+                },
+                {
+                    id: "2",
+                    deal_name: "프로젝트 A",
+                    work_name: "API 설계",
+                    task_name: "개발",
+                    category_name: "개발",
+                    category_color: "#34C759",
+                    duration_minutes: 180,
+                    start_time: "10:30",
+                    end_time: "13:30",
+                    is_running: false,
+                    sessions: [
+                        { start: "10:30", end: "12:00", duration: 90 },
+                        { start: "12:40", end: "13:30", duration: 50 },
+                    ],
+                },
+                {
+                    id: "3",
+                    deal_name: "",
+                    work_name: "세트메뉴 설정",
+                    task_name: "구매 뉴트리",
+                    category_name: "개발",
+                    category_color: "#34C759",
+                    duration_minutes: 120,
+                    start_time: "13:30",
+                    end_time: "15:30",
+                    is_running: false,
+                    sessions: [{ start: "13:30", end: "15:30", duration: 120 }],
+                },
+                {
+                    id: "4",
+                    deal_name: "",
+                    work_name: "탭/프리셋 — 뷰모델 설계",
+                    task_name: "개발",
+                    category_name: "개발",
+                    category_color: "#34C759",
+                    duration_minutes: 95,
+                    start_time: "15:40",
+                    end_time: "17:15",
+                    is_running: false,
+                    sessions: [{ start: "15:40", end: "17:15", duration: 95 }],
+                },
+            ];
+
+            const formatDurationShort = (m) => {
+                const h = Math.floor(m / 60);
+                const min = m % 60;
+                if (h > 0 && min > 0) return `${h}h ${min}m`;
+                if (h > 0) return `${h}h`;
+                return `${min}m`;
+            };
+
+            const formatDuration = (m) => {
+                const h = Math.floor(m / 60);
+                const min = m % 60;
+                if (h > 0 && min > 0) return `${h}시간 ${min}분`;
+                if (h > 0) return `${h}시간`;
+                return `${min}분`;
+            };
+
+            const total_minutes = MOCK_RECORDS.reduce(
+                (sum, r) => sum + r.duration_minutes,
+                0
+            );
+
+            // =============================================
+            // SHARED COMPONENTS
+            // =============================================
+            function BottomNav() {
+                return (
+                    <div className="mock-bottom-nav">
+                        <div className="mock-bottom-nav-item active">
+                            <CalendarOutlined style={{ fontSize: 20 }} />
+                            <span>일간</span>
+                        </div>
+                        <div className="mock-bottom-nav-item">
+                            <FieldTimeOutlined style={{ fontSize: 20 }} />
+                            <span>주간</span>
+                        </div>
+                        <div className="mock-bottom-nav-item">
+                            <HistoryOutlined style={{ fontSize: 20 }} />
+                            <span>건의</span>
+                        </div>
+                        <div className="mock-bottom-nav-item">
+                            <AppstoreOutlined style={{ fontSize: 20 }} />
+                            <span>설명서</span>
+                        </div>
+                    </div>
+                );
+            }
+
+            function FAB() {
+                return (
+                    <div
+                        style={{
+                            position: "sticky",
+                            bottom: 60,
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            padding: "0 16px 8px",
+                            pointerEvents: "none",
+                        }}
+                    >
+                        <button
+                            className="w-14 h-14 rounded-full flex items-center justify-center border-0"
+                            style={{
+                                background: "#3182F6",
+                                color: "white",
+                                pointerEvents: "auto",
+                                boxShadow: "0 4px 16px rgba(49,130,246,0.35)",
+                                cursor: "pointer",
+                            }}
+                        >
+                            <PlusOutlined style={{ fontSize: 22 }} />
+                        </button>
+                    </div>
+                );
+            }
+
+            // Timer button — RED when active (matching desktop)
+            function TimerButton({ is_running, size }) {
+                const sz = size || 36;
+                if (is_running) {
+                    return (
+                        <button
+                            className="rounded-full flex items-center justify-center border-0 timer-pulse"
+                            style={{
+                                width: sz,
+                                height: sz,
+                                background: "#F04452",
+                                color: "white",
+                                cursor: "pointer",
+                            }}
+                        >
+                            <PauseCircleOutlined
+                                style={{ fontSize: sz * 0.5 }}
+                            />
+                        </button>
+                    );
+                }
+                return (
+                    <button
+                        className="rounded-full flex items-center justify-center"
+                        style={{
+                            width: sz,
+                            height: sz,
+                            background: "transparent",
+                            border: "2px solid #E5E8EB",
+                            color: "#B0B8C1",
+                            cursor: "pointer",
+                        }}
+                    >
+                        <PlayCircleOutlined style={{ fontSize: sz * 0.5 }} />
+                    </button>
+                );
+            }
+
+            // Weekly calendar strip — matching desktop style
+            function WeeklyCalendarStrip({ selected_date, onSelect }) {
+                return (
+                    <div className="flex gap-[3px] justify-center px-lg">
+                        {WEEK_DAYS.map((d) => {
+                            const is_selected = d.date_str === selected_date;
+                            return (
+                                <button
+                                    key={d.key}
+                                    onClick={() => onSelect(d.date_str)}
+                                    className="flex flex-col items-center py-[6px] px-[10px] border-0 rounded-md relative"
+                                    style={{
+                                        minWidth: 40,
+                                        cursor: "pointer",
+                                        background: is_selected
+                                            ? "#3182F6"
+                                            : "transparent",
+                                        color: is_selected
+                                            ? "white"
+                                            : d.is_weekend
+                                            ? "#B0B8C1"
+                                            : "#6B7684",
+                                        transition: "all 0.15s ease",
+                                    }}
+                                >
+                                    <span className="text-xs font-medium">
+                                        {d.label}
+                                    </span>
+                                    <span
+                                        className={`text-sm font-semibold ${
+                                            is_selected ? "" : "mt-[1px]"
+                                        }`}
+                                    >
+                                        {d.date}
+                                    </span>
+                                    {d.is_today && !is_selected && (
+                                        <span className="absolute -bottom-[1px] w-[4px] h-[4px] rounded-full bg-primary" />
+                                    )}
+                                    {d.has_records &&
+                                        !is_selected &&
+                                        !d.is_today && (
+                                            <span className="absolute -bottom-[1px] w-[4px] h-[4px] rounded-full bg-gray-300" />
+                                        )}
+                                </button>
+                            );
+                        })}
+                    </div>
+                );
+            }
+
+            // Date navigation — matching desktop style
+            function DateNav({ compact }) {
+                return (
+                    <div className="flex items-center gap-sm">
+                        <button
+                            className="w-7 h-7 border-0 bg-transparent rounded-md flex items-center justify-center hover:bg-gray-100 cursor-pointer"
+                            style={{ transition: "background 0.15s" }}
+                        >
+                            <LeftOutlined
+                                style={{ fontSize: 12, color: "#6B7684" }}
+                            />
+                        </button>
+                        <div
+                            className="flex items-center gap-xs cursor-pointer hover:bg-gray-100 rounded-md px-sm py-xs"
+                            style={{ transition: "background 0.15s" }}
+                        >
+                            <CalendarOutlined
+                                className="text-primary"
+                                style={{ fontSize: 14 }}
+                            />
+                            <span
+                                className={`${
+                                    compact ? "text-md" : "text-lg"
+                                } font-semibold text-text-primary`}
+                            >
+                                2월 10일 (화)
+                            </span>
+                        </div>
+                        <button
+                            className="w-7 h-7 border-0 bg-transparent rounded-md flex items-center justify-center hover:bg-gray-100 cursor-pointer"
+                            style={{ transition: "background 0.15s" }}
+                        >
+                            <RightOutlined
+                                style={{ fontSize: 12, color: "#6B7684" }}
+                            />
+                        </button>
+                    </div>
+                );
+            }
+
+            // Action buttons (완료, 휴지통, 복사)
+            function ActionButtons({ style }) {
+                const s = style || "icon";
+                if (s === "icon") {
+                    return (
+                        <div className="flex items-center gap-xs">
+                            <button
+                                className="w-7 h-7 rounded-full flex items-center justify-center border-0 cursor-pointer"
+                                style={{ background: "#F2F4F6" }}
+                            >
+                                <CheckCircleOutlined
+                                    style={{ fontSize: 13, color: "#34C759" }}
+                                />
+                            </button>
+                            <button
+                                className="w-7 h-7 rounded-full flex items-center justify-center border-0 cursor-pointer"
+                                style={{ background: "#F2F4F6" }}
+                            >
+                                <DeleteOutlined
+                                    style={{ fontSize: 13, color: "#F04452" }}
+                                />
+                            </button>
+                            <button
+                                className="w-7 h-7 rounded-full flex items-center justify-center border-0 cursor-pointer"
+                                style={{ background: "#F2F4F6" }}
+                            >
+                                <CopyOutlined
+                                    style={{ fontSize: 13, color: "#6B7684" }}
+                                />
+                            </button>
+                        </div>
+                    );
+                }
+                return (
+                    <div className="flex items-center gap-xs">
+                        <button
+                            className="text-xs text-text-secondary px-sm py-[3px] rounded-full border-0 cursor-pointer"
+                            style={{ background: "#F2F4F6" }}
+                        >
+                            완료
+                        </button>
+                        <button
+                            className="text-xs text-text-secondary px-sm py-[3px] rounded-full border-0 cursor-pointer"
+                            style={{ background: "#F2F4F6" }}
+                        >
+                            휴지통
+                        </button>
+                        <button
+                            className="text-xs text-text-secondary px-sm py-[3px] rounded-full border-0 cursor-pointer"
+                            style={{ background: "#F2F4F6" }}
+                        >
+                            복사
+                        </button>
+                    </div>
+                );
+            }
+
+            // Inline stats — minimal single line
+            function InlineStats() {
+                return (
+                    <div className="flex items-center gap-sm">
+                        <ClockCircleOutlined
+                            style={{ fontSize: 13, color: "#3182F6" }}
+                        />
+                        <span className="text-md font-semibold text-text-primary">
+                            {formatDuration(total_minutes)}
+                        </span>
+                        <span className="text-text-disabled text-xs">·</span>
+                        <span className="text-sm text-text-secondary">
+                            {MOCK_RECORDS.length}건
+                        </span>
+                    </div>
+                );
+            }
+
+            // Record list item
+            function RecordItem({ record, variant }) {
+                const v = variant || "default";
+                return (
+                    <div
+                        className="flex items-center gap-md py-md px-lg animate-slide-up"
+                        style={{
+                            background: "white",
+                            borderLeft: record.is_running
+                                ? "3px solid #F04452"
+                                : "3px solid transparent",
+                        }}
+                    >
+                        {/* Timer button */}
+                        <div className="flex-shrink-0">
+                            <TimerButton
+                                is_running={record.is_running}
+                                size={36}
+                            />
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-sm">
+                                <span
+                                    className={`text-md font-medium truncate ${
+                                        record.is_running
+                                            ? "text-error"
+                                            : "text-text-primary"
+                                    }`}
+                                >
+                                    {record.deal_name || record.work_name}
+                                </span>
+                                {record.is_running && (
+                                    <span
+                                        className="flex-shrink-0 text-xs font-medium px-sm py-[1px] rounded-sm"
+                                        style={{
+                                            background: "#FEF0F1",
+                                            color: "#F04452",
+                                        }}
+                                    >
+                                        {record.elapsed_display || "진행 중"}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-xs mt-[2px]">
+                                {record.deal_name && (
+                                    <>
+                                        <span className="text-sm text-text-secondary truncate">
+                                            {record.work_name}
+                                        </span>
+                                        <span className="text-text-disabled text-xs">
+                                            ·
+                                        </span>
+                                    </>
+                                )}
+                                <span className="text-xs text-text-disabled flex-shrink-0">
+                                    {record.start_time} ~{" "}
+                                    {record.end_time || "진행 중"}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Right: Duration + Category */}
+                        <div className="flex-shrink-0 flex flex-col items-end gap-[3px]">
+                            <span
+                                className={`text-md font-semibold ${
+                                    record.is_running
+                                        ? "text-error"
+                                        : "text-text-primary"
+                                }`}
+                                style={{ fontVariantNumeric: "tabular-nums" }}
+                            >
+                                {formatDurationShort(record.duration_minutes)}
+                            </span>
+                            <span
+                                className="text-xs font-medium px-sm py-[1px] rounded-xs"
+                                style={{
+                                    background: record.category_color + "15",
+                                    color: record.category_color,
+                                }}
+                            >
+                                {record.category_name}
+                            </span>
+                        </div>
+
+                        {/* More button */}
+                        {v === "with-more" && (
+                            <button className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full border-0 bg-transparent cursor-pointer">
+                                <EllipsisOutlined
+                                    style={{ fontSize: 14, color: "#B0B8C1" }}
+                                />
+                            </button>
+                        )}
+                    </div>
+                );
+            }
+
+            // =============================================
+            // CANDIDATE B1: Calendar Strip + Compact List
+            // =============================================
+            function CandidateB1() {
+                const [selected, setSelected] = React.useState("2026-02-10");
+                const [cal_open, setCalOpen] = React.useState(true);
+
+                return (
+                    <div className="phone-frame">
+                        <div className="phone-content">
+                            {/* Header area — white */}
+                            <div style={{ background: "white" }}>
+                                {/* Date nav + Calendar toggle */}
+                                <div className="flex items-center justify-between px-lg pt-md pb-sm">
+                                    <DateNav compact />
+                                    <button
+                                        className="flex items-center gap-[3px] px-sm py-[3px] rounded-full border-0 text-xs font-medium cursor-pointer"
+                                        style={{
+                                            background: cal_open
+                                                ? "#ECF2FE"
+                                                : "#F2F4F6",
+                                            color: cal_open
+                                                ? "#3182F6"
+                                                : "#6B7684",
+                                            transition: "all 0.15s",
+                                        }}
+                                        onClick={() => setCalOpen(!cal_open)}
+                                    >
+                                        <CalendarOutlined
+                                            style={{ fontSize: 11 }}
+                                        />
+                                        주간
+                                    </button>
+                                </div>
+
+                                {/* Weekly calendar strip */}
+                                {cal_open && (
+                                    <div className="pb-md">
+                                        <WeeklyCalendarStrip
+                                            selected_date={selected}
+                                            onSelect={setSelected}
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Sub header: Stats + Actions */}
+                                <div
+                                    className="flex items-center justify-between px-lg pb-md"
+                                    style={{
+                                        borderBottom: "1px solid #F2F4F6",
+                                    }}
+                                >
+                                    <InlineStats />
+                                    <ActionButtons style="icon" />
+                                </div>
+                            </div>
+
+                            {/* Record list */}
+                            <div
+                                className="flex flex-col"
+                                style={{ gap: "1px", background: "#F2F4F6" }}
+                            >
+                                {MOCK_RECORDS.map((record, idx) => (
+                                    <RecordItem
+                                        key={record.id}
+                                        record={record}
+                                        variant="with-more"
+                                    />
+                                ))}
+                            </div>
+
+                            <div
+                                className="h-20"
+                                style={{ background: "#F9FAFB" }}
+                            />
+                            <FAB />
+                            <BottomNav />
+                        </div>
+                    </div>
+                );
+            }
+
+            // =============================================
+            // CANDIDATE B2: Inline Date + Card List
+            // =============================================
+            function CandidateB2() {
+                const [selected, setSelected] = React.useState("2026-02-10");
+                const [cal_open, setCalOpen] = React.useState(true);
+
+                return (
+                    <div className="phone-frame">
+                        <div className="phone-content">
+                            {/* Header area */}
+                            <div style={{ background: "white" }}>
+                                {/* Date nav row */}
+                                <div className="flex items-center justify-between px-lg pt-md pb-sm">
+                                    <DateNav compact />
+                                    <div className="flex items-center gap-sm">
+                                        <button
+                                            className="flex items-center gap-[3px] px-sm py-[3px] rounded-full border-0 text-xs font-medium cursor-pointer"
+                                            style={{
+                                                background: cal_open
+                                                    ? "#ECF2FE"
+                                                    : "#F2F4F6",
+                                                color: cal_open
+                                                    ? "#3182F6"
+                                                    : "#6B7684",
+                                            }}
+                                            onClick={() =>
+                                                setCalOpen(!cal_open)
+                                            }
+                                        >
+                                            <CalendarOutlined
+                                                style={{ fontSize: 11 }}
+                                            />
+                                            주간
+                                        </button>
+                                        <ActionButtons style="icon" />
+                                    </div>
+                                </div>
+
+                                {/* Calendar strip */}
+                                {cal_open && (
+                                    <div className="pb-md">
+                                        <WeeklyCalendarStrip
+                                            selected_date={selected}
+                                            onSelect={setSelected}
+                                        />
+                                    </div>
+                                )}
+
+                                <div
+                                    style={{
+                                        borderBottom: "1px solid #F2F4F6",
+                                    }}
+                                />
+                            </div>
+
+                            {/* Record cards — with rounded corners and gaps */}
+                            <div className="px-lg py-md flex flex-col gap-sm">
+                                {MOCK_RECORDS.map((record, idx) => (
+                                    <div
+                                        key={record.id}
+                                        className="rounded-lg overflow-hidden animate-slide-up"
+                                        style={{
+                                            animationDelay: `${idx * 50}ms`,
+                                            background: "white",
+                                            border: record.is_running
+                                                ? "1.5px solid #F04452"
+                                                : "1px solid #F2F4F6",
+                                            boxShadow: record.is_running
+                                                ? "0 2px 8px rgba(240, 68, 82, 0.1)"
+                                                : "0 1px 2px rgba(0,0,0,0.03)",
+                                        }}
+                                    >
+                                        <div className="flex items-center gap-md py-md px-lg">
+                                            <TimerButton
+                                                is_running={record.is_running}
+                                                size={36}
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-sm">
+                                                    <span
+                                                        className={`text-md font-medium truncate ${
+                                                            record.is_running
+                                                                ? "text-error"
+                                                                : "text-text-primary"
+                                                        }`}
+                                                    >
+                                                        {record.deal_name ||
+                                                            record.work_name}
+                                                    </span>
+                                                    {record.is_running && (
+                                                        <span
+                                                            className="flex-shrink-0 text-xs font-medium px-sm py-[1px] rounded-sm"
+                                                            style={{
+                                                                background:
+                                                                    "#FEF0F1",
+                                                                color: "#F04452",
+                                                            }}
+                                                        >
+                                                            {
+                                                                record.elapsed_display
+                                                            }
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-xs mt-[2px]">
+                                                    {record.deal_name && (
+                                                        <>
+                                                            <span className="text-sm text-text-secondary truncate">
+                                                                {
+                                                                    record.work_name
+                                                                }
+                                                            </span>
+                                                            <span className="text-text-disabled text-xs">
+                                                                ·
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                    <span className="text-xs text-text-disabled flex-shrink-0">
+                                                        {record.start_time} ~{" "}
+                                                        {record.end_time ||
+                                                            "진행 중"}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="flex-shrink-0 flex flex-col items-end gap-[3px]">
+                                                <span
+                                                    className={`text-md font-semibold ${
+                                                        record.is_running
+                                                            ? "text-error"
+                                                            : "text-text-primary"
+                                                    }`}
+                                                    style={{
+                                                        fontVariantNumeric:
+                                                            "tabular-nums",
+                                                    }}
+                                                >
+                                                    {formatDurationShort(
+                                                        record.duration_minutes
+                                                    )}
+                                                </span>
+                                                <span
+                                                    className="text-xs font-medium px-sm py-[1px] rounded-xs"
+                                                    style={{
+                                                        background:
+                                                            record.category_color +
+                                                            "15",
+                                                        color: record.category_color,
+                                                    }}
+                                                >
+                                                    {record.category_name}
+                                                </span>
+                                            </div>
+                                            <button className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full border-0 bg-transparent cursor-pointer">
+                                                <EllipsisOutlined
+                                                    style={{
+                                                        fontSize: 14,
+                                                        color: "#B0B8C1",
+                                                    }}
+                                                />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="h-16" />
+                            <FAB />
+                            <BottomNav />
+                        </div>
+                    </div>
+                );
+            }
+
+            // =============================================
+            // CANDIDATE B3: Full-width Divider + Bottom Summary
+            // =============================================
+            function CandidateB3() {
+                const [selected, setSelected] = React.useState("2026-02-10");
+                const [cal_open, setCalOpen] = React.useState(true);
+
+                return (
+                    <div className="phone-frame">
+                        <div className="phone-content">
+                            {/* Header */}
+                            <div style={{ background: "white" }}>
+                                <div className="flex items-center justify-between px-lg pt-md pb-sm">
+                                    <DateNav compact />
+                                    <button
+                                        className="flex items-center gap-[3px] px-sm py-[3px] rounded-full border-0 text-xs font-medium cursor-pointer"
+                                        style={{
+                                            background: cal_open
+                                                ? "#ECF2FE"
+                                                : "#F2F4F6",
+                                            color: cal_open
+                                                ? "#3182F6"
+                                                : "#6B7684",
+                                        }}
+                                        onClick={() => setCalOpen(!cal_open)}
+                                    >
+                                        <CalendarOutlined
+                                            style={{ fontSize: 11 }}
+                                        />
+                                        주간
+                                    </button>
+                                </div>
+
+                                {cal_open && (
+                                    <div className="pb-md">
+                                        <WeeklyCalendarStrip
+                                            selected_date={selected}
+                                            onSelect={setSelected}
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Action bar */}
+                                <div
+                                    className="flex items-center justify-between px-lg py-sm"
+                                    style={{
+                                        borderTop: "1px solid #F2F4F6",
+                                        borderBottom: "1px solid #F2F4F6",
+                                    }}
+                                >
+                                    <span className="text-sm font-semibold text-text-primary">
+                                        작업 {MOCK_RECORDS.length}건
+                                    </span>
+                                    <ActionButtons style="pill" />
+                                </div>
+                            </div>
+
+                            {/* Full-width list with dividers */}
+                            <div style={{ background: "white" }}>
+                                {MOCK_RECORDS.map((record, idx) => (
+                                    <React.Fragment key={record.id}>
+                                        <div
+                                            className="flex items-center gap-md py-lg px-lg animate-slide-up"
+                                            style={{
+                                                animationDelay: `${idx * 50}ms`,
+                                                background: record.is_running
+                                                    ? "#FEF0F1"
+                                                    : "white",
+                                            }}
+                                        >
+                                            <TimerButton
+                                                is_running={record.is_running}
+                                                size={40}
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-sm">
+                                                    <span
+                                                        className="text-xs font-medium px-sm py-[1px] rounded-xs"
+                                                        style={{
+                                                            background:
+                                                                record.category_color +
+                                                                "15",
+                                                            color: record.category_color,
+                                                        }}
+                                                    >
+                                                        {record.category_name}
+                                                    </span>
+                                                    {record.is_running && (
+                                                        <span
+                                                            className="text-xs font-medium"
+                                                            style={{
+                                                                color: "#F04452",
+                                                            }}
+                                                        >
+                                                            {
+                                                                record.elapsed_display
+                                                            }
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="mt-xs">
+                                                    <span
+                                                        className={`text-md font-medium ${
+                                                            record.is_running
+                                                                ? "text-error"
+                                                                : "text-text-primary"
+                                                        }`}
+                                                    >
+                                                        {record.deal_name ||
+                                                            record.work_name}
+                                                    </span>
+                                                </div>
+                                                {record.deal_name && (
+                                                    <div className="mt-[1px]">
+                                                        <span className="text-sm text-text-secondary">
+                                                            {record.work_name}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex-shrink-0 text-right">
+                                                <div
+                                                    className={`text-lg font-semibold ${
+                                                        record.is_running
+                                                            ? "text-error"
+                                                            : "text-text-primary"
+                                                    }`}
+                                                    style={{
+                                                        fontVariantNumeric:
+                                                            "tabular-nums",
+                                                    }}
+                                                >
+                                                    {formatDurationShort(
+                                                        record.duration_minutes
+                                                    )}
+                                                </div>
+                                                <div className="text-xs text-text-disabled mt-[1px]">
+                                                    {record.start_time} ~{" "}
+                                                    {record.end_time ||
+                                                        "진행 중"}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {idx < MOCK_RECORDS.length - 1 && (
+                                            <div
+                                                className="mx-lg"
+                                                style={{
+                                                    height: 1,
+                                                    background: "#F2F4F6",
+                                                }}
+                                            />
+                                        )}
+                                    </React.Fragment>
+                                ))}
+                            </div>
+
+                            {/* Summary footer */}
+                            <div
+                                className="px-lg py-lg"
+                                style={{ background: "#F9FAFB" }}
+                            >
+                                <div
+                                    className="flex items-center justify-between rounded-lg px-lg py-md"
+                                    style={{
+                                        background: "white",
+                                        border: "1px solid #F2F4F6",
+                                    }}
+                                >
+                                    <div className="flex items-center gap-xs">
+                                        <ClockCircleOutlined
+                                            style={{
+                                                fontSize: 14,
+                                                color: "#3182F6",
+                                            }}
+                                        />
+                                        <span className="text-sm text-text-secondary">
+                                            오늘 총 작업시간
+                                        </span>
+                                    </div>
+                                    <span className="text-lg font-semibold text-text-primary">
+                                        {formatDuration(total_minutes)}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div
+                                className="h-12"
+                                style={{ background: "#F9FAFB" }}
+                            />
+                            <FAB />
+                            <BottomNav />
+                        </div>
+                    </div>
+                );
+            }
+
+            // =============================================
+            // CANDIDATE B4: Sticky Header + Grouped Cards
+            // =============================================
+            function CandidateB4() {
+                const [selected, setSelected] = React.useState("2026-02-10");
+
+                return (
+                    <div className="phone-frame">
+                        <div className="phone-content">
+                            {/* Sticky header */}
+                            <div
+                                style={{
+                                    background: "white",
+                                    position: "sticky",
+                                    top: 0,
+                                    zIndex: 10,
+                                    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                                }}
+                            >
+                                {/* Date nav + total time */}
+                                <div className="flex items-center justify-between px-lg pt-md pb-sm">
+                                    <DateNav compact />
+                                    <div className="flex items-center gap-xs">
+                                        <ClockCircleOutlined
+                                            style={{
+                                                fontSize: 12,
+                                                color: "#3182F6",
+                                            }}
+                                        />
+                                        <span className="text-sm font-semibold text-text-primary">
+                                            {formatDuration(total_minutes)}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Calendar strip */}
+                                <div className="pb-sm">
+                                    <WeeklyCalendarStrip
+                                        selected_date={selected}
+                                        onSelect={setSelected}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Section: Active */}
+                            {MOCK_RECORDS.some((r) => r.is_running) && (
+                                <div className="pt-md">
+                                    <div className="px-lg pb-sm">
+                                        <span className="text-xs font-semibold text-error tracking-wide">
+                                            진행 중
+                                        </span>
+                                    </div>
+                                    {MOCK_RECORDS.filter(
+                                        (r) => r.is_running
+                                    ).map((record) => (
+                                        <div
+                                            key={record.id}
+                                            className="px-lg pb-sm"
+                                        >
+                                            <div
+                                                className="rounded-lg overflow-hidden"
+                                                style={{
+                                                    background: "white",
+                                                    border: "1.5px solid #F04452",
+                                                    boxShadow:
+                                                        "0 2px 8px rgba(240,68,82,0.1)",
+                                                }}
+                                            >
+                                                <div className="flex items-center gap-md py-md px-lg">
+                                                    <TimerButton
+                                                        is_running={true}
+                                                        size={40}
+                                                    />
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-sm">
+                                                            <span className="text-md font-semibold text-error truncate">
+                                                                {record.deal_name ||
+                                                                    record.work_name}
+                                                            </span>
+                                                            <span
+                                                                className="flex-shrink-0 text-xs font-semibold px-sm py-[2px] rounded-sm"
+                                                                style={{
+                                                                    background:
+                                                                        "#FEF0F1",
+                                                                    color: "#F04452",
+                                                                }}
+                                                            >
+                                                                {
+                                                                    record.elapsed_display
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                        {record.deal_name && (
+                                                            <span className="text-sm text-text-secondary mt-[1px] block truncate">
+                                                                {
+                                                                    record.work_name
+                                                                }
+                                                            </span>
+                                                        )}
+                                                        <span className="text-xs text-text-disabled mt-[2px] block">
+                                                            {record.start_time}{" "}
+                                                            ~ 진행 중
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex-shrink-0 flex flex-col items-end">
+                                                        <span
+                                                            className="text-lg font-semibold text-error"
+                                                            style={{
+                                                                fontVariantNumeric:
+                                                                    "tabular-nums",
+                                                            }}
+                                                        >
+                                                            {formatDurationShort(
+                                                                record.duration_minutes
+                                                            )}
+                                                        </span>
+                                                        <span
+                                                            className="text-xs font-medium px-sm py-[1px] rounded-xs mt-[2px]"
+                                                            style={{
+                                                                background:
+                                                                    record.category_color +
+                                                                    "15",
+                                                                color: record.category_color,
+                                                            }}
+                                                        >
+                                                            {
+                                                                record.category_name
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Section: Completed tasks */}
+                            <div className="pt-md">
+                                <div className="flex items-center justify-between px-lg pb-sm">
+                                    <span className="text-xs font-semibold text-text-secondary tracking-wide">
+                                        작업 목록
+                                    </span>
+                                    <ActionButtons style="icon" />
+                                </div>
+
+                                <div className="px-lg flex flex-col gap-sm pb-lg">
+                                    {MOCK_RECORDS.filter(
+                                        (r) => !r.is_running
+                                    ).map((record, idx) => (
+                                        <div
+                                            key={record.id}
+                                            className="rounded-lg animate-slide-up"
+                                            style={{
+                                                background: "white",
+                                                border: "1px solid #F2F4F6",
+                                                boxShadow:
+                                                    "0 1px 2px rgba(0,0,0,0.03)",
+                                                animationDelay: `${idx * 50}ms`,
+                                            }}
+                                        >
+                                            <div className="flex items-center gap-md py-md px-lg">
+                                                <TimerButton
+                                                    is_running={false}
+                                                    size={36}
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                    <span className="text-md font-medium text-text-primary truncate block">
+                                                        {record.deal_name ||
+                                                            record.work_name}
+                                                    </span>
+                                                    <div className="flex items-center gap-xs mt-[2px]">
+                                                        {record.deal_name && (
+                                                            <>
+                                                                <span className="text-sm text-text-secondary truncate">
+                                                                    {
+                                                                        record.work_name
+                                                                    }
+                                                                </span>
+                                                                <span className="text-text-disabled text-xs">
+                                                                    ·
+                                                                </span>
+                                                            </>
+                                                        )}
+                                                        <span className="text-xs text-text-disabled flex-shrink-0">
+                                                            {record.start_time}{" "}
+                                                            ~ {record.end_time}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex-shrink-0 flex flex-col items-end gap-[3px]">
+                                                    <span
+                                                        className="text-md font-semibold text-text-primary"
+                                                        style={{
+                                                            fontVariantNumeric:
+                                                                "tabular-nums",
+                                                        }}
+                                                    >
+                                                        {formatDurationShort(
+                                                            record.duration_minutes
+                                                        )}
+                                                    </span>
+                                                    <span
+                                                        className="text-xs font-medium px-sm py-[1px] rounded-xs"
+                                                        style={{
+                                                            background:
+                                                                record.category_color +
+                                                                "15",
+                                                            color: record.category_color,
+                                                        }}
+                                                    >
+                                                        {record.category_name}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div
+                                className="h-12"
+                                style={{ background: "#F9FAFB" }}
+                            />
+                            <FAB />
+                            <BottomNav />
+                        </div>
+                    </div>
+                );
+            }
+
+            // =============================================
+            // MAIN APP
+            // =============================================
+            function MockupApp() {
+                const [active, setActive] = React.useState("B1");
+
+                const candidates = {
+                    B1: {
+                        component: CandidateB1,
+                        label: "B1. 풀폭 리스트",
+                        desc: "캘린더 스트립 + 풀폭 리스트 + 1px 디바이더",
+                    },
+                    B2: {
+                        component: CandidateB2,
+                        label: "B2. 카드 리스트",
+                        desc: "캘린더 스트립 + 둥근 카드 리스트",
+                    },
+                    B3: {
+                        component: CandidateB3,
+                        label: "B3. 디바이더 + 하단 요약",
+                        desc: "풀폭 + 행 배경 강조 + 하단 총 시간",
+                    },
+                    B4: {
+                        component: CandidateB4,
+                        label: "B4. 그룹 분리",
+                        desc: "진행 중 / 작업 목록 그룹 분리",
+                    },
+                };
+
+                const ActiveComponent = candidates[active].component;
+
+                return (
+                    <div>
+                        <div className="section-header">
+                            <h1>모바일 작업 기록 리디자인 v2</h1>
+                            <p>
+                                B 스타일 기반 — 캘린더 + 빨간 레코딩 + 리스트
+                                레이아웃 변형 4종
+                            </p>
+                        </div>
+
+                        <div className="candidate-nav">
+                            {Object.entries(candidates).map(([key, val]) => (
+                                <button
+                                    key={key}
+                                    className={active === key ? "active" : ""}
+                                    onClick={() => setActive(key)}
+                                >
+                                    {val.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="text-center mb-6">
+                            <span
+                                className="text-sm"
+                                style={{ color: "#6B7684" }}
+                            >
+                                {candidates[active].desc}
+                            </span>
+                        </div>
+
+                        <ActiveComponent />
+
+                        <div className="design-notes">
+                            <h3>
+                                {active === "B1" && "B1. 풀폭 리스트"}
+                                {active === "B2" && "B2. 카드 리스트"}
+                                {active === "B3" && "B3. 디바이더 + 하단 요약"}
+                                {active === "B4" && "B4. 그룹 분리"}
+                            </h3>
+                            <ul>
+                                {active === "B1" && (
+                                    <>
+                                        <li>
+                                            가장 정보 밀도가 높은 레이아웃 —
+                                            많은 작업을 한 화면에
+                                        </li>
+                                        <li>
+                                            풀폭 행 + 1px 디바이더로 깔끔한 구분
+                                        </li>
+                                        <li>
+                                            진행 중 작업: 좌측 빨간 보더 + 빨간
+                                            타이머 버튼 (데스크탑 일치)
+                                        </li>
+                                        <li>
+                                            상단: 날짜 내비 + 접이식 주간 캘린더
+                                            스트립
+                                        </li>
+                                        <li>
+                                            인라인 통계(총 시간 · N건) +
+                                            완료/휴지통/복사 아이콘
+                                        </li>
+                                        <li>
+                                            각 행 우측 더보기(···) 버튼으로
+                                            수정/완료/삭제
+                                        </li>
+                                    </>
+                                )}
+                                {active === "B2" && (
+                                    <>
+                                        <li>
+                                            각 작업이 둥근 카드로 분리 — 터치
+                                            타겟이 명확
+                                        </li>
+                                        <li>
+                                            진행 중 카드: 빨간 테두리 + 그림자로
+                                            시각적 강조
+                                        </li>
+                                        <li>
+                                            캘린더 스트립 + 완료/휴지통/복사
+                                            아이콘을 한 줄에 배치
+                                        </li>
+                                        <li>
+                                            카드 사이 간격으로 각 작업의 독립성
+                                            강조
+                                        </li>
+                                        <li>더보기(···) 버튼으로 액션 접근</li>
+                                    </>
+                                )}
+                                {active === "B3" && (
+                                    <>
+                                        <li>
+                                            진행 중 행: 연한 빨간
+                                            배경(#FEF0F1)으로 전체 행 강조
+                                        </li>
+                                        <li>
+                                            카테고리 태그가 작업명 위에 위치 —
+                                            2줄 레이아웃
+                                        </li>
+                                        <li>
+                                            우측에 소요시간 크게 + 시간대 작게 —
+                                            시간 정보에 집중
+                                        </li>
+                                        <li>
+                                            하단에 '오늘 총 작업시간' 요약 카드
+                                        </li>
+                                        <li>
+                                            작업 N건 + 완료/휴지통/복사 텍스트
+                                            필(pill) 버튼
+                                        </li>
+                                    </>
+                                )}
+                                {active === "B4" && (
+                                    <>
+                                        <li>
+                                            진행 중 / 작업 목록을 그룹으로 분리
+                                            — 진행 상태가 한눈에
+                                        </li>
+                                        <li>
+                                            진행 중 카드: 빨간 테두리 + 큰
+                                            타이머 버튼 + 강조 스타일
+                                        </li>
+                                        <li>
+                                            작업 목록: 기본 카드 스타일로
+                                            차분하게
+                                        </li>
+                                        <li>
+                                            스티키 헤더: 날짜 + 총 시간 +
+                                            캘린더가 항상 보임
+                                        </li>
+                                        <li>
+                                            완료/휴지통/복사 아이콘은 작업 목록
+                                            섹션 헤더에
+                                        </li>
+                                    </>
+                                )}
+                            </ul>
+                        </div>
+
+                        <div className="design-notes" style={{ marginTop: 16 }}>
+                            <h3>v2 공통 변경사항</h3>
+                            <ul>
+                                <li>
+                                    레코딩 중 색상: 빨강(#F04452) — 데스크탑과
+                                    동일 (bg-error)
+                                </li>
+                                <li>
+                                    타이머 버튼: 빨간 원형 + pulse 애니메이션 —
+                                    데스크탑 TimerActionColumn과 동일
+                                </li>
+                                <li>
+                                    비활성 타이머: 회색 테두리 원형 — 데스크탑과
+                                    동일
+                                </li>
+                                <li>
+                                    주간 캘린더 스트립: 데스크탑
+                                    WeeklyCalendarStrip 스타일 이식
+                                </li>
+                                <li>
+                                    날짜 내비: 데스크탑 DateNavigation 스타일
+                                    이식
+                                </li>
+                                <li>
+                                    통계 대시보드 제거 — 인라인 총 시간으로 대체
+                                </li>
+                                <li>FAB(+) 버튼으로 작업 추가</li>
+                            </ul>
+                        </div>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            root.render(<MockupApp />);
+        </script>
+    </body>
+</html>

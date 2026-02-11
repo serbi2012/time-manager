@@ -6,7 +6,8 @@ import { useState } from "react";
 import { Layout } from "antd";
 import { DailyGanttChart } from "@/features/gantt-chart";
 import WorkRecordTable from "../../components/WorkRecordTable";
-import { MobilePresetDrawer, MobilePresetFab } from "../../widgets/Navigation";
+import { MobilePresetDrawer } from "../../widgets/Navigation";
+import { MobileSpeedDialFab } from "../../features/work-record/ui/Mobile/MobileSpeedDialFab";
 import { useWorkStore } from "../../store/useWorkStore";
 import { useRecordCreation } from "../../shared/hooks";
 import {
@@ -62,8 +63,13 @@ export function MobileDailyPage() {
                 enabled={transition_enabled}
                 speed={transition_speed}
             >
-                <MobilePresetFab
-                    on_open={() => setIsPresetDrawerOpen(true)}
+                <MobileSpeedDialFab
+                    on_add_record={() =>
+                        window.dispatchEvent(
+                            new Event("shortcut:openNewWorkModal")
+                        )
+                    }
+                    on_open_preset={() => setIsPresetDrawerOpen(true)}
                     app_theme={app_theme}
                 />
             </FadeIn>

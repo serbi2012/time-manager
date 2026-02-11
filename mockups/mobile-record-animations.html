@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>모바일 작업 기록 — 애니메이션 후보군</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        spacing: {
+                            xs: "4px",
+                            sm: "8px",
+                            md: "12px",
+                            lg: "16px",
+                            xl: "24px",
+                            "2xl": "32px",
+                        },
+                        colors: {
+                            primary: "#3182F6",
+                            "primary-dark": "#1B64DA",
+                            "primary-light": "#ECF2FE",
+                            error: "#F04452",
+                            success: "#34C759",
+                            "text-primary": "#191F28",
+                            "text-secondary": "#6B7684",
+                            "text-disabled": "#B0B8C1",
+                            "bg-default": "#FFFFFF",
+                            "bg-light": "#F9FAFB",
+                            "bg-grey": "#F2F4F6",
+                            "border-default": "#E5E8EB",
+                            "border-light": "#F2F4F6",
+                        },
+                    },
+                },
+            };
+        </script>
+
+        <script
+            crossorigin
+            src="https://unpkg.com/react@18/umd/react.development.js"
+        ></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+        ></script>
+        <script src="https://unpkg.com/dayjs@1/dayjs.min.js"></script>
+        <script src="https://unpkg.com/antd@5/dist/antd.min.js"></script>
+        <script src="https://unpkg.com/@ant-design/icons@5/dist/index.umd.min.js"></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+        <style>
+            body {
+                margin: 0;
+                padding: 16px;
+                background: #f9fafb;
+                font-family: "Pretendard Variable", -apple-system, sans-serif;
+            }
+            #root {
+                max-width: 420px;
+                margin: 0 auto;
+            }
+            .mockup-header {
+                text-align: center;
+                margin-bottom: 24px;
+                padding-bottom: 12px;
+                border-bottom: 1px solid #e5e8eb;
+            }
+            .mockup-header h1 {
+                font-size: 18px;
+                font-weight: 700;
+                color: #191f28;
+                margin: 0 0 4px;
+            }
+            .mockup-header p {
+                font-size: 12px;
+                color: #6b7684;
+                margin: 0;
+            }
+            .demo-section {
+                margin-bottom: 32px;
+            }
+            .demo-label {
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 1px;
+                color: #3182f6;
+                margin-bottom: 8px;
+                text-transform: uppercase;
+            }
+            .demo-desc {
+                font-size: 12px;
+                color: #6b7684;
+                margin-bottom: 12px;
+                line-height: 1.5;
+            }
+            .demo-frame {
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+                overflow: hidden;
+            }
+            .replay-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                padding: 6px 14px;
+                border-radius: 20px;
+                border: 1px solid #e5e8eb;
+                background: white;
+                font-size: 12px;
+                color: #3182f6;
+                cursor: pointer;
+                margin-bottom: 8px;
+                font-weight: 600;
+            }
+            .replay-btn:active {
+                transform: scale(0.96);
+            }
+
+            /* Animations */
+            @keyframes stagger-fade-up {
+                from {
+                    opacity: 0;
+                    transform: translateY(16px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            @keyframes stagger-fade-right {
+                from {
+                    opacity: 0;
+                    transform: translateX(-12px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+            @keyframes scale-in {
+                from {
+                    opacity: 0;
+                    transform: scale(0.92);
+                }
+                to {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+            }
+            @keyframes slide-down {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            @keyframes press-bounce {
+                0% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(0.96);
+                }
+                100% {
+                    transform: scale(1);
+                }
+            }
+            @keyframes pulse-glow {
+                0%,
+                100% {
+                    box-shadow: 0 0 0 0 rgba(240, 68, 82, 0.3);
+                }
+                50% {
+                    box-shadow: 0 0 0 8px rgba(240, 68, 82, 0);
+                }
+            }
+            @keyframes breathe {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.7;
+                }
+            }
+            @keyframes swipe-hint {
+                0% {
+                    transform: translateX(0);
+                }
+                40% {
+                    transform: translateX(-60px);
+                }
+                100% {
+                    transform: translateX(0);
+                }
+            }
+            @keyframes count-pop {
+                0% {
+                    transform: scale(0.5);
+                    opacity: 0;
+                }
+                60% {
+                    transform: scale(1.15);
+                }
+                100% {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+            }
+            @keyframes calendar-select {
+                0% {
+                    transform: scale(0.8);
+                    opacity: 0;
+                }
+                60% {
+                    transform: scale(1.05);
+                }
+                100% {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+            }
+            @keyframes header-shrink {
+                from {
+                    padding: 16px;
+                }
+                to {
+                    padding: 8px 16px;
+                }
+            }
+            @keyframes timer-tick {
+                0%,
+                100% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.05);
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const { Tag, Typography } = antd;
+            const { Text } = Typography;
+            const {
+                PlayCircleOutlined,
+                PauseCircleOutlined,
+                CheckCircleOutlined,
+                DeleteOutlined,
+                CopyOutlined,
+                PlusOutlined,
+                CalendarOutlined,
+                ClockCircleOutlined,
+                LeftOutlined,
+                RightOutlined,
+                AppstoreOutlined,
+                UndoOutlined,
+            } = icons;
+
+            /* ==========================================
+             * Shared mock data
+             * ========================================== */
+            const RECORDS = [
+                {
+                    id: 1,
+                    name: "회의",
+                    sub: "관리업무",
+                    time: "13:54 ~ 17:04",
+                    dur: "49분",
+                    cat: "회의",
+                    catColor: "purple",
+                },
+                {
+                    id: 2,
+                    name: "탭/프리셋 — 뷰모델...",
+                    sub: "세트메뉴설정 (구_메뉴...)",
+                    time: "09:00 ~ 23:10",
+                    dur: "148분",
+                    cat: "개발",
+                    catColor: "green",
+                },
+                {
+                    id: 3,
+                    name: "팀장님 작업 싱크 회의",
+                    sub: "관리업무",
+                    time: "16:54 ~ 23:44",
+                    dur: "33분",
+                    cat: "회의",
+                    catColor: "purple",
+                },
+                {
+                    id: 4,
+                    name: "검색 폼에서 접기 버...",
+                    sub: "세트메뉴설정 (구_메뉴...)",
+                    time: "10:46 ~ 20:07",
+                    dur: "501분",
+                    cat: "개발",
+                    catColor: "green",
+                },
+            ];
+
+            /* ==========================================
+             * A. Staggered List Entrance
+             * ========================================== */
+            function DemoStaggerEntrance() {
+                const [key, setKey] = React.useState(0);
+                return (
+                    <div>
+                        <button
+                            className="replay-btn"
+                            onClick={() => setKey((k) => k + 1)}
+                        >
+                            <UndoOutlined style={{ fontSize: 12 }} /> 다시 재생
+                        </button>
+                        <div
+                            className="demo-frame"
+                            style={{ padding: "12px 0" }}
+                            key={key}
+                        >
+                            {RECORDS.map((r, i) => (
+                                <div
+                                    key={r.id}
+                                    style={{
+                                        animation: `stagger-fade-up 0.4s ease-out ${
+                                            i * 0.07
+                                        }s both`,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 12,
+                                        padding: "12px 16px",
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            width: 36,
+                                            height: 36,
+                                            borderRadius: "50%",
+                                            border: "2px solid #E5E8EB",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                        }}
+                                    >
+                                        <PlayCircleOutlined
+                                            style={{
+                                                fontSize: 16,
+                                                color: "#B0B8C1",
+                                            }}
+                                        />
+                                    </div>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div
+                                            style={{
+                                                fontSize: 15,
+                                                fontWeight: 500,
+                                                color: "#191F28",
+                                                whiteSpace: "nowrap",
+                                                overflow: "hidden",
+                                                textOverflow: "ellipsis",
+                                            }}
+                                        >
+                                            {r.name}
+                                        </div>
+                                        <div
+                                            style={{
+                                                fontSize: 13,
+                                                color: "#6B7684",
+                                            }}
+                                        >
+                                            {r.sub}
+                                        </div>
+                                        <div
+                                            style={{
+                                                fontSize: 11,
+                                                color: "#B0B8C1",
+                                            }}
+                                        >
+                                            {r.time}
+                                        </div>
+                                    </div>
+                                    <div style={{ textAlign: "right" }}>
+                                        <div
+                                            style={{
+                                                fontSize: 15,
+                                                fontWeight: 600,
+                                            }}
+                                        >
+                                            {r.dur}
+                                        </div>
+                                        <Tag
+                                            color={r.catColor}
+                                            style={{
+                                                fontSize: 11,
+                                                marginRight: 0,
+                                            }}
+                                        >
+                                            {r.cat}
+                                        </Tag>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ==========================================
+             * B. Card Press Feedback (scale down + shadow)
+             * ========================================== */
+            function DemoCardPress() {
+                const [pressed, setPressed] = React.useState(null);
+                return (
+                    <div
+                        className="demo-frame"
+                        style={{
+                            padding: 16,
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 8,
+                        }}
+                    >
+                        {RECORDS.slice(0, 3).map((r) => (
+                            <div
+                                key={r.id}
+                                onPointerDown={() => setPressed(r.id)}
+                                onPointerUp={() => setPressed(null)}
+                                onPointerLeave={() => setPressed(null)}
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 12,
+                                    padding: "12px 16px",
+                                    borderRadius: 12,
+                                    border: "1px solid #F2F4F6",
+                                    transition:
+                                        "transform 0.15s ease, box-shadow 0.15s ease",
+                                    transform:
+                                        pressed === r.id
+                                            ? "scale(0.97)"
+                                            : "scale(1)",
+                                    boxShadow:
+                                        pressed === r.id
+                                            ? "0 1px 4px rgba(0,0,0,0.08)"
+                                            : "0 1px 2px rgba(0,0,0,0.03)",
+                                    cursor: "pointer",
+                                    userSelect: "none",
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        width: 36,
+                                        height: 36,
+                                        borderRadius: "50%",
+                                        border: "2px solid #E5E8EB",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                    }}
+                                >
+                                    <PlayCircleOutlined
+                                        style={{
+                                            fontSize: 16,
+                                            color: "#B0B8C1",
+                                        }}
+                                    />
+                                </div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div
+                                        style={{
+                                            fontSize: 15,
+                                            fontWeight: 500,
+                                            color: "#191F28",
+                                            whiteSpace: "nowrap",
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                        }}
+                                    >
+                                        {r.name}
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: 13,
+                                            color: "#6B7684",
+                                        }}
+                                    >
+                                        {r.sub}
+                                    </div>
+                                </div>
+                                <div style={{ fontSize: 15, fontWeight: 600 }}>
+                                    {r.dur}
+                                </div>
+                            </div>
+                        ))}
+                        <div
+                            style={{
+                                textAlign: "center",
+                                fontSize: 12,
+                                color: "#B0B8C1",
+                                paddingTop: 4,
+                            }}
+                        >
+                            👆 카드를 꾹 눌러보세요
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ==========================================
+             * C. Swipe-to-Action (왼쪽 스와이프 → 완료/삭제)
+             * ========================================== */
+            function DemoSwipeAction() {
+                const [offsets, setOffsets] = React.useState({});
+                const startX = React.useRef({});
+
+                const handleStart = (id, e) => {
+                    const x = e.touches ? e.touches[0].clientX : e.clientX;
+                    startX.current[id] = x;
+                };
+                const handleMove = (id, e) => {
+                    if (startX.current[id] === undefined) return;
+                    const x = e.touches ? e.touches[0].clientX : e.clientX;
+                    const diff = Math.min(
+                        0,
+                        Math.max(-120, x - startX.current[id])
+                    );
+                    setOffsets((prev) => ({ ...prev, [id]: diff }));
+                };
+                const handleEnd = (id) => {
+                    const offset = offsets[id] || 0;
+                    setOffsets((prev) => ({
+                        ...prev,
+                        [id]: offset < -50 ? -120 : 0,
+                    }));
+                    delete startX.current[id];
+                };
+                const reset = (id) =>
+                    setOffsets((prev) => ({ ...prev, [id]: 0 }));
+
+                return (
+                    <div className="demo-frame" style={{ overflow: "hidden" }}>
+                        {RECORDS.slice(0, 3).map((r) => (
+                            <div
+                                key={r.id}
+                                style={{
+                                    position: "relative",
+                                    overflow: "hidden",
+                                }}
+                            >
+                                {/* Action buttons behind */}
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        right: 0,
+                                        top: 0,
+                                        bottom: 0,
+                                        display: "flex",
+                                        alignItems: "stretch",
+                                    }}
+                                >
+                                    <button
+                                        onClick={() => reset(r.id)}
+                                        style={{
+                                            width: 60,
+                                            background: "#34C759",
+                                            border: "none",
+                                            color: "white",
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            gap: 2,
+                                            cursor: "pointer",
+                                        }}
+                                    >
+                                        <CheckCircleOutlined
+                                            style={{ fontSize: 18 }}
+                                        />
+                                        <span style={{ fontSize: 10 }}>
+                                            완료
+                                        </span>
+                                    </button>
+                                    <button
+                                        onClick={() => reset(r.id)}
+                                        style={{
+                                            width: 60,
+                                            background: "#F04452",
+                                            border: "none",
+                                            color: "white",
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            gap: 2,
+                                            cursor: "pointer",
+                                        }}
+                                    >
+                                        <DeleteOutlined
+                                            style={{ fontSize: 18 }}
+                                        />
+                                        <span style={{ fontSize: 10 }}>
+                                            삭제
+                                        </span>
+                                    </button>
+                                </div>
+                                {/* Card */}
+                                <div
+                                    onTouchStart={(e) => handleStart(r.id, e)}
+                                    onTouchMove={(e) => handleMove(r.id, e)}
+                                    onTouchEnd={() => handleEnd(r.id)}
+                                    onMouseDown={(e) => handleStart(r.id, e)}
+                                    onMouseMove={(e) => {
+                                        if (startX.current[r.id] !== undefined)
+                                            handleMove(r.id, e);
+                                    }}
+                                    onMouseUp={() => handleEnd(r.id)}
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 12,
+                                        padding: "14px 16px",
+                                        background: "white",
+                                        position: "relative",
+                                        zIndex: 1,
+                                        transition:
+                                            startX.current[r.id] !== undefined
+                                                ? "none"
+                                                : "transform 0.3s cubic-bezier(0.25,1,0.5,1)",
+                                        transform: `translateX(${
+                                            offsets[r.id] || 0
+                                        }px)`,
+                                        cursor: "grab",
+                                        userSelect: "none",
+                                        borderBottom: "1px solid #F2F4F6",
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            width: 36,
+                                            height: 36,
+                                            borderRadius: "50%",
+                                            border: "2px solid #E5E8EB",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                        }}
+                                    >
+                                        <PlayCircleOutlined
+                                            style={{
+                                                fontSize: 16,
+                                                color: "#B0B8C1",
+                                            }}
+                                        />
+                                    </div>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div
+                                            style={{
+                                                fontSize: 15,
+                                                fontWeight: 500,
+                                                color: "#191F28",
+                                                whiteSpace: "nowrap",
+                                                overflow: "hidden",
+                                                textOverflow: "ellipsis",
+                                            }}
+                                        >
+                                            {r.name}
+                                        </div>
+                                        <div
+                                            style={{
+                                                fontSize: 13,
+                                                color: "#6B7684",
+                                            }}
+                                        >
+                                            {r.sub}
+                                        </div>
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: 15,
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        {r.dur}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                        <div
+                            style={{
+                                textAlign: "center",
+                                fontSize: 12,
+                                color: "#B0B8C1",
+                                padding: "12px 0",
+                            }}
+                        >
+                            👈 카드를 왼쪽으로 스와이프
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ==========================================
+             * D. Running Card Breathing + Timer Tick
+             * ========================================== */
+            function DemoRunningGlow() {
+                const [sec, setSec] = React.useState(0);
+                React.useEffect(() => {
+                    const id = setInterval(() => setSec((s) => s + 1), 1000);
+                    return () => clearInterval(id);
+                }, []);
+                const mm = String(Math.floor(sec / 60)).padStart(2, "0");
+                const ss = String(sec % 60).padStart(2, "0");
+
+                return (
+                    <div className="demo-frame" style={{ padding: 16 }}>
+                        <div
+                            style={{
+                                border: "1.5px solid #F04452",
+                                borderRadius: 12,
+                                padding: "14px 16px",
+                                background: "white",
+                                animation: "pulse-glow 2s ease-in-out infinite",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 12,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    width: 40,
+                                    height: 40,
+                                    borderRadius: "50%",
+                                    background: "#F04452",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    animation:
+                                        "pulse-glow 1.6s ease-in-out infinite",
+                                }}
+                            >
+                                <PauseCircleOutlined
+                                    style={{ fontSize: 20, color: "white" }}
+                                />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 8,
+                                    }}
+                                >
+                                    <span
+                                        style={{
+                                            fontSize: 15,
+                                            fontWeight: 600,
+                                            color: "#F04452",
+                                        }}
+                                    >
+                                        회의
+                                    </span>
+                                    <span
+                                        style={{
+                                            fontSize: 12,
+                                            fontWeight: 600,
+                                            color: "#F04452",
+                                            background: "rgba(240,68,82,0.08)",
+                                            padding: "2px 8px",
+                                            borderRadius: 4,
+                                            animation:
+                                                "timer-tick 1s ease-in-out infinite",
+                                            fontVariantNumeric: "tabular-nums",
+                                        }}
+                                    >
+                                        {mm}:{ss}
+                                    </span>
+                                </div>
+                                <div style={{ fontSize: 13, color: "#6B7684" }}>
+                                    관리업무
+                                </div>
+                                <div style={{ fontSize: 11, color: "#B0B8C1" }}>
+                                    17:04 ~ 진행 중
+                                </div>
+                            </div>
+                            <div
+                                style={{
+                                    fontSize: 15,
+                                    fontWeight: 600,
+                                    color: "#F04452",
+                                    fontVariantNumeric: "tabular-nums",
+                                }}
+                            >
+                                {sec > 0 ? `${Math.floor(sec / 60)}분` : "0분"}
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ==========================================
+             * E. Calendar Day Selection — Pop Scale
+             * ========================================== */
+            function DemoCalendarPop() {
+                const days = ["월", "화", "수", "목", "금", "토", "일"];
+                const dates = [9, 10, 11, 12, 13, 14, 15];
+                const [selected, setSelected] = React.useState(2);
+                const [animKey, setAnimKey] = React.useState(0);
+
+                const handleSelect = (i) => {
+                    setSelected(i);
+                    setAnimKey((k) => k + 1);
+                };
+
+                return (
+                    <div
+                        className="demo-frame"
+                        style={{ padding: "16px 12px" }}
+                    >
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "center",
+                                gap: 3,
+                            }}
+                        >
+                            {days.map((d, i) => {
+                                const isSel = i === selected;
+                                return (
+                                    <button
+                                        key={i}
+                                        onClick={() => handleSelect(i)}
+                                        style={{
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            alignItems: "center",
+                                            padding: "8px 10px",
+                                            border: "none",
+                                            borderRadius: 8,
+                                            background: isSel
+                                                ? "#3182F6"
+                                                : "transparent",
+                                            color: isSel
+                                                ? "white"
+                                                : i >= 5
+                                                ? "#B0B8C1"
+                                                : "#6B7684",
+                                            cursor: "pointer",
+                                            minWidth: 40,
+                                            position: "relative",
+                                            transition: "background 0.2s ease",
+                                        }}
+                                    >
+                                        <span
+                                            style={{
+                                                fontSize: 11,
+                                                fontWeight: 500,
+                                                opacity: isSel ? 0.8 : 1,
+                                            }}
+                                        >
+                                            {d}
+                                        </span>
+                                        <span
+                                            style={{
+                                                fontSize: 14,
+                                                fontWeight: 600,
+                                                marginTop: 1,
+                                                animation: isSel
+                                                    ? `calendar-select 0.3s ease-out`
+                                                    : "none",
+                                            }}
+                                            key={
+                                                isSel ? animKey : `static-${i}`
+                                            }
+                                        >
+                                            {dates[i]}
+                                        </span>
+                                        {i === 2 && !isSel && (
+                                            <span
+                                                style={{
+                                                    position: "absolute",
+                                                    bottom: -1,
+                                                    width: 4,
+                                                    height: 4,
+                                                    borderRadius: "50%",
+                                                    background: "#3182F6",
+                                                }}
+                                            />
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <div
+                            style={{
+                                textAlign: "center",
+                                fontSize: 12,
+                                color: "#B0B8C1",
+                                paddingTop: 8,
+                            }}
+                        >
+                            날짜를 탭하면 팝 효과
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ==========================================
+             * F. Date Navigation Slide
+             * ========================================== */
+            function DemoDateSlide() {
+                const dates = [
+                    "2월 10일 (화)",
+                    "2월 11일 (수)",
+                    "2월 12일 (목)",
+                ];
+                const [idx, setIdx] = React.useState(1);
+                const [dir, setDir] = React.useState(0);
+                const [key, setKey] = React.useState(0);
+
+                const prev = () => {
+                    if (idx > 0) {
+                        setDir(-1);
+                        setIdx(idx - 1);
+                        setKey((k) => k + 1);
+                    }
+                };
+                const next = () => {
+                    if (idx < 2) {
+                        setDir(1);
+                        setIdx(idx + 1);
+                        setKey((k) => k + 1);
+                    }
+                };
+
+                return (
+                    <div className="demo-frame" style={{ padding: "16px" }}>
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: 16,
+                            }}
+                        >
+                            <button
+                                onClick={prev}
+                                style={{
+                                    width: 28,
+                                    height: 28,
+                                    border: "none",
+                                    background: "transparent",
+                                    borderRadius: 6,
+                                    cursor: "pointer",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                }}
+                            >
+                                <LeftOutlined
+                                    style={{ fontSize: 12, color: "#6B7684" }}
+                                />
+                            </button>
+                            <div
+                                style={{
+                                    overflow: "hidden",
+                                    width: 180,
+                                    textAlign: "center",
+                                }}
+                            >
+                                <div
+                                    key={key}
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        gap: 6,
+                                        animation:
+                                            dir !== 0
+                                                ? `${
+                                                      dir > 0
+                                                          ? "stagger-fade-right"
+                                                          : "stagger-fade-right"
+                                                  } 0.3s ease-out`
+                                                : "none",
+                                    }}
+                                >
+                                    <CalendarOutlined
+                                        style={{
+                                            fontSize: 14,
+                                            color: "#3182F6",
+                                        }}
+                                    />
+                                    <span
+                                        style={{
+                                            fontSize: 15,
+                                            fontWeight: 600,
+                                            color: "#191F28",
+                                        }}
+                                    >
+                                        {dates[idx]}
+                                    </span>
+                                </div>
+                            </div>
+                            <button
+                                onClick={next}
+                                style={{
+                                    width: 28,
+                                    height: 28,
+                                    border: "none",
+                                    background: "transparent",
+                                    borderRadius: 6,
+                                    cursor: "pointer",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                }}
+                            >
+                                <RightOutlined
+                                    style={{ fontSize: 12, color: "#6B7684" }}
+                                />
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ==========================================
+             * G. Duration Number Count-Up
+             * ========================================== */
+            function DemoCountUp() {
+                const [key, setKey] = React.useState(0);
+                const targets = [49, 148, 33, 501];
+                const [values, setValues] = React.useState(targets);
+
+                const replay = () => {
+                    setValues([0, 0, 0, 0]);
+                    setKey((k) => k + 1);
+                    let frame = 0;
+                    const totalFrames = 30;
+                    const animate = () => {
+                        frame++;
+                        const progress = Math.min(frame / totalFrames, 1);
+                        const eased = 1 - Math.pow(1 - progress, 3);
+                        setValues(targets.map((t) => Math.round(t * eased)));
+                        if (frame < totalFrames) requestAnimationFrame(animate);
+                    };
+                    requestAnimationFrame(animate);
+                };
+
+                React.useEffect(() => {
+                    replay();
+                }, []);
+
+                return (
+                    <div>
+                        <button className="replay-btn" onClick={replay}>
+                            <UndoOutlined style={{ fontSize: 12 }} /> 다시 재생
+                        </button>
+                        <div
+                            className="demo-frame"
+                            style={{ padding: "12px 0" }}
+                            key={key}
+                        >
+                            {RECORDS.map((r, i) => (
+                                <div
+                                    key={r.id}
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 12,
+                                        padding: "10px 16px",
+                                    }}
+                                >
+                                    <div style={{ flex: 1 }}>
+                                        <div
+                                            style={{
+                                                fontSize: 15,
+                                                fontWeight: 500,
+                                                color: "#191F28",
+                                            }}
+                                        >
+                                            {r.name}
+                                        </div>
+                                    </div>
+                                    <span
+                                        style={{
+                                            fontSize: 16,
+                                            fontWeight: 700,
+                                            color: "#191F28",
+                                            fontVariantNumeric: "tabular-nums",
+                                            animation: `count-pop 0.4s ease-out ${
+                                                i * 0.08
+                                            }s both`,
+                                        }}
+                                    >
+                                        {values[i]}분
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ==========================================
+             * H. Section Header Scale-In
+             * ========================================== */
+            function DemoSectionHeader() {
+                const [key, setKey] = React.useState(0);
+                return (
+                    <div>
+                        <button
+                            className="replay-btn"
+                            onClick={() => setKey((k) => k + 1)}
+                        >
+                            <UndoOutlined style={{ fontSize: 12 }} /> 다시 재생
+                        </button>
+                        <div
+                            className="demo-frame"
+                            style={{ padding: 16 }}
+                            key={key}
+                        >
+                            <div
+                                style={{
+                                    animation: "slide-down 0.35s ease-out both",
+                                    marginBottom: 12,
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "space-between",
+                                    }}
+                                >
+                                    <span
+                                        style={{
+                                            fontSize: 11,
+                                            fontWeight: 700,
+                                            color: "#F04452",
+                                            letterSpacing: "0.5px",
+                                        }}
+                                    >
+                                        진행 중
+                                    </span>
+                                </div>
+                            </div>
+                            <div
+                                style={{
+                                    border: "1.5px solid #F04452",
+                                    borderRadius: 12,
+                                    padding: "12px 16px",
+                                    animation:
+                                        "scale-in 0.35s ease-out 0.1s both",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 12,
+                                    background: "white",
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        width: 40,
+                                        height: 40,
+                                        borderRadius: "50%",
+                                        background: "#F04452",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                    }}
+                                >
+                                    <PauseCircleOutlined
+                                        style={{ fontSize: 20, color: "white" }}
+                                    />
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <span
+                                        style={{
+                                            fontSize: 15,
+                                            fontWeight: 600,
+                                            color: "#F04452",
+                                        }}
+                                    >
+                                        회의
+                                    </span>
+                                    <div
+                                        style={{
+                                            fontSize: 13,
+                                            color: "#6B7684",
+                                        }}
+                                    >
+                                        관리업무
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div
+                                style={{
+                                    animation:
+                                        "slide-down 0.35s ease-out 0.25s both",
+                                    marginTop: 20,
+                                    marginBottom: 12,
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "space-between",
+                                    }}
+                                >
+                                    <span
+                                        style={{
+                                            fontSize: 11,
+                                            fontWeight: 700,
+                                            color: "#6B7684",
+                                            letterSpacing: "0.5px",
+                                        }}
+                                    >
+                                        작업 목록
+                                    </span>
+                                    <div style={{ display: "flex", gap: 4 }}>
+                                        <div
+                                            style={{
+                                                width: 28,
+                                                height: 28,
+                                                borderRadius: "50%",
+                                                background: "#F2F4F6",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                            }}
+                                        >
+                                            <CheckCircleOutlined
+                                                style={{
+                                                    fontSize: 13,
+                                                    color: "#34C759",
+                                                }}
+                                            />
+                                        </div>
+                                        <div
+                                            style={{
+                                                width: 28,
+                                                height: 28,
+                                                borderRadius: "50%",
+                                                background: "#F2F4F6",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                            }}
+                                        >
+                                            <DeleteOutlined
+                                                style={{
+                                                    fontSize: 13,
+                                                    color: "#F04452",
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {RECORDS.slice(0, 2).map((r, i) => (
+                                <div
+                                    key={r.id}
+                                    style={{
+                                        animation: `stagger-fade-up 0.35s ease-out ${
+                                            0.35 + i * 0.07
+                                        }s both`,
+                                        border: "1px solid #F2F4F6",
+                                        borderRadius: 12,
+                                        padding: "12px 16px",
+                                        marginBottom: 8,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 12,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            width: 36,
+                                            height: 36,
+                                            borderRadius: "50%",
+                                            border: "2px solid #E5E8EB",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                        }}
+                                    >
+                                        <PlayCircleOutlined
+                                            style={{
+                                                fontSize: 16,
+                                                color: "#B0B8C1",
+                                            }}
+                                        />
+                                    </div>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div
+                                            style={{
+                                                fontSize: 15,
+                                                fontWeight: 500,
+                                                color: "#191F28",
+                                                whiteSpace: "nowrap",
+                                                overflow: "hidden",
+                                                textOverflow: "ellipsis",
+                                            }}
+                                        >
+                                            {r.name}
+                                        </div>
+                                        <div
+                                            style={{
+                                                fontSize: 13,
+                                                color: "#6B7684",
+                                            }}
+                                        >
+                                            {r.sub}
+                                        </div>
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: 15,
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        {r.dur}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ==========================================
+             * MAIN APP
+             * ========================================== */
+            function MockupApp() {
+                return (
+                    <div>
+                        <div className="mockup-header">
+                            <h1>모바일 애니메이션 후보군</h1>
+                            <p>
+                                각 데모를 직접 인터랙션하거나 "다시 재생"
+                                버튼으로 확인
+                            </p>
+                        </div>
+
+                        {/* A */}
+                        <div className="demo-section">
+                            <div className="demo-label">
+                                A. 리스트 등장 — Staggered Fade Up
+                            </div>
+                            <div className="demo-desc">
+                                레코드 목록이 아래에서 위로 순차적으로 페이드인.
+                                날짜 변경 시, 첫 로드 시 적용.
+                                <br />
+                                <b>토스 감성:</b> 정보가 한꺼번에 쏟아지지 않고
+                                순서대로 나타나는 안정감.
+                            </div>
+                            <DemoStaggerEntrance />
+                        </div>
+
+                        {/* B */}
+                        <div className="demo-section">
+                            <div className="demo-label">
+                                B. 카드 누름 피드백 — Press Scale
+                            </div>
+                            <div className="demo-desc">
+                                카드를 누르면 살짝 줄어들며(scale 0.97) 그림자
+                                변화. 놓으면 복원.
+                                <br />
+                                <b>토스 감성:</b> 실제 물리적 버튼을 누르는 듯한
+                                촉감 피드백.
+                            </div>
+                            <DemoCardPress />
+                        </div>
+
+                        {/* C */}
+                        <div className="demo-section">
+                            <div className="demo-label">
+                                C. 스와이프 액션 — Swipe to Complete/Delete
+                            </div>
+                            <div className="demo-desc">
+                                카드를 왼쪽으로 스와이프하면 "완료" / "삭제"
+                                버튼 노출.
+                                <br />
+                                <b>모바일 네이티브:</b> iOS 메일앱 스타일. 빠른
+                                동작 접근.
+                            </div>
+                            <DemoSwipeAction />
+                        </div>
+
+                        {/* D */}
+                        <div className="demo-section">
+                            <div className="demo-label">
+                                D. 진행 중 카드 — Breathing Glow + Timer Tick
+                            </div>
+                            <div className="demo-desc">
+                                타이머 활성 시 빨간 테두리가 숨쉬듯 펄스.
+                                경과시간 뱃지가 1초마다 미세하게 스케일.
+                                <br />
+                                <b>토스 감성:</b> "살아있는" UI — 뭔가 진행
+                                중이라는 시각적 확신.
+                            </div>
+                            <DemoRunningGlow />
+                        </div>
+
+                        {/* E */}
+                        <div className="demo-section">
+                            <div className="demo-label">
+                                E. 캘린더 선택 — Pop Scale
+                            </div>
+                            <div className="demo-desc">
+                                날짜를 탭하면 선택 원이 통통 튀듯 나타남 (scale
+                                0.8 → 1.05 → 1.0).
+                                <br />
+                                <b>토스 감성:</b> 작은 인터랙션도 즐거운
+                                마이크로 피드백.
+                            </div>
+                            <DemoCalendarPop />
+                        </div>
+
+                        {/* F */}
+                        <div className="demo-section">
+                            <div className="demo-label">
+                                F. 날짜 내비 — Slide Transition
+                            </div>
+                            <div className="demo-desc">
+                                좌우 화살표로 날짜 이동 시 텍스트가 슬라이드하며
+                                전환.
+                                <br />
+                                <b>토스 감성:</b> 페이지 넘김 느낌의 자연스러운
+                                흐름.
+                            </div>
+                            <DemoDateSlide />
+                        </div>
+
+                        {/* G */}
+                        <div className="demo-section">
+                            <div className="demo-label">
+                                G. 시간 숫자 — Count-Up Animation
+                            </div>
+                            <div className="demo-desc">
+                                날짜 변경 시 각 레코드의 분 숫자가 0에서 목표
+                                값까지 카운트업. 팝 효과 동반.
+                                <br />
+                                <b>토스 감성:</b> 토스 송금 완료 화면의 금액
+                                등장 느낌.
+                            </div>
+                            <DemoCountUp />
+                        </div>
+
+                        {/* H */}
+                        <div className="demo-section">
+                            <div className="demo-label">
+                                H. 섹션 등장 — Header Slide + Card Scale-In
+                            </div>
+                            <div className="demo-desc">
+                                "진행 중" / "작업 목록" 섹션 헤더가 위에서
+                                슬라이드, 카드가 스케일인으로 등장.
+                                <br />
+                                <b>토스 감성:</b> 화면 구조가 계층적으로
+                                조립되는 느낌.
+                            </div>
+                            <DemoSectionHeader />
+                        </div>
+
+                        <div
+                            style={{
+                                textAlign: "center",
+                                padding: "32px 0 48px",
+                                color: "#B0B8C1",
+                                fontSize: 12,
+                            }}
+                        >
+                            — 원하는 후보를 조합하여 적용할 수 있습니다 —
+                        </div>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            root.render(<MockupApp />);
+        </script>
+    </body>
+</html>

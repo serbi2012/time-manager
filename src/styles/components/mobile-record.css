@@ -1,11 +1,240 @@
-/* Mobile Record Cards - Base responsive styling */
+/* Mobile Record B4 Redesign — animations + unified container */
 
-@media (max-width: 480px) {
-    .mobile-record-card {
-        background: white;
-        border-radius: 12px;
-        padding: 14px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        border: 1px solid #f0f0f0;
+@layer components {
+    /* ============================================
+     * Sticky header
+     * ============================================ */
+    .mobile-record-sticky-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: var(--color-bg-default);
+        padding-top: var(--spacing-xs);
+        padding-bottom: var(--spacing-xs);
+    }
+
+    /* ============================================
+     * A. Staggered Fade Up — list entrance
+     * ============================================ */
+    .mobile-record-fade-up {
+        animation: mobile-fade-up 0.4s ease-out both;
+    }
+
+    @keyframes mobile-fade-up {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ============================================
+     * B. Press Scale — card tap feedback
+     * ============================================ */
+    .mobile-record-pressable {
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .mobile-record-pressable:active {
+        transform: scale(0.97);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    /* ============================================
+     * D. Timer pulse (button + card glow)
+     * ============================================ */
+    .mobile-timer-pulse {
+        animation: mobile-timer-pulse-ring 1.6s ease-in-out infinite;
+    }
+
+    @keyframes mobile-timer-pulse-ring {
+        0% {
+            box-shadow: 0 0 0 0 rgba(240, 68, 82, 0.35);
+        }
+        70% {
+            box-shadow: 0 0 0 6px rgba(240, 68, 82, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(240, 68, 82, 0);
+        }
+    }
+
+    .mobile-card-glow {
+        animation: mobile-card-glow-ring 2s ease-in-out infinite;
+    }
+
+    @keyframes mobile-card-glow-ring {
+        0%,
+        100% {
+            box-shadow: 0 0 0 0 rgba(240, 68, 82, 0.2);
+        }
+        50% {
+            box-shadow: 0 0 0 6px rgba(240, 68, 82, 0);
+        }
+    }
+
+    .mobile-timer-tick {
+        animation: mobile-timer-tick 1s ease-in-out infinite;
+    }
+
+    @keyframes mobile-timer-tick {
+        0%,
+        100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+    }
+
+    /* ============================================
+     * E. Calendar Pop Scale
+     * ============================================ */
+    .mobile-calendar-pop {
+        animation: mobile-calendar-pop 0.3s ease-out;
+    }
+
+    @keyframes mobile-calendar-pop {
+        0% {
+            transform: scale(0.8);
+            opacity: 0;
+        }
+        60% {
+            transform: scale(1.05);
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    /* ============================================
+     * F. Date Slide — left/right transition
+     * ============================================ */
+    .mobile-date-slide-left {
+        animation: mobile-slide-from-left 0.3s ease-out;
+    }
+
+    .mobile-date-slide-right {
+        animation: mobile-slide-from-right 0.3s ease-out;
+    }
+
+    @keyframes mobile-slide-from-left {
+        from {
+            opacity: 0;
+            transform: translateX(-16px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes mobile-slide-from-right {
+        from {
+            opacity: 0;
+            transform: translateX(16px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    /* ============================================
+     * G. Count-Up pop
+     * ============================================ */
+    .mobile-count-pop {
+        animation: mobile-count-pop 0.4s ease-out both;
+    }
+
+    @keyframes mobile-count-pop {
+        0% {
+            transform: scale(0.5);
+            opacity: 0;
+        }
+        60% {
+            transform: scale(1.15);
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    /* ============================================
+     * H. Section Entrance — header slide + card scale
+     * ============================================ */
+    .mobile-section-slide-down {
+        animation: mobile-section-slide-down 0.35s ease-out both;
+    }
+
+    @keyframes mobile-section-slide-down {
+        from {
+            opacity: 0;
+            transform: translateY(-12px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .mobile-scale-in {
+        animation: mobile-scale-in 0.35s ease-out both;
+    }
+
+    @keyframes mobile-scale-in {
+        from {
+            opacity: 0;
+            transform: scale(0.92);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* ============================================
+     * Error-light background for badges
+     * ============================================ */
+    .bg-error-light {
+        background-color: rgba(240, 68, 82, 0.08);
+    }
+
+    /* ============================================
+     * Swipe card
+     * ============================================ */
+    .mobile-swipe-container {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .mobile-swipe-actions {
+        position: absolute;
+        right: 0;
+        top: 1px;
+        bottom: 1px;
+        display: flex;
+        align-items: stretch;
+        transition: opacity 0.15s ease-out;
+    }
+
+    .mobile-swipe-action-btn {
+        width: 60px;
+        border: none;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        cursor: pointer;
+        font-size: 10px;
+        -webkit-tap-highlight-color: transparent;
     }
 }

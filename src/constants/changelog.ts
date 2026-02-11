@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.17";
+export const CURRENT_VERSION = "2.0.18";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,43 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.18",
+        date: "2026-02-11",
+        title: "모바일 작업 기록 전면 리디자인",
+        changes: [
+            {
+                type: "style",
+                description:
+                    "모바일 작업 기록 화면이 카드 리스트 디자인으로 전면 개편됨",
+            },
+            {
+                type: "feature",
+                description:
+                    "주간 캘린더 스트립 추가 — 날짜 탭으로 빠르게 이동 가능",
+            },
+            {
+                type: "feature",
+                description:
+                    "스피드 다이얼 플로팅 버튼 — 새 작업 추가와 프리셋을 한 곳에서 사용",
+            },
+            {
+                type: "feature",
+                description:
+                    "스와이프 액션 — 작업 카드를 왼쪽으로 밀어 완료/삭제 가능",
+            },
+            {
+                type: "improvement",
+                description:
+                    "완료된 작업이 작업 목록에 체크 아이콘과 취소선으로 표시됨",
+            },
+            {
+                type: "style",
+                description:
+                    "다양한 모바일 전용 애니메이션 적용 (입장 효과, 슬라이드 전환, 숫자 카운트업 등)",
+            },
+        ],
+    },
     {
         version: "2.0.17",
         date: "2026-02-11",
