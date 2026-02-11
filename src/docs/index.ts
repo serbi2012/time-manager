@@ -2,7 +2,6 @@ import gettingStarted from "./getting-started.md?raw";
 import dailyRecord from "./daily-record.md?raw";
 import workPreset from "./work-preset.md?raw";
 import weeklySchedule from "./weekly-schedule.md?raw";
-import suggestions from "./suggestions.md?raw";
 import settings from "./settings.md?raw";
 import shortcuts from "./shortcuts.md?raw";
 
@@ -29,7 +28,6 @@ export const TABLE_OF_CONTENTS: TOCItem[] = [
     { id: "daily-record", title: "일간 기록" },
     { id: "work-preset", title: "작업 프리셋" },
     { id: "weekly-schedule", title: "주간 일정" },
-    { id: "suggestions", title: "건의사항" },
     { id: "settings", title: "설정" },
     { id: "shortcuts", title: "단축키 목록" },
 ];
@@ -56,11 +54,6 @@ export const DOCS: DocSection[] = [
         content: weeklySchedule,
     },
     {
-        id: "suggestions",
-        title: "건의사항",
-        content: suggestions,
-    },
-    {
         id: "settings",
         title: "설정",
         content: settings,
@@ -84,7 +77,9 @@ export function searchDocs(query: string): SearchResult[] {
 
         let matches = 0;
         let index = 0;
-        while ((index = content_lower.indexOf(normalized_query, index)) !== -1) {
+        while (
+            (index = content_lower.indexOf(normalized_query, index)) !== -1
+        ) {
             matches++;
             index += normalized_query.length;
         }

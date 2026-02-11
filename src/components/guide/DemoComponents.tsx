@@ -14,27 +14,27 @@ import {
     Space,
     Typography,
     Tooltip,
-    DatePicker,
-    Statistic,
-    Row,
-    Col,
     Empty,
+    Switch,
 } from "antd";
 import {
     PlayCircleOutlined,
     PauseCircleOutlined,
     EditOutlined,
     DeleteOutlined,
-    CheckCircleOutlined,
+    CheckOutlined,
+    RollbackOutlined,
     PlusOutlined,
-    FolderOutlined,
     HolderOutlined,
-    CopyOutlined,
     LeftOutlined,
     RightOutlined,
+    ClockCircleOutlined,
+    EllipsisOutlined,
+    DownloadOutlined,
+    UploadOutlined,
+    CloudOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
-import dayjs from "dayjs";
 import { useShortcutStore } from "../../store/useShortcutStore";
 import { formatShortcutKeyForPlatform } from "../../hooks/useShortcuts";
 import { formatDuration } from "../../shared/lib/time";
@@ -55,6 +55,7 @@ interface DemoRecord {
     duration_minutes: number;
     start_time: string;
     end_time: string;
+    date: string;
     is_running: boolean;
     is_completed: boolean;
 }
@@ -65,6 +66,7 @@ interface DemoTemplate {
     deal_name: string;
     task_name: string;
     category_name: string;
+    project_code: string;
     color: string;
 }
 
@@ -79,6 +81,7 @@ const DEMO_RECORDS: DemoRecord[] = [
         duration_minutes: 90,
         start_time: "09:00",
         end_time: "10:30",
+        date: "2026-02-11",
         is_running: false,
         is_completed: false,
     },
@@ -92,6 +95,7 @@ const DEMO_RECORDS: DemoRecord[] = [
         duration_minutes: 45,
         start_time: "10:30",
         end_time: "",
+        date: "2026-02-11",
         is_running: true,
         is_completed: false,
     },
@@ -105,6 +109,7 @@ const DEMO_RECORDS: DemoRecord[] = [
         duration_minutes: 30,
         start_time: "14:00",
         end_time: "14:30",
+        date: "2026-02-11",
         is_running: false,
         is_completed: true,
     },
@@ -117,7 +122,8 @@ const DEMO_TEMPLATES: DemoTemplate[] = [
         deal_name: "컴포넌트 개발",
         task_name: "개발",
         category_name: "개발",
-        color: "#1890ff",
+        project_code: "A25_01846",
+        color: "var(--color-primary)",
     },
     {
         id: "2",
@@ -125,7 +131,7 @@ const DEMO_TEMPLATES: DemoTemplate[] = [
         deal_name: "API 설계",
         task_name: "설계",
         category_name: "개발",
-        color: "#52c41a",
+        color: "var(--color-success)",
     },
     {
         id: "3",
@@ -133,11 +139,11 @@ const DEMO_TEMPLATES: DemoTemplate[] = [
         deal_name: "주간회의",
         task_name: "기타",
         category_name: "회의",
-        color: "#faad14",
+        project_code: "A00_00000",
+        color: "var(--color-warning)",
     },
 ];
 
-// 카테고리별 색상 매핑
 const getCategoryColor = (category: string): string => {
     const color_map: Record<string, string> = {
         개발: "green",
@@ -159,13 +165,6 @@ const getCategoryColor = (category: string): string => {
  * 작업 기록 테이블 데모 - 실제 UI와 동일하게 구현
  */
 export function DemoWorkRecordTable() {
-    const today = dayjs();
-    const total_minutes = DEMO_RECORDS.reduce(
-        (sum, r) => sum + r.duration_minutes,
-        0
-    );
-
-    // 단축키 설정에서 동적으로 가져오기
     const new_work_shortcut = useShortcutStore((state) =>
         state.shortcuts.find((s) => s.id === "new-work")
     );
@@ -177,78 +176,63 @@ export function DemoWorkRecordTable() {
             key: "timer_action",
             width: 50,
             align: "center",
-            render: (_, record) => {
-                const is_active = record.is_running;
-                return (
-                    <Tooltip title={is_active ? "정지" : "시작"}>
-                        <Button
-                            type={is_active ? "primary" : "default"}
-                            danger={is_active}
-                            shape="circle"
-                            size="small"
-                            icon={
-                                is_active ? (
-                                    <PauseCircleOutlined />
-                                ) : (
-                                    <PlayCircleOutlined />
-                                )
-                            }
-                        />
-                    </Tooltip>
-                );
-            },
+            render: (_, record) => (
+                <Tooltip title={record.is_running ? "정지" : "시작"}>
+                    <Button
+                        type={record.is_running ? "primary" : "default"}
+                        danger={record.is_running}
+                        shape="circle"
+                        size="small"
+                        icon={
+                            record.is_running ? (
+                                <PauseCircleOutlined />
+                            ) : (
+                                <PlayCircleOutlined />
+                            )
+                        }
+                    />
+                </Tooltip>
+            ),
         },
         {
             title: "거래명",
             dataIndex: "deal_name",
             key: "deal_name",
             width: 200,
-            render: (text: string, record) => {
-                const is_active = record.is_running;
-                const is_completed = record.is_completed;
-                return (
-                    <Space direction="vertical" size={0}>
-                        <Space>
-                            {is_completed && (
-                                <CheckCircleOutlined
-                                    style={{ color: "#52c41a" }}
-                                />
-                            )}
-                            <Text
-                                strong
-                                style={{
-                                    color: is_active
-                                        ? "#1890ff"
-                                        : is_completed
-                                        ? "#8c8c8c"
-                                        : undefined,
-                                    textDecoration: is_completed
-                                        ? "line-through"
-                                        : undefined,
-                                }}
-                            >
-                                {text || record.work_name}
-                            </Text>
-                            {is_active && (
-                                <Tag
-                                    color="processing"
-                                    style={{ marginLeft: 4 }}
-                                >
-                                    00:45
-                                </Tag>
-                            )}
-                        </Space>
+            render: (text: string, record) => (
+                <Space direction="vertical" size={0}>
+                    <Space>
+                        {record.is_completed && (
+                            <CheckOutlined className="text-success" />
+                        )}
+                        <Text
+                            strong
+                            className={
+                                record.is_running
+                                    ? "text-primary"
+                                    : record.is_completed
+                                    ? "text-text-disabled line-through"
+                                    : undefined
+                            }
+                        >
+                            {text || record.work_name}
+                        </Text>
+                        {record.is_running && (
+                            <Tag color="processing" className="ml-xs">
+                                00:45
+                            </Tag>
+                        )}
                     </Space>
-                );
-            },
+                </Space>
+            ),
         },
         {
             title: "작업명",
             dataIndex: "work_name",
             key: "work_name",
-            width: 140,
+            width: 120,
             render: (text: string) => (
-                <Tag color="blue" style={{ fontSize: 11 }}>
+                <Tag color="blue" className="text-xs">
                     {text}
                 </Tag>
             ),
@@ -270,46 +254,71 @@ export function DemoWorkRecordTable() {
                 text ? <Tag color={getCategoryColor(text)}>{text}</Tag> : "-",
         },
         {
-            title: "소요 시간",
-            key: "duration",
-            width: 100,
-            align: "center",
-            render: (_, record) => {
-                const duration_str = formatDuration(record.duration_minutes);
-                return (
-                    <Text
-                        style={{
-                            fontFamily: "monospace",
-                            color: record.is_running ? "#1890ff" : undefined,
-                        }}
-                    >
-                        {duration_str}
-                    </Text>
-                );
-            },
-        },
-        {
             title: "시간",
-            key: "time_range",
-            width: 110,
-            render: (_, record) => {
-                const time_range = record.end_time
-                    ? `${record.start_time} ~ ${record.end_time}`
-                    : `${record.start_time} ~`;
-                return (
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                        {time_range}
-                    </Text>
-                );
-            },
+            key: "duration",
+            width: 60,
+            align: "center",
+            render: (_, record) => (
+                <Text
+                    className={
+                        record.is_running
+                            ? "font-mono text-primary"
+                            : "font-mono"
+                    }
+                >
+                    {formatDuration(record.duration_minutes)}
+                </Text>
+            ),
         },
         {
-            title: "액션",
+            title: "시작-종료",
+            key: "time_range",
+            width: 120,
+            render: (_, record) => (
+                <Text type="secondary" className="text-sm">
+                    {record.end_time
+                        ? `${record.start_time} ~ ${record.end_time}`
+                        : `${record.start_time} ~`}
+                </Text>
+            ),
+        },
+        {
+            title: "날짜",
+            dataIndex: "date",
+            key: "date",
+            width: 90,
+            render: (text: string) => (
+                <Text type="secondary" className="text-sm">
+                    {text?.slice(5)}
+                </Text>
+            ),
+        },
+        {
+            title: "",
             key: "action",
-            width: 100,
+            width: 120,
             align: "center",
             render: (_, record) => (
                 <Space size={4}>
+                    {!record.is_running && !record.is_completed && (
+                        <Tooltip title="완료">
+                            <Button
+                                type="text"
+                                size="small"
+                                icon={<CheckOutlined />}
+                                className="text-success"
+                            />
+                        </Tooltip>
+                    )}
+                    {record.is_completed && (
+                        <Tooltip title="완료 취소">
+                            <Button
+                                type="text"
+                                size="small"
+                                icon={<RollbackOutlined />}
+                            />
+                        </Tooltip>
+                    )}
                     <Tooltip title="수정">
                         <Button
                             type="text"
@@ -317,21 +326,13 @@ export function DemoWorkRecordTable() {
                             icon={<EditOutlined />}
                         />
                     </Tooltip>
-                    <Tooltip title="삭제">
-                        <Button
-                            type="text"
-                            size="small"
-                            danger
-                            icon={<DeleteOutlined />}
-                        />
-                    </Tooltip>
-                    {!record.is_completed && (
-                        <Tooltip title="완료">
+                    {!record.is_running && (
+                        <Tooltip title="삭제">
                             <Button
                                 type="text"
                                 size="small"
-                                icon={<CheckCircleOutlined />}
-                                style={{ color: "#52c41a" }}
+                                danger
+                                icon={<DeleteOutlined />}
                             />
                         </Tooltip>
                     )}
@@ -342,34 +343,21 @@ export function DemoWorkRecordTable() {
 
     return (
         <div className="demo-component">
-            <Card
-                size="small"
-                title={
+            <Card size="small">
+                <div className="flex items-center justify-between flex-wrap gap-sm mb-md">
                     <Space>
-                        <DatePicker
-                            value={today}
-                            format="YYYY-MM-DD (ddd)"
-                            allowClear={false}
-                            style={{ width: 160 }}
-                            suffixIcon={null}
-                            disabled
-                        />
                         <Button size="small" icon={<LeftOutlined />} disabled />
-                        <Button size="small" disabled>
-                            오늘
-                        </Button>
+                        <Text strong>2월 11일 화요일</Text>
                         <Button
                             size="small"
                             icon={<RightOutlined />}
                             disabled
                         />
+                        <Tag color="processing" className="text-xs">
+                            오늘
+                        </Tag>
                     </Space>
-                }
-                extra={
                     <Space>
-                        <Button size="small" icon={<CopyOutlined />} disabled>
-                            복사
-                        </Button>
                         <Button
                             type="primary"
                             size="small"
@@ -377,39 +365,17 @@ export function DemoWorkRecordTable() {
                             disabled
                         >
                             새 작업{" "}
-                            <span
-                                style={{
-                                    fontSize: 10,
-                                    opacity: 0.85,
-                                    marginLeft: 2,
-                                    padding: "1px 3px",
-                                    background: "rgba(255,255,255,0.2)",
-                                    borderRadius: 3,
-                                }}
-                            >
+                            <span className="text-xs opacity-85 ml-xs px-xs rounded-xs bg-white/20">
                                 {formatShortcutKeyForPlatform(new_work_keys)}
                             </span>
                         </Button>
+                        <Button
+                            size="small"
+                            icon={<EllipsisOutlined />}
+                            disabled
+                        />
                     </Space>
-                }
-            >
-                <Row gutter={16} style={{ marginBottom: 16 }}>
-                    <Col span={12}>
-                        <Statistic
-                            title="작업 수"
-                            value={DEMO_RECORDS.length}
-                            suffix="개"
-                            valueStyle={{ fontSize: 20 }}
-                        />
-                    </Col>
-                    <Col span={12}>
-                        <Statistic
-                            title="총 소요 시간"
-                            value={formatDuration(total_minutes)}
-                            valueStyle={{ fontSize: 20 }}
-                        />
-                    </Col>
-                </Row>
+                </div>
 
                 <Table
                     columns={columns}
@@ -424,6 +390,11 @@ export function DemoWorkRecordTable() {
                             ? "demo-row-completed"
                             : ""
                     }
+                    footer={() => (
+                        <Text type="secondary" className="text-sm">
+                            총 {DEMO_RECORDS.length}건
+                        </Text>
+                    )}
                 />
             </Card>
         </div>
@@ -434,53 +405,25 @@ export function DemoWorkRecordTable() {
  * 작업 프리셋 리스트 데모 - 실제 UI와 동일하게 구현
  */
 export function DemoWorkTemplateList() {
-    // 단축키 설정에서 동적으로 가져오기
-    const new_preset_shortcut = useShortcutStore((state) =>
-        state.shortcuts.find((s) => s.id === "new-preset")
-    );
-    const new_preset_keys = new_preset_shortcut?.keys || "Alt+P";
-
     return (
         <div className="demo-component">
-            <Card
-                title={
-                    <Space>
-                        <FolderOutlined />
-                        <span>작업 프리셋</span>
-                    </Space>
-                }
-                size="small"
-                extra={
-                    <Button
-                        type="primary"
-                        icon={<PlusOutlined />}
-                        size="small"
-                        disabled
-                    >
-                        <span
-                            style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                            }}
-                        >
-                            추가
-                            <span
-                                style={{
-                                    fontSize: 10,
-                                    opacity: 0.85,
-                                    marginLeft: 4,
-                                    padding: "1px 4px",
-                                    background: "rgba(255,255,255,0.2)",
-                                    borderRadius: 3,
-                                }}
-                            >
-                                {formatShortcutKeyForPlatform(new_preset_keys)}
-                            </span>
-                        </span>
-                    </Button>
-                }
-                className="demo-template-list-card"
-            >
+            <Card size="small" className="demo-template-list-card">
+                <div className="flex items-center justify-between mb-md">
+                    <Text strong className="text-md">
+                        작업 프리셋
+                    </Text>
+                </div>
+
+                <Button
+                    block
+                    icon={<PlusOutlined />}
+                    disabled
+                    className="mb-md rounded-xl"
+                    style={{ borderStyle: "dashed" }}
+                >
+                    새 프리셋 추가
+                </Button>
+
                 <div className="demo-template-items">
                     {DEMO_TEMPLATES.map((template) => (
                         <div
@@ -493,62 +436,57 @@ export function DemoWorkTemplateList() {
                             </div>
 
                             <div className="demo-template-content">
-                                <div className="demo-template-header">
-                                    <Tag
-                                        color={template.color}
-                                        style={{
-                                            fontSize: 10,
-                                            lineHeight: 1.3,
-                                            padding: "1px 6px",
-                                            margin: 0,
-                                        }}
-                                    >
-                                        {template.work_name}
-                                    </Tag>
-                                </div>
-
-                                <Text strong className="demo-template-title">
+                                <Text
+                                    strong
+                                    className="demo-template-title text-md"
+                                >
                                     {template.deal_name || template.work_name}
                                 </Text>
 
-                                {(template.task_name ||
-                                    template.category_name) && (
-                                    <Text
-                                        type="secondary"
-                                        className="demo-template-subtitle"
-                                    >
-                                        {[
-                                            template.task_name,
-                                            template.category_name,
-                                        ]
-                                            .filter(Boolean)
-                                            .join(" · ")}
-                                    </Text>
-                                )}
+                                <div className="flex items-center gap-xs flex-wrap">
+                                    {template.deal_name && (
+                                        <Tag
+                                            className="text-xs"
+                                            style={{
+                                                margin: 0,
+                                                padding: "0 6px",
+                                                lineHeight: "18px",
+                                            }}
+                                        >
+                                            {template.work_name}
+                                        </Tag>
+                                    )}
+                                    {(template.task_name ||
+                                        template.category_name) && (
+                                        <Text
+                                            type="secondary"
+                                            className="text-xs"
+                                        >
+                                            {[
+                                                template.task_name,
+                                                template.category_name,
+                                            ]
+                                                .filter(Boolean)
+                                                .join(" · ")}
+                                        </Text>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="demo-template-actions">
-                                <div className="demo-template-hover-buttons">
-                                    <Tooltip title="수정">
-                                        <Button
-                                            size="small"
-                                            icon={<EditOutlined />}
-                                        />
-                                    </Tooltip>
-                                    <Tooltip title="삭제">
-                                        <Button
-                                            danger
-                                            size="small"
-                                            icon={<DeleteOutlined />}
-                                        />
-                                    </Tooltip>
-                                </div>
-
+                                <Tooltip title="더보기">
+                                    <Button
+                                        size="small"
+                                        type="text"
+                                        icon={<EllipsisOutlined />}
+                                    />
+                                </Tooltip>
                                 <Tooltip title="작업 추가">
                                     <Button
-                                        type="primary"
                                         size="small"
+                                        type="text"
                                         icon={<PlusOutlined />}
+                                        className="text-primary"
                                     />
                                 </Tooltip>
                             </div>
@@ -565,14 +503,36 @@ export function DemoWorkTemplateList() {
  */
 export function DemoDailyGanttChart() {
     const hours = [9, 10, 11, 12, 13, 14, 15, 16, 17];
+    const total_minutes = DEMO_RECORDS.reduce(
+        (sum, r) => sum + r.duration_minutes,
+        0
+    );
 
     return (
         <div className="demo-component">
-            <Card
-                size="small"
-                title="일간 간트차트"
-                extra={<Text type="secondary">2026-01-21</Text>}
-            >
+            <Card size="small">
+                <div className="flex items-center justify-between mb-md">
+                    <Space>
+                        <Text strong className="text-md">
+                            일간 타임라인
+                        </Text>
+                        <Button size="small" icon={<LeftOutlined />} disabled />
+                        <Text type="secondary" className="text-sm">
+                            2026년 2월 11일 (화)
+                        </Text>
+                        <Button
+                            size="small"
+                            icon={<RightOutlined />}
+                            disabled
+                        />
+                    </Space>
+                    <Space>
+                        <Tag icon={<ClockCircleOutlined />} color="processing">
+                            {formatDuration(total_minutes)}
+                        </Tag>
+                    </Space>
+                </div>
+
                 <div className="demo-gantt-container">
                     <div className="demo-gantt-header">
                         {hours.map((hour) => (
@@ -592,7 +552,7 @@ export function DemoDailyGanttChart() {
                                     style={{
                                         left: "0%",
                                         width: "18.75%",
-                                        background: "#1890ff",
+                                        background: "var(--color-primary)",
                                     }}
                                 />
                             </div>
@@ -605,7 +565,7 @@ export function DemoDailyGanttChart() {
                                     style={{
                                         left: "18.75%",
                                         width: "12.5%",
-                                        background: "#1890ff",
+                                        background: "var(--color-primary)",
                                     }}
                                 />
                             </div>
@@ -618,7 +578,7 @@ export function DemoDailyGanttChart() {
                                     style={{
                                         left: "62.5%",
                                         width: "6.25%",
-                                        background: "#faad14",
+                                        background: "var(--color-warning)",
                                     }}
                                 />
                             </div>
@@ -627,10 +587,11 @@ export function DemoDailyGanttChart() {
                     <div
                         className="demo-gantt-lunch"
                         style={{ left: "31.25%", width: "12.5%" }}
-                    >
-                        점심
-                    </div>
+                    />
                 </div>
+                <Text type="secondary" className="text-xs mt-sm block">
+                    빈 영역을 드래그하여 작업 추가
+                </Text>
             </Card>
         </div>
     );
@@ -646,13 +607,12 @@ export function DemoEmptyState() {
                 <Empty
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
                     description={
-                        <span>
-                            프리셋이 없습니다
-                            <br />
-                            <Text type="secondary" style={{ fontSize: 12 }}>
-                                "추가" 버튼으로 추가하세요
+                        <div className="flex flex-col items-center gap-xs">
+                            <Text strong>아직 프리셋이 없어요</Text>
+                            <Text type="secondary" className="text-sm">
+                                자주 쓰는 작업을 저장해 보세요
                             </Text>
-                        </span>
+                        </div>
                     }
                 />
             </Card>
@@ -666,85 +626,81 @@ export function DemoEmptyState() {
 export function DemoSettingsPanel() {
     return (
         <div className="demo-component">
-            <Card size="small" title="데이터 관리">
-                <div style={{ marginBottom: 16 }}>
-                    <Text strong style={{ display: "block", marginBottom: 8 }}>
-                        프리셋 설정
+            <Card size="small" title="데이터">
+                <div className="mb-lg">
+                    <Text strong className="block mb-sm">
+                        시간 설정
                     </Text>
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            padding: "8px 12px",
-                            background: "#fafafa",
-                            borderRadius: 4,
-                        }}
-                    >
+                    <div className="flex justify-between items-center p-sm bg-bg-light rounded-md">
                         <div>
-                            <Text>작업 추가 시 구분자(postfix) 사용</Text>
+                            <Text>점심시간</Text>
                             <br />
-                            <Text type="secondary" style={{ fontSize: 12 }}>
-                                ON 시: "회의" → "회의_0122_093045_123"
+                            <Text type="secondary" className="text-sm">
+                                간트차트에 표시되며 작업 시간 계산 시 자동
+                                제외돼요
                             </Text>
                         </div>
-                        <Tag color="blue">OFF</Tag>
+                        <Tag>11:40 ~ 12:40</Tag>
                     </div>
                 </div>
 
-                <div style={{ marginBottom: 16 }}>
-                    <Text strong style={{ display: "block", marginBottom: 8 }}>
-                        백업 및 복원
+                <div className="mb-lg">
+                    <Text strong className="block mb-sm">
+                        프리셋 설정
                     </Text>
-                    <Space
-                        direction="vertical"
-                        style={{ width: "100%" }}
-                        size="small"
-                    >
+                    <div className="flex justify-between items-center p-sm bg-bg-light rounded-md">
+                        <div>
+                            <Text>고유 식별자 자동 추가</Text>
+                            <br />
+                            <Text type="secondary" className="text-sm">
+                                프리셋으로 작업 추가 시 거래명에 타임스탬프를
+                                붙여요
+                            </Text>
+                        </div>
+                        <Switch size="small" disabled />
+                    </div>
+                </div>
+
+                <div className="mb-lg">
+                    <Text strong className="block mb-sm">
+                        데이터 관리
+                    </Text>
+                    <Space direction="vertical" className="w-full" size="small">
                         <Button
-                            icon={<CopyOutlined />}
+                            icon={<DownloadOutlined />}
                             block
                             disabled
-                            style={{ textAlign: "left" }}
+                            className="text-left"
                         >
-                            데이터 내보내기 (Export)
+                            데이터 내보내기
                         </Button>
                         <Button
-                            icon={<PlusOutlined />}
+                            icon={<UploadOutlined />}
                             block
                             disabled
-                            style={{ textAlign: "left" }}
+                            className="text-left"
                         >
-                            데이터 가져오기 (Import)
+                            데이터 가져오기
                         </Button>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                            * 가져오기 시 기존 데이터가 덮어씌워집니다
+                        <Text type="secondary" className="text-sm">
+                            JSON 파일로 데이터를 백업하거나 복원할 수 있어요.
+                            가져오기 시 기존 데이터가 대체돼요.
                         </Text>
                     </Space>
                 </div>
 
                 <div>
-                    <Text strong style={{ display: "block", marginBottom: 8 }}>
-                        저장소 정보
+                    <Text strong className="block mb-sm">
+                        저장소
                     </Text>
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            padding: "8px 12px",
-                            background: "#fafafa",
-                            borderRadius: 4,
-                        }}
-                    >
-                        <Text>저장 위치</Text>
-                        <Tag color="green">Firebase Cloud</Tag>
+                    <div className="flex justify-between items-center p-sm bg-bg-light rounded-md">
+                        <Space>
+                            <CloudOutlined className="text-success" />
+                            <Text>클라우드 연결됨</Text>
+                        </Space>
                     </div>
-                    <Text
-                        type="secondary"
-                        style={{ fontSize: 12, marginTop: 4, display: "block" }}
-                    >
-                        데이터가 클라우드에 자동으로 동기화됩니다
+                    <Text type="secondary" className="text-sm mt-xs block">
+                        모든 데이터가 자동으로 동기화돼요
                     </Text>
                 </div>
             </Card>
@@ -757,37 +713,126 @@ export function DemoSettingsPanel() {
  */
 export function DemoShortcutsTable() {
     const shortcuts = [
-        { key: "Alt + N", action: "새 작업 추가", category: "일반" },
-        { key: "Alt + S", action: "타이머 시작/중지", category: "타이머" },
-        { key: "Alt + T", action: "오늘로 이동", category: "네비게이션" },
-        { key: "Alt + ←", action: "이전 날짜", category: "네비게이션" },
-        { key: "Alt + →", action: "다음 날짜", category: "네비게이션" },
+        {
+            key: "Alt + N",
+            action: "새 작업 추가",
+            category: "일반",
+            enabled: true,
+        },
+        {
+            key: "Alt + P",
+            action: "새 프리셋 추가",
+            category: "일반",
+            enabled: true,
+        },
+        {
+            key: "Alt + ,",
+            action: "설정 열기",
+            category: "일반",
+            enabled: true,
+        },
+        {
+            key: "F8",
+            action: "모달 저장/추가",
+            category: "일반",
+            enabled: true,
+        },
+        {
+            key: "Alt + S",
+            action: "타이머 시작/중지",
+            category: "타이머",
+            enabled: true,
+        },
+        {
+            key: "Alt + R",
+            action: "타이머 초기화",
+            category: "타이머",
+            enabled: true,
+        },
+        {
+            key: "Alt + T",
+            action: "오늘로 이동",
+            category: "네비게이션",
+            enabled: true,
+        },
+        {
+            key: "Alt + ←",
+            action: "이전 날짜",
+            category: "네비게이션",
+            enabled: true,
+        },
+        {
+            key: "Alt + →",
+            action: "다음 날짜",
+            category: "네비게이션",
+            enabled: true,
+        },
+        {
+            key: "Alt + 1",
+            action: "일간 기록 페이지",
+            category: "네비게이션",
+            enabled: true,
+        },
+        {
+            key: "Alt + 2",
+            action: "주간 일정 페이지",
+            category: "네비게이션",
+            enabled: true,
+        },
+        {
+            key: "Alt + E",
+            action: "데이터 내보내기",
+            category: "데이터",
+            enabled: true,
+        },
+        {
+            key: "Alt + Shift + S",
+            action: "수동 동기화",
+            category: "데이터",
+            enabled: true,
+        },
     ];
 
+    const category_color_map: Record<string, string> = {
+        일반: "blue",
+        타이머: "orange",
+        네비게이션: "green",
+        데이터: "purple",
+    };
+
     const columns: ColumnsType<(typeof shortcuts)[0]> = [
+        {
+            title: "기능",
+            dataIndex: "action",
+            key: "action",
+        },
         {
             title: "단축키",
             dataIndex: "key",
             key: "key",
-            width: 120,
+            width: 140,
             render: (t) => (
-                <Tag
-                    style={{
-                        fontFamily: "monospace",
-                        fontSize: 13,
-                        padding: "4px 8px",
-                    }}
-                >
-                    {t}
-                </Tag>
+                <Tag className="font-mono text-sm px-sm py-xs">{t}</Tag>
             ),
         },
-        { title: "기능", dataIndex: "action", key: "action" },
         {
             title: "카테고리",
             dataIndex: "category",
             key: "category",
-            render: (t) => <Tag color="blue">{t}</Tag>,
+            width: 100,
+            render: (t) => (
+                <Tag color={category_color_map[t] || "default"}>{t}</Tag>
+            ),
+        },
+        {
+            title: "활성화",
+            dataIndex: "enabled",
+            key: "enabled",
+            width: 80,
+            align: "center",
+            render: (enabled: boolean) => (
+                <Switch size="small" checked={enabled} disabled />
+            ),
         },
     ];
 
@@ -838,7 +883,7 @@ export function DemoRenderer({ componentName }: { componentName: string }) {
 
     return (
         <div className="demo-wrapper">
-            <div className="demo-badge">📱 실제 UI 미리보기</div>
+            <div className="demo-badge">실제 UI 미리보기</div>
             <Component />
         </div>
     );
