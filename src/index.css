@@ -20,4 +20,22 @@
     #root {
         height: 100%;
     }
+
+    /* 모바일: 텍스트 선택, 콜아웃, 탭 하이라이트 방지 */
+    @media (max-width: 480px) {
+        * {
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 입력 필드는 텍스트 선택 허용 */
+        input,
+        textarea,
+        [contenteditable="true"] {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+    }
 }
