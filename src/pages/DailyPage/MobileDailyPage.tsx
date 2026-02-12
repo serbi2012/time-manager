@@ -94,6 +94,7 @@ export function MobileDailyPage() {
         is_trash_open,
         editing_record_id,
         closeAddModal,
+        openEditModal,
         closeEditModal,
         openCompletedModal,
         closeCompletedModal,
@@ -128,6 +129,13 @@ export function MobileDailyPage() {
             }
         },
         [active_record_id, is_timer_running, startTimer, stopTimer]
+    );
+
+    const handleEditRecord = useCallback(
+        (record: WorkRecord) => {
+            openEditModal(record.id);
+        },
+        [openEditModal]
     );
 
     const handleCopyToClipboard = useCallback(() => {
@@ -205,7 +213,7 @@ export function MobileDailyPage() {
     }, [display_records]);
 
     return (
-        <div className="flex flex-col min-h-screen bg-white">
+        <div className="flex flex-col min-h-screen bg-bg-light">
             {/* Sticky Top Area */}
             <div className="sticky top-0 z-30">
                 <SlideIn
@@ -234,6 +242,9 @@ export function MobileDailyPage() {
                     active_record_id={active_record_id}
                     elapsed_seconds={elapsed_seconds}
                     onToggle={handleToggleRecord}
+                    onEdit={handleEditRecord}
+                    onComplete={(r) => markAsCompleted(r.id)}
+                    onDelete={(r) => deleteRecord(r.id)}
                     animation_key={animation_key}
                 />
 
@@ -242,6 +253,7 @@ export function MobileDailyPage() {
                     records={other_records}
                     active_record_id={active_record_id}
                     onToggle={handleToggleRecord}
+                    onEdit={handleEditRecord}
                     onOpenCompleted={openCompletedModal}
                     onOpenTrash={openTrashModal}
                     onCopyRecords={handleCopyToClipboard}

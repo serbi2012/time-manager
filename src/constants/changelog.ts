@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.19";
+export const CURRENT_VERSION = "2.0.20";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,35 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.20",
+        date: "2026-02-12",
+        title: "모바일 롱프레스 수정 & 카드 레이아웃 개선",
+        changes: [
+            {
+                type: "feature",
+                description:
+                    "작업을 길게 눌러 수정·완료·삭제 메뉴를 열 수 있어요",
+            },
+            {
+                type: "feature",
+                description: "진행 중인 타이머도 길게 눌러 수정할 수 있어요",
+            },
+            {
+                type: "style",
+                description: "완료된 작업에 체크 표시와 뮤트 스타일이 적용돼요",
+            },
+            {
+                type: "style",
+                description: "각 작업이 독립 카드로 표시되어 구분이 쉬워졌어요",
+            },
+            {
+                type: "style",
+                description:
+                    "길게 누를 때 물방울 같은 탄력 애니메이션이 재생돼요",
+            },
+        ],
+    },
     {
         version: "2.0.19",
         date: "2026-02-11",

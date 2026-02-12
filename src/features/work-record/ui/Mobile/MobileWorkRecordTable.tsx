@@ -81,6 +81,7 @@ export function MobileWorkRecordTable() {
         is_trash_open,
         editing_record_id,
         closeAddModal,
+        openEditModal,
         closeEditModal,
         openCompletedModal,
         closeCompletedModal,
@@ -132,6 +133,13 @@ export function MobileWorkRecordTable() {
             }
         },
         [active_record_id, is_timer_running, startTimer, stopTimer]
+    );
+
+    const handleEditRecord = useCallback(
+        (record: WorkRecord) => {
+            openEditModal(record.id);
+        },
+        [openEditModal]
     );
 
     const handlePrevDay = useCallback(() => {
@@ -283,6 +291,9 @@ export function MobileWorkRecordTable() {
                     active_record_id={active_record_id}
                     elapsed_seconds={elapsed_seconds}
                     onToggle={handleToggleRecord}
+                    onEdit={handleEditRecord}
+                    onComplete={(r) => markAsCompleted(r.id)}
+                    onDelete={(r) => deleteRecord(r.id)}
                     animation_key={animation_key}
                 />
 
@@ -291,6 +302,7 @@ export function MobileWorkRecordTable() {
                     records={other_records}
                     active_record_id={active_record_id}
                     onToggle={handleToggleRecord}
+                    onEdit={handleEditRecord}
                     onOpenCompleted={openCompletedModal}
                     onOpenTrash={openTrashModal}
                     onCopyRecords={handleCopyToClipboard}

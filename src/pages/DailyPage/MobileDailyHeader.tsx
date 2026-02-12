@@ -99,7 +99,7 @@ export function MobileDailyHeader() {
 
     return (
         <>
-            <div className="bg-white">
+            <div className="bg-bg-light">
                 {/* Header */}
                 <div className="px-xl pt-xl pb-md">
                     <div className="flex items-center justify-between">

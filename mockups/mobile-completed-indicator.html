@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>모바일 완료 작업 구분 표시 - 디자인 후보</title>
+
+        <!-- Tailwind CSS Play CDN -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        spacing: {
+                            xs: "4px",
+                            sm: "8px",
+                            md: "12px",
+                            lg: "16px",
+                            xl: "24px",
+                            "2xl": "32px",
+                        },
+                        colors: {
+                            primary: "#3182F6",
+                            success: "#34C759",
+                            error: "#F04452",
+                            "gray-50": "#F9FAFB",
+                            "gray-100": "#F2F4F6",
+                            "gray-200": "#E5E8EB",
+                            "gray-300": "#D1D6DB",
+                            "gray-400": "#B0B8C1",
+                            "gray-500": "#8B95A1",
+                            "gray-600": "#6B7684",
+                            "gray-700": "#4E5968",
+                            "gray-800": "#333D4B",
+                            "gray-900": "#191F28",
+                        },
+                    },
+                },
+            };
+        </script>
+
+        <!-- React 18 UMD -->
+        <script
+            crossorigin
+            src="https://unpkg.com/react@18/umd/react.development.js"
+        ></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+        ></script>
+
+        <!-- Day.js -->
+        <script src="https://unpkg.com/dayjs@1/dayjs.min.js"></script>
+
+        <!-- Ant Design 5 UMD -->
+        <script src="https://unpkg.com/antd@5/dist/antd.min.js"></script>
+
+        <!-- Ant Design Icons UMD -->
+        <script src="https://unpkg.com/@ant-design/icons@5/dist/index.umd.min.js"></script>
+
+        <!-- Babel Standalone for JSX -->
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+        <style>
+            body {
+                margin: 0;
+                padding: 24px;
+                background: #f5f5f5;
+                font-family: "Pretendard Variable", Pretendard, -apple-system,
+                    BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            }
+            #root {
+                max-width: 900px;
+                margin: 0 auto;
+            }
+            .mockup-header {
+                text-align: center;
+                margin-bottom: 32px;
+                padding-bottom: 16px;
+                border-bottom: 1px solid #e8e8e8;
+            }
+            .mockup-header h1 {
+                font-size: 20px;
+                font-weight: 700;
+                color: #333;
+                margin: 0 0 4px;
+            }
+            .mockup-header p {
+                font-size: 13px;
+                color: #999;
+                margin: 0;
+            }
+            .mockup-section {
+                margin-bottom: 48px;
+            }
+            .mockup-section-label {
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                color: #3182f6;
+                margin-bottom: 12px;
+            }
+            .mockup-frame {
+                background: #f9fafb;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+                overflow: hidden;
+                max-width: 400px;
+                margin: 0 auto;
+            }
+            .mockup-desc {
+                font-size: 13px;
+                color: #6b7684;
+                margin-bottom: 12px;
+                line-height: 1.6;
+            }
+            .mockup-pros-cons {
+                display: flex;
+                gap: 16px;
+                margin-top: 12px;
+                font-size: 12px;
+            }
+            .mockup-pros {
+                color: #34c759;
+            }
+            .mockup-cons {
+                color: #f04452;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const {
+                CheckCircleFilled,
+                CheckCircleOutlined,
+                CaretRightFilled,
+                CheckOutlined,
+            } = icons;
+
+            // ============ Mock Data ============
+            const RECORDS = [
+                {
+                    name: "5.6 프레임워크 FE",
+                    category: "개발",
+                    color: "#3182F6",
+                    duration: "2:35",
+                    time: "09:00 ~ 11:35",
+                    completed: false,
+                },
+                {
+                    name: "API 문서 정리",
+                    category: "문서작업",
+                    color: "#FF9500",
+                    duration: "1:20",
+                    time: "11:40 ~ 13:00",
+                    completed: true,
+                },
+                {
+                    name: "주간 팀 미팅",
+                    category: "회의",
+                    color: "#34C759",
+                    duration: "0:45",
+                    time: "14:00 ~ 14:45",
+                    completed: true,
+                },
+                {
+                    name: "버그 수정 #1234",
+                    category: "개발",
+                    color: "#3182F6",
+                    duration: "1:10",
+                    time: "15:00 ~ 진행 중",
+                    completed: false,
+                },
+            ];
+
+            // ============ Shared Components ============
+
+            function SectionHeader({ count }) {
+                return (
+                    <div className="flex items-center justify-between px-xl pt-xl pb-md">
+                        <span className="text-[15px] font-semibold text-gray-600">
+                            작업 기록
+                        </span>
+                        <div className="flex items-center gap-sm">
+                            <span className="text-[13px] text-gray-400 mr-xs">
+                                {count}개
+                            </span>
+                            <button className="w-8 h-8 rounded-full flex items-center justify-center border-0 cursor-pointer bg-gray-100">
+                                <CheckCircleOutlined
+                                    style={{ fontSize: 14, color: "#34C759" }}
+                                />
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            // ============ OPTION A: Strikethrough + Reduced Opacity ============
+
+            function OptionA_Row({ record, is_last }) {
+                const is_done = record.completed;
+                return (
+                    <div
+                        className={`flex items-center gap-md px-xl py-lg ${
+                            !is_last ? "border-b border-gray-100" : ""
+                        }`}
+                        style={{ opacity: is_done ? 0.45 : 1 }}
+                    >
+                        <button
+                            className={`w-[34px] h-[34px] rounded-lg border-0 flex items-center justify-center cursor-pointer shrink-0 ${
+                                is_done
+                                    ? "bg-gray-100 text-gray-300"
+                                    : "bg-gray-50 text-gray-400"
+                            }`}
+                        >
+                            <CaretRightFilled style={{ fontSize: 13 }} />
+                        </button>
+                        <div
+                            className="w-[3px] h-[34px] rounded-full shrink-0"
+                            style={{ background: record.color }}
+                        />
+                        <div className="flex-1 min-w-0">
+                            <div
+                                className={`text-[17px] font-medium truncate ${
+                                    is_done
+                                        ? "text-gray-400 line-through"
+                                        : "text-gray-800"
+                                }`}
+                            >
+                                {record.name}
+                            </div>
+                            <div className="text-[13px] text-gray-400 mt-[2px] truncate">
+                                {record.category} · {record.time}
+                            </div>
+                        </div>
+                        <div
+                            className={`text-[19px] font-semibold shrink-0 tabular-nums ${
+                                is_done
+                                    ? "text-gray-400 line-through"
+                                    : "text-gray-700"
+                            }`}
+                        >
+                            {record.duration}
+                        </div>
+                    </div>
+                );
+            }
+
+            // ============ OPTION B: Check Icon Badge + Soft Green Tint ============
+
+            function OptionB_Row({ record, is_last }) {
+                const is_done = record.completed;
+                return (
+                    <div
+                        className={`flex items-center gap-md px-xl py-lg ${
+                            !is_last ? "border-b border-gray-100" : ""
+                        }`}
+                        style={{
+                            background: is_done
+                                ? "rgba(52, 199, 89, 0.04)"
+                                : "transparent",
+                        }}
+                    >
+                        {is_done ? (
+                            <div
+                                className="w-[34px] h-[34px] rounded-lg flex items-center justify-center shrink-0"
+                                style={{
+                                    background: "rgba(52, 199, 89, 0.12)",
+                                }}
+                            >
+                                <CheckCircleFilled
+                                    style={{ fontSize: 18, color: "#34C759" }}
+                                />
+                            </div>
+                        ) : (
+                            <button className="w-[34px] h-[34px] rounded-lg bg-gray-50 border-0 flex items-center justify-center text-gray-400 cursor-pointer shrink-0">
+                                <CaretRightFilled style={{ fontSize: 13 }} />
+                            </button>
+                        )}
+                        <div
+                            className="w-[3px] h-[34px] rounded-full shrink-0"
+                            style={{ background: record.color }}
+                        />
+                        <div className="flex-1 min-w-0">
+                            <div
+                                className={`text-[17px] font-medium truncate ${
+                                    is_done ? "text-gray-600" : "text-gray-800"
+                                }`}
+                            >
+                                {record.name}
+                            </div>
+                            <div className="text-[13px] text-gray-400 mt-[2px] truncate">
+                                {record.category} · {record.time}
+                            </div>
+                        </div>
+                        <div
+                            className={`text-[19px] font-semibold shrink-0 tabular-nums ${
+                                is_done ? "text-gray-500" : "text-gray-700"
+                            }`}
+                        >
+                            {record.duration}
+                        </div>
+                    </div>
+                );
+            }
+
+            // ============ OPTION C: "완료" Mini Tag ============
+
+            function OptionC_Row({ record, is_last }) {
+                const is_done = record.completed;
+                return (
+                    <div
+                        className={`flex items-center gap-md px-xl py-lg ${
+                            !is_last ? "border-b border-gray-100" : ""
+                        }`}
+                    >
+                        <button
+                            className={`w-[34px] h-[34px] rounded-lg border-0 flex items-center justify-center cursor-pointer shrink-0 ${
+                                is_done
+                                    ? "bg-gray-100 text-gray-300"
+                                    : "bg-gray-50 text-gray-400"
+                            }`}
+                        >
+                            <CaretRightFilled style={{ fontSize: 13 }} />
+                        </button>
+                        <div
+                            className="w-[3px] h-[34px] rounded-full shrink-0"
+                            style={{ background: record.color }}
+                        />
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-sm">
+                                <span
+                                    className={`text-[17px] font-medium truncate ${
+                                        is_done
+                                            ? "text-gray-500"
+                                            : "text-gray-800"
+                                    }`}
+                                >
+                                    {record.name}
+                                </span>
+                                {is_done && (
+                                    <span
+                                        className="shrink-0 inline-flex items-center px-[6px] py-[1px] rounded-full text-[10px] font-medium"
+                                        style={{
+                                            background:
+                                                "rgba(52, 199, 89, 0.12)",
+                                            color: "#34C759",
+                                        }}
+                                    >
+                                        완료
+                                    </span>
+                                )}
+                            </div>
+                            <div className="text-[13px] text-gray-400 mt-[2px] truncate">
+                                {record.category} · {record.time}
+                            </div>
+                        </div>
+                        <div
+                            className={`text-[19px] font-semibold shrink-0 tabular-nums ${
+                                is_done ? "text-gray-500" : "text-gray-700"
+                            }`}
+                        >
+                            {record.duration}
+                        </div>
+                    </div>
+                );
+            }
+
+            // ============ OPTION D: Green Left Border Accent + Muted Style ============
+
+            function OptionD_Row({ record, is_last }) {
+                const is_done = record.completed;
+                return (
+                    <div
+                        className={`flex items-center gap-md px-xl py-lg relative ${
+                            !is_last ? "border-b border-gray-100" : ""
+                        }`}
+                    >
+                        {is_done && (
+                            <div
+                                className="absolute left-0 top-[8px] bottom-[8px] w-[3px] rounded-r-full"
+                                style={{ background: "#34C759" }}
+                            />
+                        )}
+                        <button
+                            className={`w-[34px] h-[34px] rounded-lg border-0 flex items-center justify-center cursor-pointer shrink-0 ${
+                                is_done
+                                    ? "bg-gray-100 text-gray-300"
+                                    : "bg-gray-50 text-gray-400"
+                            }`}
+                        >
+                            {is_done ? (
+                                <CheckOutlined
+                                    style={{ fontSize: 13, color: "#34C759" }}
+                                />
+                            ) : (
+                                <CaretRightFilled style={{ fontSize: 13 }} />
+                            )}
+                        </button>
+                        <div
+                            className="w-[3px] h-[34px] rounded-full shrink-0"
+                            style={{ background: record.color }}
+                        />
+                        <div className="flex-1 min-w-0">
+                            <div
+                                className={`text-[17px] font-medium truncate ${
+                                    is_done ? "text-gray-500" : "text-gray-800"
+                                }`}
+                            >
+                                {record.name}
+                            </div>
+                            <div className="text-[13px] text-gray-400 mt-[2px] truncate">
+                                {record.category} · {record.time}
+                            </div>
+                        </div>
+                        <div
+                            className={`text-[19px] font-semibold shrink-0 tabular-nums ${
+                                is_done ? "text-gray-500" : "text-gray-700"
+                            }`}
+                        >
+                            {record.duration}
+                        </div>
+                    </div>
+                );
+            }
+
+            // ============ OPTION E: Play → Check Transform + Subtle BG ============
+
+            function OptionE_Row({ record, is_last }) {
+                const is_done = record.completed;
+                return (
+                    <div
+                        className={`flex items-center gap-md px-xl py-lg ${
+                            !is_last ? "border-b border-gray-100" : ""
+                        }`}
+                        style={{
+                            background: is_done ? "#FAFAFA" : "transparent",
+                        }}
+                    >
+                        {is_done ? (
+                            <div
+                                className="w-[34px] h-[34px] rounded-full flex items-center justify-center shrink-0"
+                                style={{ background: "#34C759" }}
+                            >
+                                <CheckOutlined
+                                    style={{ fontSize: 14, color: "#fff" }}
+                                />
+                            </div>
+                        ) : (
+                            <button className="w-[34px] h-[34px] rounded-lg bg-gray-50 border-0 flex items-center justify-center text-gray-400 cursor-pointer shrink-0">
+                                <CaretRightFilled style={{ fontSize: 13 }} />
+                            </button>
+                        )}
+                        <div
+                            className="w-[3px] h-[34px] rounded-full shrink-0"
+                            style={{
+                                background: is_done ? "#D1D6DB" : record.color,
+                            }}
+                        />
+                        <div className="flex-1 min-w-0">
+                            <div
+                                className={`text-[17px] font-medium truncate ${
+                                    is_done ? "text-gray-400" : "text-gray-800"
+                                }`}
+                            >
+                                {record.name}
+                            </div>
+                            <div
+                                className={`text-[13px] mt-[2px] truncate ${
+                                    is_done ? "text-gray-300" : "text-gray-400"
+                                }`}
+                            >
+                                {record.category} · {record.time}
+                            </div>
+                        </div>
+                        <div
+                            className={`text-[19px] font-semibold shrink-0 tabular-nums ${
+                                is_done ? "text-gray-400" : "text-gray-700"
+                            }`}
+                        >
+                            {record.duration}
+                        </div>
+                    </div>
+                );
+            }
+
+            // ============ Card Wrapper ============
+
+            function CardWrapper({ children }) {
+                return (
+                    <div className="px-xl pb-md">
+                        <div
+                            className="bg-white rounded-xl overflow-hidden"
+                            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
+                        >
+                            <SectionHeader count={4} />
+                            {children}
+                        </div>
+                    </div>
+                );
+            }
+
+            // ============ Main Mockup ============
+
+            function MockupApp() {
+                return (
+                    <div>
+                        <div className="mockup-header">
+                            <h1>모바일 완료 작업 구분 표시</h1>
+                            <p>
+                                완료된 작업을 시각적으로 구분하는 5가지 디자인
+                                후보
+                            </p>
+                        </div>
+
+                        {/* OPTION A */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                Option A — 취소선 + 투명도 감소
+                            </div>
+                            <p className="mockup-desc">
+                                가장 전통적인 방식. 완료된 작업에{" "}
+                                <b>취소선(strikethrough)</b>과 <b>투명도 45%</b>
+                                를 적용해 "끝난 작업"임을 직관적으로 전달합니다.
+                                작업명과 시간 모두에 취소선이 적용됩니다.
+                            </p>
+                            <div className="mockup-frame">
+                                <CardWrapper>
+                                    {RECORDS.map((r, i) => (
+                                        <OptionA_Row
+                                            key={i}
+                                            record={r}
+                                            is_last={i === RECORDS.length - 1}
+                                        />
+                                    ))}
+                                </CardWrapper>
+                            </div>
+                            <div className="mockup-pros-cons">
+                                <div className="mockup-pros">
+                                    ✓ 직관적, 구현 간단
+                                </div>
+                                <div className="mockup-cons">
+                                    ✗ 투명도가 낮아 정보 확인 어려움
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* OPTION B */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                Option B — 체크 아이콘 + 그린 틴트 배경
+                            </div>
+                            <p className="mockup-desc">
+                                재생 버튼이 <b>초록색 체크 아이콘</b>으로
+                                바뀌고, 행 배경에 <b>연한 초록색 틴트</b>가
+                                적용됩니다. "완료됨"이라는 상태를 긍정적으로
+                                표현하면서 정보 가독성을 유지합니다.
+                            </p>
+                            <div className="mockup-frame">
+                                <CardWrapper>
+                                    {RECORDS.map((r, i) => (
+                                        <OptionB_Row
+                                            key={i}
+                                            record={r}
+                                            is_last={i === RECORDS.length - 1}
+                                        />
+                                    ))}
+                                </CardWrapper>
+                            </div>
+                            <div className="mockup-pros-cons">
+                                <div className="mockup-pros">
+                                    ✓ 긍정적 느낌, 가독성 유지
+                                </div>
+                                <div className="mockup-cons">
+                                    ✗ 미완료와의 대비가 미묘할 수 있음
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* OPTION C */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                Option C — "완료" 미니 태그
+                            </div>
+                            <p className="mockup-desc">
+                                작업명 옆에 <b>"완료" 라운드 태그</b>를
+                                추가합니다. 기존 레이아웃을 최소한으로
+                                변경하면서 텍스트로 명확하게 상태를 전달합니다.
+                            </p>
+                            <div className="mockup-frame">
+                                <CardWrapper>
+                                    {RECORDS.map((r, i) => (
+                                        <OptionC_Row
+                                            key={i}
+                                            record={r}
+                                            is_last={i === RECORDS.length - 1}
+                                        />
+                                    ))}
+                                </CardWrapper>
+                            </div>
+                            <div className="mockup-pros-cons">
+                                <div className="mockup-pros">
+                                    ✓ 명시적, 기존 레이아웃 변화 최소
+                                </div>
+                                <div className="mockup-cons">
+                                    ✗ 작업명이 길면 태그가 잘릴 수 있음
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* OPTION D */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                Option D — 좌측 그린 바 + 체크 아이콘 전환
+                            </div>
+                            <p className="mockup-desc">
+                                행 왼쪽에 <b>초록색 세로 바</b>가 표시되고, 재생
+                                버튼이 <b>체크 아이콘</b>으로 바뀝니다. 색상
+                                바와 체크 아이콘의 이중 시그널로 완료 상태를
+                                전달합니다.
+                            </p>
+                            <div className="mockup-frame">
+                                <CardWrapper>
+                                    {RECORDS.map((r, i) => (
+                                        <OptionD_Row
+                                            key={i}
+                                            record={r}
+                                            is_last={i === RECORDS.length - 1}
+                                        />
+                                    ))}
+                                </CardWrapper>
+                            </div>
+                            <div className="mockup-pros-cons">
+                                <div className="mockup-pros">
+                                    ✓ 이중 시그널, 깔끔한 느낌
+                                </div>
+                                <div className="mockup-cons">
+                                    ✗ 기존 카테고리 컬러바와 혼동 가능
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* OPTION E */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                Option E — 원형 체크 버튼 + 뮤트 스타일
+                            </div>
+                            <p className="mockup-desc">
+                                재생 버튼이 <b>초록색 원형 체크 버튼</b>으로
+                                완전 교체되고, 카테고리 컬러바가 회색으로
+                                변하며, 전체 텍스트 색상이 <b>회색 톤</b>으로
+                                뮤트됩니다. 배경도 미세하게 회색 처리됩니다.
+                            </p>
+                            <div className="mockup-frame">
+                                <CardWrapper>
+                                    {RECORDS.map((r, i) => (
+                                        <OptionE_Row
+                                            key={i}
+                                            record={r}
+                                            is_last={i === RECORDS.length - 1}
+                                        />
+                                    ))}
+                                </CardWrapper>
+                            </div>
+                            <div className="mockup-pros-cons">
+                                <div className="mockup-pros">
+                                    ✓ 완료 상태가 가장 명확, 토스 스타일
+                                </div>
+                                <div className="mockup-cons">
+                                    ✗ 변경 범위가 가장 큼
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Comparison note */}
+                        <div
+                            style={{
+                                textAlign: "center",
+                                padding: "24px 0 48px",
+                                color: "#8B95A1",
+                                fontSize: 13,
+                            }}
+                        >
+                            <p>
+                                위 5가지 후보 중 마음에 드는 방향을
+                                선택하시거나, 조합/수정 의견을 주세요.
+                            </p>
+                            <p>
+                                예: "B안의 체크 아이콘 + C안의 태그를 조합해줘"
+                            </p>
+                        </div>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            root.render(<MockupApp />);
+        </script>
+    </body>
+</html>

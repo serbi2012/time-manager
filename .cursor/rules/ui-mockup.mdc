@@ -22,6 +22,13 @@ UI를 **새로 만들거나**, **리디자인하거나**, **레이아웃을 크�
     - 네이밍: `mockups/[feature]-[component].html`
     - 예: `mockups/settings-animation-tab.html`, `mockups/gantt-context-menu.html`
 3. 템플릿의 `MockupApp` 컴포넌트를 수정하여 목업을 작성합니다.
+4. **`mockups/index.html`의 `CATEGORIES` 배열에 새 목업을 등록합니다.**
+    - 적절한 카테고리(`gantt`, `template-card`, `mobile`, `common` 등)를 찾아서 `mockups` 배열에 추가합니다.
+    - 해당 카테고리가 없으면 **새 카테고리를 추가**합니다.
+    - 예:
+        ```javascript
+        { file: "gantt-context-menu.html", title: "컨텍스트 메뉴", description: "간트 차트 세션 우클릭 메뉴" }
+        ```
 
 ### Step 2: 로컬 서버 실행
 

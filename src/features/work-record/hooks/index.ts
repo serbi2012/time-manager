@@ -24,3 +24,4 @@ export {
     type UseRecordEditReturn,
     type EditState,
 } from "./useRecordEdit";
+export { useLongPress } from "./useLongPress";

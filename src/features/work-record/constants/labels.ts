@@ -188,6 +188,15 @@ export const MOBILE_RECORD_LABEL = {
 } as const;
 
 // ========================================
+// 모바일 컨텍스트 메뉴 라벨
+// ========================================
+export const MOBILE_CONTEXT_MENU_LABEL = {
+    EDIT: "수정",
+    COMPLETE: "완료",
+    DELETE: "삭제",
+} as const;
+
+// ========================================
 // 마크다운 복사 관련
 // ========================================
 export const MARKDOWN_COPY = {

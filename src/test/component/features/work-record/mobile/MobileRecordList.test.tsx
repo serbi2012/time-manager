@@ -15,6 +15,7 @@ describe("MobileRecordList", () => {
     const default_props = {
         active_record_id: null,
         onToggle: vi.fn(),
+        onEdit: vi.fn(),
         onOpenCompleted: vi.fn(),
         onOpenTrash: vi.fn(),
         onCopyRecords: vi.fn(),

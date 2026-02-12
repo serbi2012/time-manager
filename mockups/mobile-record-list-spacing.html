@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>모바일 작업 목록 카드 디자인</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        spacing: {
+                            xs: "4px",
+                            sm: "8px",
+                            md: "12px",
+                            lg: "16px",
+                            xl: "24px",
+                            "2xl": "32px",
+                        },
+                        colors: {
+                            primary: "#3182F6",
+                            success: "#34C759",
+                            error: "#F04452",
+                            gray: {
+                                50: "#F9FAFB",
+                                100: "#F2F4F6",
+                                200: "#E5E8EB",
+                                300: "#D1D6DB",
+                                400: "#B0B8C1",
+                                500: "#8B95A1",
+                                600: "#6B7684",
+                                700: "#4E5968",
+                                800: "#333D4B",
+                                900: "#191F28",
+                            },
+                        },
+                    },
+                },
+            };
+        </script>
+
+        <script
+            crossorigin
+            src="https://unpkg.com/react@18/umd/react.development.js"
+        ></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+        ></script>
+        <script src="https://unpkg.com/dayjs@1/dayjs.min.js"></script>
+        <script src="https://unpkg.com/antd@5/dist/antd.min.js"></script>
+        <script src="https://unpkg.com/@ant-design/icons@5/dist/index.umd.min.js"></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+        <style>
+            body {
+                margin: 0;
+                padding: 24px;
+                background: #f5f5f5;
+                font-family: "Pretendard Variable", -apple-system,
+                    BlinkMacSystemFont, system-ui, sans-serif;
+            }
+            #root {
+                max-width: 900px;
+                margin: 0 auto;
+            }
+            .mockup-header {
+                text-align: center;
+                margin-bottom: 32px;
+                padding-bottom: 16px;
+                border-bottom: 1px solid #e8e8e8;
+            }
+            .mockup-header h1 {
+                font-size: 20px;
+                font-weight: 700;
+                color: #333;
+                margin: 0 0 4px;
+            }
+            .mockup-header p {
+                font-size: 13px;
+                color: #999;
+                margin: 0;
+            }
+            .mockup-section {
+                margin-bottom: 48px;
+            }
+            .mockup-section-label {
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                color: #3182f6;
+                margin-bottom: 12px;
+            }
+            .phone-frame {
+                width: 375px;
+                margin: 0 auto;
+                border-radius: 24px;
+                overflow: hidden;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+                border: 1px solid #e0e0e0;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const {
+                CheckCircleOutlined,
+                DeleteOutlined,
+                CopyOutlined,
+                CaretRightFilled,
+                CheckOutlined,
+            } = icons;
+
+            /* ── 공통 데이터 ── */
+            const RECORDS = [
+                {
+                    name: "문서작업",
+                    cat: "문서작업",
+                    color: "#8B5CF6",
+                    time: "",
+                    dur: "0분",
+                    done: false,
+                },
+                {
+                    name: "Dev_5.6 522번글 요...",
+                    cat: "개발",
+                    color: "#34C759",
+                    time: "09:48 ~ 12:41",
+                    dur: "1시간 53분",
+                    done: false,
+                },
+                {
+                    name: "용희 책임님 질의응답",
+                    cat: "질의응답",
+                    color: "#FF9500",
+                    time: "13:58 ~ 09:48",
+                    dur: "39분",
+                    done: false,
+                },
+                {
+                    name: "세트메뉴 잡 회의",
+                    cat: "회의",
+                    color: "#3182F6",
+                    time: "13:54 ~ 13:41",
+                    dur: "4시간 29분",
+                    done: false,
+                },
+            ];
+
+            /* ── 타이머 카드 (공통) ── */
+            function TimerCard() {
+                return (
+                    <div className="mx-xl mt-xl mb-md">
+                        <div
+                            className="rounded-2xl overflow-hidden p-xl"
+                            style={{
+                                background:
+                                    "linear-gradient(135deg, #191F28 0%, #333D4B 100%)",
+                            }}
+                        >
+                            <div className="flex items-center gap-sm mb-md">
+                                <div className="w-[7px] h-[7px] rounded-full bg-success animate-pulse" />
+                                <span className="text-[13px] font-medium text-success">
+                                    타이머 진행 중
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <div className="text-[17px] font-semibold text-white">
+                                        세트메뉴 셋업 정립
+                                    </div>
+                                    <div className="text-[13px] text-gray-400 mt-xs">
+                                        개발 · 09:00 ~
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-lg">
+                                    <span
+                                        className="text-[28px] font-bold text-white"
+                                        style={{
+                                            fontVariantNumeric: "tabular-nums",
+                                        }}
+                                    >
+                                        01:14
+                                    </span>
+                                    <div className="w-[48px] h-[48px] rounded-full bg-error/90 flex items-center justify-center">
+                                        <span className="inline-block w-[14px] h-[14px] rounded-[3px] bg-white" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ── 헤더 바 (공통) ── */
+            function SectionHeader({ count }) {
+                return (
+                    <div className="flex items-center justify-between px-xl pt-xl pb-md">
+                        <span className="text-[15px] font-semibold text-gray-600">
+                            작업 목록
+                        </span>
+                        <div className="flex items-center gap-sm">
+                            <span className="text-[13px] text-gray-400 mr-xs">
+                                {count}개
+                            </span>
+                            <button className="w-8 h-8 rounded-full flex items-center justify-center border-0 cursor-pointer bg-gray-100">
+                                <CheckCircleOutlined
+                                    style={{ fontSize: 14, color: "#34C759" }}
+                                />
+                            </button>
+                            <button className="w-8 h-8 rounded-full flex items-center justify-center border-0 cursor-pointer bg-gray-100">
+                                <DeleteOutlined
+                                    style={{ fontSize: 14, color: "#F04452" }}
+                                />
+                            </button>
+                            <button className="w-8 h-8 rounded-full flex items-center justify-center border-0 cursor-pointer bg-gray-100">
+                                <CopyOutlined
+                                    style={{ fontSize: 14, color: "#6B7684" }}
+                                />
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ── 레코드 행 ── */
+            function RecordRow({ record, is_last, variant }) {
+                const { name, cat, color, time, dur, done } = record;
+                const sub = [cat, time].filter(Boolean).join(" · ");
+
+                if (variant === "card") {
+                    // 개별 카드 스타일
+                    return (
+                        <div className="bg-white rounded-xl p-lg flex items-center gap-md shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                            <button className="w-[34px] h-[34px] rounded-lg bg-gray-50 border-0 flex items-center justify-center text-gray-400 shrink-0">
+                                <CaretRightFilled style={{ fontSize: 13 }} />
+                            </button>
+                            <div
+                                className="w-[3px] h-[34px] rounded-full shrink-0"
+                                style={{ background: color }}
+                            />
+                            <div className="flex-1 min-w-0">
+                                <div className="text-[17px] font-medium text-gray-800 truncate">
+                                    {name}
+                                </div>
+                                {sub && (
+                                    <div className="text-[13px] text-gray-400 mt-[2px] truncate">
+                                        {sub}
+                                    </div>
+                                )}
+                            </div>
+                            <div
+                                className="text-[19px] font-semibold text-gray-700 shrink-0"
+                                style={{ fontVariantNumeric: "tabular-nums" }}
+                            >
+                                {dur}
+                            </div>
+                        </div>
+                    );
+                }
+
+                // 리스트 행 스타일 (기본)
+                const borderClass = !is_last ? "border-b border-gray-100" : "";
+                const py = variant === "spacious" ? "py-[20px]" : "py-lg";
+
+                return (
+                    <div
+                        className={`flex items-center gap-md px-xl ${py} ${borderClass}`}
+                    >
+                        <button className="w-[34px] h-[34px] rounded-lg bg-gray-50 border-0 flex items-center justify-center text-gray-400 shrink-0">
+                            <CaretRightFilled style={{ fontSize: 13 }} />
+                        </button>
+                        <div
+                            className="w-[3px] h-[34px] rounded-full shrink-0"
+                            style={{ background: color }}
+                        />
+                        <div className="flex-1 min-w-0">
+                            <div className="text-[17px] font-medium text-gray-800 truncate">
+                                {name}
+                            </div>
+                            {sub && (
+                                <div className="text-[13px] text-gray-400 mt-[2px] truncate">
+                                    {sub}
+                                </div>
+                            )}
+                        </div>
+                        <div
+                            className="text-[19px] font-semibold text-gray-700 shrink-0"
+                            style={{ fontVariantNumeric: "tabular-nums" }}
+                        >
+                            {dur}
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ═══════════════════════════════════════
+             *  OPTION A — 페이지 배경 gray-50 + 카드 흰색
+             *  가장 자연스러운 구분. 토스 앱과 동일한 패턴.
+             * ═══════════════════════════════════════ */
+            function OptionA() {
+                return (
+                    <div className="phone-frame">
+                        <div style={{ background: "#F9FAFB", minHeight: 660 }}>
+                            <TimerCard />
+                            <div className="px-xl pb-md">
+                                <div className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
+                                    <SectionHeader count={4} />
+                                    {RECORDS.map((r, i) => (
+                                        <RecordRow
+                                            key={i}
+                                            record={r}
+                                            is_last={i === RECORDS.length - 1}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ═══════════════════════════════════════
+             *  OPTION B — 페이지 배경 gray-50 + 카드 보더 + 넉넉한 간격
+             *  배경 변경 + 보더 추가 + 행 간격 확대 (py 20px)
+             * ═══════════════════════════════════════ */
+            function OptionB() {
+                return (
+                    <div className="phone-frame">
+                        <div style={{ background: "#F9FAFB", minHeight: 660 }}>
+                            <TimerCard />
+                            <div className="px-xl pb-md">
+                                <div className="bg-white rounded-xl border border-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
+                                    <SectionHeader count={4} />
+                                    {RECORDS.map((r, i) => (
+                                        <RecordRow
+                                            key={i}
+                                            record={r}
+                                            is_last={i === RECORDS.length - 1}
+                                            variant="spacious"
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ═══════════════════════════════════════
+             *  OPTION C — 개별 카드 (각 레코드가 독립 카드)
+             *  간격이 가장 넓음. 시각적 구분이 확실하지만 밀도 낮음.
+             * ═══════════════════════════════════════ */
+            function OptionC() {
+                return (
+                    <div className="phone-frame">
+                        <div style={{ background: "#F9FAFB", minHeight: 660 }}>
+                            <TimerCard />
+                            <div className="px-xl pb-md">
+                                <div className="flex items-center justify-between mb-md">
+                                    <span className="text-[15px] font-semibold text-gray-600">
+                                        작업 목록
+                                    </span>
+                                    <div className="flex items-center gap-sm">
+                                        <span className="text-[13px] text-gray-400 mr-xs">
+                                            4개
+                                        </span>
+                                        <button className="w-8 h-8 rounded-full flex items-center justify-center border-0 cursor-pointer bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+                                            <CheckCircleOutlined
+                                                style={{
+                                                    fontSize: 14,
+                                                    color: "#34C759",
+                                                }}
+                                            />
+                                        </button>
+                                        <button className="w-8 h-8 rounded-full flex items-center justify-center border-0 cursor-pointer bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+                                            <DeleteOutlined
+                                                style={{
+                                                    fontSize: 14,
+                                                    color: "#F04452",
+                                                }}
+                                            />
+                                        </button>
+                                        <button className="w-8 h-8 rounded-full flex items-center justify-center border-0 cursor-pointer bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+                                            <CopyOutlined
+                                                style={{
+                                                    fontSize: 14,
+                                                    color: "#6B7684",
+                                                }}
+                                            />
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-sm">
+                                    {RECORDS.map((r, i) => (
+                                        <RecordRow
+                                            key={i}
+                                            record={r}
+                                            is_last={true}
+                                            variant="card"
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ═══════════════════════════════════════
+             *  OPTION D — 페이지 gray-50 + 카드 강조 그림자 + 넓은 구분선
+             *  그림자를 더 진하게, 구분선 대신 살짝 떨어진 행 간격
+             * ═══════════════════════════════════════ */
+            function OptionD() {
+                return (
+                    <div className="phone-frame">
+                        <div style={{ background: "#F9FAFB", minHeight: 660 }}>
+                            <TimerCard />
+                            <div className="px-xl pb-md">
+                                <div
+                                    className="bg-white rounded-2xl overflow-hidden"
+                                    style={{
+                                        boxShadow:
+                                            "0 2px 12px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)",
+                                    }}
+                                >
+                                    <SectionHeader count={4} />
+                                    {RECORDS.map((r, i) => {
+                                        const sub = [r.cat, r.time]
+                                            .filter(Boolean)
+                                            .join(" · ");
+                                        const isLast = i === RECORDS.length - 1;
+                                        return (
+                                            <React.Fragment key={i}>
+                                                <div className="flex items-center gap-md px-xl py-[18px]">
+                                                    <button className="w-[34px] h-[34px] rounded-lg bg-gray-50 border-0 flex items-center justify-center text-gray-400 shrink-0">
+                                                        <CaretRightFilled
+                                                            style={{
+                                                                fontSize: 13,
+                                                            }}
+                                                        />
+                                                    </button>
+                                                    <div
+                                                        className="w-[3px] h-[34px] rounded-full shrink-0"
+                                                        style={{
+                                                            background: r.color,
+                                                        }}
+                                                    />
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="text-[17px] font-medium text-gray-800 truncate">
+                                                            {r.name}
+                                                        </div>
+                                                        {sub && (
+                                                            <div className="text-[13px] text-gray-400 mt-[2px] truncate">
+                                                                {sub}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div
+                                                        className="text-[19px] font-semibold text-gray-700 shrink-0"
+                                                        style={{
+                                                            fontVariantNumeric:
+                                                                "tabular-nums",
+                                                        }}
+                                                    >
+                                                        {r.dur}
+                                                    </div>
+                                                </div>
+                                                {!isLast && (
+                                                    <div className="mx-xl h-[1px] bg-gray-100" />
+                                                )}
+                                            </React.Fragment>
+                                        );
+                                    })}
+                                    <div className="h-md" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ═══════════════════════════════════════
+             *  OPTION E — 페이지 gray-50 + 카드 내 행 배경 교차
+             *  짝수/홀수 행에 미세한 배경색 차이 + 넓은 패딩
+             * ═══════════════════════════════════════ */
+            function OptionE() {
+                return (
+                    <div className="phone-frame">
+                        <div style={{ background: "#F9FAFB", minHeight: 660 }}>
+                            <TimerCard />
+                            <div className="px-xl pb-md">
+                                <div className="bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.05)] overflow-hidden border border-gray-100">
+                                    <SectionHeader count={4} />
+                                    {RECORDS.map((r, i) => {
+                                        const sub = [r.cat, r.time]
+                                            .filter(Boolean)
+                                            .join(" · ");
+                                        const isLast = i === RECORDS.length - 1;
+                                        const rowBg =
+                                            i % 2 === 1 ? "bg-gray-50/60" : "";
+                                        return (
+                                            <div
+                                                key={i}
+                                                className={`flex items-center gap-md px-xl py-[20px] ${rowBg} ${
+                                                    !isLast
+                                                        ? "border-b border-gray-100/80"
+                                                        : ""
+                                                }`}
+                                            >
+                                                <button className="w-[34px] h-[34px] rounded-lg bg-gray-50 border-0 flex items-center justify-center text-gray-400 shrink-0">
+                                                    <CaretRightFilled
+                                                        style={{ fontSize: 13 }}
+                                                    />
+                                                </button>
+                                                <div
+                                                    className="w-[3px] h-[34px] rounded-full shrink-0"
+                                                    style={{
+                                                        background: r.color,
+                                                    }}
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-[17px] font-medium text-gray-800 truncate">
+                                                        {r.name}
+                                                    </div>
+                                                    {sub && (
+                                                        <div className="text-[13px] text-gray-400 mt-[2px] truncate">
+                                                            {sub}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div
+                                                    className="text-[19px] font-semibold text-gray-700 shrink-0"
+                                                    style={{
+                                                        fontVariantNumeric:
+                                                            "tabular-nums",
+                                                    }}
+                                                >
+                                                    {r.dur}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ═══════════════════════════════════════
+             *  현재 상태 (Before) — 비교용
+             * ═══════════════════════════════════════ */
+            function CurrentState() {
+                return (
+                    <div className="phone-frame">
+                        <div style={{ background: "#FFFFFF", minHeight: 660 }}>
+                            <TimerCard />
+                            <div className="px-xl pb-md">
+                                <div className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
+                                    <SectionHeader count={4} />
+                                    {RECORDS.map((r, i) => (
+                                        <RecordRow
+                                            key={i}
+                                            record={r}
+                                            is_last={i === RECORDS.length - 1}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ═══════════════════════════════════════ */
+
+            function MockupApp() {
+                return (
+                    <div>
+                        <div className="mockup-header">
+                            <h1>
+                                모바일 작업 목록 카드 — 배경 구분 & 간격 개선
+                            </h1>
+                            <p>
+                                배경색 대비, 카드 그림자/보더, 행 간격을 조정한
+                                5가지 후보
+                            </p>
+                        </div>
+
+                        {/* Before */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                현재 상태 (Before)
+                            </div>
+                            <p
+                                style={{
+                                    fontSize: 13,
+                                    color: "#999",
+                                    marginBottom: 12,
+                                }}
+                            >
+                                페이지 배경 #FFFFFF + 카드 배경 #FFFFFF → 구분
+                                불가. 행 간격 py-lg (16px).
+                            </p>
+                            <CurrentState />
+                        </div>
+
+                        {/* Option A */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                Option A — 페이지 배경 gray-50
+                            </div>
+                            <p
+                                style={{
+                                    fontSize: 13,
+                                    color: "#999",
+                                    marginBottom: 12,
+                                }}
+                            >
+                                ✨ 가장 심플한 해결. 페이지 배경만{" "}
+                                <code>#F9FAFB</code>로 변경하면 흰색 카드가
+                                자연스럽게 떠보임.
+                                <br />
+                                토스/카카오뱅크 앱과 동일한 패턴. 최소 변경으로
+                                최대 효과.
+                            </p>
+                            <OptionA />
+                        </div>
+
+                        {/* Option B */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                Option B — gray-50 배경 + 보더 + 넉넉한 간격
+                            </div>
+                            <p
+                                style={{
+                                    fontSize: 13,
+                                    color: "#999",
+                                    marginBottom: 12,
+                                }}
+                            >
+                                A 기반 + 카드에 <code>border-gray-200</code>{" "}
+                                추가 + 행 패딩 20px로 확대.
+                                <br />
+                                카드 윤곽이 더 명확하고, 행 간 여유가 느껴짐.
+                            </p>
+                            <OptionB />
+                        </div>
+
+                        {/* Option C */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                Option C — 개별 카드 (레코드별 독립)
+                            </div>
+                            <p
+                                style={{
+                                    fontSize: 13,
+                                    color: "#999",
+                                    marginBottom: 12,
+                                }}
+                            >
+                                각 레코드가 독립 카드. 시각적 구분 극대화. 카드
+                                사이 8px 간격.
+                                <br />
+                                ⚠️ 밀도가 낮아져 스크롤 양이 늘어남. 레코드 수가
+                                적을 때 적합.
+                            </p>
+                            <OptionC />
+                        </div>
+
+                        {/* Option D */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                Option D — 강조 그림자 + inset 구분선
+                            </div>
+                            <p
+                                style={{
+                                    fontSize: 13,
+                                    color: "#999",
+                                    marginBottom: 12,
+                                }}
+                            >
+                                카드 그림자를 더 진하게 + 얇은 외곽선. 구분선이
+                                좌우 여백 내에서만 표시.
+                                <br />행 패딩 18px, 하단에 여백 추가. 카드의
+                                "떠있는" 느낌 강조.
+                            </p>
+                            <OptionD />
+                        </div>
+
+                        {/* Option E */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                Option E — 행 배경 교차 (zebra striping)
+                            </div>
+                            <p
+                                style={{
+                                    fontSize: 13,
+                                    color: "#999",
+                                    marginBottom: 12,
+                                }}
+                            >
+                                짝수 행에 미세한 <code>gray-50/60</code> 배경.
+                                행 패딩 20px.
+                                <br />
+                                카드 보더 + 약간 강한 그림자. 행 간 구분이 가장
+                                명확.
+                            </p>
+                            <OptionE />
+                        </div>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            root.render(<MockupApp />);
+        </script>
+    </body>
+</html>

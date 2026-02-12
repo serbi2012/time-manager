@@ -1,7 +1,7 @@
 {
     "name": "time_manager",
     "private": true,
-    "version": "2.0.19",
+    "version": "2.0.20",
     "type": "module",
     "packageManager": "pnpm@10.10.0",
     "scripts": {
