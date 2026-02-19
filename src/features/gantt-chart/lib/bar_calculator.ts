@@ -106,22 +106,26 @@ export function calculateBarStyle(
 ): BarStyle {
     const total_minutes = time_range.end - time_range.start;
     const start = timeToMinutes(session.start_time);
-    // 진행 중인 세션은 현재 시간을 end로 사용
     const end = is_running
         ? current_time_mins
         : timeToMinutes(session.end_time);
 
     let left = ((start - time_range.start) / total_minutes) * 100;
-    let width = ((end - start) / total_minutes) * 100;
-
-    // 최소 너비 보장 (0분 세션도 표시)
-    const min_width_percent = Math.max((5 / total_minutes) * 100, 1);
-    width = Math.max(width, min_width_percent);
-
-    // 범위 제한
     left = Math.max(0, Math.min(left, 100));
-    const max_width = 100 - left;
-    width = Math.min(width, max_width);
+
+    const min_width_percent = Math.max((5 / total_minutes) * 100, 1);
+    let width: number;
+
+    if (is_running) {
+        const right_pct =
+            ((current_time_mins - time_range.start) / total_minutes) * 100;
+        width = Math.max(right_pct - left, min_width_percent);
+    } else {
+        width = ((end - start) / total_minutes) * 100;
+        width = Math.max(width, min_width_percent);
+        const max_width = 100 - left;
+        width = Math.min(width, max_width);
+    }
 
     const style: BarStyle = {
         left: `${left}%`,

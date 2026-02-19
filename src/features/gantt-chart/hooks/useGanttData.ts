@@ -57,17 +57,26 @@ export function useGanttData(gantt_tick: number = 0): UseGanttDataReturn {
         [getLunchTimeMinutes]
     );
 
-    // 현재 시간 (분 단위) - gantt_tick에 의해 업데이트
-    const current_time_mins = useMemo(() => {
-        return dayjs().hour() * 60 + dayjs().minute();
+    // 단일 시간 스냅샷 — current_time_mins와 current_time_str이 항상 동일한 dayjs() 인스턴스 기반
+    const time_snapshot = useMemo(() => {
+        const now = dayjs();
+        return {
+            mins: now.hour() * 60 + now.minute(),
+            str: now.format("HH:mm"),
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [gantt_tick]);
 
+    const current_time_mins = time_snapshot.mins;
+
     // 거래명 기준으로 세션 그룹화
     const grouped_works = useMemo(() => {
-        const current_time_str = dayjs().format("HH:mm");
-        return groupRecordsByDealName(records, selected_date, current_time_str);
-    }, [records, selected_date, gantt_tick]);
+        return groupRecordsByDealName(
+            records,
+            selected_date,
+            time_snapshot.str
+        );
+    }, [records, selected_date, time_snapshot]);
 
     // 점유된 시간 슬롯
     const occupied_slots = useMemo((): TimeSlot[] => {

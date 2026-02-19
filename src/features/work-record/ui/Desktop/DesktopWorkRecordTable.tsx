@@ -61,6 +61,9 @@ import { SessionEditTable } from "../SessionEditor";
 import { RecordHeader } from "./RecordHeader";
 import { RecordEmptyState } from "./RecordEmptyState";
 
+// Lib
+import { getRecordDurationForDate } from "../../lib/duration_calculator";
+
 // Constants
 import {
     RECORD_SUCCESS,
@@ -169,13 +172,16 @@ export function DesktopWorkRecordTable() {
         }
 
         const columns = MARKDOWN_COPY.COLUMNS;
-        const data = filtered.map((r) => [
-            r.deal_name || r.work_name,
-            r.work_name,
-            `${r.duration_minutes}${RECORD_UI_TEXT.MINUTE_UNIT}`,
-            r.category_name || "",
-            r.note || "",
-        ]);
+        const data = filtered.map((r) => {
+            const duration = getRecordDurationForDate(r, selected_date);
+            return [
+                r.deal_name || r.work_name,
+                r.work_name,
+                `${duration}${RECORD_UI_TEXT.MINUTE_UNIT}`,
+                r.category_name || "",
+                r.note || "",
+            ];
+        });
 
         const getDisplayWidth = (str: string) => {
             let width = 0;
@@ -233,7 +239,7 @@ export function DesktopWorkRecordTable() {
         );
         navigator.clipboard.writeText(text);
         message.success(RECORD_SUCCESS.COPIED_TO_CLIPBOARD);
-    }, [display_records]);
+    }, [display_records, selected_date]);
 
     const handlePrevDay = useCallback(() => {
         setSelectedDate(

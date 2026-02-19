@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.20";
+export const CURRENT_VERSION = "2.0.21";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,37 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.21",
+        date: "2026-02-19",
+        title: "간트 차트 동기화 수정 & 날짜 네비게이션 개선",
+        changes: [
+            {
+                type: "fix",
+                description:
+                    "내역 복사 시 해당 날짜의 작업 시간만 정확히 복사돼요",
+            },
+            {
+                type: "fix",
+                description:
+                    "간트 차트에서 현재 시간 표시와 진행 중인 작업 바가 정확히 일치해요",
+            },
+            {
+                type: "fix",
+                description: "날짜 영역 어디를 클릭해도 달력이 열려요",
+            },
+            {
+                type: "style",
+                description:
+                    "날짜 네비게이션이 더 세련된 디자인으로 바뀌었어요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "날짜 영역에 마우스를 올리면 빛이 따라오는 인터랙션이 추가됐어요",
+            },
+        ],
+    },
     {
         version: "2.0.20",
         date: "2026-02-12",

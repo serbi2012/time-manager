@@ -38,3 +38,7 @@ export {
 
 // 디바운스
 export { useDebouncedValue } from "./useDebouncedValue";
+
+// 커서 트래킹
+export { useSpotlight } from "./useSpotlight";
+export { useMagnetic } from "./useMagnetic";

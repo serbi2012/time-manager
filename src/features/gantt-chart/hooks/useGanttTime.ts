@@ -9,8 +9,10 @@ import {
     type LunchTimeRange,
 } from "../lib/lunch_calculator";
 
+const GANTT_TICK_INTERVAL_MS = 10_000;
+
 export interface UseGanttTimeReturn {
-    /** 간트 틱 (1분마다 업데이트) */
+    /** 간트 틱 (타이머 작동 중 10초마다 업데이트) */
     gantt_tick: number;
     /** 점심시간 정보 */
     lunch_time: LunchTimeRange;
@@ -27,17 +29,19 @@ export interface UseGanttTimeReturn {
 export function useGanttTime(): UseGanttTimeReturn {
     const { timer, getLunchTimeMinutes } = useWorkStore();
 
-    // 간트 틱 (1분마다 업데이트)
     const [gantt_tick, setGanttTick] = useState(0);
 
     useEffect(() => {
         if (!timer.is_running) return;
 
-        const interval = setInterval(() => {
-            setGanttTick((t) => t + 1);
-        }, 60000); // 1분마다
+        const tick = () => setGanttTick((t) => t + 1);
+        const immediate = setTimeout(tick, 0);
+        const interval = setInterval(tick, GANTT_TICK_INTERVAL_MS);
 
-        return () => clearInterval(interval);
+        return () => {
+            clearTimeout(immediate);
+            clearInterval(interval);
+        };
     }, [timer.is_running, timer.start_time]);
 
     // 점심시간 정보

@@ -230,6 +230,7 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
         .gantt-bar-running {
             animation: runningPulse 2s ease-in-out infinite;
             opacity: 1;
+            transition-property: height, top, transform, opacity, box-shadow, filter;
         }
         
         .gantt-bar.gantt-bar-resizing,
@@ -471,11 +472,11 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
             100% { opacity: 1; transform: scaleX(1); }
         }
         
-        /* G: Current time drop in */
+        /* G: Current time drop in — translateX(-50%) 유지 필수 (inline transform override 방지) */
         @keyframes dropIn {
-            0% { opacity: 0; transform: translateY(-16px) scaleY(0.6); }
-            60% { opacity: 1; transform: translateY(2px) scaleY(1.02); }
-            100% { opacity: 1; transform: translateY(0) scaleY(1); }
+            0% { opacity: 0; transform: translateX(-50%) translateY(-16px) scaleY(0.6); }
+            60% { opacity: 1; transform: translateX(-50%) translateY(2px) scaleY(1.02); }
+            100% { opacity: 1; transform: translateX(-50%) translateY(0) scaleY(1); }
         }
         
         /* H: Lunch zone fade in */

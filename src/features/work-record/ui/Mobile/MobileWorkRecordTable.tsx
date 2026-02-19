@@ -40,6 +40,7 @@ import {
     HANGUL_CHAR_WIDTH,
     ASCII_CHAR_WIDTH,
 } from "../../constants";
+import { getRecordDurationForDate } from "../../lib/duration_calculator";
 
 import { MobileDateHeader } from "./MobileDateHeader";
 import { MobileCalendarStrip } from "./MobileCalendarStrip";
@@ -176,13 +177,16 @@ export function MobileWorkRecordTable() {
         }
 
         const columns = MARKDOWN_COPY.COLUMNS;
-        const data = filtered.map((r) => [
-            r.deal_name || r.work_name,
-            r.work_name,
-            `${r.duration_minutes}${RECORD_UI_TEXT.MINUTE_UNIT}`,
-            r.category_name || "",
-            r.note || "",
-        ]);
+        const data = filtered.map((r) => {
+            const duration = getRecordDurationForDate(r, selected_date);
+            return [
+                r.deal_name || r.work_name,
+                r.work_name,
+                `${duration}${RECORD_UI_TEXT.MINUTE_UNIT}`,
+                r.category_name || "",
+                r.note || "",
+            ];
+        });
 
         const getDisplayWidth = (str: string) => {
             let width = 0;
@@ -240,7 +244,7 @@ export function MobileWorkRecordTable() {
         );
         navigator.clipboard.writeText(text);
         message.success(RECORD_SUCCESS.COPIED_TO_CLIPBOARD);
-    }, [display_records]);
+    }, [display_records, selected_date]);
 
     // ============================================
     // Render

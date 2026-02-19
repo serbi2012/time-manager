@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>날짜 네비게이션 인터랙션</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        spacing: {
+                            xs: "4px",
+                            sm: "8px",
+                            md: "12px",
+                            lg: "16px",
+                            xl: "24px",
+                        },
+                        colors: {
+                            primary: "#3182F6",
+                            "primary-dark": "#1B64DA",
+                            "primary-light": "#ECF2FE",
+                            "text-primary": "#191F28",
+                            "text-secondary": "#6B7684",
+                            "bg-grey": "#F2F4F6",
+                        },
+                        borderRadius: {
+                            xs: "4px",
+                            sm: "6px",
+                            md: "8px",
+                            lg: "12px",
+                        },
+                    },
+                },
+            };
+        </script>
+
+        <script
+            crossorigin
+            src="https://unpkg.com/react@18/umd/react.development.js"
+        ></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+        ></script>
+        <script src="https://unpkg.com/dayjs@1/dayjs.min.js"></script>
+        <script src="https://unpkg.com/@ant-design/icons@5/dist/index.umd.min.js"></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+        <style>
+            body {
+                margin: 0;
+                padding: 48px 24px;
+                background: #f5f5f5;
+                font-family: "Pretendard Variable", Pretendard, -apple-system,
+                    BlinkMacSystemFont, system-ui, sans-serif;
+            }
+            #root {
+                max-width: 700px;
+                margin: 0 auto;
+            }
+            .mockup-header {
+                text-align: center;
+                margin-bottom: 40px;
+            }
+            .mockup-header h1 {
+                font-size: 20px;
+                font-weight: 700;
+                color: #333;
+                margin: 0 0 6px;
+            }
+            .mockup-header p {
+                font-size: 13px;
+                color: #999;
+                margin: 0;
+            }
+            .mockup-frame {
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+                padding: 48px 32px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 32px;
+            }
+            .hint {
+                font-size: 12px;
+                color: #8b95a1;
+                text-align: center;
+                line-height: 1.6;
+            }
+
+            /* ===== Slide Animation ===== */
+            @keyframes slideInRight {
+                from {
+                    opacity: 0;
+                    transform: translateX(24px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+            @keyframes slideInLeft {
+                from {
+                    opacity: 0;
+                    transform: translateX(-24px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+            .slide-in-right {
+                animation: slideInRight 0.25s cubic-bezier(0.22, 1, 0.36, 1)
+                    forwards;
+            }
+            .slide-in-left {
+                animation: slideInLeft 0.25s cubic-bezier(0.22, 1, 0.36, 1)
+                    forwards;
+            }
+
+            /* ===== Arrow Button ===== */
+            .arrow-btn {
+                width: 32px;
+                height: 32px;
+                border: none;
+                background: transparent;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                position: relative;
+                color: #6b7684;
+                transition: color 0.2s ease, background 0.2s ease;
+            }
+            .arrow-btn:hover {
+                color: #3182f6;
+                background: #f2f4f6;
+            }
+            .arrow-btn:active {
+                transform: scale(0.9);
+            }
+            .arrow-btn .arrow-icon {
+                position: relative;
+                z-index: 1;
+                transition: transform 0.15s ease;
+            }
+
+            /* ===== Date Area ===== */
+            .date-area {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 6px 14px;
+                border-radius: 10px;
+                cursor: pointer;
+                position: relative;
+                transition: background 0.2s ease;
+                overflow: hidden;
+            }
+            .date-area:hover {
+                background: #f2f4f6;
+            }
+            .date-area:active {
+                transform: scale(0.97);
+            }
+            .date-area .cal-icon {
+                font-size: 16px;
+                color: #3182f6;
+                position: relative;
+                z-index: 1;
+                transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+            .date-area:hover .cal-icon {
+                transform: rotate(-8deg) scale(1.12);
+            }
+            .date-area .date-text {
+                font-size: 17px;
+                font-weight: 600;
+                color: #191f28;
+                position: relative;
+                z-index: 1;
+                transition: color 0.2s ease;
+            }
+            .date-area:hover .date-text {
+                color: #3182f6;
+            }
+
+            /* ===== Today Badge ===== */
+            .today-badge {
+                font-size: 11px;
+                font-weight: 600;
+                color: #3182f6;
+                background: #ecf2fe;
+                padding: 3px 10px;
+                border-radius: 20px;
+                transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+                cursor: default;
+            }
+            .today-badge:hover {
+                background: #3182f6;
+                color: white;
+                transform: scale(1.08);
+                box-shadow: 0 2px 8px rgba(49, 130, 246, 0.3);
+            }
+
+            /* ===== Spotlight Glow ===== */
+            .spotlight-glow {
+                position: absolute;
+                pointer-events: none;
+                z-index: 0;
+                width: 100px;
+                height: 100px;
+                border-radius: 50%;
+                background: radial-gradient(
+                    circle,
+                    rgba(49, 130, 246, 0.22) 0%,
+                    rgba(49, 130, 246, 0.06) 50%,
+                    transparent 70%
+                );
+                transform: translate(-50%, -50%);
+                opacity: 0;
+                transition: opacity 0.25s ease;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const { CalendarOutlined, LeftOutlined, RightOutlined } = icons;
+            const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
+
+            function formatDate(d) {
+                const date = dayjs(d);
+                return `${date.month() + 1}월 ${date.date()}일 ${
+                    WEEKDAYS[date.day()]
+                }요일`;
+            }
+
+            function useDateNav(initial) {
+                const [date, setDate] = React.useState(initial || "2026-02-19");
+                const [dir, setDir] = React.useState(1);
+                const [animKey, setAnimKey] = React.useState(0);
+                const prev = () => {
+                    setDir(-1);
+                    setAnimKey((k) => k + 1);
+                    setDate((d) =>
+                        dayjs(d).subtract(1, "day").format("YYYY-MM-DD")
+                    );
+                };
+                const next = () => {
+                    setDir(1);
+                    setAnimKey((k) => k + 1);
+                    setDate((d) => dayjs(d).add(1, "day").format("YYYY-MM-DD"));
+                };
+                return { date, dir, animKey, prev, next };
+            }
+
+            /* Spotlight: 커서를 따라다니는 진한 파란 빛 */
+            function useSpotlight() {
+                const ref = React.useRef(null);
+                const [pos, setPos] = React.useState({ x: 0, y: 0 });
+                const [visible, setVisible] = React.useState(false);
+
+                const handleMove = React.useCallback((e) => {
+                    const el = ref.current;
+                    if (!el) return;
+                    const rect = el.getBoundingClientRect();
+                    setPos({
+                        x: e.clientX - rect.left,
+                        y: e.clientY - rect.top,
+                    });
+                }, []);
+
+                return {
+                    ref,
+                    glowStyle: {
+                        left: pos.x,
+                        top: pos.y,
+                        opacity: visible ? 1 : 0,
+                    },
+                    handlers: {
+                        onMouseMove: handleMove,
+                        onMouseEnter: () => setVisible(true),
+                        onMouseLeave: () => setVisible(false),
+                    },
+                };
+            }
+
+            /* Magnetic: 커서 방향으로 미세하게 끌려오는 효과 */
+            function useMagnetic(strength = 0.15) {
+                const ref = React.useRef(null);
+                const [style, setStyle] = React.useState({});
+
+                const handleMove = React.useCallback(
+                    (e) => {
+                        const el = ref.current;
+                        if (!el) return;
+                        const rect = el.getBoundingClientRect();
+                        const cx = rect.left + rect.width / 2;
+                        const cy = rect.top + rect.height / 2;
+                        const dx = (e.clientX - cx) * strength;
+                        const dy = (e.clientY - cy) * strength;
+                        setStyle({
+                            transform: `translate(${dx}px, ${dy}px)`,
+                            transition: "none",
+                        });
+                    },
+                    [strength]
+                );
+
+                const handleLeave = React.useCallback(() => {
+                    setStyle({
+                        transform: "translate(0, 0)",
+                        transition:
+                            "transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                    });
+                }, []);
+
+                return {
+                    ref,
+                    style,
+                    handlers: {
+                        onMouseMove: handleMove,
+                        onMouseLeave: handleLeave,
+                    },
+                };
+            }
+
+            /* 최종 버전: Option A + Spotlight + 미세 Magnetic */
+            function DateNavFinal() {
+                const { date, dir, animKey, prev, next } =
+                    useDateNav("2026-02-19");
+                const is_today = date === dayjs().format("YYYY-MM-DD");
+
+                const spotlight = useSpotlight();
+                const leftMag = useMagnetic(0.15);
+                const rightMag = useMagnetic(0.15);
+
+                return (
+                    <div className="flex items-center gap-md">
+                        <button
+                            ref={leftMag.ref}
+                            className="arrow-btn"
+                            style={leftMag.style}
+                            onClick={prev}
+                            {...leftMag.handlers}
+                        >
+                            <span className="arrow-icon">
+                                <LeftOutlined style={{ fontSize: 13 }} />
+                            </span>
+                        </button>
+
+                        <div
+                            ref={spotlight.ref}
+                            className="date-area"
+                            {...spotlight.handlers}
+                        >
+                            <div
+                                className="spotlight-glow"
+                                style={spotlight.glowStyle}
+                            />
+                            <span className="cal-icon">
+                                <CalendarOutlined />
+                            </span>
+                            <div
+                                className="overflow-hidden relative h-7 flex items-center"
+                                style={{ minWidth: 155 }}
+                            >
+                                <span
+                                    key={animKey}
+                                    className={`date-text ${
+                                        dir > 0
+                                            ? "slide-in-right"
+                                            : "slide-in-left"
+                                    }`}
+                                >
+                                    {formatDate(date)}
+                                </span>
+                            </div>
+                        </div>
+
+                        <button
+                            ref={rightMag.ref}
+                            className="arrow-btn"
+                            style={rightMag.style}
+                            onClick={next}
+                            {...rightMag.handlers}
+                        >
+                            <span className="arrow-icon">
+                                <RightOutlined style={{ fontSize: 13 }} />
+                            </span>
+                        </button>
+
+                        {is_today && <span className="today-badge">오늘</span>}
+                    </div>
+                );
+            }
+
+            function MockupApp() {
+                return (
+                    <div>
+                        <div className="mockup-header">
+                            <h1>날짜 네비게이션 — 최종 인터랙션</h1>
+                            <p>
+                                Option A 기반 + 커서 트래킹 Spotlight + 미세
+                                Magnetic
+                            </p>
+                        </div>
+
+                        <div className="mockup-frame">
+                            <DateNavFinal />
+                            <div className="hint">
+                                <strong>날짜 영역</strong>에 마우스를 올리고
+                                천천히 움직여 보세요 — 파란 빛이 커서를
+                                따라다닙니다
+                                <br />
+                                <strong>화살표 버튼</strong>에 마우스를 올리면
+                                커서 쪽으로 미세하게 끌려옵니다
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            root.render(<MockupApp />);
+        </script>
+    </body>
+</html>
