@@ -19,8 +19,10 @@ import type { WorkSession } from "../../../../../shared/types";
 function createSession(overrides: Partial<WorkSession> = {}): WorkSession {
     return {
         id: "session-1",
+        date: "2026-02-19",
         start_time: "09:00",
         end_time: "10:00",
+        duration_minutes: 60,
         ...overrides,
     };
 }
