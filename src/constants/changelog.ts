@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.21";
+export const CURRENT_VERSION = "2.0.22";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,23 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.22",
+        date: "2026-02-20",
+        title: "커서 트래킹 효과 & 설정 토글",
+        changes: [
+            {
+                type: "feature",
+                description:
+                    "카드, 버튼 등에 커서를 따라다니는 은은한 인터랙션 효과가 추가됐어요",
+            },
+            {
+                type: "feature",
+                description:
+                    "설정 > 애니메이션에서 커서 인터랙션 효과를 끄고 킬 수 있어요",
+            },
+        ],
+    },
     {
         version: "2.0.21",
         date: "2026-02-19",

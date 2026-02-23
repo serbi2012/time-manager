@@ -116,6 +116,7 @@ export interface UserSettings {
     lunch_end_time?: string; // 점심시간 종료 (HH:mm)
     transition_enabled?: boolean; // 트랜지션 활성화 여부
     transition_speed?: TransitionSpeed; // 트랜지션 속도
+    cursor_tracking_enabled?: boolean; // 커서 트래킹 효과 활성화 여부
     mobile_gantt_list_expanded?: boolean; // 모바일 간트 작업 목록 펼침 상태
     updated_at: string;
     migrated?: boolean; // 마이그레이션 완료 여부

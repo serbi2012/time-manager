@@ -3,6 +3,7 @@
  */
 
 import { Card, Row, Col, Statistic } from "antd";
+import { SpotlightCard } from "@/shared/ui/cursor-tracking";
 import { ClockCircleOutlined } from "@ant-design/icons";
 import type { TodayStats } from "../../lib/record_stats";
 import { formatDuration } from "../../../../shared/lib/time";
@@ -14,7 +15,8 @@ interface DailyStatsProps {
 
 export function DailyStats({ stats }: DailyStatsProps) {
     return (
-        <Card size="small" className="!mb-lg">
+        <SpotlightCard className="!mb-lg rounded-lg overflow-hidden">
+        <Card size="small">
             <Row gutter={RECORD_SPACING.DEFAULT}>
                 <Col span={8}>
                     <Statistic
@@ -48,5 +50,6 @@ export function DailyStats({ stats }: DailyStatsProps) {
                 </Col>
             </Row>
         </Card>
+        </SpotlightCard>
     );
 }

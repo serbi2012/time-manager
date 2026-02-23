@@ -30,6 +30,7 @@ export {
     DEFAULT_APP_THEME,
     DEFAULT_TRANSITION_ENABLED,
     DEFAULT_TRANSITION_SPEED,
+    DEFAULT_CURSOR_TRACKING_ENABLED,
 } from "@/shared/constants/enums";
 
 // ============================================

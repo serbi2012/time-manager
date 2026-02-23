@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
+import { MagneticButton } from "@/shared/ui/cursor-tracking";
 import { cn } from "@/shared/lib/cn";
 import { BUTTON_ADD_FULL } from "@/features/work-template/constants";
 
@@ -44,12 +45,13 @@ export function AddPresetButton({ onClick, className }: AddPresetButtonProps) {
     );
 
     return (
-        <button
-            type="button"
-            onClick={handleClick}
-            className={cn(
-                "relative overflow-hidden",
-                "w-full inline-flex items-center justify-center gap-sm",
+        <MagneticButton strength={0.15}>
+            <button
+                type="button"
+                onClick={handleClick}
+                className={cn(
+                    "overflow-hidden",
+                    "w-full inline-flex items-center justify-center gap-sm",
                 "py-md rounded-xl cursor-pointer",
                 "text-sm font-semibold text-text-secondary",
                 "bg-bg-light border-[1.5px] border-dashed border-border-dark",
@@ -81,6 +83,7 @@ export function AddPresetButton({ onClick, className }: AddPresetButtonProps) {
                     />
                 ))}
             </AnimatePresence>
-        </button>
+            </button>
+        </MagneticButton>
     );
 }

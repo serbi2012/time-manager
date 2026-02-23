@@ -60,6 +60,7 @@ import { CompletedModal, TrashModal } from "../CompletedRecords";
 import { SessionEditTable } from "../SessionEditor";
 import { RecordHeader } from "./RecordHeader";
 import { RecordEmptyState } from "./RecordEmptyState";
+import { SpotlightCard } from "@/shared/ui/cursor-tracking";
 
 // Lib
 import { getRecordDurationForDate } from "../../lib/duration_calculator";
@@ -439,7 +440,7 @@ export function DesktopWorkRecordTable() {
     // ============================================
     return (
         <>
-            <div className="toss-record-table bg-white rounded-xl overflow-hidden">
+            <SpotlightCard className="toss-record-table bg-white rounded-xl overflow-hidden">
                 {/* Header */}
                 <RecordHeader
                     selected_date={selected_date}
@@ -542,7 +543,7 @@ export function DesktopWorkRecordTable() {
                         </motion.button>
                     </div>
                 </div>
-            </div>
+            </SpotlightCard>
 
             {/* Modals */}
             <RecordAddModal open={is_add_open} onClose={closeAddModal} />

@@ -9,6 +9,7 @@ import dayjs from "dayjs";
 import { motion } from "../../../../shared/ui/animation";
 
 import type { WorkRecord } from "../../../../shared/types";
+import { CursorHaloContainer } from "@/shared/ui/cursor-tracking";
 import { cn } from "../../../../shared/lib/cn";
 import { DATE_FORMAT } from "../../constants";
 
@@ -75,7 +76,7 @@ export function WeeklyCalendarStrip({
     );
 
     return (
-        <div className="flex gap-xs justify-center">
+        <CursorHaloContainer className="flex gap-xs justify-center rounded-lg">
             {days.map((d) => {
                 const is_selected = d.date_str === selected_date;
                 return (
@@ -124,6 +125,6 @@ export function WeeklyCalendarStrip({
                     </motion.button>
                 );
             })}
-        </div>
+        </CursorHaloContainer>
     );
 }

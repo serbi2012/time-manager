@@ -4,13 +4,18 @@
  */
 
 import { Card, Space, Switch, Select, Typography } from "antd";
-import { ThunderboltOutlined } from "@ant-design/icons";
+import { ThunderboltOutlined, HighlightOutlined } from "@ant-design/icons";
 import {
     useWorkStore,
     APP_THEME_COLORS,
     type TransitionSpeed,
 } from "../../../../store/useWorkStore";
 import { TRANSITION_SPEED_LABELS } from "../../../../shared/ui";
+import {
+    SETTINGS_ANIMATION_CURSOR_TRACKING_TITLE,
+    SETTINGS_ANIMATION_CURSOR_TRACKING_DESC,
+    SETTINGS_ANIMATION_CURSOR_TRACKING_CARD_TITLE,
+} from "../../constants/labels";
 import { cn } from "@/shared/lib/cn";
 
 const { Text } = Typography;
@@ -83,6 +88,14 @@ export function AnimationTab({ is_mobile }: AnimationTabProps) {
         (state) => state.setTransitionSpeed
     );
 
+    // 커서 트래킹 설정
+    const cursor_tracking_enabled = useWorkStore(
+        (state) => state.cursor_tracking_enabled
+    );
+    const setCursorTrackingEnabled = useWorkStore(
+        (state) => state.setCursorTrackingEnabled
+    );
+
     return (
         <div className={cn("flex flex-col", is_mobile ? "gap-lg" : "gap-xl")}>
             {/* 트랜지션 효과 섹션 */}
@@ -139,7 +152,31 @@ export function AnimationTab({ is_mobile }: AnimationTabProps) {
                 />
             </Card>
 
-            {/* 향후 추가될 애니메이션 설정을 위한 공간 */}
+            {/* 커서 인터랙션 섹션 */}
+            <Card
+                size="small"
+                title={
+                    <Space>
+                        <HighlightOutlined style={{ color: theme_color }} />
+                        <span>
+                            {SETTINGS_ANIMATION_CURSOR_TRACKING_CARD_TITLE}
+                        </span>
+                    </Space>
+                }
+                styles={{ body: { padding: is_mobile ? "12px" : "16px" } }}
+            >
+                <SettingItem
+                    title={SETTINGS_ANIMATION_CURSOR_TRACKING_TITLE}
+                    description={SETTINGS_ANIMATION_CURSOR_TRACKING_DESC}
+                    is_mobile={is_mobile}
+                    action={
+                        <Switch
+                            checked={cursor_tracking_enabled}
+                            onChange={setCursorTrackingEnabled}
+                        />
+                    }
+                />
+            </Card>
         </div>
     );
 }

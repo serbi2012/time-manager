@@ -3,6 +3,7 @@
  */
 
 import { Typography, Input, Divider } from "antd";
+import { ShineSweepRow } from "@/shared/ui/cursor-tracking";
 import { Space } from "antd";
 import { formatDurationAsTime } from "@/shared/lib/time";
 import type { WorkGroup } from "../../lib/week_grouper";
@@ -22,7 +23,7 @@ export function WorkItem({
     show_divider,
 }: WorkItemProps) {
     return (
-        <div className="work-item">
+        <ShineSweepRow className="work-item">
             <div className="work-header">
                 <Space wrap>
                     <Text>[{work.project_code}]</Text>
@@ -59,6 +60,6 @@ export function WorkItem({
             </div>
 
             {show_divider && <Divider className="!my-sm" />}
-        </div>
+        </ShineSweepRow>
     );
 }

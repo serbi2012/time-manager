@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { Menu, Typography, Input, List, Empty, Tag } from "antd";
+import { CursorHaloContainer } from "@/shared/ui/cursor-tracking";
 import {
     BookOutlined,
     SearchOutlined,
@@ -56,7 +57,7 @@ export function GuideSidebar({
     };
 
     return (
-        <div className="guide-book-sider-inner">
+        <CursorHaloContainer className="guide-book-sider-inner">
             <div className="guide-book-toc-header">
                 <BookOutlined />
                 <Title level={5} className="!m-0">
@@ -127,6 +128,6 @@ export function GuideSidebar({
                     />
                 )}
             </div>
-        </div>
+        </CursorHaloContainer>
     );
 }

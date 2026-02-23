@@ -3,6 +3,7 @@
  */
 
 import { Card, Statistic, Row, Col, Badge } from "antd";
+import { TiltCard } from "@/shared/ui/cursor-tracking";
 import {
     FileTextOutlined,
     ClockCircleOutlined,
@@ -26,67 +27,77 @@ export function StatsOverview({
     return (
         <Row gutter={[16, 16]}>
             <Col xs={12} sm={8} md={4}>
-                <Card size="small">
-                    <Statistic
-                        title="레코드"
-                        value={total_records}
-                        prefix={<FileTextOutlined />}
-                    />
-                </Card>
-            </Col>
-            <Col xs={12} sm={8} md={4}>
-                <Card size="small">
-                    <Statistic
-                        title="세션"
-                        value={total_sessions}
-                        prefix={<ClockCircleOutlined />}
-                    />
-                </Card>
-            </Col>
-            <Col xs={12} sm={8} md={4}>
-                <Card size="small">
-                    <Badge count={problem_count} offset={[10, 0]}>
+                <TiltCard className="h-full">
+                    <Card size="small">
                         <Statistic
-                            title="문제"
-                            value={problem_count}
-                            prefix={<WarningOutlined />}
-                            valueStyle={{
-                                color:
-                                    problem_count > 0 ? "#faad14" : undefined,
-                            }}
+                            title="레코드"
+                            value={total_records}
+                            prefix={<FileTextOutlined />}
                         />
-                    </Badge>
-                </Card>
+                    </Card>
+                </TiltCard>
             </Col>
             <Col xs={12} sm={8} md={4}>
-                <Card size="small">
-                    <Badge count={conflict_count} offset={[10, 0]}>
+                <TiltCard className="h-full">
+                    <Card size="small">
                         <Statistic
-                            title="충돌"
-                            value={conflict_count}
-                            prefix={<ExclamationCircleOutlined />}
-                            valueStyle={{
-                                color:
-                                    conflict_count > 0 ? "#ff4d4f" : undefined,
-                            }}
+                            title="세션"
+                            value={total_sessions}
+                            prefix={<ClockCircleOutlined />}
                         />
-                    </Badge>
-                </Card>
+                    </Card>
+                </TiltCard>
             </Col>
             <Col xs={12} sm={8} md={4}>
-                <Card size="small">
-                    <Badge count={duplicate_count} offset={[10, 0]}>
-                        <Statistic
-                            title="중복"
-                            value={duplicate_count}
-                            prefix={<CopyOutlined />}
-                            valueStyle={{
-                                color:
-                                    duplicate_count > 0 ? "#1890ff" : undefined,
-                            }}
-                        />
-                    </Badge>
-                </Card>
+                <TiltCard className="h-full">
+                    <Card size="small">
+                        <Badge count={problem_count} offset={[10, 0]}>
+                            <Statistic
+                                title="문제"
+                                value={problem_count}
+                                prefix={<WarningOutlined />}
+                                valueStyle={{
+                                    color:
+                                        problem_count > 0 ? "#faad14" : undefined,
+                                }}
+                            />
+                        </Badge>
+                    </Card>
+                </TiltCard>
+            </Col>
+            <Col xs={12} sm={8} md={4}>
+                <TiltCard className="h-full">
+                    <Card size="small">
+                        <Badge count={conflict_count} offset={[10, 0]}>
+                            <Statistic
+                                title="충돌"
+                                value={conflict_count}
+                                prefix={<ExclamationCircleOutlined />}
+                                valueStyle={{
+                                    color:
+                                        conflict_count > 0 ? "#ff4d4f" : undefined,
+                                }}
+                            />
+                        </Badge>
+                    </Card>
+                </TiltCard>
+            </Col>
+            <Col xs={12} sm={8} md={4}>
+                <TiltCard className="h-full">
+                    <Card size="small">
+                        <Badge count={duplicate_count} offset={[10, 0]}>
+                            <Statistic
+                                title="중복"
+                                value={duplicate_count}
+                                prefix={<CopyOutlined />}
+                                valueStyle={{
+                                    color:
+                                        duplicate_count > 0 ? "#1890ff" : undefined,
+                                }}
+                            />
+                        </Badge>
+                    </Card>
+                </TiltCard>
             </Col>
         </Row>
     );

@@ -1576,5 +1576,20 @@ describe("useWorkStore", () => {
                 true
             );
         });
+
+        it("cursor_tracking_enabled 기본값은 false", () => {
+            const state = useWorkStore.getState();
+            expect(state.cursor_tracking_enabled).toBe(false);
+        });
+
+        it("setCursorTrackingEnabled로 커서 트래킹 활성화/비활성화", () => {
+            const store = useWorkStore.getState();
+
+            store.setCursorTrackingEnabled(true);
+            expect(useWorkStore.getState().cursor_tracking_enabled).toBe(true);
+
+            store.setCursorTrackingEnabled(false);
+            expect(useWorkStore.getState().cursor_tracking_enabled).toBe(false);
+        });
     });
 });

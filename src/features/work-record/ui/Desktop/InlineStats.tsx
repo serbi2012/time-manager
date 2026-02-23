@@ -11,6 +11,7 @@ import {
     AnimatedDuration,
     AnimatedNumber,
 } from "../../../../shared/ui/animation";
+import { SpotlightCard } from "@/shared/ui/cursor-tracking";
 
 interface InlineStatsProps {
     stats: TodayStats;
@@ -18,7 +19,7 @@ interface InlineStatsProps {
 
 export function InlineStats({ stats }: InlineStatsProps) {
     return (
-        <div className="flex items-center gap-xl py-xs">
+        <SpotlightCard className="flex items-center gap-xl py-xs rounded-lg">
             <div className="flex items-center gap-sm">
                 <ClockCircleOutlined
                     style={{ color: "var(--color-primary)", fontSize: 15 }}
@@ -51,6 +52,6 @@ export function InlineStats({ stats }: InlineStatsProps) {
                     {RECORD_STATS.COUNT_UNIT} {RECORD_STATS.INCOMPLETE_COUNT}
                 </span>
             </div>
-        </div>
+        </SpotlightCard>
     );
 }

@@ -87,6 +87,11 @@ export const SETTINGS_ANIMATION_SPEED_DESC =
     "트랜지션 효과의 속도를 조절합니다";
 export const SETTINGS_ANIMATION_CARD_TITLE = "트랜지션 효과";
 
+export const SETTINGS_ANIMATION_CURSOR_TRACKING_TITLE = "커서 트래킹 효과";
+export const SETTINGS_ANIMATION_CURSOR_TRACKING_DESC =
+    "카드, 버튼 등에 커서를 따라다니는 은은한 효과를 표시해요";
+export const SETTINGS_ANIMATION_CURSOR_TRACKING_CARD_TITLE = "커서 인터랙션";
+
 export const SETTINGS_BULK_HIDE_CONFIRM = "개 항목을 숨기시겠습니까?";
 export const SETTINGS_BULK_HIDE_OK = "숨김";
 export const SETTINGS_CANCEL = "취소";

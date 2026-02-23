@@ -23,6 +23,7 @@ import {
     DEFAULT_APP_THEME,
     DEFAULT_TRANSITION_ENABLED,
     DEFAULT_TRANSITION_SPEED,
+    DEFAULT_CURSOR_TRACKING_ENABLED,
     DEFAULT_USE_POSTFIX_ON_PRESET_ADD,
     DEFAULT_MOBILE_GANTT_LIST_EXPANDED,
 } from "../constants";
@@ -46,6 +47,7 @@ export const createSettingsSlice: StateCreator<
     lunch_end_time: DEFAULT_LUNCH_END_TIME,
     transition_enabled: DEFAULT_TRANSITION_ENABLED,
     transition_speed: DEFAULT_TRANSITION_SPEED,
+    cursor_tracking_enabled: DEFAULT_CURSOR_TRACKING_ENABLED,
     mobile_gantt_list_expanded: DEFAULT_MOBILE_GANTT_LIST_EXPANDED,
 
     // ============================================
@@ -183,6 +185,11 @@ export const createSettingsSlice: StateCreator<
     setTransitionSpeed: (speed: TransitionSpeed) => {
         set({ transition_speed: speed });
         syncSettings({ transition_speed: speed }).catch(console.error);
+    },
+
+    setCursorTrackingEnabled: (enabled) => {
+        set({ cursor_tracking_enabled: enabled });
+        syncSettings({ cursor_tracking_enabled: enabled }).catch(console.error);
     },
 
     setMobileGanttListExpanded: (expanded: boolean) => {

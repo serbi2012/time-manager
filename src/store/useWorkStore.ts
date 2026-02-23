@@ -83,6 +83,7 @@ export const useWorkStore = create<WorkStore>()(
                 lunch_end_time: state.lunch_end_time,
                 transition_enabled: state.transition_enabled,
                 transition_speed: state.transition_speed,
+                cursor_tracking_enabled: state.cursor_tracking_enabled,
             }),
         }
     )

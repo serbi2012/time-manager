@@ -3,6 +3,7 @@
  */
 
 import { Layout } from "antd";
+import { CursorHaloContainer } from "@/shared/ui/cursor-tracking";
 import WorkTemplateList from "../../components/WorkTemplateList";
 
 const { Sider } = Layout;
@@ -17,7 +18,9 @@ interface DesktopSidebarProps {
 export function DesktopSidebar({ on_add_record_only }: DesktopSidebarProps) {
     return (
         <Sider width={300} className="app-sider" theme="light">
-            <WorkTemplateList onAddRecordOnly={on_add_record_only} />
+            <CursorHaloContainer className="h-full">
+                <WorkTemplateList onAddRecordOnly={on_add_record_only} />
+            </CursorHaloContainer>
         </Sider>
     );
 }

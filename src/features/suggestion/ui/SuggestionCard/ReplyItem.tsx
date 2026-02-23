@@ -1,4 +1,5 @@
 import { Button, Space, Popconfirm, Input, Typography } from "antd";
+import { ShineSweepRow } from "@/shared/ui/cursor-tracking";
 import type { SuggestionReply } from "@/types";
 import type { useReplyActions } from "../../hooks";
 import { usePermissionCheck } from "../../hooks";
@@ -36,7 +37,7 @@ export function ReplyItem({
     const can_delete = canDeleteReply(reply);
 
     return (
-        <div className="suggestion-reply-item">
+        <ShineSweepRow className="suggestion-reply-item">
             {is_editing ? (
                 <div className="w-full">
                     <TextArea
@@ -146,6 +147,6 @@ export function ReplyItem({
                     </div>
                 </>
             )}
-        </div>
+        </ShineSweepRow>
     );
 }

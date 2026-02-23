@@ -32,6 +32,7 @@ import {
     GANTT_MESSAGE_ACTIVE_SESSION_CANNOT_DELETE,
     GANTT_MESSAGE_SESSION_DELETED,
 } from "../../constants";
+import { SpotlightCard } from "@/shared/ui/cursor-tracking";
 
 export function DesktopDailyGanttChart() {
     const { selected_date, timer, deleteSession, setSelectedDate } =
@@ -202,6 +203,7 @@ export function DesktopDailyGanttChart() {
 
     return (
         <>
+            <SpotlightCard className="rounded-xl overflow-hidden">
             <Card styles={{ body: { padding: 0 } }}>
                 <GanttHeader
                     selected_date={selected_date}
@@ -253,6 +255,7 @@ export function DesktopDailyGanttChart() {
 
                 <GanttStyles grouped_works_count={grouped_works.length} />
             </Card>
+            </SpotlightCard>
 
             <GanttAddModal
                 open={is_add_modal_open}

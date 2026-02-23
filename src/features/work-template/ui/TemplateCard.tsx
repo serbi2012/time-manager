@@ -11,6 +11,7 @@ import {
 } from "@ant-design/icons";
 import type { TemplateCardProps } from "../model/types";
 import { getCategoryColor } from "../../../shared/config";
+import { SpotlightBorderCard } from "@/shared/ui/cursor-tracking";
 
 const { Text } = Typography;
 
@@ -34,6 +35,7 @@ export function TemplateCard({
     } = template;
 
     return (
+        <SpotlightBorderCard>
         <Card
             className={`template-card ${
                 is_dragging ? "template-card-dragging" : ""
@@ -129,6 +131,7 @@ export function TemplateCard({
                 }
             `}</style>
         </Card>
+        </SpotlightBorderCard>
     );
 }
 

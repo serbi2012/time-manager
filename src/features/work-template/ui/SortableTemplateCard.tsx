@@ -6,6 +6,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { motion } from "framer-motion";
 import { cn } from "@/shared/lib/cn";
 import { SPRING } from "@/shared/ui/animation";
+import { useMousePosition } from "@/shared/hooks/useMousePosition";
+import { useWorkStore } from "@/store/useWorkStore";
 import type { WorkTemplate } from "@/shared/types";
 import { TemplateCardMenu } from "./TemplateCardMenu";
 import { TOOLTIP_ADD_WORK } from "@/features/work-template/constants";
@@ -58,6 +60,13 @@ export function SortableTemplateCard({
         transition,
         isDragging,
     } = useSortable({ id: template.id, animateLayoutChanges });
+
+    const {
+        ref: spotlight_ref,
+        pos: spotlight_pos,
+        handlers: spotlight_handlers,
+    } = useMousePosition();
+    const animation_enabled = useWorkStore((s) => s.cursor_tracking_enabled);
 
     const work_name_ref = useRef<HTMLSpanElement>(null);
     const deal_name_ref = useRef<HTMLSpanElement>(null);
@@ -136,7 +145,11 @@ export function SortableTemplateCard({
 
     return (
         <div
-            ref={setNodeRef}
+            ref={(node) => {
+                setNodeRef(node);
+                spotlight_ref(node);
+            }}
+            {...spotlight_handlers}
             style={drag_style}
             className={cn(
                 "group relative flex items-center",
@@ -149,6 +162,14 @@ export function SortableTemplateCard({
                 isDragging && "shadow-lg z-50 border-primary/30"
             )}
         >
+            {animation_enabled && spotlight_pos.inside && !isDragging && (
+                <div
+                    className="pointer-events-none absolute inset-0 z-[1] rounded-xl"
+                    style={{
+                        background: `radial-gradient(250px circle at ${spotlight_pos.x}px ${spotlight_pos.y}px, rgba(49, 130, 246, 0.05), transparent 60%)`,
+                    }}
+                />
+            )}
             {/* Left color stripe (tapered ends) */}
             <div className="flex items-center pl-[6px] self-stretch flex-shrink-0">
                 <div

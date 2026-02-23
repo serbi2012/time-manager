@@ -10,6 +10,7 @@ import {
     CalendarOutlined,
 } from "@ant-design/icons";
 import type { Dayjs } from "dayjs";
+import { MagneticButton } from "@/shared/ui/cursor-tracking";
 import { WEEKLY_LABELS } from "../../constants";
 
 export interface DesktopWeeklyHeaderProps {
@@ -86,15 +87,17 @@ export function DesktopWeeklyHeader({
                 </Radio.Group>
 
                 <Tooltip title={WEEKLY_LABELS.copyTooltip}>
-                    <Button
-                        type="primary"
-                        icon={<CopyOutlined />}
-                        onClick={on_copy}
-                        disabled={copy_disabled}
-                        size="middle"
-                    >
-                        {WEEKLY_LABELS.copy}
-                    </Button>
+                    <MagneticButton>
+                        <Button
+                            type="primary"
+                            icon={<CopyOutlined />}
+                            onClick={on_copy}
+                            disabled={copy_disabled}
+                            size="middle"
+                        >
+                            {WEEKLY_LABELS.copy}
+                        </Button>
+                    </MagneticButton>
                 </Tooltip>
             </Space>
         </div>

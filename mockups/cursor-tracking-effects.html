@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>커서 트래킹 효과 목업</title>
+
+        <!-- Tailwind CSS Play CDN -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        spacing: {
+                            xs: "4px",
+                            sm: "8px",
+                            md: "12px",
+                            lg: "16px",
+                            xl: "24px",
+                            "2xl": "32px",
+                        },
+                        colors: {
+                            primary: "#3182F6",
+                            "primary-dark": "#1B64DA",
+                            "primary-light": "#ECF2FE",
+                            "text-primary": "#191F28",
+                            "text-secondary": "#6B7684",
+                            "text-disabled": "#B0B8C1",
+                            "text-hint": "#D1D6DB",
+                            "bg-default": "#FFFFFF",
+                            "bg-light": "#F9FAFB",
+                            "bg-grey": "#F2F4F6",
+                            "bg-app": "#F9FAFB",
+                            "border-default": "#E5E8EB",
+                            "border-light": "#F2F4F6",
+                            success: "#34C759",
+                            error: "#F04452",
+                            warning: "#FF9500",
+                        },
+                        borderRadius: {
+                            xs: "4px",
+                            sm: "6px",
+                            md: "8px",
+                            lg: "12px",
+                            xl: "16px",
+                            "2xl": "20px",
+                        },
+                    },
+                },
+            };
+        </script>
+
+        <!-- React 18 UMD -->
+        <script
+            crossorigin
+            src="https://unpkg.com/react@18/umd/react.development.js"
+        ></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+        ></script>
+
+        <!-- Day.js -->
+        <script src="https://unpkg.com/dayjs@1/dayjs.min.js"></script>
+
+        <!-- Ant Design 5 UMD -->
+        <script src="https://unpkg.com/antd@5/dist/antd.min.js"></script>
+
+        <!-- Ant Design Icons UMD -->
+        <script src="https://unpkg.com/@ant-design/icons@5/dist/index.umd.min.js"></script>
+
+        <!-- Babel Standalone for JSX -->
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+        <style>
+            body {
+                margin: 0;
+                padding: 24px;
+                background: #f9fafb;
+                font-family: "Pretendard Variable", Pretendard, -apple-system,
+                    BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            }
+            #root {
+                max-width: 1100px;
+                margin: 0 auto;
+            }
+            .mockup-header {
+                text-align: center;
+                margin-bottom: 32px;
+                padding-bottom: 16px;
+                border-bottom: 1px solid #e5e8eb;
+            }
+            .mockup-header h1 {
+                font-size: 22px;
+                font-weight: 600;
+                color: #191f28;
+                margin: 0 0 4px;
+            }
+            .mockup-header p {
+                font-size: 13px;
+                color: #6b7684;
+                margin: 0;
+            }
+            .mockup-section {
+                margin-bottom: 48px;
+            }
+            .mockup-section-label {
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                color: #3182f6;
+                margin-bottom: 12px;
+            }
+            .mockup-frame {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+                border: 1px solid #e5e8eb;
+                padding: 32px;
+            }
+
+            @keyframes border-beam-rotate {
+                0% {
+                    --beam-angle: 0deg;
+                }
+                100% {
+                    --beam-angle: 360deg;
+                }
+            }
+
+            @property --beam-angle {
+                syntax: "<angle>";
+                initial-value: 0deg;
+                inherits: false;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const {
+                Button,
+                Card,
+                Switch,
+                Select,
+                Input,
+                Typography,
+                Space,
+                Tag,
+                Modal,
+                Collapse,
+                Empty,
+                Divider,
+                Form,
+                Tooltip,
+                Table,
+                Badge,
+                Tabs,
+            } = antd;
+            const { Text, Title } = Typography;
+            const {
+                EditOutlined,
+                DeleteOutlined,
+                PlusOutlined,
+                SettingOutlined,
+                PlayCircleOutlined,
+                PauseCircleOutlined,
+                ClockCircleOutlined,
+                ThunderboltOutlined,
+                CalendarOutlined,
+                AppstoreOutlined,
+                CheckCircleFilled,
+                RightOutlined,
+                CopyOutlined,
+                FireOutlined,
+                BulbOutlined,
+                StarOutlined,
+                HeartOutlined,
+            } = icons;
+
+            // ============================================
+            // SHARED: useMousePosition hook
+            // ============================================
+            function useMousePosition(ref) {
+                const [pos, setPos] = React.useState({
+                    x: 0,
+                    y: 0,
+                    inside: false,
+                });
+
+                React.useEffect(() => {
+                    const el = ref.current;
+                    if (!el) return;
+
+                    const handleMove = (e) => {
+                        const rect = el.getBoundingClientRect();
+                        setPos({
+                            x: e.clientX - rect.left,
+                            y: e.clientY - rect.top,
+                            inside: true,
+                        });
+                    };
+                    const handleLeave = () =>
+                        setPos((p) => ({ ...p, inside: false }));
+
+                    el.addEventListener("mousemove", handleMove);
+                    el.addEventListener("mouseleave", handleLeave);
+                    return () => {
+                        el.removeEventListener("mousemove", handleMove);
+                        el.removeEventListener("mouseleave", handleLeave);
+                    };
+                }, [ref]);
+
+                return pos;
+            }
+
+            // ============================================
+            // EFFECT 1: Spotlight Glow Card
+            // ============================================
+            function SpotlightCard({
+                children,
+                className = "",
+                glowColor = "49, 130, 246",
+                glowOpacity = 0.08,
+            }) {
+                const ref = React.useRef(null);
+                const mouse = useMousePosition(ref);
+
+                return (
+                    <div
+                        ref={ref}
+                        className={`relative overflow-hidden bg-white rounded-lg border border-border-default transition-shadow duration-200 ${className}`}
+                        style={{
+                            boxShadow: mouse.inside
+                                ? `0 4px 16px rgba(0,0,0,0.06)`
+                                : `0 1px 2px rgba(0,0,0,0.04)`,
+                        }}
+                    >
+                        {mouse.inside && (
+                            <div
+                                className="pointer-events-none absolute inset-0 transition-opacity duration-300"
+                                style={{
+                                    background: `radial-gradient(400px circle at ${mouse.x}px ${mouse.y}px, rgba(${glowColor}, ${glowOpacity}), transparent 60%)`,
+                                }}
+                            />
+                        )}
+                        <div className="relative z-10">{children}</div>
+                    </div>
+                );
+            }
+
+            function SpotlightDemo() {
+                const cards = [
+                    {
+                        icon: (
+                            <ClockCircleOutlined
+                                style={{ fontSize: 20, color: "#3182F6" }}
+                            />
+                        ),
+                        title: "API 서버 개발",
+                        time: "2시간 30분",
+                        tag: "개발",
+                        tagColor: "blue",
+                    },
+                    {
+                        icon: (
+                            <ThunderboltOutlined
+                                style={{ fontSize: 20, color: "#FF9500" }}
+                            />
+                        ),
+                        title: "코드 리뷰",
+                        time: "1시간 15분",
+                        tag: "리뷰",
+                        tagColor: "orange",
+                    },
+                    {
+                        icon: (
+                            <CalendarOutlined
+                                style={{ fontSize: 20, color: "#34C759" }}
+                            />
+                        ),
+                        title: "주간 회의",
+                        time: "45분",
+                        tag: "미팅",
+                        tagColor: "green",
+                    },
+                ];
+
+                return (
+                    <div className="grid grid-cols-3 gap-lg">
+                        {cards.map((card, i) => (
+                            <SpotlightCard key={i}>
+                                <div className="p-xl">
+                                    <div className="flex items-center gap-md mb-lg">
+                                        {card.icon}
+                                        <Tag
+                                            color={card.tagColor}
+                                            bordered={false}
+                                        >
+                                            {card.tag}
+                                        </Tag>
+                                    </div>
+                                    <div className="text-[15px] font-semibold text-text-primary mb-xs">
+                                        {card.title}
+                                    </div>
+                                    <div className="text-[13px] text-text-secondary">
+                                        {card.time}
+                                    </div>
+                                </div>
+                            </SpotlightCard>
+                        ))}
+                    </div>
+                );
+            }
+
+            // ============================================
+            // EFFECT 2: Spotlight Glow Border
+            // ============================================
+            function SpotlightBorderCard({
+                children,
+                className = "",
+                borderColor = "49, 130, 246",
+            }) {
+                const ref = React.useRef(null);
+                const mouse = useMousePosition(ref);
+
+                return (
+                    <div
+                        ref={ref}
+                        className={`relative rounded-lg p-[1px] ${className}`}
+                        style={{
+                            background: mouse.inside
+                                ? `radial-gradient(300px circle at ${mouse.x}px ${mouse.y}px, rgba(${borderColor}, 0.35), rgba(${borderColor}, 0.05) 50%, #E5E8EB 100%)`
+                                : "#E5E8EB",
+                        }}
+                    >
+                        <div className="relative bg-white rounded-[11px] overflow-hidden">
+                            {mouse.inside && (
+                                <div
+                                    className="pointer-events-none absolute inset-0"
+                                    style={{
+                                        background: `radial-gradient(300px circle at ${mouse.x}px ${mouse.y}px, rgba(${borderColor}, 0.04), transparent 60%)`,
+                                    }}
+                                />
+                            )}
+                            <div className="relative z-10">{children}</div>
+                        </div>
+                    </div>
+                );
+            }
+
+            function SpotlightBorderDemo() {
+                const templates = [
+                    {
+                        name: "프론트엔드 개발",
+                        project: "PROJECT-A",
+                        color: "#3182F6",
+                    },
+                    {
+                        name: "백엔드 API",
+                        project: "PROJECT-B",
+                        color: "#34C759",
+                    },
+                    { name: "DB 설계", project: "PROJECT-C", color: "#AF52DE" },
+                ];
+
+                return (
+                    <div className="grid grid-cols-3 gap-lg">
+                        {templates.map((t, i) => (
+                            <SpotlightBorderCard
+                                key={i}
+                                borderColor={
+                                    t.color === "#3182F6"
+                                        ? "49, 130, 246"
+                                        : t.color === "#34C759"
+                                        ? "52, 199, 89"
+                                        : "175, 82, 222"
+                                }
+                            >
+                                <div className="p-xl">
+                                    <div className="flex items-center gap-sm mb-md">
+                                        <div
+                                            className="w-[10px] h-[10px] rounded-full"
+                                            style={{ backgroundColor: t.color }}
+                                        />
+                                        <span className="text-[11px] font-semibold text-text-secondary">
+                                            {t.project}
+                                        </span>
+                                    </div>
+                                    <div className="text-[15px] font-semibold text-text-primary mb-sm">
+                                        {t.name}
+                                    </div>
+                                    <div className="flex items-center gap-sm">
+                                        <Button
+                                            size="small"
+                                            type="primary"
+                                            icon={<PlayCircleOutlined />}
+                                        >
+                                            시작
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            icon={<EditOutlined />}
+                                        >
+                                            수정
+                                        </Button>
+                                    </div>
+                                </div>
+                            </SpotlightBorderCard>
+                        ))}
+                    </div>
+                );
+            }
+
+            // ============================================
+            // EFFECT 3: 3D Tilt Card
+            // ============================================
+            function TiltCard({ children, className = "", maxTilt = 6 }) {
+                const ref = React.useRef(null);
+                const [transform, setTransform] = React.useState("");
+
+                const handleMove = (e) => {
+                    const rect = ref.current.getBoundingClientRect();
+                    const x = (e.clientX - rect.left) / rect.width;
+                    const y = (e.clientY - rect.top) / rect.height;
+                    const tiltX = (0.5 - y) * maxTilt;
+                    const tiltY = (x - 0.5) * maxTilt;
+                    setTransform(
+                        `perspective(600px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.01, 1.01, 1.01)`
+                    );
+                };
+
+                const handleLeave = () => {
+                    setTransform(
+                        "perspective(600px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)"
+                    );
+                };
+
+                return (
+                    <div
+                        ref={ref}
+                        className={`bg-white rounded-lg border border-border-default ${className}`}
+                        style={{
+                            transform:
+                                transform ||
+                                "perspective(600px) rotateX(0deg) rotateY(0deg)",
+                            transition:
+                                "transform 0.15s ease-out, box-shadow 0.15s ease-out",
+                            boxShadow: transform.includes("scale3d(1.01")
+                                ? "0 8px 24px rgba(0,0,0,0.08)"
+                                : "0 1px 2px rgba(0,0,0,0.04)",
+                            willChange: "transform",
+                        }}
+                        onMouseMove={handleMove}
+                        onMouseLeave={handleLeave}
+                    >
+                        {children}
+                    </div>
+                );
+            }
+
+            function TiltDemo() {
+                return (
+                    <div className="grid grid-cols-3 gap-lg">
+                        <TiltCard>
+                            <div className="p-xl text-center">
+                                <div className="text-[32px] font-bold text-primary mb-xs">
+                                    5h 20m
+                                </div>
+                                <div className="text-[13px] text-text-secondary">
+                                    오늘 총 작업시간
+                                </div>
+                            </div>
+                        </TiltCard>
+                        <TiltCard>
+                            <div className="p-xl text-center">
+                                <div className="text-[32px] font-bold text-success mb-xs">
+                                    7
+                                </div>
+                                <div className="text-[13px] text-text-secondary">
+                                    완료한 작업
+                                </div>
+                            </div>
+                        </TiltCard>
+                        <TiltCard>
+                            <div className="p-xl text-center">
+                                <div className="text-[32px] font-bold text-warning mb-xs">
+                                    2
+                                </div>
+                                <div className="text-[13px] text-text-secondary">
+                                    진행 중 작업
+                                </div>
+                            </div>
+                        </TiltCard>
+                    </div>
+                );
+            }
+
+            // ============================================
+            // EFFECT 4: Magnetic Button
+            // ============================================
+            function MagneticButton({
+                children,
+                className = "",
+                strength = 0.3,
+                ...props
+            }) {
+                const ref = React.useRef(null);
+                const [offset, setOffset] = React.useState({ x: 0, y: 0 });
+
+                const handleMove = (e) => {
+                    const rect = ref.current.getBoundingClientRect();
+                    const cx = rect.left + rect.width / 2;
+                    const cy = rect.top + rect.height / 2;
+                    const dx = (e.clientX - cx) * strength;
+                    const dy = (e.clientY - cy) * strength;
+                    setOffset({ x: dx, y: dy });
+                };
+
+                const handleLeave = () => setOffset({ x: 0, y: 0 });
+
+                return (
+                    <div
+                        ref={ref}
+                        className={`inline-block ${className}`}
+                        onMouseMove={handleMove}
+                        onMouseLeave={handleLeave}
+                        style={{
+                            transform: `translate(${offset.x}px, ${offset.y}px)`,
+                            transition:
+                                offset.x === 0 && offset.y === 0
+                                    ? "transform 0.4s cubic-bezier(0.23, 1, 0.32, 1)"
+                                    : "transform 0.1s ease-out",
+                        }}
+                    >
+                        {children}
+                    </div>
+                );
+            }
+
+            function MagneticDemo() {
+                return (
+                    <div className="flex items-center gap-xl flex-wrap justify-center py-lg">
+                        <MagneticButton strength={0.35}>
+                            <Button
+                                type="primary"
+                                size="large"
+                                icon={<PlayCircleOutlined />}
+                                style={{
+                                    height: 48,
+                                    paddingLeft: 24,
+                                    paddingRight: 24,
+                                    borderRadius: 8,
+                                    fontSize: 15,
+                                    fontWeight: 600,
+                                }}
+                            >
+                                타이머 시작
+                            </Button>
+                        </MagneticButton>
+
+                        <MagneticButton strength={0.3}>
+                            <Button
+                                size="large"
+                                icon={<PlusOutlined />}
+                                style={{
+                                    height: 48,
+                                    paddingLeft: 24,
+                                    paddingRight: 24,
+                                    borderRadius: 8,
+                                    fontSize: 15,
+                                    fontWeight: 600,
+                                }}
+                            >
+                                작업 추가
+                            </Button>
+                        </MagneticButton>
+
+                        <MagneticButton strength={0.3}>
+                            <Button
+                                danger
+                                size="large"
+                                icon={<DeleteOutlined />}
+                                style={{
+                                    height: 48,
+                                    paddingLeft: 24,
+                                    paddingRight: 24,
+                                    borderRadius: 8,
+                                    fontSize: 15,
+                                    fontWeight: 600,
+                                }}
+                            >
+                                삭제
+                            </Button>
+                        </MagneticButton>
+
+                        <MagneticButton strength={0.4}>
+                            <div
+                                style={{
+                                    width: 48,
+                                    height: 48,
+                                    borderRadius: 12,
+                                    background: "#F2F4F6",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    cursor: "pointer",
+                                }}
+                            >
+                                <SettingOutlined
+                                    style={{ fontSize: 20, color: "#6B7684" }}
+                                />
+                            </div>
+                        </MagneticButton>
+                    </div>
+                );
+            }
+
+            // ============================================
+            // EFFECT 5: Shine Sweep (Table Row / List)
+            // ============================================
+            function ShineSweepRow({ children, className = "" }) {
+                const ref = React.useRef(null);
+                const mouse = useMousePosition(ref);
+
+                return (
+                    <div
+                        ref={ref}
+                        className={`relative overflow-hidden ${className}`}
+                    >
+                        {mouse.inside && (
+                            <div
+                                className="pointer-events-none absolute inset-0"
+                                style={{
+                                    background: `linear-gradient(90deg, transparent ${
+                                        mouse.x - 120
+                                    }px, rgba(49, 130, 246, 0.04) ${
+                                        mouse.x - 40
+                                    }px, rgba(49, 130, 246, 0.07) ${
+                                        mouse.x
+                                    }px, rgba(49, 130, 246, 0.04) ${
+                                        mouse.x + 40
+                                    }px, transparent ${mouse.x + 120}px)`,
+                                }}
+                            />
+                        )}
+                        <div className="relative z-10">{children}</div>
+                    </div>
+                );
+            }
+
+            function ShineSweepDemo() {
+                const rows = [
+                    {
+                        name: "API 서버 개발",
+                        project: "PROJECT-A",
+                        time: "09:00 ~ 11:30",
+                        duration: "2시간 30분",
+                        status: "완료",
+                    },
+                    {
+                        name: "코드 리뷰",
+                        project: "PROJECT-B",
+                        time: "13:00 ~ 14:15",
+                        duration: "1시간 15분",
+                        status: "완료",
+                    },
+                    {
+                        name: "기획 미팅",
+                        project: "PROJECT-A",
+                        time: "14:30 ~ 15:15",
+                        duration: "45분",
+                        status: "완료",
+                    },
+                    {
+                        name: "프론트엔드 구현",
+                        project: "PROJECT-C",
+                        time: "15:30 ~ 현재",
+                        duration: "1시간 20분",
+                        status: "진행 중",
+                    },
+                ];
+
+                return (
+                    <div className="rounded-lg border border-border-default overflow-hidden">
+                        <div className="grid grid-cols-[1fr_120px_140px_100px_80px] gap-0 bg-bg-light px-xl py-md text-[13px] font-semibold text-text-secondary border-b border-border-default">
+                            <div>작업명</div>
+                            <div>프로젝트</div>
+                            <div>시간</div>
+                            <div>소요시간</div>
+                            <div className="text-center">상태</div>
+                        </div>
+                        {rows.map((row, i) => (
+                            <ShineSweepRow key={i}>
+                                <div
+                                    className={`grid grid-cols-[1fr_120px_140px_100px_80px] gap-0 px-xl py-lg text-[15px] items-center cursor-pointer ${
+                                        i < rows.length - 1
+                                            ? "border-b border-border-light"
+                                            : ""
+                                    }`}
+                                >
+                                    <div className="font-medium text-text-primary">
+                                        {row.name}
+                                    </div>
+                                    <div className="text-[13px] text-text-secondary">
+                                        {row.project}
+                                    </div>
+                                    <div className="text-[13px] text-text-secondary">
+                                        {row.time}
+                                    </div>
+                                    <div className="text-[13px] text-text-primary font-medium">
+                                        {row.duration}
+                                    </div>
+                                    <div className="text-center">
+                                        <Tag
+                                            color={
+                                                row.status === "완료"
+                                                    ? "green"
+                                                    : "blue"
+                                            }
+                                            bordered={false}
+                                        >
+                                            {row.status}
+                                        </Tag>
+                                    </div>
+                                </div>
+                            </ShineSweepRow>
+                        ))}
+                    </div>
+                );
+            }
+
+            // ============================================
+            // EFFECT 6: Cursor Halo (Navigation)
+            // ============================================
+            function CursorHaloNav() {
+                const ref = React.useRef(null);
+                const mouse = useMousePosition(ref);
+                const [active, setActive] = React.useState("daily");
+
+                const items = [
+                    {
+                        key: "daily",
+                        icon: <ClockCircleOutlined />,
+                        label: "일간",
+                    },
+                    {
+                        key: "weekly",
+                        icon: <CalendarOutlined />,
+                        label: "주간",
+                    },
+                    {
+                        key: "template",
+                        icon: <AppstoreOutlined />,
+                        label: "프리셋",
+                    },
+                    {
+                        key: "settings",
+                        icon: <SettingOutlined />,
+                        label: "설정",
+                    },
+                ];
+
+                return (
+                    <div
+                        ref={ref}
+                        className="relative bg-white rounded-xl border border-border-default p-sm w-[200px]"
+                        style={{ overflow: "hidden" }}
+                    >
+                        {mouse.inside && (
+                            <div
+                                className="pointer-events-none absolute inset-0"
+                                style={{
+                                    background: `radial-gradient(180px circle at ${mouse.x}px ${mouse.y}px, rgba(49, 130, 246, 0.06), transparent 60%)`,
+                                    transition: "background 0.05s ease-out",
+                                }}
+                            />
+                        )}
+                        <div className="relative z-10 flex flex-col gap-xs">
+                            {items.map((item) => (
+                                <div
+                                    key={item.key}
+                                    className={`flex items-center gap-md px-md py-[10px] rounded-md cursor-pointer transition-colors duration-150 ${
+                                        active === item.key
+                                            ? "bg-primary/10 text-primary"
+                                            : "text-text-secondary hover:text-text-primary"
+                                    }`}
+                                    onClick={() => setActive(item.key)}
+                                >
+                                    <span className="text-[16px]">
+                                        {item.icon}
+                                    </span>
+                                    <span className="text-[15px] font-medium">
+                                        {item.label}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
+            // ============================================
+            // EFFECT 7: Border Beam Card
+            // ============================================
+            function BorderBeamCard({
+                children,
+                className = "",
+                duration = 4,
+            }) {
+                const [hovered, setHovered] = React.useState(false);
+                const [angle, setAngle] = React.useState(0);
+                const frameRef = React.useRef(null);
+
+                React.useEffect(() => {
+                    if (!hovered) return;
+                    let start = null;
+                    const animate = (ts) => {
+                        if (!start) start = ts;
+                        const elapsed = ts - start;
+                        setAngle(((elapsed / (duration * 1000)) * 360) % 360);
+                        frameRef.current = requestAnimationFrame(animate);
+                    };
+                    frameRef.current = requestAnimationFrame(animate);
+                    return () => cancelAnimationFrame(frameRef.current);
+                }, [hovered, duration]);
+
+                return (
+                    <div
+                        className={`relative rounded-xl p-[1.5px] ${className}`}
+                        style={{
+                            background: hovered
+                                ? `conic-gradient(from ${angle}deg at 50% 50%, transparent 0%, transparent 70%, #3182F6 80%, rgba(49,130,246,0.4) 90%, transparent 100%)`
+                                : "#E5E8EB",
+                            transition: "background 0.3s ease",
+                        }}
+                        onMouseEnter={() => setHovered(true)}
+                        onMouseLeave={() => {
+                            setHovered(false);
+                            setAngle(0);
+                        }}
+                    >
+                        <div className="bg-white rounded-[10.5px] relative z-10">
+                            {children}
+                        </div>
+                    </div>
+                );
+            }
+
+            function BorderBeamDemo() {
+                return (
+                    <div className="grid grid-cols-2 gap-lg">
+                        <BorderBeamCard duration={3}>
+                            <div className="p-xl">
+                                <div className="flex items-center gap-md mb-md">
+                                    <FireOutlined
+                                        style={{
+                                            fontSize: 18,
+                                            color: "#F04452",
+                                        }}
+                                    />
+                                    <span className="text-[15px] font-semibold text-text-primary">
+                                        현재 진행 중
+                                    </span>
+                                </div>
+                                <div className="text-[22px] font-bold text-primary mb-xs">
+                                    01:23:45
+                                </div>
+                                <div className="text-[13px] text-text-secondary">
+                                    API 서버 개발 · PROJECT-A
+                                </div>
+                            </div>
+                        </BorderBeamCard>
+
+                        <BorderBeamCard duration={5}>
+                            <div className="p-xl">
+                                <div className="flex items-center gap-md mb-md">
+                                    <StarOutlined
+                                        style={{
+                                            fontSize: 18,
+                                            color: "#FF9500",
+                                        }}
+                                    />
+                                    <span className="text-[15px] font-semibold text-text-primary">
+                                        오늘의 하이라이트
+                                    </span>
+                                </div>
+                                <div className="text-[22px] font-bold text-success mb-xs">
+                                    8 / 10
+                                </div>
+                                <div className="text-[13px] text-text-secondary">
+                                    목표 달성률 80%
+                                </div>
+                            </div>
+                        </BorderBeamCard>
+                    </div>
+                );
+            }
+
+            // ============================================
+            // EFFECT 8: Spotlight + Tilt Combined Card
+            // ============================================
+            function SpotlightTiltCard({
+                children,
+                className = "",
+                maxTilt = 4,
+            }) {
+                const ref = React.useRef(null);
+                const mouse = useMousePosition(ref);
+                const [transform, setTransform] = React.useState("");
+
+                React.useEffect(() => {
+                    if (!ref.current || !mouse.inside) {
+                        setTransform(
+                            "perspective(600px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)"
+                        );
+                        return;
+                    }
+                    const rect = ref.current.getBoundingClientRect();
+                    const x = mouse.x / rect.width;
+                    const y = mouse.y / rect.height;
+                    const tiltX = (0.5 - y) * maxTilt;
+                    const tiltY = (x - 0.5) * maxTilt;
+                    setTransform(
+                        `perspective(600px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.01, 1.01, 1.01)`
+                    );
+                }, [mouse, maxTilt]);
+
+                return (
+                    <div
+                        ref={ref}
+                        className={`relative rounded-xl p-[1px] ${className}`}
+                        style={{
+                            transform,
+                            transition: mouse.inside
+                                ? "transform 0.1s ease-out"
+                                : "transform 0.4s cubic-bezier(0.23, 1, 0.32, 1)",
+                            background: mouse.inside
+                                ? `radial-gradient(400px circle at ${mouse.x}px ${mouse.y}px, rgba(49, 130, 246, 0.25), #E5E8EB 60%)`
+                                : "#E5E8EB",
+                            willChange: "transform",
+                        }}
+                    >
+                        <div
+                            className="relative bg-white rounded-[11px] overflow-hidden"
+                            style={{
+                                boxShadow: mouse.inside
+                                    ? "0 8px 30px rgba(0,0,0,0.08)"
+                                    : "0 1px 2px rgba(0,0,0,0.04)",
+                                transition: "box-shadow 0.2s ease",
+                            }}
+                        >
+                            {mouse.inside && (
+                                <div
+                                    className="pointer-events-none absolute inset-0"
+                                    style={{
+                                        background: `radial-gradient(300px circle at ${mouse.x}px ${mouse.y}px, rgba(49, 130, 246, 0.05), transparent 60%)`,
+                                    }}
+                                />
+                            )}
+                            <div className="relative z-10">{children}</div>
+                        </div>
+                    </div>
+                );
+            }
+
+            function CombinedDemo() {
+                const templates = [
+                    {
+                        name: "프론트엔드 개발",
+                        project: "PROJ-A",
+                        color: "#3182F6",
+                        task: "React 컴포넌트",
+                        category: "개발",
+                    },
+                    {
+                        name: "코드 리뷰",
+                        project: "PROJ-B",
+                        color: "#34C759",
+                        task: "PR 리뷰",
+                        category: "리뷰",
+                    },
+                    {
+                        name: "디자인 QA",
+                        project: "PROJ-C",
+                        color: "#AF52DE",
+                        task: "UI 검수",
+                        category: "QA",
+                    },
+                    {
+                        name: "주간 회의",
+                        project: "PROJ-A",
+                        color: "#FF9500",
+                        task: "스프린트 리뷰",
+                        category: "미팅",
+                    },
+                ];
+
+                return (
+                    <div className="grid grid-cols-2 gap-lg">
+                        {templates.map((t, i) => (
+                            <SpotlightTiltCard key={i}>
+                                <div className="p-xl">
+                                    <div className="flex items-center justify-between mb-md">
+                                        <div className="flex items-center gap-sm">
+                                            <div
+                                                className="w-[10px] h-[10px] rounded-full"
+                                                style={{
+                                                    backgroundColor: t.color,
+                                                }}
+                                            />
+                                            <span className="text-[11px] font-semibold text-text-secondary tracking-wide">
+                                                {t.project}
+                                            </span>
+                                        </div>
+                                        <Tag
+                                            bordered={false}
+                                            className="text-[11px]"
+                                        >
+                                            {t.category}
+                                        </Tag>
+                                    </div>
+                                    <div className="text-[15px] font-semibold text-text-primary mb-xs">
+                                        {t.name}
+                                    </div>
+                                    <div className="text-[13px] text-text-secondary mb-lg">
+                                        {t.task}
+                                    </div>
+                                    <div className="flex gap-sm">
+                                        <Button
+                                            size="small"
+                                            type="primary"
+                                            icon={<PlayCircleOutlined />}
+                                        >
+                                            시작
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            icon={<CopyOutlined />}
+                                        >
+                                            복제
+                                        </Button>
+                                    </div>
+                                </div>
+                            </SpotlightTiltCard>
+                        ))}
+                    </div>
+                );
+            }
+
+            // ============================================
+            // MAIN APP
+            // ============================================
+            function MockupApp() {
+                return (
+                    <div>
+                        <div className="mockup-header">
+                            <h1>커서 트래킹 효과</h1>
+                            <p>
+                                토스 스타일의 은은한 커서 인터랙션 — 마우스를
+                                올려보세요
+                            </p>
+                        </div>
+
+                        {/* Effect 1: Spotlight Glow */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                1. Spotlight Glow — 작업 카드
+                            </div>
+                            <p className="text-[13px] text-text-secondary mb-lg">
+                                커서 위치를 따라 은은한 빛 번짐이 카드 내부에서
+                                이동합니다.
+                            </p>
+                            <div className="mockup-frame">
+                                <SpotlightDemo />
+                            </div>
+                        </div>
+
+                        {/* Effect 2: Spotlight Border */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                2. Spotlight Border — 템플릿 카드
+                            </div>
+                            <p className="text-[13px] text-text-secondary mb-lg">
+                                커서 위치에 따라 보더 색상이 밝아지고, 내부에
+                                은은한 글로우가 생깁니다.
+                            </p>
+                            <div className="mockup-frame">
+                                <SpotlightBorderDemo />
+                            </div>
+                        </div>
+
+                        {/* Effect 3: 3D Tilt */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                3. 3D Tilt — 통계 카드
+                            </div>
+                            <p className="text-[13px] text-text-secondary mb-lg">
+                                커서 위치에 따라 카드가 미세하게 기울어지는 3D
+                                효과입니다.
+                            </p>
+                            <div className="mockup-frame">
+                                <TiltDemo />
+                            </div>
+                        </div>
+
+                        {/* Effect 4: Magnetic Button */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                4. Magnetic Button — 주요 버튼
+                            </div>
+                            <p className="text-[13px] text-text-secondary mb-lg">
+                                커서가 가까이 오면 버튼이 자석처럼 커서 방향으로
+                                살짝 당겨집니다.
+                            </p>
+                            <div className="mockup-frame">
+                                <MagneticDemo />
+                            </div>
+                        </div>
+
+                        {/* Effect 5: Shine Sweep */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                5. Shine Sweep — 테이블 행
+                            </div>
+                            <p className="text-[13px] text-text-secondary mb-lg">
+                                커서를 따라 은은한 빛줄기가 행을 가로질러
+                                이동합니다.
+                            </p>
+                            <div className="mockup-frame">
+                                <ShineSweepDemo />
+                            </div>
+                        </div>
+
+                        {/* Effect 6: Cursor Halo */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                6. Cursor Halo — 사이드바 네비게이션
+                            </div>
+                            <p className="text-[13px] text-text-secondary mb-lg">
+                                커서 주변에 은은한 원형 하이라이트가 나타나 현재
+                                위치를 강조합니다.
+                            </p>
+                            <div className="mockup-frame flex justify-center">
+                                <CursorHaloNav />
+                            </div>
+                        </div>
+
+                        {/* Effect 7: Border Beam */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                7. Border Beam — 활성 카드 / 하이라이트
+                            </div>
+                            <p className="text-[13px] text-text-secondary mb-lg">
+                                호버 시 보더를 따라 빛이 회전하며 이동하는
+                                프리미엄 효과입니다.
+                            </p>
+                            <div className="mockup-frame">
+                                <BorderBeamDemo />
+                            </div>
+                        </div>
+
+                        {/* Effect 8: Combined */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                8. 조합 — Spotlight + Tilt + Border Glow
+                            </div>
+                            <p className="text-[13px] text-text-secondary mb-lg">
+                                여러 효과를 자연스럽게 결합한 프리미엄 카드
+                                인터랙션입니다.
+                            </p>
+                            <div className="mockup-frame">
+                                <CombinedDemo />
+                            </div>
+                        </div>
+
+                        {/* Recommendation */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                적용 가이드
+                            </div>
+                            <div className="mockup-frame">
+                                <table className="w-full text-[13px]">
+                                    <thead>
+                                        <tr className="text-left border-b border-border-default">
+                                            <th className="py-md pr-lg font-semibold text-text-secondary">
+                                                효과
+                                            </th>
+                                            <th className="py-md pr-lg font-semibold text-text-secondary">
+                                                적용 대상
+                                            </th>
+                                            <th className="py-md pr-lg font-semibold text-text-secondary">
+                                                강도
+                                            </th>
+                                            <th className="py-md font-semibold text-text-secondary">
+                                                권장도
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="text-text-primary">
+                                        <tr className="border-b border-border-light">
+                                            <td className="py-md pr-lg font-medium">
+                                                Spotlight Glow
+                                            </td>
+                                            <td className="py-md pr-lg">
+                                                작업 카드, 프리셋 카드
+                                            </td>
+                                            <td className="py-md pr-lg">
+                                                <Tag
+                                                    color="green"
+                                                    bordered={false}
+                                                >
+                                                    은은
+                                                </Tag>
+                                            </td>
+                                            <td className="py-md">
+                                                <Tag
+                                                    color="blue"
+                                                    bordered={false}
+                                                >
+                                                    필수 적용
+                                                </Tag>
+                                            </td>
+                                        </tr>
+                                        <tr className="border-b border-border-light">
+                                            <td className="py-md pr-lg font-medium">
+                                                Spotlight Border
+                                            </td>
+                                            <td className="py-md pr-lg">
+                                                템플릿 카드, 설정 패널
+                                            </td>
+                                            <td className="py-md pr-lg">
+                                                <Tag
+                                                    color="green"
+                                                    bordered={false}
+                                                >
+                                                    은은
+                                                </Tag>
+                                            </td>
+                                            <td className="py-md">
+                                                <Tag
+                                                    color="blue"
+                                                    bordered={false}
+                                                >
+                                                    필수 적용
+                                                </Tag>
+                                            </td>
+                                        </tr>
+                                        <tr className="border-b border-border-light">
+                                            <td className="py-md pr-lg font-medium">
+                                                3D Tilt
+                                            </td>
+                                            <td className="py-md pr-lg">
+                                                통계 카드, 요약 위젯
+                                            </td>
+                                            <td className="py-md pr-lg">
+                                                <Tag
+                                                    color="orange"
+                                                    bordered={false}
+                                                >
+                                                    중간
+                                                </Tag>
+                                            </td>
+                                            <td className="py-md">
+                                                <Tag
+                                                    color="green"
+                                                    bordered={false}
+                                                >
+                                                    권장
+                                                </Tag>
+                                            </td>
+                                        </tr>
+                                        <tr className="border-b border-border-light">
+                                            <td className="py-md pr-lg font-medium">
+                                                Magnetic Button
+                                            </td>
+                                            <td className="py-md pr-lg">
+                                                CTA 버튼, 아이콘 버튼
+                                            </td>
+                                            <td className="py-md pr-lg">
+                                                <Tag
+                                                    color="green"
+                                                    bordered={false}
+                                                >
+                                                    은은
+                                                </Tag>
+                                            </td>
+                                            <td className="py-md">
+                                                <Tag
+                                                    color="green"
+                                                    bordered={false}
+                                                >
+                                                    권장
+                                                </Tag>
+                                            </td>
+                                        </tr>
+                                        <tr className="border-b border-border-light">
+                                            <td className="py-md pr-lg font-medium">
+                                                Shine Sweep
+                                            </td>
+                                            <td className="py-md pr-lg">
+                                                테이블 행, 리스트 아이템
+                                            </td>
+                                            <td className="py-md pr-lg">
+                                                <Tag
+                                                    color="green"
+                                                    bordered={false}
+                                                >
+                                                    은은
+                                                </Tag>
+                                            </td>
+                                            <td className="py-md">
+                                                <Tag
+                                                    color="blue"
+                                                    bordered={false}
+                                                >
+                                                    필수 적용
+                                                </Tag>
+                                            </td>
+                                        </tr>
+                                        <tr className="border-b border-border-light">
+                                            <td className="py-md pr-lg font-medium">
+                                                Cursor Halo
+                                            </td>
+                                            <td className="py-md pr-lg">
+                                                사이드바, 네비게이션
+                                            </td>
+                                            <td className="py-md pr-lg">
+                                                <Tag
+                                                    color="green"
+                                                    bordered={false}
+                                                >
+                                                    은은
+                                                </Tag>
+                                            </td>
+                                            <td className="py-md">
+                                                <Tag
+                                                    color="green"
+                                                    bordered={false}
+                                                >
+                                                    권장
+                                                </Tag>
+                                            </td>
+                                        </tr>
+                                        <tr className="border-b border-border-light">
+                                            <td className="py-md pr-lg font-medium">
+                                                Border Beam
+                                            </td>
+                                            <td className="py-md pr-lg">
+                                                활성 타이머, 하이라이트
+                                            </td>
+                                            <td className="py-md pr-lg">
+                                                <Tag
+                                                    color="red"
+                                                    bordered={false}
+                                                >
+                                                    강조
+                                                </Tag>
+                                            </td>
+                                            <td className="py-md">
+                                                <Tag bordered={false}>
+                                                    포인트
+                                                </Tag>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="py-md pr-lg font-medium">
+                                                조합 (Spotlight + Tilt)
+                                            </td>
+                                            <td className="py-md pr-lg">
+                                                프리셋 카드, 주요 카드
+                                            </td>
+                                            <td className="py-md pr-lg">
+                                                <Tag
+                                                    color="orange"
+                                                    bordered={false}
+                                                >
+                                                    중간
+                                                </Tag>
+                                            </td>
+                                            <td className="py-md">
+                                                <Tag
+                                                    color="blue"
+                                                    bordered={false}
+                                                >
+                                                    필수 적용
+                                                </Tag>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            root.render(<MockupApp />);
+        </script>
+    </body>
+</html>

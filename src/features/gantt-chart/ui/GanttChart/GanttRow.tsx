@@ -3,6 +3,7 @@
  */
 
 import { Typography } from "antd";
+import { ShineSweepRow } from "@/shared/ui/cursor-tracking";
 import type { GanttRowProps } from "../../lib/types";
 import { GanttBar } from "./GanttBar";
 import { timeToMinutes } from "../../../../shared/lib/time";
@@ -35,7 +36,7 @@ export function GanttRow({
         : TEMPLATE_COLORS[0];
 
     return (
-        <div className="gantt-row">
+        <ShineSweepRow className="gantt-row">
             {/* 작업명 라벨 */}
             <div className="gantt-row-label">
                 <Text ellipsis={{ tooltip: key }} className="!text-sm">
@@ -112,7 +113,7 @@ export function GanttRow({
                     align-items: center;
                 }
             `}</style>
-        </div>
+        </ShineSweepRow>
     );
 }
 

@@ -9,6 +9,7 @@ import { useGuideNavigation, useGuideSearch } from "../../hooks";
 import { GUIDE_CONFIG } from "../../constants";
 import { GuideSidebar } from "../GuideSidebar";
 import { NavButtons } from "../NavButtons";
+import { SpotlightCard } from "@/shared/ui/cursor-tracking";
 import { MermaidDiagram } from "../MermaidDiagram";
 import { WikiLink } from "../WikiLink";
 
@@ -282,9 +283,11 @@ export function DesktopGuideBook() {
 
             <Content className="guide-book-content" ref={content_ref}>
                 <div className="guide-book-docs">
+                    <SpotlightCard className="rounded-lg overflow-hidden">
                     <Card className="guide-book-card">
                         {renderContent(current_doc.content)}
                     </Card>
+                    </SpotlightCard>
 
                     <NavButtons
                         current_section={current_section}

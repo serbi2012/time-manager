@@ -3,6 +3,7 @@
  */
 
 import { Card, Typography } from "antd";
+import { SpotlightCard } from "@/shared/ui/cursor-tracking";
 import dayjs from "dayjs";
 import type { DayGroup } from "../../lib/week_grouper";
 import { WorkItem } from "./WorkItem";
@@ -22,6 +23,7 @@ export function DayCard({ day_group, on_status_change }: DayCardProps) {
     );
 
     return (
+        <SpotlightCard className="rounded-lg overflow-hidden">
         <Card key={day_group.date} className="day-card" title={title}>
             {day_group.works.map((work, work_idx) => (
                 <WorkItem
@@ -32,5 +34,6 @@ export function DayCard({ day_group, on_status_change }: DayCardProps) {
                 />
             ))}
         </Card>
+        </SpotlightCard>
     );
 }

@@ -51,5 +51,8 @@ export const DEFAULT_APP_THEME: AppTheme = AppTheme.Blue;
 /** 기본 트랜지션 활성화 여부 */
 export const DEFAULT_TRANSITION_ENABLED = false;
 
+/** 기본 커서 트래킹 효과 활성화 여부 */
+export const DEFAULT_CURSOR_TRACKING_ENABLED = false;
+
 /** 기본 트랜지션 속도 */
 export const DEFAULT_TRANSITION_SPEED: TransitionSpeed = TransitionSpeed.Normal;

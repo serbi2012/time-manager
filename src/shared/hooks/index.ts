@@ -42,3 +42,4 @@ export { useDebouncedValue } from "./useDebouncedValue";
 // 커서 트래킹
 export { useSpotlight } from "./useSpotlight";
 export { useMagnetic } from "./useMagnetic";
+export { useMousePosition } from "./useMousePosition";
