@@ -19,7 +19,7 @@ export function useWeeklyData(selected_week_start: Dayjs) {
     const [editable_data, setEditableData] = useState<
         Record<string, { status: string }>
     >({});
-    const [hide_management_work, setHideManagementWork] = useState(false);
+    const [hide_management_work, setHideManagementWork] = useState(true);
 
     const week_start_str = selected_week_start.format("YYYY-MM-DD");
     const week_end_str = selected_week_start.add(6, "day").format("YYYY-MM-DD");

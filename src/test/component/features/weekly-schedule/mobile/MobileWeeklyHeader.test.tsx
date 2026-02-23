@@ -70,7 +70,7 @@ describe("MobileWeeklyHeader", () => {
             />
         );
 
-        fireEvent.click(screen.getByText("관리제외"));
+        fireEvent.click(screen.getByText("기본"));
         expect(on_change).toHaveBeenCalledWith(true);
     });
 

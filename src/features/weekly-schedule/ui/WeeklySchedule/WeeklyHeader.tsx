@@ -95,15 +95,15 @@ export function WeeklyHeader({
                     buttonStyle="solid"
                     size="small"
                 >
-                    <Radio.Button value={false}>
-                        {is_mobile
-                            ? WEEKLY_LABELS.viewAllShort
-                            : WEEKLY_LABELS.viewAll}
-                    </Radio.Button>
                     <Radio.Button value={true}>
                         {is_mobile
-                            ? WEEKLY_LABELS.excludeManagementShort
-                            : WEEKLY_LABELS.excludeManagement}
+                            ? WEEKLY_LABELS.defaultViewShort
+                            : WEEKLY_LABELS.defaultView}
+                    </Radio.Button>
+                    <Radio.Button value={false}>
+                        {is_mobile
+                            ? WEEKLY_LABELS.includeManagementShort
+                            : WEEKLY_LABELS.includeManagement}
                     </Radio.Button>
                 </Radio.Group>
 

@@ -334,8 +334,8 @@ describe("WeeklySchedule", () => {
                 </TestWrapper>
             );
 
-            expect(screen.getByText("전체 보기")).toBeInTheDocument();
-            expect(screen.getByText(/관리업무 제외/)).toBeInTheDocument();
+            expect(screen.getByText("기본 보기")).toBeInTheDocument();
+            expect(screen.getByText("관리업무 포함")).toBeInTheDocument();
         });
     });
 
@@ -390,8 +390,12 @@ describe("WeeklySchedule", () => {
                 </TestWrapper>
             );
 
-            expect(screen.getByRole("radio", { name: "형식 1" })).toBeInTheDocument();
-            expect(screen.getByRole("radio", { name: "형식 2" })).toBeInTheDocument();
+            expect(
+                screen.getByRole("radio", { name: "형식 1" })
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole("radio", { name: "형식 2" })
+            ).toBeInTheDocument();
         });
 
         it("형식 2가 기본 선택되어 있음", () => {
@@ -404,7 +408,9 @@ describe("WeeklySchedule", () => {
                 </TestWrapper>
             );
 
-            const format2_button = screen.getByRole("radio", { name: "형식 2" });
+            const format2_button = screen.getByRole("radio", {
+                name: "형식 2",
+            });
             expect(format2_button).toBeChecked();
         });
 
@@ -426,7 +432,8 @@ describe("WeeklySchedule", () => {
             const format1_button = screen.getByText("형식 1");
             fireEvent.click(format1_button);
 
-            const preview_text = document.querySelector(".copy-preview")?.textContent || "";
+            const preview_text =
+                document.querySelector(".copy-preview")?.textContent || "";
 
             // 형식 1은 '>' 기호와 구분선 없음
             expect(preview_text).toContain("> 세부작업");
@@ -449,7 +456,8 @@ describe("WeeklySchedule", () => {
             );
 
             // 형식 2는 기본값
-            const preview_text = document.querySelector(".copy-preview")?.textContent || "";
+            const preview_text =
+                document.querySelector(".copy-preview")?.textContent || "";
 
             // 형식 2는 구분선, ■ 기호, · 기호 사용
             expect(preview_text).toContain("────");

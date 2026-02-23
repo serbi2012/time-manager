@@ -101,18 +101,6 @@ export function MobileWeeklyHeader({
                     <button
                         className={cn(
                             "h-[34px] px-md rounded-lg border-0 text-sm font-medium cursor-pointer flex items-center gap-xs",
-                            !hide_management_work
-                                ? "bg-primary/10 text-primary"
-                                : "bg-gray-100 text-gray-500"
-                        )}
-                        onClick={() => on_hide_management_change(false)}
-                        style={{ WebkitTapHighlightColor: "transparent" }}
-                    >
-                        {WEEKLY_LABELS.viewAllShort}
-                    </button>
-                    <button
-                        className={cn(
-                            "h-[34px] px-md rounded-lg border-0 text-sm font-medium cursor-pointer flex items-center gap-xs",
                             hide_management_work
                                 ? "bg-primary/10 text-primary"
                                 : "bg-gray-100 text-gray-500"
@@ -120,8 +108,20 @@ export function MobileWeeklyHeader({
                         onClick={() => on_hide_management_change(true)}
                         style={{ WebkitTapHighlightColor: "transparent" }}
                     >
+                        {WEEKLY_LABELS.defaultViewShort}
+                    </button>
+                    <button
+                        className={cn(
+                            "h-[34px] px-md rounded-lg border-0 text-sm font-medium cursor-pointer flex items-center gap-xs",
+                            !hide_management_work
+                                ? "bg-primary/10 text-primary"
+                                : "bg-gray-100 text-gray-500"
+                        )}
+                        onClick={() => on_hide_management_change(false)}
+                        style={{ WebkitTapHighlightColor: "transparent" }}
+                    >
                         <FilterOutlined style={{ fontSize: 12 }} />
-                        {WEEKLY_LABELS.excludeManagementShort}
+                        {WEEKLY_LABELS.includeManagementShort}
                     </button>
                 </div>
                 <button

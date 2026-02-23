@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.23";
+export const CURRENT_VERSION = "2.0.24";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,18 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.24",
+        date: "2026-02-23",
+        title: "주간 일정 관리업무 필터 기본값 변경",
+        changes: [
+            {
+                type: "improvement",
+                description:
+                    "주간 일정에서 관리업무 제외가 기본값으로 설정돼요",
+            },
+        ],
+    },
     {
         version: "2.0.23",
         date: "2026-02-23",

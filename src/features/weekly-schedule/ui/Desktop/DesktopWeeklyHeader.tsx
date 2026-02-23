@@ -77,11 +77,11 @@ export function DesktopWeeklyHeader({
                     buttonStyle="solid"
                     size="small"
                 >
-                    <Radio.Button value={false}>
-                        {WEEKLY_LABELS.viewAll}
-                    </Radio.Button>
                     <Radio.Button value={true}>
-                        {WEEKLY_LABELS.excludeManagement}
+                        {WEEKLY_LABELS.defaultView}
+                    </Radio.Button>
+                    <Radio.Button value={false}>
+                        {WEEKLY_LABELS.includeManagement}
                     </Radio.Button>
                 </Radio.Group>
 
