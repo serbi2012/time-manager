@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.22";
+export const CURRENT_VERSION = "2.0.23";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,18 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.23",
+        date: "2026-02-23",
+        title: "주간 일정 누적시간 수정",
+        changes: [
+            {
+                type: "fix",
+                description:
+                    "주간 일정의 누적시간이 전체 기간 기준으로 정확하게 표시돼요",
+            },
+        ],
+    },
     {
         version: "2.0.22",
         date: "2026-02-20",

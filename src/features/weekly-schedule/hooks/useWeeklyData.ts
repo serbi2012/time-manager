@@ -41,9 +41,16 @@ export function useWeeklyData(selected_week_start: Dayjs) {
                 weekly_records,
                 editable_data,
                 hide_management_work,
-                ADMIN_PROJECT_CODE
+                ADMIN_PROJECT_CODE,
+                records
             ),
-        [week_dates, weekly_records, editable_data, hide_management_work]
+        [
+            week_dates,
+            weekly_records,
+            editable_data,
+            hide_management_work,
+            records,
+        ]
     );
 
     const week_range = useMemo(

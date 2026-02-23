@@ -21,7 +21,6 @@ import {
     RippleEffect,
 } from "../../../../shared/ui/animation";
 
-import { MagneticButton } from "@/shared/ui/cursor-tracking";
 import { DateNavigation } from "./DateNavigation";
 import { WeeklyCalendarStrip } from "./WeeklyCalendarStrip";
 import { MoreActionsMenu } from "./MoreActionsMenu";
@@ -108,25 +107,23 @@ export function RecordHeader({
                     </motion.button>
 
                     {/* 5-3: Ripple on primary button */}
-                    <MagneticButton>
-                        <RippleEffect
-                            color="rgba(255, 255, 255, 0.3)"
-                            className="h-9 border-0 bg-primary text-white rounded-md text-sm font-semibold inline-flex items-center cursor-pointer"
-                            onClick={onAddNew}
-                        >
-                            <span className="px-lg inline-flex items-center gap-xs">
-                                <PlusOutlined style={{ fontSize: 13 }} />
-                                {RECORD_BUTTON.NEW_WORK}
-                                {new_work_shortcut_keys && (
-                                    <span className="text-xs opacity-70 ml-xs bg-white/20 px-xs py-px rounded-xs">
-                                        {formatShortcutKeyForPlatform(
-                                            new_work_shortcut_keys
-                                        )}
-                                    </span>
-                                )}
-                            </span>
-                        </RippleEffect>
-                    </MagneticButton>
+                    <RippleEffect
+                        color="rgba(255, 255, 255, 0.3)"
+                        className="h-9 border-0 bg-primary text-white rounded-md text-sm font-semibold inline-flex items-center cursor-pointer"
+                        onClick={onAddNew}
+                    >
+                        <span className="px-lg inline-flex items-center gap-xs">
+                            <PlusOutlined style={{ fontSize: 13 }} />
+                            {RECORD_BUTTON.NEW_WORK}
+                            {new_work_shortcut_keys && (
+                                <span className="text-xs opacity-70 ml-xs bg-white/20 px-xs py-px rounded-xs">
+                                    {formatShortcutKeyForPlatform(
+                                        new_work_shortcut_keys
+                                    )}
+                                </span>
+                            )}
+                        </span>
+                    </RippleEffect>
 
                     <MoreActionsMenu
                         onOpenCompleted={onOpenCompleted}

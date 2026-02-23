@@ -6,7 +6,6 @@
  */
 
 import { ClockCircleOutlined, PlusOutlined } from "@ant-design/icons";
-import { MagneticButton } from "@/shared/ui/cursor-tracking";
 import {
     motion,
     SPRING,
@@ -78,27 +77,25 @@ export function RecordEmptyState({ onAddNew }: RecordEmptyStateProps) {
                 </motion.p>
 
                 {/* 4-3: CTA button with pulse attention */}
-                <MagneticButton>
-                    <motion.button
-                        variants={stagger_item}
-                        whileHover={{ scale: 1.04 }}
-                        whileTap={{ scale: 0.96 }}
-                        animate={{
-                            scale: [1, 1.03, 1],
-                            transition: {
-                                delay: 0.8,
-                                duration: 0.4,
-                                repeat: 1,
-                            },
-                        }}
-                        transition={SPRING.snappy}
-                        className="h-10 px-xl border-0 bg-primary text-white rounded-md text-md font-semibold inline-flex items-center gap-sm hover:bg-primary-dark cursor-pointer"
-                        onClick={onAddNew}
-                    >
-                        <PlusOutlined style={{ fontSize: 14 }} />
-                        {EMPTY_CTA}
-                    </motion.button>
-                </MagneticButton>
+                <motion.button
+                    variants={stagger_item}
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.96 }}
+                    animate={{
+                        scale: [1, 1.03, 1],
+                        transition: {
+                            delay: 0.8,
+                            duration: 0.4,
+                            repeat: 1,
+                        },
+                    }}
+                    transition={SPRING.snappy}
+                    className="h-10 px-xl border-0 bg-primary text-white rounded-md text-md font-semibold inline-flex items-center gap-sm hover:bg-primary-dark cursor-pointer"
+                    onClick={onAddNew}
+                >
+                    <PlusOutlined style={{ fontSize: 14 }} />
+                    {EMPTY_CTA}
+                </motion.button>
             </div>
         </motion.div>
     );

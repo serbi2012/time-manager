@@ -143,14 +143,17 @@ export function getWorkProgressStatus(
 
 /**
  * 주간 레코드와 옵션으로 날짜별 DayGroup[] 생성
+ * @param all_records 전체 기간 레코드 (누적시간 계산용)
  */
 export function buildDayGroups(
     week_dates: string[],
     weekly_records: WorkRecord[],
     editable_status: Record<string, { status: string }>,
     hide_management_work: boolean,
-    management_project_code: string
+    management_project_code: string,
+    all_records?: WorkRecord[]
 ): DayGroup[] {
+    const records_for_total = all_records ?? weekly_records;
     const groups: DayGroup[] = [];
 
     week_dates.forEach((date) => {
@@ -180,11 +183,11 @@ export function buildDayGroups(
                         edited?.status ??
                         getWorkProgressStatus(weekly_records, record.work_name),
                     start_date: getFirstStartDate(
-                        weekly_records,
+                        records_for_total,
                         record.work_name
                     ),
                     total_minutes: getTotalMinutesForWork(
-                        weekly_records,
+                        records_for_total,
                         record.work_name,
                         date
                     ),
@@ -199,7 +202,7 @@ export function buildDayGroups(
                 work_group.deals.push({
                     deal_name: record.deal_name || record.work_name,
                     total_minutes: getTotalMinutesForDeal(
-                        weekly_records,
+                        records_for_total,
                         record.work_name,
                         record.deal_name,
                         date

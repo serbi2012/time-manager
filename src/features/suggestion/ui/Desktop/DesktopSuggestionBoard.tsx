@@ -8,7 +8,6 @@ import {
     useSuggestionPostActions,
     usePermissionCheck,
 } from "../../hooks";
-import { MagneticButton } from "@/shared/ui/cursor-tracking";
 import { getAuthorId } from "../../lib";
 import { SUGGESTION_LABELS } from "../../constants";
 import { SuggestionCardHeader, SuggestionCardContent } from "../SuggestionCard";
@@ -147,15 +146,13 @@ export function DesktopSuggestionBoard() {
                         </Space>
                     }
                     extra={
-                        <MagneticButton>
-                            <Button
-                                type="primary"
-                                icon={<EditOutlined />}
-                                onClick={() => setIsWriteModalOpen(true)}
-                            >
-                                {SUGGESTION_LABELS.writeButton}
-                            </Button>
-                        </MagneticButton>
+                        <Button
+                            type="primary"
+                            icon={<EditOutlined />}
+                            onClick={() => setIsWriteModalOpen(true)}
+                        >
+                            {SUGGESTION_LABELS.writeButton}
+                        </Button>
                     }
                 >
                     {posts.length === 0 ? (

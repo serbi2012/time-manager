@@ -1,4 +1,3 @@
-import { MagneticButton } from "@/shared/ui/cursor-tracking";
 import { DOCS } from "@/docs";
 import { GUIDE_LABELS } from "../../constants";
 
@@ -16,30 +15,26 @@ export function NavButtons({ current_section, on_navigate }: NavButtonsProps) {
     return (
         <div className="guide-nav-buttons">
             {prev_doc && (
-                <MagneticButton strength={0.15}>
-                    <button
-                        className="guide-nav-btn guide-nav-prev"
-                        onClick={() => on_navigate(prev_doc.id)}
-                    >
+                <button
+                    className="guide-nav-btn guide-nav-prev"
+                    onClick={() => on_navigate(prev_doc.id)}
+                >
                     <span className="guide-nav-label">
                         {GUIDE_LABELS.prevLabel}
                     </span>
                     <span className="guide-nav-title">{prev_doc.title}</span>
-                    </button>
-                </MagneticButton>
+                </button>
             )}
             {next_doc && (
-                <MagneticButton strength={0.15}>
-                    <button
-                        className="guide-nav-btn guide-nav-next"
-                        onClick={() => on_navigate(next_doc.id)}
-                    >
+                <button
+                    className="guide-nav-btn guide-nav-next"
+                    onClick={() => on_navigate(next_doc.id)}
+                >
                     <span className="guide-nav-label">
                         {GUIDE_LABELS.nextLabel}
                     </span>
                     <span className="guide-nav-title">{next_doc.title}</span>
-                    </button>
-                </MagneticButton>
+                </button>
             )}
         </div>
     );

@@ -1,5 +1,4 @@
 import { FolderOpenOutlined, PlusOutlined } from "@ant-design/icons";
-import { MagneticButton } from "@/shared/ui/cursor-tracking";
 import { motion } from "framer-motion";
 import { cn } from "@/shared/lib/cn";
 import {
@@ -48,23 +47,21 @@ export function EmptyPresetState({ onAdd, className }: EmptyPresetStateProps) {
                 </span>
             </div>
 
-            <MagneticButton strength={0.15}>
-                <button
-                    type="button"
-                    onClick={onAdd}
-                    className={cn(
-                        "inline-flex items-center gap-xs",
-                        "px-lg py-sm rounded-md",
-                        "text-sm font-semibold text-primary",
-                        "bg-primary/5 border-none cursor-pointer",
-                        "hover:bg-primary/10 transition-colors duration-200",
-                        "active:scale-[0.97]"
-                    )}
-                >
-                    <PlusOutlined className="text-xs" />
-                    {EMPTY_CTA}
-                </button>
-            </MagneticButton>
+            <button
+                type="button"
+                onClick={onAdd}
+                className={cn(
+                    "inline-flex items-center gap-xs",
+                    "px-lg py-sm rounded-md",
+                    "text-sm font-semibold text-primary",
+                    "bg-primary/5 border-none cursor-pointer",
+                    "hover:bg-primary/10 transition-colors duration-200",
+                    "active:scale-[0.97]"
+                )}
+            >
+                <PlusOutlined className="text-xs" />
+                {EMPTY_CTA}
+            </button>
         </div>
     );
 }

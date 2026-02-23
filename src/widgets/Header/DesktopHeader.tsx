@@ -5,7 +5,6 @@
 import { Layout, Menu, Button, Space } from "antd";
 import { SettingOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import type { User } from "firebase/auth";
-import { MagneticButton } from "@/shared/ui/cursor-tracking";
 import { HeaderContent } from "./HeaderContent";
 import { UserMenu } from "./UserMenu";
 import { SyncIndicator } from "../SyncStatus";
@@ -86,14 +85,12 @@ export function DesktopHeader({
                     v{current_version}
                 </Button>
 
-                <MagneticButton strength={0.2}>
-                    <Button
-                        type="text"
-                        icon={<SettingOutlined />}
-                        onClick={on_settings_open}
-                        className="!text-white !text-lg"
-                    />
-                </MagneticButton>
+                <Button
+                    type="text"
+                    icon={<SettingOutlined />}
+                    onClick={on_settings_open}
+                    className="!text-white !text-lg"
+                />
 
                 <UserMenu
                     user={user}
