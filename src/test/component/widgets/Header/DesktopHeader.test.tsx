@@ -112,4 +112,29 @@ describe("DesktopHeader", () => {
 
         expect(screen.getByText("게스트")).toBeInTheDocument();
     });
+
+    it("버전 버튼이 표시됨", () => {
+        render(
+            <MemoryRouter>
+                <DesktopHeader {...default_props} />
+            </MemoryRouter>
+        );
+
+        expect(screen.getByText("v2.0.25")).toBeInTheDocument();
+    });
+
+    it("버전 버튼 클릭 시 on_changelog_open 호출", () => {
+        const on_changelog_open = vi.fn();
+        render(
+            <MemoryRouter>
+                <DesktopHeader
+                    {...default_props}
+                    on_changelog_open={on_changelog_open}
+                />
+            </MemoryRouter>
+        );
+
+        fireEvent.click(screen.getByText("v2.0.25"));
+        expect(on_changelog_open).toHaveBeenCalled();
+    });
 });

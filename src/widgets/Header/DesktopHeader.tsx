@@ -71,6 +71,17 @@ export function DesktopHeader({
                     is_mobile={false}
                 />
 
+                <button
+                    onClick={on_changelog_open}
+                    className="flex items-center h-[22px] px-sm rounded-full text-xs border-none cursor-pointer transition-all hover:bg-white/20"
+                    style={{
+                        background: "rgba(255,255,255,0.12)",
+                        color: "rgba(255,255,255,0.7)",
+                    }}
+                >
+                    v{current_version}
+                </button>
+
                 <div
                     className="w-[1px] h-[14px]"
                     style={{ background: "rgba(255,255,255,0.15)" }}
