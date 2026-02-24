@@ -3,9 +3,8 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>데스크탑 헤더 리디자인 후보</title>
+        <title>B안 — 메뉴 전환 애니메이션 후보</title>
 
-        <!-- Tailwind CSS Play CDN -->
         <script src="https://cdn.tailwindcss.com"></script>
         <script>
             tailwind.config = {
@@ -18,25 +17,19 @@
                             lg: "16px",
                             xl: "24px",
                             "2xl": "32px",
-                            "3xl": "40px",
-                            section: "48px",
                         },
                         colors: {
                             primary: "#3182F6",
                             "primary-dark": "#1B64DA",
-                            "primary-light": "#ECF2FE",
                             "text-primary": "#191F28",
                             "text-secondary": "#6B7684",
                             "text-disabled": "#B0B8C1",
                             "text-hint": "#D1D6DB",
                             "bg-app": "#F9FAFB",
                             "bg-grey": "#F2F4F6",
-                            "bg-default": "#FFFFFF",
                             "border-default": "#E5E8EB",
                             "border-light": "#F2F4F6",
                             success: "#34C759",
-                            error: "#F04452",
-                            warning: "#FF9500",
                         },
                         borderRadius: {
                             xs: "4px",
@@ -44,23 +37,18 @@
                             md: "8px",
                             lg: "12px",
                             xl: "16px",
-                            "2xl": "20px",
                         },
                         fontSize: {
                             xs: "11px",
                             sm: "13px",
                             md: "15px",
                             lg: "17px",
-                            xl: "19px",
-                            "2xl": "22px",
-                            h3: "24px",
                         },
                     },
                 },
             };
         </script>
 
-        <!-- React 18 UMD -->
         <script
             crossorigin
             src="https://unpkg.com/react@18/umd/react.development.js"
@@ -69,29 +57,144 @@
             crossorigin
             src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
         ></script>
-
-        <!-- Day.js -->
         <script src="https://unpkg.com/dayjs@1/dayjs.min.js"></script>
-
-        <!-- Ant Design 5 UMD -->
         <script src="https://unpkg.com/antd@5/dist/antd.min.js"></script>
-
-        <!-- Ant Design Icons UMD -->
         <script src="https://unpkg.com/@ant-design/icons@5/dist/index.umd.min.js"></script>
-
-        <!-- Babel Standalone for JSX -->
         <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+        <link
+            rel="stylesheet"
+            as="style"
+            crossorigin
+            href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+        />
+
         <style>
-            body {
+            * {
                 margin: 0;
                 padding: 0;
-                background: #f2f4f6;
+                box-sizing: border-box;
+            }
+            body {
                 font-family: "Pretendard Variable", Pretendard, -apple-system,
-                    BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+                    BlinkMacSystemFont, system-ui, sans-serif;
+                background: #f2f4f6;
+                -webkit-font-smoothing: antialiased;
             }
             #root {
-                min-height: 100vh;
+                max-width: 1400px;
+                margin: 0 auto;
+                padding: 32px 24px;
+            }
+            .mockup-header {
+                text-align: center;
+                margin-bottom: 48px;
+                padding-bottom: 20px;
+                border-bottom: 1px solid #e5e8eb;
+            }
+            .mockup-header h1 {
+                font-size: 22px;
+                font-weight: 600;
+                color: #191f28;
+                margin: 0 0 6px;
+            }
+            .mockup-header p {
+                font-size: 13px;
+                color: #6b7684;
+                margin: 0;
+                line-height: 1.6;
+            }
+            .mockup-section {
+                margin-bottom: 64px;
+            }
+            .mockup-section-label {
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                color: #3182f6;
+                margin-bottom: 6px;
+            }
+            .mockup-section-desc {
+                font-size: 13px;
+                color: #6b7684;
+                margin-bottom: 16px;
+                line-height: 1.6;
+            }
+            .mockup-frame {
+                border-radius: 16px;
+                box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+                overflow: hidden;
+                border: 1px solid #e5e8eb;
+            }
+            .tag-rec {
+                display: inline-block;
+                font-size: 11px;
+                font-weight: 600;
+                color: #3182f6;
+                background: #ecf2fe;
+                padding: 2px 8px;
+                border-radius: 4px;
+                margin-right: 6px;
+            }
+            .hint-box {
+                margin-top: 12px;
+                padding: 12px 16px;
+                background: #ecf2fe;
+                border-radius: 8px;
+                font-size: 13px;
+                color: #1b64da;
+                line-height: 1.6;
+            }
+
+            .fake-sidebar-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 12px;
+                border-radius: 8px;
+            }
+            .fake-sidebar-item .dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 4px;
+                flex-shrink: 0;
+            }
+            .fake-sidebar-item .label {
+                font-size: 13px;
+                color: #4e5968;
+            }
+            .fake-sidebar-item .sub {
+                font-size: 11px;
+                color: #b0b8c1;
+            }
+            .fake-gantt {
+                height: 60px;
+                background: #f9fafb;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                padding: 0 16px;
+            }
+            .fake-gantt-bar {
+                height: 28px;
+                border-radius: 6px;
+                opacity: 0.8;
+            }
+            .fake-table-row {
+                display: flex;
+                align-items: center;
+                height: 44px;
+                padding: 0 16px;
+                border-bottom: 1px solid #f2f4f6;
+                font-size: 13px;
+                color: #6b7684;
+            }
+            .fake-table-header {
+                background: #f9fafb;
+                font-weight: 600;
+                color: #6b7684;
+                font-size: 12px;
             }
         </style>
     </head>
@@ -99,753 +202,910 @@
         <div id="root"></div>
 
         <script type="text/babel">
-            const { Avatar, Dropdown, Badge, Tooltip, Tag } = antd;
-            const { Text } = antd.Typography;
+            const { Avatar } = antd;
             const {
                 ClockCircleOutlined,
                 HomeOutlined,
                 CalendarOutlined,
-                MessageOutlined,
                 BookOutlined,
                 SettingOutlined,
-                BellOutlined,
-                UserOutlined,
-                CloudSyncOutlined,
-                GoogleOutlined,
-                InfoCircleOutlined,
-                SearchOutlined,
-                MenuOutlined,
-                AppstoreOutlined,
-                ToolOutlined,
-                LogoutOutlined,
-                SyncOutlined,
-                CheckCircleFilled,
-                SwapOutlined,
-                RightOutlined,
             } = icons;
 
-            // ============================================
-            //  공통 컴포넌트
-            // ============================================
+            const NAV_ITEMS = [
+                {
+                    key: "daily",
+                    label: "일간 기록",
+                    icon: <HomeOutlined style={{ fontSize: 13 }} />,
+                },
+                {
+                    key: "weekly",
+                    label: "주간 일정",
+                    icon: <CalendarOutlined style={{ fontSize: 13 }} />,
+                },
+                {
+                    key: "guide",
+                    label: "사용 설명서",
+                    icon: <BookOutlined style={{ fontSize: 13 }} />,
+                },
+            ];
 
-            function SectionDivider({ label, description }) {
+            function FakePageBody({ activeKey }) {
+                const titles = {
+                    daily: "일간 타임라인",
+                    weekly: "주간 일정",
+                    guide: "사용 설명서",
+                };
                 return (
-                    <div className="bg-white border-b border-border-default px-xl py-lg mb-0">
-                        <div className="max-w-[1200px] mx-auto flex items-center gap-md">
-                            <div className="w-[6px] h-[6px] rounded-full bg-primary" />
-                            <span className="text-lg font-semibold text-text-primary">
-                                {label}
-                            </span>
-                            <span className="text-sm text-text-secondary">
-                                {description}
-                            </span>
-                        </div>
-                    </div>
-                );
-            }
-
-            function FakeContent({ label }) {
-                return (
-                    <div className="flex-1 bg-bg-app min-h-[280px] flex items-center justify-center">
-                        <div className="text-center">
-                            <div className="text-text-hint text-2xl mb-sm">
-                                📋
+                    <div className="flex" style={{ height: 280 }}>
+                        <div className="w-[240px] flex-shrink-0 p-lg bg-white border-r border-border-light">
+                            <div className="text-xs font-semibold text-text-secondary mb-md px-xs">
+                                작업 프리셋
                             </div>
-                            <div className="text-sm text-text-disabled">
-                                {label || "페이지 컨텐츠 영역"}
-                            </div>
-                        </div>
-                    </div>
-                );
-            }
-
-            function FakeSidebar() {
-                return (
-                    <div className="w-[300px] bg-bg-app border-r border-border-default flex flex-col items-center justify-center min-h-[280px]">
-                        <div className="text-text-hint text-lg mb-xs">📁</div>
-                        <div className="text-xs text-text-disabled">
-                            사이드바
-                        </div>
-                    </div>
-                );
-            }
-
-            // ============================================
-            //  안 A: 화이트 클린 헤더
-            //  — 화이트 배경, 섬세한 보더, 필(pill) 네비게이션
-            // ============================================
-
-            function DesignA() {
-                const [active, setActive] = React.useState("daily");
-
-                const nav_items = [
-                    {
-                        key: "daily",
-                        label: "일간 기록",
-                        icon: <HomeOutlined />,
-                    },
-                    {
-                        key: "weekly",
-                        label: "주간 일정",
-                        icon: <CalendarOutlined />,
-                    },
-                    {
-                        key: "guide",
-                        label: "사용 설명서",
-                        icon: <BookOutlined />,
-                    },
-                ];
-
-                return (
-                    <div className="bg-bg-app min-h-[400px] rounded-xl overflow-hidden border border-border-default shadow-sm">
-                        {/* Header */}
-                        <header className="bg-white border-b border-border-default">
-                            <div className="h-[56px] px-xl flex items-center justify-between max-w-[1400px] mx-auto">
-                                {/* Left: Logo */}
-                                <div className="flex items-center gap-sm cursor-pointer">
-                                    <div className="w-[32px] h-[32px] rounded-lg bg-primary flex items-center justify-center">
-                                        <ClockCircleOutlined className="text-white text-[16px]" />
-                                    </div>
-                                    <span className="text-md font-semibold text-text-primary">
-                                        업무 시간 관리
-                                    </span>
-                                </div>
-
-                                {/* Center: Navigation Pills */}
-                                <nav className="flex items-center gap-xs bg-bg-grey rounded-lg p-[3px]">
-                                    {nav_items.map((item) => (
-                                        <button
-                                            key={item.key}
-                                            onClick={() => setActive(item.key)}
-                                            className={`
-                                                flex items-center gap-xs px-lg py-[6px] rounded-md text-sm font-medium
-                                                transition-all duration-200 border-0 cursor-pointer
-                                                ${
-                                                    active === item.key
-                                                        ? "bg-white text-text-primary shadow-sm"
-                                                        : "bg-transparent text-text-secondary hover:text-text-primary"
-                                                }
-                                            `}
-                                        >
-                                            <span className="text-[14px]">
-                                                {item.icon}
-                                            </span>
-                                            {item.label}
-                                        </button>
-                                    ))}
-                                </nav>
-
-                                {/* Right: Actions */}
-                                <div className="flex items-center gap-md">
-                                    <span className="inline-flex items-center gap-xs text-xs text-success">
-                                        <CloudSyncOutlined className="text-[14px]" />
-                                        연결됨
-                                    </span>
-
-                                    <div className="w-px h-[20px] bg-border-default" />
-
-                                    <Tooltip title="설정">
-                                        <button className="w-[32px] h-[32px] rounded-md flex items-center justify-center bg-transparent border-0 text-text-secondary hover:bg-bg-grey hover:text-text-primary cursor-pointer transition-colors duration-150">
-                                            <SettingOutlined className="text-[16px]" />
-                                        </button>
-                                    </Tooltip>
-
-                                    <div className="flex items-center gap-sm cursor-pointer hover:opacity-80 transition-opacity">
-                                        <Avatar
-                                            size={28}
-                                            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-                                        />
-                                        <span className="text-sm text-text-primary font-medium">
-                                            태섭
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </header>
-
-                        {/* Body */}
-                        <div className="flex">
-                            <FakeSidebar />
-                            <FakeContent />
-                        </div>
-                    </div>
-                );
-            }
-
-            // ============================================
-            //  안 B: 미니멀 브랜드 바 + 플로팅 탭
-            //  — 얇은 브랜드 라인 + 콘텐츠 영역 상단 탭
-            // ============================================
-
-            function DesignB() {
-                const [active, setActive] = React.useState("daily");
-
-                const nav_items = [
-                    {
-                        key: "daily",
-                        label: "일간 기록",
-                        icon: <HomeOutlined />,
-                    },
-                    {
-                        key: "weekly",
-                        label: "주간 일정",
-                        icon: <CalendarOutlined />,
-                    },
-                    { key: "guide", label: "설명서", icon: <BookOutlined /> },
-                ];
-
-                return (
-                    <div className="bg-bg-app min-h-[400px] rounded-xl overflow-hidden border border-border-default shadow-sm">
-                        {/* Thin Brand Bar */}
-                        <header className="bg-white border-b border-border-default">
-                            <div className="h-[48px] px-xl flex items-center justify-between">
-                                {/* Left: Logo Only */}
-                                <div className="flex items-center gap-sm cursor-pointer">
-                                    <ClockCircleOutlined className="text-primary text-[20px]" />
-                                    <span className="text-md font-semibold text-text-primary">
-                                        업무 시간 관리
-                                    </span>
-                                    <Tag
-                                        color="blue"
-                                        className="!text-[10px] !px-[6px] !py-0 !leading-[18px] !m-0 !rounded-sm"
+                            <div className="flex flex-col gap-xs">
+                                {[
+                                    {
+                                        color: "#3182F6",
+                                        name: "문서작업",
+                                        sub: "개발팀 · 프론트",
+                                    },
+                                    {
+                                        color: "#34C759",
+                                        name: "환경설정",
+                                        sub: "시스템 · 환경세팅",
+                                    },
+                                    {
+                                        color: "#F04452",
+                                        name: "회의",
+                                        sub: "정기 · 회의",
+                                    },
+                                    {
+                                        color: "#FF9500",
+                                        name: "정의융합",
+                                        sub: "리서치 · 문서정리",
+                                    },
+                                ].map((item, i) => (
+                                    <div
+                                        key={i}
+                                        className="fake-sidebar-item"
+                                        style={{
+                                            background:
+                                                i === 0
+                                                    ? "#F2F4F6"
+                                                    : "transparent",
+                                        }}
                                     >
-                                        v2.12.0
-                                    </Tag>
-                                </div>
-
-                                {/* Right: Minimal actions */}
-                                <div className="flex items-center gap-sm">
-                                    <span className="inline-flex items-center gap-xs text-xs text-text-disabled">
-                                        <CloudSyncOutlined className="text-[12px]" />
-                                    </span>
-
-                                    <button className="w-[30px] h-[30px] rounded-md flex items-center justify-center bg-transparent border-0 text-text-secondary hover:bg-bg-grey cursor-pointer transition-colors">
-                                        <SettingOutlined className="text-[15px]" />
-                                    </button>
-
-                                    <Avatar
-                                        size={26}
-                                        src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-                                        className="cursor-pointer"
+                                        <div
+                                            className="dot"
+                                            style={{ background: item.color }}
+                                        />
+                                        <div>
+                                            <div className="label">
+                                                {item.name}
+                                            </div>
+                                            <div className="sub">
+                                                {item.sub}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="flex-1 p-xl overflow-hidden bg-bg-app">
+                            <div className="text-sm font-semibold text-text-primary mb-md">
+                                {titles[activeKey]}
+                            </div>
+                            <div className="fake-gantt mb-lg">
+                                <div className="flex items-center gap-sm w-full">
+                                    <div
+                                        className="fake-gantt-bar w-[15%] ml-[20%]"
+                                        style={{ background: "#3182F6" }}
+                                    />
+                                    <div
+                                        className="fake-gantt-bar w-[8%]"
+                                        style={{ background: "#34C759" }}
+                                    />
+                                    <div
+                                        className="fake-gantt-bar w-[12%] ml-[5%]"
+                                        style={{ background: "#F04452" }}
                                     />
                                 </div>
                             </div>
-                        </header>
-
-                        {/* Body with Nav in Content Area */}
-                        <div className="flex">
-                            <FakeSidebar />
-                            <div className="flex-1 flex flex-col">
-                                {/* Content-level Tab Bar */}
-                                <div className="bg-white px-xl pt-lg">
-                                    <div className="flex items-center gap-xl border-b border-border-default">
-                                        {nav_items.map((item) => (
-                                            <button
-                                                key={item.key}
-                                                onClick={() =>
-                                                    setActive(item.key)
-                                                }
-                                                className={`
-                                                    flex items-center gap-xs pb-md text-sm font-medium
-                                                    border-0 border-b-2 bg-transparent cursor-pointer transition-all duration-200
-                                                    ${
-                                                        active === item.key
-                                                            ? "border-b-primary text-primary"
-                                                            : "border-b-transparent text-text-secondary hover:text-text-primary"
-                                                    }
-                                                `}
-                                                style={{ marginBottom: -1 }}
-                                            >
-                                                <span className="text-[14px]">
-                                                    {item.icon}
-                                                </span>
-                                                {item.label}
-                                            </button>
-                                        ))}
-                                    </div>
+                            <div className="bg-white rounded-lg border border-border-light overflow-hidden">
+                                <div className="fake-table-row fake-table-header">
+                                    <span className="w-[30%]">작업명</span>
+                                    <span className="w-[20%]">카테고리</span>
+                                    <span className="w-[15%]">시간</span>
+                                    <span className="w-[20%]">시작·종료</span>
+                                    <span className="w-[15%]">날짜</span>
                                 </div>
-                                <FakeContent label="탭 아래 컨텐츠 영역" />
+                                <div className="fake-table-row">
+                                    <span className="w-[30%] text-text-primary">
+                                        세트메뉴설정 · 검색조건
+                                    </span>
+                                    <span className="w-[20%]">개발</span>
+                                    <span className="w-[15%]">0분</span>
+                                    <span className="w-[20%]">22:06</span>
+                                    <span className="w-[15%]">02-24</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 );
             }
 
-            // ============================================
-            //  안 C: 그라데이션 컴팩트 헤더
-            //  — 기존 그라데이션 유지하되, 현대적으로 리파인
-            // ============================================
+            function RightActions() {
+                return (
+                    <div className="flex items-center gap-md">
+                        <div
+                            className="flex items-center gap-[5px] px-sm py-[3px] rounded-full"
+                            style={{ background: "rgba(255,255,255,0.12)" }}
+                        >
+                            <div
+                                className="w-[5px] h-[5px] rounded-full"
+                                style={{ background: "#7DEFA0" }}
+                            />
+                            <span
+                                className="text-xs"
+                                style={{ color: "rgba(255,255,255,0.7)" }}
+                            >
+                                동기화됨
+                            </span>
+                        </div>
+                        <div
+                            className="w-[1px] h-[14px]"
+                            style={{ background: "rgba(255,255,255,0.15)" }}
+                        />
+                        <button
+                            className="w-[28px] h-[28px] rounded-md flex items-center justify-center bg-transparent border-none cursor-pointer hover:bg-white/10 transition-all"
+                            style={{ color: "rgba(255,255,255,0.7)" }}
+                        >
+                            <SettingOutlined style={{ fontSize: 14 }} />
+                        </button>
+                        <Avatar
+                            size={26}
+                            style={{
+                                backgroundColor: "rgba(255,255,255,0.2)",
+                                fontSize: 11,
+                                color: "white",
+                            }}
+                        >
+                            김
+                        </Avatar>
+                    </div>
+                );
+            }
 
-            function DesignC() {
+            // ============================================
+            // 1: Slide Pill (슬라이딩 배경)
+            // ============================================
+            function Anim1() {
                 const [active, setActive] = React.useState("daily");
+                const nav_ref = React.useRef(null);
+                const [pill_style, setPillStyle] = React.useState({});
 
-                const nav_items = [
-                    {
-                        key: "daily",
-                        label: "일간 기록",
-                        icon: <HomeOutlined />,
-                    },
-                    {
-                        key: "weekly",
-                        label: "주간 일정",
-                        icon: <CalendarOutlined />,
-                    },
-                    { key: "guide", label: "설명서", icon: <BookOutlined /> },
-                ];
+                React.useEffect(() => {
+                    if (!nav_ref.current) return;
+                    const active_btn = nav_ref.current.querySelector(
+                        `[data-key="${active}"]`
+                    );
+                    if (active_btn) {
+                        const nav_rect =
+                            nav_ref.current.getBoundingClientRect();
+                        const btn_rect = active_btn.getBoundingClientRect();
+                        setPillStyle({
+                            left: btn_rect.left - nav_rect.left,
+                            width: btn_rect.width,
+                            height: btn_rect.height,
+                            top: btn_rect.top - nav_rect.top,
+                        });
+                    }
+                }, [active]);
 
                 return (
-                    <div className="bg-bg-app min-h-[400px] rounded-xl overflow-hidden border border-border-default shadow-sm">
-                        {/* Refined Gradient Header */}
-                        <header
-                            className="relative overflow-hidden"
+                    <div>
+                        <div
+                            className="h-[52px] flex items-center justify-between px-xl"
                             style={{
                                 background:
                                     "linear-gradient(135deg, #3182F6 0%, #1B64DA 100%)",
                             }}
                         >
-                            {/* Subtle pattern overlay */}
-                            <div
-                                className="absolute inset-0 opacity-[0.04]"
-                                style={{
-                                    backgroundImage:
-                                        "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
-                                    backgroundSize: "24px 24px",
-                                }}
-                            />
-
-                            <div className="relative h-[52px] px-xl flex items-center justify-between">
-                                {/* Left: Logo */}
-                                <div className="flex items-center gap-sm cursor-pointer">
-                                    <div className="w-[28px] h-[28px] rounded-md bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                                        <ClockCircleOutlined className="text-white text-[14px]" />
-                                    </div>
+                            <div className="flex items-center gap-2xl">
+                                <div className="flex items-center gap-[10px] cursor-pointer">
+                                    <ClockCircleOutlined
+                                        style={{ color: "white", fontSize: 18 }}
+                                    />
                                     <span className="text-md font-semibold text-white">
                                         업무 시간
                                     </span>
                                 </div>
 
-                                {/* Center: Pill Nav */}
-                                <nav className="flex items-center gap-xs bg-white/10 backdrop-blur-sm rounded-lg p-[3px]">
-                                    {nav_items.map((item) => (
+                                <nav
+                                    ref={nav_ref}
+                                    className="relative flex items-center gap-[4px]"
+                                >
+                                    {/* Sliding pill */}
+                                    <div
+                                        className="absolute rounded-full"
+                                        style={{
+                                            background: "white",
+                                            left: pill_style.left || 0,
+                                            top: pill_style.top || 0,
+                                            width: pill_style.width || 0,
+                                            height: pill_style.height || 0,
+                                            transition:
+                                                "all 300ms cubic-bezier(0.4, 0, 0.2, 1)",
+                                            boxShadow:
+                                                "0 2px 8px rgba(0,0,0,0.1)",
+                                        }}
+                                    />
+                                    {NAV_ITEMS.map((item) => (
                                         <button
                                             key={item.key}
+                                            data-key={item.key}
                                             onClick={() => setActive(item.key)}
-                                            className={`
-                                                flex items-center gap-xs px-lg py-[5px] rounded-md text-sm
-                                                transition-all duration-200 border-0 cursor-pointer
-                                                ${
+                                            className="relative z-10 flex items-center gap-[6px] px-lg py-[5px] rounded-full text-sm border-none cursor-pointer transition-colors duration-200"
+                                            style={{
+                                                background: "transparent",
+                                                color:
                                                     active === item.key
-                                                        ? "bg-white text-primary font-semibold shadow-sm"
-                                                        : "bg-transparent text-white/80 hover:text-white hover:bg-white/10 font-medium"
-                                                }
-                                            `}
+                                                        ? "#1B64DA"
+                                                        : "rgba(255,255,255,0.65)",
+                                                fontWeight:
+                                                    active === item.key
+                                                        ? 600
+                                                        : 500,
+                                            }}
                                         >
-                                            <span className="text-[13px]">
-                                                {item.icon}
-                                            </span>
+                                            {item.icon}
                                             {item.label}
                                         </button>
                                     ))}
                                 </nav>
-
-                                {/* Right: Actions */}
-                                <div className="flex items-center gap-md">
-                                    <span className="inline-flex items-center gap-xs text-xs text-white/60">
-                                        <CloudSyncOutlined className="text-[12px]" />
-                                        <CheckCircleFilled className="text-[10px] text-green-300" />
-                                    </span>
-
-                                    <button className="w-[28px] h-[28px] rounded-md flex items-center justify-center bg-white/10 border-0 text-white/80 hover:bg-white/20 hover:text-white cursor-pointer transition-colors">
-                                        <SettingOutlined className="text-[14px]" />
-                                    </button>
-
-                                    <Avatar
-                                        size={26}
-                                        src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-                                        className="cursor-pointer border-2 border-white/30"
-                                    />
-                                </div>
                             </div>
-                        </header>
-
-                        {/* Body */}
-                        <div className="flex">
-                            <FakeSidebar />
-                            <FakeContent />
+                            <RightActions />
                         </div>
+                        <FakePageBody activeKey={active} />
                     </div>
                 );
             }
 
             // ============================================
-            //  안 D: 투-레이어 화이트 헤더
-            //  — 상단: 브랜드 + 유저 / 하단: 네비게이션 탭
-            //  — Notion/Linear 스타일
+            // 2: Scale Pop (선택 시 살짝 커졌다 돌아옴)
             // ============================================
-
-            function DesignD() {
+            function Anim2() {
                 const [active, setActive] = React.useState("daily");
+                const [popping, setPopping] = React.useState(null);
 
-                const nav_items = [
-                    {
-                        key: "daily",
-                        label: "일간 기록",
-                        icon: <HomeOutlined />,
-                        count: null,
-                    },
-                    {
-                        key: "weekly",
-                        label: "주간 일정",
-                        icon: <CalendarOutlined />,
-                        count: null,
-                    },
-                    {
-                        key: "suggestions",
-                        label: "건의사항",
-                        icon: <MessageOutlined />,
-                        count: 3,
-                    },
-                    {
-                        key: "guide",
-                        label: "사용 설명서",
-                        icon: <BookOutlined />,
-                        count: null,
-                    },
-                ];
+                const handleClick = (key) => {
+                    if (key === active) return;
+                    setPopping(key);
+                    setActive(key);
+                    setTimeout(() => setPopping(null), 300);
+                };
 
                 return (
-                    <div className="bg-bg-app min-h-[400px] rounded-xl overflow-hidden border border-border-default shadow-sm">
-                        {/* Top Row: Brand + User */}
-                        <header className="bg-white">
-                            <div className="h-[44px] px-xl flex items-center justify-between border-b border-border-light">
-                                {/* Left: Logo */}
-                                <div className="flex items-center gap-sm cursor-pointer">
-                                    <div className="w-[24px] h-[24px] rounded-sm bg-primary flex items-center justify-center">
-                                        <ClockCircleOutlined className="text-white text-[12px]" />
-                                    </div>
-                                    <span className="text-sm font-semibold text-text-primary">
-                                        업무 시간 관리
-                                    </span>
-                                    <span className="text-xs text-text-hint ml-xs">
-                                        v2.12.0
+                    <div>
+                        <div
+                            className="h-[52px] flex items-center justify-between px-xl"
+                            style={{
+                                background:
+                                    "linear-gradient(135deg, #3182F6 0%, #1B64DA 100%)",
+                            }}
+                        >
+                            <div className="flex items-center gap-2xl">
+                                <div className="flex items-center gap-[10px] cursor-pointer">
+                                    <ClockCircleOutlined
+                                        style={{ color: "white", fontSize: 18 }}
+                                    />
+                                    <span className="text-md font-semibold text-white">
+                                        업무 시간
                                     </span>
                                 </div>
 
-                                {/* Right: User Area */}
-                                <div className="flex items-center gap-md">
-                                    <span className="inline-flex items-center gap-xs text-xs text-success font-medium">
-                                        <span className="w-[6px] h-[6px] rounded-full bg-success" />
-                                        동기화됨
-                                    </span>
-
-                                    <div className="w-px h-[16px] bg-border-default" />
-
-                                    <button className="w-[28px] h-[28px] rounded-md flex items-center justify-center bg-transparent border-0 text-text-secondary hover:bg-bg-grey cursor-pointer transition-colors">
-                                        <SettingOutlined className="text-[14px]" />
-                                    </button>
-
-                                    <div className="flex items-center gap-xs cursor-pointer group">
-                                        <Avatar
-                                            size={24}
-                                            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-                                        />
-                                        <span className="text-sm text-text-primary group-hover:text-primary transition-colors">
-                                            태섭
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Navigation Row */}
-                            <div className="h-[40px] px-xl flex items-end gap-xl border-b border-border-default">
-                                {nav_items.map((item) => (
-                                    <button
-                                        key={item.key}
-                                        onClick={() => setActive(item.key)}
-                                        className={`
-                                            relative flex items-center gap-xs pb-[10px] text-sm
-                                            border-0 bg-transparent cursor-pointer transition-all duration-200
-                                            ${
-                                                active === item.key
-                                                    ? "text-text-primary font-semibold"
-                                                    : "text-text-secondary hover:text-text-primary font-medium"
+                                <nav className="flex items-center gap-[4px]">
+                                    {NAV_ITEMS.map((item) => (
+                                        <button
+                                            key={item.key}
+                                            onClick={() =>
+                                                handleClick(item.key)
                                             }
-                                        `}
-                                    >
-                                        <span className="text-[13px]">
+                                            className="flex items-center gap-[6px] px-lg py-[5px] rounded-full text-sm border-none cursor-pointer"
+                                            style={{
+                                                background:
+                                                    active === item.key
+                                                        ? "white"
+                                                        : "transparent",
+                                                color:
+                                                    active === item.key
+                                                        ? "#1B64DA"
+                                                        : "rgba(255,255,255,0.65)",
+                                                fontWeight:
+                                                    active === item.key
+                                                        ? 600
+                                                        : 500,
+                                                boxShadow:
+                                                    active === item.key
+                                                        ? "0 2px 8px rgba(0,0,0,0.1)"
+                                                        : "none",
+                                                transform:
+                                                    popping === item.key
+                                                        ? "scale(1.06)"
+                                                        : "scale(1)",
+                                                transition:
+                                                    "transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1), background 200ms ease, color 200ms ease, box-shadow 200ms ease",
+                                            }}
+                                        >
                                             {item.icon}
-                                        </span>
-                                        {item.label}
-                                        {item.count && (
-                                            <span className="min-w-[16px] h-[16px] rounded-full bg-error text-white text-[10px] font-semibold flex items-center justify-center px-[4px]">
-                                                {item.count}
-                                            </span>
-                                        )}
-                                        {active === item.key && (
-                                            <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-t-full" />
-                                        )}
-                                    </button>
-                                ))}
+                                            {item.label}
+                                        </button>
+                                    ))}
+                                </nav>
                             </div>
-                        </header>
-
-                        {/* Body */}
-                        <div className="flex">
-                            <FakeSidebar />
-                            <FakeContent />
+                            <RightActions />
                         </div>
+                        <FakePageBody activeKey={active} />
                     </div>
                 );
             }
 
             // ============================================
-            //  MAIN APP
+            // 3: Fade Crossover (페이드 전환)
             // ============================================
+            function Anim3() {
+                const [active, setActive] = React.useState("daily");
+                const [transitioning, setTransitioning] = React.useState(false);
 
+                const handleClick = (key) => {
+                    if (key === active) return;
+                    setTransitioning(true);
+                    setTimeout(() => {
+                        setActive(key);
+                        setTimeout(() => setTransitioning(false), 150);
+                    }, 150);
+                };
+
+                return (
+                    <div>
+                        <div
+                            className="h-[52px] flex items-center justify-between px-xl"
+                            style={{
+                                background:
+                                    "linear-gradient(135deg, #3182F6 0%, #1B64DA 100%)",
+                            }}
+                        >
+                            <div className="flex items-center gap-2xl">
+                                <div className="flex items-center gap-[10px] cursor-pointer">
+                                    <ClockCircleOutlined
+                                        style={{ color: "white", fontSize: 18 }}
+                                    />
+                                    <span className="text-md font-semibold text-white">
+                                        업무 시간
+                                    </span>
+                                </div>
+
+                                <nav className="flex items-center gap-[4px]">
+                                    {NAV_ITEMS.map((item) => (
+                                        <button
+                                            key={item.key}
+                                            onClick={() =>
+                                                handleClick(item.key)
+                                            }
+                                            className="flex items-center gap-[6px] px-lg py-[5px] rounded-full text-sm border-none cursor-pointer"
+                                            style={{
+                                                background:
+                                                    active === item.key
+                                                        ? "white"
+                                                        : "transparent",
+                                                color:
+                                                    active === item.key
+                                                        ? "#1B64DA"
+                                                        : "rgba(255,255,255,0.65)",
+                                                fontWeight:
+                                                    active === item.key
+                                                        ? 600
+                                                        : 500,
+                                                boxShadow:
+                                                    active === item.key
+                                                        ? "0 2px 8px rgba(0,0,0,0.1)"
+                                                        : "none",
+                                                opacity:
+                                                    transitioning &&
+                                                    active === item.key
+                                                        ? 0
+                                                        : 1,
+                                                transition: "all 200ms ease",
+                                            }}
+                                        >
+                                            {item.icon}
+                                            {item.label}
+                                        </button>
+                                    ))}
+                                </nav>
+                            </div>
+                            <RightActions />
+                        </div>
+                        <FakePageBody activeKey={active} />
+                    </div>
+                );
+            }
+
+            // ============================================
+            // 4: Spring Bounce (스프링 바운스)
+            // ============================================
+            function Anim4() {
+                const [active, setActive] = React.useState("daily");
+                const nav_ref = React.useRef(null);
+                const [pill_style, setPillStyle] = React.useState({});
+
+                React.useEffect(() => {
+                    if (!nav_ref.current) return;
+                    const active_btn = nav_ref.current.querySelector(
+                        `[data-key="${active}"]`
+                    );
+                    if (active_btn) {
+                        const nav_rect =
+                            nav_ref.current.getBoundingClientRect();
+                        const btn_rect = active_btn.getBoundingClientRect();
+                        setPillStyle({
+                            left: btn_rect.left - nav_rect.left,
+                            width: btn_rect.width,
+                            height: btn_rect.height,
+                            top: btn_rect.top - nav_rect.top,
+                        });
+                    }
+                }, [active]);
+
+                return (
+                    <div>
+                        <div
+                            className="h-[52px] flex items-center justify-between px-xl"
+                            style={{
+                                background:
+                                    "linear-gradient(135deg, #3182F6 0%, #1B64DA 100%)",
+                            }}
+                        >
+                            <div className="flex items-center gap-2xl">
+                                <div className="flex items-center gap-[10px] cursor-pointer">
+                                    <ClockCircleOutlined
+                                        style={{ color: "white", fontSize: 18 }}
+                                    />
+                                    <span className="text-md font-semibold text-white">
+                                        업무 시간
+                                    </span>
+                                </div>
+
+                                <nav
+                                    ref={nav_ref}
+                                    className="relative flex items-center gap-[4px]"
+                                >
+                                    <div
+                                        className="absolute rounded-full"
+                                        style={{
+                                            background: "white",
+                                            left: pill_style.left || 0,
+                                            top: pill_style.top || 0,
+                                            width: pill_style.width || 0,
+                                            height: pill_style.height || 0,
+                                            transition:
+                                                "all 500ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+                                            boxShadow:
+                                                "0 2px 8px rgba(0,0,0,0.1)",
+                                        }}
+                                    />
+                                    {NAV_ITEMS.map((item) => (
+                                        <button
+                                            key={item.key}
+                                            data-key={item.key}
+                                            onClick={() => setActive(item.key)}
+                                            className="relative z-10 flex items-center gap-[6px] px-lg py-[5px] rounded-full text-sm border-none cursor-pointer"
+                                            style={{
+                                                background: "transparent",
+                                                color:
+                                                    active === item.key
+                                                        ? "#1B64DA"
+                                                        : "rgba(255,255,255,0.65)",
+                                                fontWeight:
+                                                    active === item.key
+                                                        ? 600
+                                                        : 500,
+                                                transition: "color 250ms ease",
+                                            }}
+                                        >
+                                            {item.icon}
+                                            {item.label}
+                                        </button>
+                                    ))}
+                                </nav>
+                            </div>
+                            <RightActions />
+                        </div>
+                        <FakePageBody activeKey={active} />
+                    </div>
+                );
+            }
+
+            // ============================================
+            // 5: Slide + Morph (너비 변화 포함)
+            // ============================================
+            function Anim5() {
+                const [active, setActive] = React.useState("daily");
+                const nav_ref = React.useRef(null);
+                const [pill_style, setPillStyle] = React.useState({});
+                const [morphing, setMorphing] = React.useState(false);
+
+                React.useEffect(() => {
+                    if (!nav_ref.current) return;
+                    const active_btn = nav_ref.current.querySelector(
+                        `[data-key="${active}"]`
+                    );
+                    if (active_btn) {
+                        const nav_rect =
+                            nav_ref.current.getBoundingClientRect();
+                        const btn_rect = active_btn.getBoundingClientRect();
+
+                        setMorphing(true);
+                        setTimeout(() => setMorphing(false), 200);
+
+                        setPillStyle({
+                            left: btn_rect.left - nav_rect.left,
+                            width: btn_rect.width,
+                            height: btn_rect.height,
+                            top: btn_rect.top - nav_rect.top,
+                        });
+                    }
+                }, [active]);
+
+                return (
+                    <div>
+                        <div
+                            className="h-[52px] flex items-center justify-between px-xl"
+                            style={{
+                                background:
+                                    "linear-gradient(135deg, #3182F6 0%, #1B64DA 100%)",
+                            }}
+                        >
+                            <div className="flex items-center gap-2xl">
+                                <div className="flex items-center gap-[10px] cursor-pointer">
+                                    <ClockCircleOutlined
+                                        style={{ color: "white", fontSize: 18 }}
+                                    />
+                                    <span className="text-md font-semibold text-white">
+                                        업무 시간
+                                    </span>
+                                </div>
+
+                                <nav
+                                    ref={nav_ref}
+                                    className="relative flex items-center gap-[4px]"
+                                >
+                                    <div
+                                        className="absolute rounded-full"
+                                        style={{
+                                            background: "white",
+                                            left: pill_style.left || 0,
+                                            top: pill_style.top || 0,
+                                            width: morphing
+                                                ? (pill_style.width || 0) * 0.85
+                                                : pill_style.width || 0,
+                                            height: pill_style.height || 0,
+                                            transition:
+                                                "left 350ms cubic-bezier(0.4, 0, 0.2, 1), width 350ms cubic-bezier(0.4, 0, 0.2, 1), top 350ms cubic-bezier(0.4, 0, 0.2, 1)",
+                                            boxShadow:
+                                                "0 2px 8px rgba(0,0,0,0.1)",
+                                            borderRadius: 9999,
+                                        }}
+                                    />
+                                    {NAV_ITEMS.map((item) => (
+                                        <button
+                                            key={item.key}
+                                            data-key={item.key}
+                                            onClick={() => setActive(item.key)}
+                                            className="relative z-10 flex items-center gap-[6px] px-lg py-[5px] rounded-full text-sm border-none cursor-pointer"
+                                            style={{
+                                                background: "transparent",
+                                                color:
+                                                    active === item.key
+                                                        ? "#1B64DA"
+                                                        : "rgba(255,255,255,0.65)",
+                                                fontWeight:
+                                                    active === item.key
+                                                        ? 600
+                                                        : 500,
+                                                transition: "color 250ms ease",
+                                            }}
+                                        >
+                                            {item.icon}
+                                            {item.label}
+                                        </button>
+                                    ))}
+                                </nav>
+                            </div>
+                            <RightActions />
+                        </div>
+                        <FakePageBody activeKey={active} />
+                    </div>
+                );
+            }
+
+            // ============================================
+            // MAIN
+            // ============================================
             function MockupApp() {
                 return (
-                    <div className="pb-section">
-                        {/* Page Title */}
-                        <div className="bg-white border-b border-border-default px-xl py-xl">
-                            <div className="max-w-[1200px] mx-auto">
-                                <h1 className="text-2xl font-semibold text-text-primary m-0 mb-xs">
-                                    데스크탑 헤더 리디자인
-                                </h1>
-                                <p className="text-sm text-text-secondary m-0">
-                                    토스 디자인 철학 기반 — 4가지 후보안 비교
-                                </p>
+                    <div>
+                        <div className="mockup-header">
+                            <h1>B안 — 메뉴 전환 애니메이션 후보</h1>
+                            <p>
+                                White Pill 헤더(B안)에 적용할 탭 전환 애니메이션
+                                5가지. 각 탭을 클릭해서 비교해 보세요.
+                            </p>
+                        </div>
+
+                        {/* 1 */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                1 — Slide Pill (슬라이딩)
+                            </div>
+                            <div className="mockup-section-desc">
+                                <span className="tag-rec">추천</span>
+                                흰색 pill 배경이 <b>부드럽게 슬라이드</b>하며
+                                이동. 가장 자연스럽고 토스/iOS에서 자주 쓰는
+                                패턴.
+                                <code>cubic-bezier(0.4, 0, 0.2, 1)</code> —
+                                300ms.
+                            </div>
+                            <div className="mockup-frame">
+                                <Anim1 />
                             </div>
                         </div>
 
-                        {/* Comparison Table */}
-                        <div className="bg-white border-b border-border-default px-xl py-lg">
-                            <div className="max-w-[1200px] mx-auto">
-                                <table className="w-full text-sm border-collapse">
+                        {/* 2 */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                2 — Scale Pop (통통 튀기)
+                            </div>
+                            <div className="mockup-section-desc">
+                                클릭한 pill이{" "}
+                                <b>살짝 커졌다(106%) 원래 크기로</b> 돌아옴.
+                                <code>
+                                    cubic-bezier(0.34, 1.56, 0.64, 1)
+                                </code>{" "}
+                                스프링 커브. 터치감이 좋은 피드백.
+                            </div>
+                            <div className="mockup-frame">
+                                <Anim2 />
+                            </div>
+                        </div>
+
+                        {/* 3 */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                3 — Fade Crossover (페이드)
+                            </div>
+                            <div className="mockup-section-desc">
+                                이전 pill이 <b>사라졌다가 새 pill이 나타나는</b>{" "}
+                                크로스페이드. opacity 기반이라 위치 이동 없이
+                                깔끔. 가장 절제된 느낌.
+                            </div>
+                            <div className="mockup-frame">
+                                <Anim3 />
+                            </div>
+                        </div>
+
+                        {/* 4 */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                4 — Spring Bounce (스프링 슬라이드)
+                            </div>
+                            <div className="mockup-section-desc">
+                                1번(슬라이딩)과 동일하지만{" "}
+                                <b>스프링 물리 커브</b> 적용. 목적지를 살짝
+                                지나쳤다 돌아오는 오버슈트.
+                                <code>cubic-bezier(0.34, 1.56, 0.64, 1)</code> —
+                                500ms. 가장 생동감 있음.
+                            </div>
+                            <div className="mockup-frame">
+                                <Anim4 />
+                            </div>
+                        </div>
+
+                        {/* 5 */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                5 — Slide + Morph (슬라이드 + 축소/확대)
+                            </div>
+                            <div className="mockup-section-desc">
+                                pill이 슬라이드하면서 이동 중에{" "}
+                                <b>너비가 85%로 줄었다 원래 크기로</b> 돌아옴.
+                                이동 중 "찌그러지는" 느낌이 물리적 무게감을 줌.
+                                350ms.
+                            </div>
+                            <div className="mockup-frame">
+                                <Anim5 />
+                            </div>
+                        </div>
+
+                        {/* 조합 제안 */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                조합 가이드
+                            </div>
+                            <div className="bg-white rounded-xl border border-border-default p-xl">
+                                <table
+                                    style={{
+                                        width: "100%",
+                                        borderCollapse: "collapse",
+                                        fontSize: 13,
+                                    }}
+                                >
                                     <thead>
-                                        <tr className="text-left text-text-secondary">
-                                            <th className="py-sm pr-lg font-medium w-[100px]">
-                                                후보
+                                        <tr
+                                            style={{
+                                                borderBottom:
+                                                    "1px solid #E5E8EB",
+                                            }}
+                                        >
+                                            <th
+                                                style={{
+                                                    textAlign: "left",
+                                                    padding: "8px 12px",
+                                                    color: "#6B7684",
+                                                    fontWeight: 600,
+                                                    fontSize: 12,
+                                                }}
+                                            >
+                                                #
                                             </th>
-                                            <th className="py-sm pr-lg font-medium">
-                                                컨셉
+                                            <th
+                                                style={{
+                                                    textAlign: "left",
+                                                    padding: "8px 12px",
+                                                    color: "#6B7684",
+                                                    fontWeight: 600,
+                                                    fontSize: 12,
+                                                }}
+                                            >
+                                                애니메이션
                                             </th>
-                                            <th className="py-sm pr-lg font-medium">
-                                                배경
+                                            <th
+                                                style={{
+                                                    textAlign: "left",
+                                                    padding: "8px 12px",
+                                                    color: "#6B7684",
+                                                    fontWeight: 600,
+                                                    fontSize: 12,
+                                                }}
+                                            >
+                                                느낌
                                             </th>
-                                            <th className="py-sm pr-lg font-medium">
-                                                네비게이션
+                                            <th
+                                                style={{
+                                                    textAlign: "left",
+                                                    padding: "8px 12px",
+                                                    color: "#6B7684",
+                                                    fontWeight: 600,
+                                                    fontSize: 12,
+                                                }}
+                                            >
+                                                속도
                                             </th>
-                                            <th className="py-sm font-medium">
-                                                높이
+                                            <th
+                                                style={{
+                                                    textAlign: "left",
+                                                    padding: "8px 12px",
+                                                    color: "#6B7684",
+                                                    fontWeight: 600,
+                                                    fontSize: 12,
+                                                }}
+                                            >
+                                                구현 난이도
                                             </th>
                                         </tr>
                                     </thead>
-                                    <tbody className="text-text-primary">
-                                        <tr className="border-t border-border-light">
-                                            <td className="py-sm pr-lg">
-                                                <span className="font-semibold text-primary">
-                                                    안 A
-                                                </span>
-                                            </td>
-                                            <td className="py-sm pr-lg">
-                                                화이트 클린
-                                            </td>
-                                            <td className="py-sm pr-lg">
-                                                화이트
-                                            </td>
-                                            <td className="py-sm pr-lg">
-                                                중앙 Pill 탭
-                                            </td>
-                                            <td className="py-sm">
-                                                56px (1줄)
-                                            </td>
-                                        </tr>
-                                        <tr className="border-t border-border-light">
-                                            <td className="py-sm pr-lg">
-                                                <span className="font-semibold text-primary">
-                                                    안 B
-                                                </span>
-                                            </td>
-                                            <td className="py-sm pr-lg">
-                                                미니멀 + 콘텐츠 탭
-                                            </td>
-                                            <td className="py-sm pr-lg">
-                                                화이트
-                                            </td>
-                                            <td className="py-sm pr-lg">
-                                                콘텐츠 영역 언더라인 탭
-                                            </td>
-                                            <td className="py-sm">48px + α</td>
-                                        </tr>
-                                        <tr className="border-t border-border-light">
-                                            <td className="py-sm pr-lg">
-                                                <span className="font-semibold text-primary">
-                                                    안 C
-                                                </span>
-                                            </td>
-                                            <td className="py-sm pr-lg">
-                                                그라데이션 리파인
-                                            </td>
-                                            <td className="py-sm pr-lg">
-                                                테마 그라데이션
-                                            </td>
-                                            <td className="py-sm pr-lg">
-                                                중앙 글라스 Pill 탭
-                                            </td>
-                                            <td className="py-sm">
-                                                52px (1줄)
-                                            </td>
-                                        </tr>
-                                        <tr className="border-t border-border-light">
-                                            <td className="py-sm pr-lg">
-                                                <span className="font-semibold text-primary">
-                                                    안 D
-                                                </span>
-                                            </td>
-                                            <td className="py-sm pr-lg">
-                                                투-레이어 (Notion/Linear)
-                                            </td>
-                                            <td className="py-sm pr-lg">
-                                                화이트
-                                            </td>
-                                            <td className="py-sm pr-lg">
-                                                하단 언더라인 탭
-                                            </td>
-                                            <td className="py-sm">
-                                                44px + 40px (2줄)
-                                            </td>
-                                        </tr>
+                                    <tbody>
+                                        {[
+                                            [
+                                                "1",
+                                                "Slide Pill",
+                                                "자연스러움, 정돈됨",
+                                                "300ms",
+                                                "중",
+                                            ],
+                                            [
+                                                "2",
+                                                "Scale Pop",
+                                                "경쾌, 터치감",
+                                                "300ms",
+                                                "하",
+                                            ],
+                                            [
+                                                "3",
+                                                "Fade Crossover",
+                                                "절제, 차분",
+                                                "300ms",
+                                                "하",
+                                            ],
+                                            [
+                                                "4",
+                                                "Spring Bounce",
+                                                "생동감, 물리적",
+                                                "500ms",
+                                                "중",
+                                            ],
+                                            [
+                                                "5",
+                                                "Slide + Morph",
+                                                "무게감, 탄성",
+                                                "350ms",
+                                                "상",
+                                            ],
+                                        ].map(
+                                            ([n, name, feel, speed, diff]) => (
+                                                <tr
+                                                    key={n}
+                                                    style={{
+                                                        borderBottom:
+                                                            "1px solid #F2F4F6",
+                                                    }}
+                                                >
+                                                    <td
+                                                        style={{
+                                                            padding:
+                                                                "10px 12px",
+                                                            fontWeight: 600,
+                                                            color: "#191F28",
+                                                        }}
+                                                    >
+                                                        {n}
+                                                    </td>
+                                                    <td
+                                                        style={{
+                                                            padding:
+                                                                "10px 12px",
+                                                            color: "#4E5968",
+                                                        }}
+                                                    >
+                                                        {name}
+                                                    </td>
+                                                    <td
+                                                        style={{
+                                                            padding:
+                                                                "10px 12px",
+                                                            color: "#4E5968",
+                                                        }}
+                                                    >
+                                                        {feel}
+                                                    </td>
+                                                    <td
+                                                        style={{
+                                                            padding:
+                                                                "10px 12px",
+                                                            color: "#4E5968",
+                                                        }}
+                                                    >
+                                                        {speed}
+                                                    </td>
+                                                    <td
+                                                        style={{
+                                                            padding:
+                                                                "10px 12px",
+                                                            color: "#4E5968",
+                                                        }}
+                                                    >
+                                                        {diff}
+                                                    </td>
+                                                </tr>
+                                            )
+                                        )}
                                     </tbody>
                                 </table>
-                            </div>
-                        </div>
 
-                        {/* Design A */}
-                        <SectionDivider
-                            label="안 A — 화이트 클린 헤더"
-                            description="화이트 배경 + 중앙 Pill 네비게이션. 가장 깔끔하고 모던한 느낌."
-                        />
-                        <div className="px-xl py-lg max-w-[1200px] mx-auto">
-                            <DesignA />
-                            <div className="mt-md px-sm">
-                                <div className="flex flex-wrap gap-sm">
-                                    <span className="inline-flex items-center gap-xs text-xs text-success bg-success/10 px-sm py-xs rounded-sm">
-                                        ✓ 깔끔하고 가벼운 인상
-                                    </span>
-                                    <span className="inline-flex items-center gap-xs text-xs text-success bg-success/10 px-sm py-xs rounded-sm">
-                                        ✓ Segment Control로 직관적
-                                    </span>
-                                    <span className="inline-flex items-center gap-xs text-xs text-success bg-success/10 px-sm py-xs rounded-sm">
-                                        ✓ 토스 앱과 가장 유사
-                                    </span>
-                                    <span className="inline-flex items-center gap-xs text-xs text-warning bg-warning/10 px-sm py-xs rounded-sm">
-                                        △ 테마 컬러 포인트 약화
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Design B */}
-                        <SectionDivider
-                            label="안 B — 미니멀 브랜드바 + 콘텐츠 탭"
-                            description="헤더를 최소화하고, 네비게이션을 콘텐츠 영역으로 내림. 컨텐츠 중심."
-                        />
-                        <div className="px-xl py-lg max-w-[1200px] mx-auto">
-                            <DesignB />
-                            <div className="mt-md px-sm">
-                                <div className="flex flex-wrap gap-sm">
-                                    <span className="inline-flex items-center gap-xs text-xs text-success bg-success/10 px-sm py-xs rounded-sm">
-                                        ✓ 헤더 높이 최소 (48px)
-                                    </span>
-                                    <span className="inline-flex items-center gap-xs text-xs text-success bg-success/10 px-sm py-xs rounded-sm">
-                                        ✓ 콘텐츠에 집중
-                                    </span>
-                                    <span className="inline-flex items-center gap-xs text-xs text-warning bg-warning/10 px-sm py-xs rounded-sm">
-                                        △ 네비게이션 위치가 사이드바 안쪽
-                                    </span>
-                                    <span className="inline-flex items-center gap-xs text-xs text-warning bg-warning/10 px-sm py-xs rounded-sm">
-                                        △ 탭이 사이드바와 겹쳐 혼동 가능
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Design C */}
-                        <SectionDivider
-                            label="안 C — 그라데이션 리파인"
-                            description="기존 그라데이션을 유지하되, 글라스모피즘 + Pill로 세련되게."
-                        />
-                        <div className="px-xl py-lg max-w-[1200px] mx-auto">
-                            <DesignC />
-                            <div className="mt-md px-sm">
-                                <div className="flex flex-wrap gap-sm">
-                                    <span className="inline-flex items-center gap-xs text-xs text-success bg-success/10 px-sm py-xs rounded-sm">
-                                        ✓ 기존 테마 컬러 살림
-                                    </span>
-                                    <span className="inline-flex items-center gap-xs text-xs text-success bg-success/10 px-sm py-xs rounded-sm">
-                                        ✓ 글라스모피즘으로 세련됨
-                                    </span>
-                                    <span className="inline-flex items-center gap-xs text-xs text-success bg-success/10 px-sm py-xs rounded-sm">
-                                        ✓ 기존 구조 변경 최소
-                                    </span>
-                                    <span className="inline-flex items-center gap-xs text-xs text-warning bg-warning/10 px-sm py-xs rounded-sm">
-                                        △ 화이트 계열 대비 무거움
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Design D */}
-                        <SectionDivider
-                            label="안 D — 투-레이어 화이트 (Notion/Linear 스타일)"
-                            description="브랜드 + 네비게이션을 두 줄로 분리. 정보 정리에 유리."
-                        />
-                        <div className="px-xl py-lg max-w-[1200px] mx-auto">
-                            <DesignD />
-                            <div className="mt-md px-sm">
-                                <div className="flex flex-wrap gap-sm">
-                                    <span className="inline-flex items-center gap-xs text-xs text-success bg-success/10 px-sm py-xs rounded-sm">
-                                        ✓ 정보 위계가 명확
-                                    </span>
-                                    <span className="inline-flex items-center gap-xs text-xs text-success bg-success/10 px-sm py-xs rounded-sm">
-                                        ✓ 뱃지/카운트 표시에 유리
-                                    </span>
-                                    <span className="inline-flex items-center gap-xs text-xs text-success bg-success/10 px-sm py-xs rounded-sm">
-                                        ✓ Notion/Linear 느낌
-                                    </span>
-                                    <span className="inline-flex items-center gap-xs text-xs text-warning bg-warning/10 px-sm py-xs rounded-sm">
-                                        △ 높이 84px로 다소 높음
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Footer Summary */}
-                        <div className="bg-white border-t border-border-default px-xl py-xl mt-lg">
-                            <div className="max-w-[1200px] mx-auto">
-                                <div className="text-md font-semibold text-text-primary mb-md">
-                                    💡 추천
-                                </div>
-                                <div className="grid grid-cols-2 gap-lg">
-                                    <div className="bg-primary-light rounded-lg p-lg border border-primary/20">
-                                        <div className="text-sm font-semibold text-primary mb-xs">
-                                            가장 토스다운 느낌
-                                        </div>
-                                        <div className="text-sm text-text-secondary">
-                                            안 A (화이트 클린) — 깔끔하고 가벼운
-                                            인상, Segment Control 네비게이션
-                                        </div>
-                                    </div>
-                                    <div className="bg-bg-grey rounded-lg p-lg border border-border-default">
-                                        <div className="text-sm font-semibold text-text-primary mb-xs">
-                                            기존 분위기 유지
-                                        </div>
-                                        <div className="text-sm text-text-secondary">
-                                            안 C (그라데이션 리파인) — 테마 컬러
-                                            유지하면서 글라스모피즘으로
-                                            업그레이드
-                                        </div>
-                                    </div>
+                                <div className="hint-box">
+                                    실제 구현 시 <b>framer-motion</b>의{" "}
+                                    <code>layoutId</code>를 사용하면
+                                    1번/4번/5번을 아주 깔끔하게 구현할 수
+                                    있습니다.
                                 </div>
                             </div>
                         </div>

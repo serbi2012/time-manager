@@ -3,15 +3,9 @@
  * 데스크탑/모바일 공통
  */
 
-import { Typography } from "antd";
 import { ClockCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
-const { Title } = Typography;
-
-/**
- * 헤더 컨텐츠 컴포넌트
- */
 export function HeaderContent() {
     const navigate = useNavigate();
 
@@ -21,13 +15,11 @@ export function HeaderContent() {
 
     return (
         <div
-            className="header-content cursor-pointer"
+            className="flex items-center gap-[10px] cursor-pointer"
             onClick={handleClick}
         >
-            <ClockCircleOutlined className="header-icon" />
-            <Title level={4} className="header-title">
-                업무 시간 관리
-            </Title>
+            <ClockCircleOutlined style={{ color: "white", fontSize: 18 }} />
+            <span className="text-md font-semibold text-white">업무 관리</span>
         </div>
     );
 }

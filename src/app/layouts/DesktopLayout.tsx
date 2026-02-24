@@ -5,13 +5,7 @@
 import { useMemo, useCallback, useState } from "react";
 import { Layout, Spin } from "antd";
 import { message } from "@/shared/lib/message";
-import {
-    useNavigate,
-    useLocation,
-    Routes,
-    Route,
-    Link,
-} from "react-router-dom";
+import { useNavigate, useLocation, Routes, Route } from "react-router-dom";
 import {
     HomeOutlined,
     CalendarOutlined,
@@ -22,6 +16,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import dayjs from "dayjs";
 import { DesktopHeader } from "../../widgets/Header";
+import type { NavItem } from "../../widgets/Header/HeaderNavPill";
 import { useWorkStore } from "../../store/useWorkStore";
 import { useSyncStatus } from "../../features/sync";
 import { useShortcuts } from "../../hooks/useShortcuts";
@@ -139,64 +134,26 @@ export function DesktopLayout() {
 
     const is_admin = user?.email === ADMIN_EMAIL;
 
-    const menu_items = useMemo(
+    const nav_items = useMemo<NavItem[]>(
         () => [
-            {
-                key: "/",
-                icon: <HomeOutlined />,
-                label: (
-                    <Link to="/" className="text-inherit no-underline">
-                        일간 기록
-                    </Link>
-                ),
-            },
-            {
-                key: "/weekly",
-                icon: <CalendarOutlined />,
-                label: (
-                    <Link to="/weekly" className="text-inherit no-underline">
-                        주간 일정
-                    </Link>
-                ),
-            },
+            { key: "/", label: "일간 기록", icon: <HomeOutlined /> },
+            { key: "/weekly", label: "주간 일정", icon: <CalendarOutlined /> },
             ...(FEATURE_FLAGS.suggestions.visible
                 ? [
                       {
                           key: "/suggestions",
+                          label: "건의사항",
                           icon: <MessageOutlined />,
-                          label: (
-                              <Link
-                                  to="/suggestions"
-                                  className="text-inherit no-underline"
-                              >
-                                  건의사항
-                              </Link>
-                          ),
                       },
                   ]
                 : []),
-            {
-                key: "/guide",
-                icon: <BookOutlined />,
-                label: (
-                    <Link to="/guide" className="text-inherit no-underline">
-                        사용 설명서
-                    </Link>
-                ),
-            },
+            { key: "/guide", label: "사용 설명서", icon: <BookOutlined /> },
             ...(is_admin
                 ? [
                       {
                           key: "/admin",
+                          label: "관리자",
                           icon: <ToolOutlined />,
-                          label: (
-                              <Link
-                                  to="/admin"
-                                  className="text-inherit no-underline"
-                              >
-                                  관리자
-                              </Link>
-                          ),
                       },
                   ]
                 : []),
@@ -218,7 +175,7 @@ export function DesktopLayout() {
             >
                 <DesktopHeader
                     app_theme={app_theme}
-                    menu_items={menu_items}
+                    nav_items={nav_items}
                     current_path={location.pathname}
                     user={user}
                     auth_loading={auth_loading}

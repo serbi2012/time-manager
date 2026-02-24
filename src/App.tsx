@@ -639,7 +639,7 @@ function AppLayout() {
                 <div className="header-content">
                     <ClockCircleOutlined className="header-icon" />
                     <Title level={4} className="header-title">
-                        업무 시간 관리
+                        업무 관리
                     </Title>
                 </div>
                 <Menu

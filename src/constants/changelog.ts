@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.24";
+export const CURRENT_VERSION = "2.0.25";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,27 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.25",
+        date: "2026-02-24",
+        title: "데스크탑 헤더 리디자인 & 앱 이름 변경",
+        changes: [
+            {
+                type: "style",
+                description:
+                    "데스크탑 상단 메뉴가 깔끔하고 모던한 디자인으로 바뀌었어요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "메뉴 전환 시 부드러운 슬라이딩 애니메이션이 추가됐어요",
+            },
+            {
+                type: "improvement",
+                description: "앱 이름이 '업무 관리'로 변경됐어요",
+            },
+        ],
+    },
     {
         version: "2.0.24",
         date: "2026-02-23",

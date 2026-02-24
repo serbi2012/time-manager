@@ -2,12 +2,13 @@
 
 exports[`HeaderContent 스냅샷 > 기본 렌더링 구조가 유지됨 1`] = `
 <div
-  class="header-content cursor-pointer"
+  class="flex items-center gap-[10px] cursor-pointer"
 >
   <span
     aria-label="clock-circle"
-    class="anticon anticon-clock-circle header-icon"
+    class="anticon anticon-clock-circle"
     role="img"
+    style="color: white; font-size: 18px;"
   >
     <svg
       aria-hidden="true"
@@ -26,10 +27,10 @@ exports[`HeaderContent 스냅샷 > 기본 렌더링 구조가 유지됨 1`] = `
       />
     </svg>
   </span>
-  <h4
-    class="ant-typography header-title css-dev-only-do-not-override-p45i5k css-var-root"
+  <span
+    class="text-md font-semibold text-white"
   >
-    업무 시간 관리
-  </h4>
+    업무 관리
+  </span>
 </div>
 `;

@@ -35,7 +35,13 @@ function ChangeItemTag({ item }: { item: ChangeItem }) {
 /**
  * 버전 엔트리 렌더링
  */
-function VersionEntry({ entry, is_latest }: { entry: ChangelogEntry; is_latest: boolean }) {
+function VersionEntry({
+    entry,
+    is_latest,
+}: {
+    entry: ChangelogEntry;
+    is_latest: boolean;
+}) {
     return (
         <div className="mb-xl">
             <div className="flex items-center gap-sm mb-sm">
@@ -109,7 +115,7 @@ export default function ChangelogModal({ open, onClose }: ChangelogModalProps) {
 
             <div className="text-center">
                 <Text type="secondary" className="!text-xs">
-                    업무 시간 관리 v{CURRENT_VERSION} • Made By Kim Tae Seop
+                    업무 관리 v{CURRENT_VERSION} • Made By Kim Tae Seop
                 </Text>
             </div>
         </Modal>

@@ -22,9 +22,9 @@ export default defineConfig({
                 "mask-icon.svg",
             ],
             manifest: {
-                name: "업무 시간 관리",
-                short_name: "시간관리",
-                description: "실시간 타이머 기반 업무 시간 측정 및 관리 앱",
+                name: "업무 관리",
+                short_name: "업무 관리",
+                description: "실시간 타이머 기반 업무 시간 측정 및 관리",
                 theme_color: "#1890ff",
                 background_color: "#f5f7fa",
                 display: "standalone",

@@ -19,9 +19,6 @@ interface SyncIndicatorProps {
     is_mobile: boolean;
 }
 
-/**
- * 동기화 상태 인디케이터 컴포넌트
- */
 export function SyncIndicator({
     sync_status,
     show_sync_check,
@@ -30,59 +27,135 @@ export function SyncIndicator({
     is_mobile,
 }: SyncIndicatorProps) {
     if (is_authenticated) {
+        if (is_mobile) {
+            return (
+                <span
+                    style={{
+                        color: "rgba(255,255,255,0.65)",
+                        fontSize: 10,
+                    }}
+                >
+                    {sync_status === "syncing" && <SyncOutlined spin />}
+                    {sync_status === "synced" && (
+                        <span className="inline-flex items-center gap-xs">
+                            <CloudSyncOutlined />
+                            {show_sync_check && (
+                                <CheckCircleFilled
+                                    style={{
+                                        color: "#52c41a",
+                                        fontSize: 14,
+                                        animation:
+                                            "syncCheckPop 0.3s ease-out, syncCheckFade 1.5s ease-in-out",
+                                    }}
+                                />
+                            )}
+                        </span>
+                    )}
+                    {sync_status === "error" && (
+                        <CloudOutlined className="!text-[#ff4d4f]" />
+                    )}
+                </span>
+            );
+        }
+
         return (
-            <span
-                style={{
-                    color: "rgba(255,255,255,0.65)",
-                    fontSize: is_mobile ? 10 : 12,
-                }}
+            <div
+                className="flex items-center gap-[5px] px-sm py-[3px] rounded-full"
+                style={{ background: "rgba(255,255,255,0.12)" }}
             >
                 {sync_status === "syncing" && (
                     <>
-                        <SyncOutlined spin />
-                        {!is_mobile && " 동기화 중..."}
+                        <SyncOutlined
+                            spin
+                            style={{
+                                color: "rgba(255,255,255,0.7)",
+                                fontSize: 11,
+                            }}
+                        />
+                        <span
+                            className="text-xs"
+                            style={{ color: "rgba(255,255,255,0.7)" }}
+                        >
+                            동기화 중
+                        </span>
                     </>
                 )}
                 {sync_status === "synced" && (
-                    <span className="inline-flex items-center gap-xs">
-                        <CloudSyncOutlined />
-                        {!is_mobile && " 클라우드 연결됨"}
+                    <>
+                        <div
+                            className="w-[5px] h-[5px] rounded-full"
+                            style={{ background: "#7DEFA0" }}
+                        />
+                        <span
+                            className="text-xs"
+                            style={{ color: "rgba(255,255,255,0.7)" }}
+                        >
+                            동기화됨
+                        </span>
                         {show_sync_check && (
                             <CheckCircleFilled
                                 style={{
-                                    color: "#52c41a",
-                                    fontSize: 14,
+                                    color: "#7DEFA0",
+                                    fontSize: 11,
                                     animation:
                                         "syncCheckPop 0.3s ease-out, syncCheckFade 1.5s ease-in-out",
                                 }}
                             />
                         )}
-                    </span>
+                    </>
                 )}
                 {sync_status === "error" && (
                     <>
-                        <CloudOutlined className="!text-[#ff4d4f]" />
-                        {!is_mobile && " 동기화 오류"}
+                        <CloudOutlined
+                            style={{
+                                color: "#ff6b6b",
+                                fontSize: 11,
+                            }}
+                        />
+                        <span className="text-xs" style={{ color: "#ff6b6b" }}>
+                            오류
+                        </span>
                     </>
                 )}
-            </span>
+            </div>
         );
     }
 
     if (!auth_loading) {
+        if (is_mobile) {
+            return (
+                <span
+                    style={{
+                        color: "rgba(255,255,255,0.5)",
+                        fontSize: 10,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
+                    }}
+                >
+                    <UserOutlined />
+                </span>
+            );
+        }
+
         return (
-            <span
-                style={{
-                    color: "rgba(255,255,255,0.5)",
-                    fontSize: is_mobile ? 10 : 12,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 4,
-                }}
+            <div
+                className="flex items-center gap-[5px] px-sm py-[3px] rounded-full"
+                style={{ background: "rgba(255,255,255,0.12)" }}
             >
-                <UserOutlined />
-                {!is_mobile && " 게스트 모드"}
-            </span>
+                <UserOutlined
+                    style={{
+                        color: "rgba(255,255,255,0.55)",
+                        fontSize: 11,
+                    }}
+                />
+                <span
+                    className="text-xs"
+                    style={{ color: "rgba(255,255,255,0.55)" }}
+                >
+                    게스트
+                </span>
+            </div>
         );
     }
 

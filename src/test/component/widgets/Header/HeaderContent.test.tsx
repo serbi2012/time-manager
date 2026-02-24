@@ -7,7 +7,6 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { HeaderContent } from "../../../../widgets/Header/HeaderContent";
 
-// useNavigate 모킹
 const mock_navigate = vi.fn();
 vi.mock("react-router-dom", async () => {
     const actual = await vi.importActual("react-router-dom");
@@ -29,7 +28,7 @@ describe("HeaderContent", () => {
             </MemoryRouter>
         );
 
-        expect(screen.getByText("업무 시간 관리")).toBeInTheDocument();
+        expect(screen.getByText("업무 관리")).toBeInTheDocument();
     });
 
     it("시계 아이콘이 표시되어야 함", () => {
@@ -39,7 +38,7 @@ describe("HeaderContent", () => {
             </MemoryRouter>
         );
 
-        const icon = document.querySelector(".header-icon");
+        const icon = document.querySelector("[aria-label='clock-circle']");
         expect(icon).toBeInTheDocument();
     });
 
@@ -50,13 +49,8 @@ describe("HeaderContent", () => {
             </MemoryRouter>
         );
 
-        const header_content = document.querySelector(".header-content");
-        expect(header_content).toBeInTheDocument();
-
-        if (header_content) {
-            fireEvent.click(header_content);
-            expect(mock_navigate).toHaveBeenCalledWith("/");
-        }
+        fireEvent.click(screen.getByText("업무 관리"));
+        expect(mock_navigate).toHaveBeenCalledWith("/");
     });
 
     it("커서 스타일이 pointer여야 함", () => {
@@ -66,9 +60,8 @@ describe("HeaderContent", () => {
             </MemoryRouter>
         );
 
-        const header_content = document.querySelector(".header-content");
-        expect(header_content).toBeInTheDocument();
-        // cursor-pointer is applied via Tailwind class
-        expect(header_content?.className).toContain("cursor-pointer");
+        const container = screen.getByText("업무 관리").closest("div");
+        expect(container).toBeInTheDocument();
+        expect(container?.className).toContain("cursor-pointer");
     });
 });
