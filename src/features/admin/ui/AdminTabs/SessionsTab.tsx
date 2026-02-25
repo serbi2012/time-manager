@@ -2,7 +2,6 @@
  * 세션 분석 탭 (뷰 모드, 필터, 통계 카드, 세션 테이블)
  */
 
-import { useMemo } from "react";
 import {
     Space,
     Button,
@@ -13,7 +12,6 @@ import {
     Card,
     Typography,
     Alert,
-    Tag,
 } from "antd";
 import {
     DeleteOutlined,
@@ -23,16 +21,19 @@ import {
     BugOutlined,
     EyeInvisibleOutlined,
     SearchOutlined,
-    ExclamationCircleOutlined,
-    ClockCircleOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { timeToMinutes } from "../../../../shared/lib/time";
 import type { SessionWithMeta } from "../../lib/conflict_finder";
 import type { ConflictInfo } from "../../lib/conflict_finder";
 import type { ProblemInfo } from "../../lib/problem_detector";
 import { SessionTable } from "./SessionTable";
 import type { ViewMode, TimeDisplayFormat } from "../../hooks/useAdminFilters";
+import { useSessionAnalysis } from "../../hooks/useSessionAnalysis";
+import {
+    RunningSessionCard,
+    ProblemStatsCard,
+    ConflictDatesCard,
+} from "./SessionInfoCards";
 import {
     BULK_DELETE,
     CONFIRM_BULK_DELETE_SESSIONS,
@@ -61,16 +62,6 @@ import {
     STAT_PROBLEM_SESSIONS,
     STAT_GANTT_INVISIBLE,
     STAT_RUNNING,
-    CARD_RUNNING_STATUS,
-    CARD_RUNNING_HINT,
-    CARD_DUPLICATE_RUNNING,
-    CARD_PROBLEM_STATS,
-    CARD_PROBLEM_ZERO,
-    CARD_PROBLEM_MISSING,
-    CARD_PROBLEM_INVALID,
-    CARD_PROBLEM_FUTURE,
-    CARD_PROBLEM_DAYS,
-    CARD_CONFLICT_DATES,
     BULK_DELETE_SESSIONS_BTN,
 } from "../../constants";
 import { cn } from "@/shared/lib/cn";
@@ -115,166 +106,30 @@ export function SessionsTab({
     set_selected_row_keys,
     on_bulk_delete,
 }: SessionsTabProps) {
-    const conflict_session_ids = useMemo(() => {
-        const ids = new Set<string>();
-        conflicts.forEach((c) => {
-            ids.add(c.session1.id);
-            ids.add(c.session2.id);
-        });
-        return ids;
-    }, [conflicts]);
-
-    const conflict_pairs = useMemo(() => {
-        const pairs = new Map<string, SessionWithMeta[]>();
-        conflicts.forEach((c) => {
-            if (!pairs.has(c.session1.id)) pairs.set(c.session1.id, []);
-            pairs.get(c.session1.id)!.push(c.session2);
-            if (!pairs.has(c.session2.id)) pairs.set(c.session2.id, []);
-            pairs.get(c.session2.id)!.push(c.session1);
-        });
-        return pairs;
-    }, [conflicts]);
-
-    const problem_session_ids = useMemo(
-        () => new Set(problem_sessions.keys()),
-        [problem_sessions]
-    );
-
-    const invisible_session_ids = useMemo(() => {
-        const ids = new Set<string>();
-        all_sessions.forEach((s) => {
-            if (!s.start_time || !s.end_time) {
-                ids.add(s.id);
-                return;
-            }
-            const start_mins = timeToMinutes(s.start_time);
-            const end_mins = timeToMinutes(s.end_time);
-            if (end_mins - start_mins <= 1) ids.add(s.id);
-        });
-        return ids;
-    }, [all_sessions]);
-
-    const running_sessions = useMemo(
-        () => all_sessions.filter((s) => s.end_time === ""),
-        [all_sessions]
-    );
-    const running_session_ids = useMemo(
-        () => new Set(running_sessions.map((s) => s.id)),
-        [running_sessions]
-    );
-
-    const duplicate_running_sessions = useMemo(() => {
-        const by_record = new Map<string, SessionWithMeta[]>();
-        running_sessions.forEach((s) => {
-            if (!by_record.has(s.record_id)) by_record.set(s.record_id, []);
-            by_record.get(s.record_id)!.push(s);
-        });
-        return Array.from(by_record.entries())
-            .filter(([, sessions]) => sessions.length >= 2)
-            .map(([record_id, sessions]) => ({
-                record_id,
-                work_name: sessions[0].work_name,
-                deal_name: sessions[0].deal_name,
-                sessions,
-            }));
-    }, [running_sessions]);
-
-    const time_search_results = useMemo(() => {
-        if (!search_date || !search_time) return new Set<string>();
-        const target_date = search_date.format("YYYY-MM-DD");
-        const target_mins = search_time.hour() * 60 + search_time.minute();
-        const ids = new Set<string>();
-        all_sessions.forEach((s) => {
-            if (s.date !== target_date || !s.start_time || !s.end_time) return;
-            const start_mins = timeToMinutes(s.start_time);
-            const end_mins = timeToMinutes(s.end_time);
-            if (start_mins === end_mins) {
-                if (start_mins === target_mins) ids.add(s.id);
-            } else if (target_mins >= start_mins && target_mins < end_mins) {
-                ids.add(s.id);
-            }
-        });
-        return ids;
-    }, [all_sessions, search_date, search_time]);
-
-    const filtered_sessions = useMemo(() => {
-        let result = all_sessions;
-        if (view_mode !== "time_search" && date_range?.[0] && date_range?.[1]) {
-            const start = date_range[0].format("YYYY-MM-DD");
-            const end = date_range[1].format("YYYY-MM-DD");
-            result = result.filter((s) => s.date >= start && s.date <= end);
-        }
-        if (view_mode === "conflicts")
-            result = result.filter((s) => conflict_session_ids.has(s.id));
-        else if (view_mode === "problems")
-            result = result.filter((s) => problem_session_ids.has(s.id));
-        else if (view_mode === "invisible")
-            result = result.filter((s) => invisible_session_ids.has(s.id));
-        else if (view_mode === "running")
-            result = result.filter((s) => running_session_ids.has(s.id));
-        else if (view_mode === "time_search" && search_date && search_time)
-            result = result.filter((s) => time_search_results.has(s.id));
-        else if (view_mode === "time_search" && search_date) {
-            const d = search_date.format("YYYY-MM-DD");
-            result = result.filter((s) => s.date === d);
-        }
-        return result;
-    }, [
-        all_sessions,
-        date_range,
-        view_mode,
+    const {
         conflict_session_ids,
+        conflict_pairs,
         problem_session_ids,
         invisible_session_ids,
+        running_sessions,
         running_session_ids,
+        duplicate_running_sessions,
         time_search_results,
+        filtered_sessions,
+        unique_dates,
+        conflict_dates,
+        problem_dates,
+        problem_stats,
+        time_search_message,
+    } = useSessionAnalysis({
+        all_sessions,
+        conflicts,
+        problem_sessions,
+        date_range,
+        view_mode,
         search_date,
         search_time,
-    ]);
-
-    const unique_dates = useMemo(() => {
-        const dates = new Set(all_sessions.map((s) => s.date));
-        return Array.from(dates).sort((a, b) => b.localeCompare(a));
-    }, [all_sessions]);
-
-    const conflict_dates = useMemo(
-        () => new Set(conflicts.map((c) => c.date)),
-        [conflicts]
-    );
-
-    const problem_dates = useMemo(() => {
-        const dates = new Set<string>();
-        all_sessions.forEach((s) => {
-            if (problem_session_ids.has(s.id)) dates.add(s.date);
-        });
-        return dates;
-    }, [all_sessions, problem_session_ids]);
-
-    const problem_stats = useMemo(() => {
-        const stats = {
-            zero_duration: 0,
-            missing_time: 0,
-            invalid_time: 0,
-            future_time: 0,
-        };
-        problem_sessions.forEach((list) => {
-            list.forEach((p) => {
-                stats[p.type]++;
-            });
-        });
-        return stats;
-    }, [problem_sessions]);
-
-    const time_search_message =
-        search_date && search_time
-            ? time_search_results.size > 0
-                ? `${search_date.format("YYYY-MM-DD")} ${search_time.format(
-                      "HH:mm"
-                  )}에 ${time_search_results.size}개의 세션이 걸쳐있습니다.`
-                : `${search_date.format("YYYY-MM-DD")} ${search_time.format(
-                      "HH:mm"
-                  )}에 걸쳐있는 세션이 없습니다.`
-            : null;
+    });
 
     return (
         <Space direction="vertical" size="middle" className="!w-full">
@@ -539,159 +394,25 @@ export function SessionsTab({
                 </div>
 
                 {view_mode === "running" && running_session_ids.size > 0 && (
-                    <Card
-                        size="small"
-                        className="!bg-[#f6ffed] !border-[#b7eb8f]"
-                    >
-                        <Space
-                            direction="vertical"
-                            size="small"
-                            className="!w-full"
-                        >
-                            <Text strong className="!text-[#389e0d]">
-                                <PlayCircleOutlined /> {CARD_RUNNING_STATUS}
-                            </Text>
-                            <Text type="secondary" className="!text-sm">
-                                {CARD_RUNNING_HINT}
-                            </Text>
-                            {duplicate_running_sessions.length > 0 && (
-                                <Alert
-                                    type="error"
-                                    showIcon
-                                    message={
-                                        <span>
-                                            <ExclamationCircleOutlined />{" "}
-                                            {CARD_DUPLICATE_RUNNING}{" "}
-                                            {duplicate_running_sessions.length}
-                                            개 레코드
-                                        </span>
-                                    }
-                                    description={
-                                        <Space
-                                            direction="vertical"
-                                            size="small"
-                                        >
-                                            {duplicate_running_sessions.map(
-                                                (dup) => (
-                                                    <Text
-                                                        key={dup.record_id}
-                                                        className="!text-sm"
-                                                    >
-                                                        <WarningOutlined className="!text-[#ff4d4f]" />{" "}
-                                                        "{dup.work_name} &gt;{" "}
-                                                        {dup.deal_name}" -{" "}
-                                                        {dup.sessions.length}
-                                                        개의 진행 중 세션
-                                                    </Text>
-                                                )
-                                            )}
-                                        </Space>
-                                    }
-                                />
-                            )}
-                            <Space wrap>
-                                {running_sessions.map((s) => (
-                                    <Tag
-                                        key={s.id}
-                                        color="green"
-                                        icon={<ClockCircleOutlined />}
-                                    >
-                                        {s.work_name} &gt; {s.deal_name} (
-                                        {s.date} {s.start_time}~)
-                                    </Tag>
-                                ))}
-                            </Space>
-                        </Space>
-                    </Card>
+                    <RunningSessionCard
+                        running_sessions={running_sessions}
+                        duplicate_running_sessions={duplicate_running_sessions}
+                    />
                 )}
 
                 {problem_session_ids.size > 0 && (
-                    <Card
-                        size="small"
-                        className="!bg-[#fff7e6] !border-[#ffd591]"
-                    >
-                        <Space
-                            direction="vertical"
-                            size="small"
-                            className="!w-full"
-                        >
-                            <Text strong className="!text-[#d46b08]">
-                                <BugOutlined /> {CARD_PROBLEM_STATS}
-                            </Text>
-                            <Space wrap>
-                                {problem_stats.zero_duration > 0 && (
-                                    <Tag color="orange">
-                                        {CARD_PROBLEM_ZERO}{" "}
-                                        {problem_stats.zero_duration}개
-                                    </Tag>
-                                )}
-                                {problem_stats.missing_time > 0 && (
-                                    <Tag color="red">
-                                        {CARD_PROBLEM_MISSING}{" "}
-                                        {problem_stats.missing_time}개
-                                    </Tag>
-                                )}
-                                {problem_stats.invalid_time > 0 && (
-                                    <Tag color="magenta">
-                                        {CARD_PROBLEM_INVALID}{" "}
-                                        {problem_stats.invalid_time}개
-                                    </Tag>
-                                )}
-                                {problem_stats.future_time > 0 && (
-                                    <Tag color="purple">
-                                        {CARD_PROBLEM_FUTURE}{" "}
-                                        {problem_stats.future_time}개
-                                    </Tag>
-                                )}
-                            </Space>
-                            <Text type="secondary" className="!text-sm">
-                                {CARD_PROBLEM_DAYS}{" "}
-                                {Array.from(problem_dates)
-                                    .sort()
-                                    .slice(0, 5)
-                                    .join(", ")}
-                                {problem_dates.size > 5 &&
-                                    ` 외 ${problem_dates.size - 5}일`}
-                            </Text>
-                        </Space>
-                    </Card>
+                    <ProblemStatsCard
+                        problem_stats={problem_stats}
+                        problem_dates={problem_dates}
+                    />
                 )}
 
                 {conflicts.length > 0 && (
-                    <Card
-                        size="small"
-                        className="!bg-[#fff2f0] !border-[#ffccc7]"
-                    >
-                        <Space direction="vertical" size="small">
-                            <Text strong className="!text-[#cf1322]">
-                                <WarningOutlined /> {CARD_CONFLICT_DATES}
-                            </Text>
-                            <Space wrap>
-                                {Array.from(conflict_dates)
-                                    .sort()
-                                    .map((date) => {
-                                        const count = conflicts.filter(
-                                            (c) => c.date === date
-                                        ).length;
-                                        return (
-                                            <Tag
-                                                key={date}
-                                                color="red"
-                                                className="!cursor-pointer"
-                                                onClick={() =>
-                                                    set_date_range([
-                                                        dayjs(date),
-                                                        dayjs(date),
-                                                    ])
-                                                }
-                                            >
-                                                {date} ({count}건)
-                                            </Tag>
-                                        );
-                                    })}
-                            </Space>
-                        </Space>
-                    </Card>
+                    <ConflictDatesCard
+                        conflicts={conflicts}
+                        conflict_dates={conflict_dates}
+                        set_date_range={set_date_range}
+                    />
                 )}
             </Space>
 

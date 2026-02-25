@@ -25,3 +25,4 @@ export {
     type EditState,
 } from "./useRecordEdit";
 export { useLongPress } from "./useLongPress";
+export { useRecordColumns } from "./useRecordColumns";

@@ -48,3 +48,9 @@ export {
     handleLegacyStopTimer,
     type SetState,
 } from "./timer_helpers";
+
+// 세션 충돌 감지 및 자동 조정
+export { validateAndAdjustSessionTime } from "./session_updater";
+
+// 레코드 시간 재계산
+export { recalculateRecordFromSessions } from "./record_recalculator";

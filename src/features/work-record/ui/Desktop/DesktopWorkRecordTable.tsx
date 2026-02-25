@@ -6,17 +6,10 @@
  * Ant Design Table is retained with CSS overrides for Toss styling.
  */
 
-import { useMemo, useCallback } from "react";
+import { useCallback } from "react";
 import { Table } from "antd";
 import { message } from "@/shared/lib/message";
-import {
-    CheckCircleOutlined,
-    DeleteOutlined,
-    CopyOutlined,
-    CaretDownOutlined,
-    CaretRightOutlined,
-} from "@ant-design/icons";
-import type { ColumnsType } from "antd/es/table";
+import { CaretDownOutlined, CaretRightOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import {
     motion,
@@ -33,55 +26,28 @@ import type { WorkRecord } from "../../../../types";
 
 // Hooks
 import { useDebouncedValue } from "../../../../hooks/useDebouncedValue";
-
-// Features - Hooks
 import {
     useRecordData,
     useRecordTimer,
     useRecordActions,
     useRecordModals,
+    useRecordColumns,
 } from "../../hooks";
 
 // Features - UI Components
-import {
-    TimerActionColumn,
-    DealNameColumn,
-    WorkNameColumn,
-    TaskNameColumn,
-    CategoryColumn,
-    DurationColumn,
-    TimeRangeColumn,
-    DateColumn,
-    ActionsColumn,
-} from "../RecordColumns";
-
 import { RecordAddModal, RecordEditModal } from "../RecordModals";
 import { CompletedModal, TrashModal } from "../CompletedRecords";
 import { SessionEditTable } from "../SessionEditor";
 import { RecordHeader } from "./RecordHeader";
 import { RecordEmptyState } from "./RecordEmptyState";
+import { RecordFooter } from "./RecordFooter";
 import { SpotlightCard } from "@/shared/ui/cursor-tracking";
 
 // Lib
-import { getRecordDurationForDate } from "../../lib/duration_calculator";
+import { formatRecordsToMarkdown } from "../../lib/markdown_formatter";
 
 // Constants
-import {
-    RECORD_SUCCESS,
-    RECORD_WARNING,
-    RECORD_TABLE_COLUMN,
-    RECORD_BUTTON,
-    RECORD_UI_TEXT,
-    MARKDOWN_COPY,
-    RECORD_COLUMN_WIDTH,
-    DATE_FORMAT,
-    CHAR_CODE_THRESHOLD,
-    HANGUL_CHAR_WIDTH,
-    ASCII_CHAR_WIDTH,
-} from "../../constants";
-
-const FOOTER_TOTAL_PREFIX = "총";
-const FOOTER_TOTAL_SUFFIX = "건";
+import { RECORD_SUCCESS, RECORD_WARNING, DATE_FORMAT } from "../../constants";
 
 export function DesktopWorkRecordTable() {
     // ============================================
@@ -165,83 +131,11 @@ export function DesktopWorkRecordTable() {
     );
 
     const handleCopyToClipboard = useCallback(() => {
-        const filtered = display_records.filter((r) => !r.is_deleted);
-
-        if (filtered.length === 0) {
+        const text = formatRecordsToMarkdown(display_records, selected_date);
+        if (!text) {
             message.warning(RECORD_WARNING.NO_RECORDS_TO_COPY);
             return;
         }
-
-        const sorted = [...filtered].sort((a, b) =>
-            (a.work_name || "").localeCompare(b.work_name || "", "ko")
-        );
-
-        const columns = MARKDOWN_COPY.COLUMNS;
-        const data = sorted.map((r) => {
-            const duration = getRecordDurationForDate(r, selected_date);
-            return [
-                r.work_name,
-                r.deal_name || r.work_name,
-                `${duration}${RECORD_UI_TEXT.MINUTE_UNIT}`,
-                r.category_name || "",
-                r.note || "",
-            ];
-        });
-
-        const getDisplayWidth = (str: string) => {
-            let width = 0;
-            for (const char of str) {
-                width +=
-                    char.charCodeAt(0) > CHAR_CODE_THRESHOLD
-                        ? HANGUL_CHAR_WIDTH
-                        : ASCII_CHAR_WIDTH;
-            }
-            return width;
-        };
-
-        const col_widths = columns.map((col, i) => {
-            const header_width = getDisplayWidth(col);
-            const max_data_width = data.reduce(
-                (max, row) => Math.max(max, getDisplayWidth(row[i])),
-                0
-            );
-            return Math.max(header_width, max_data_width);
-        });
-
-        const padString = (str: string, width: number) => {
-            const display_width = getDisplayWidth(str);
-            const padding = width - display_width;
-            return str + " ".repeat(Math.max(0, padding));
-        };
-
-        const header_row =
-            MARKDOWN_COPY.CELL_PREFIX +
-            columns
-                .map((col, i) => padString(col, col_widths[i]))
-                .join(MARKDOWN_COPY.CELL_SEPARATOR) +
-            MARKDOWN_COPY.CELL_SUFFIX;
-        const separator =
-            MARKDOWN_COPY.ROW_SEPARATOR +
-            col_widths
-                .map((w) =>
-                    MARKDOWN_COPY.HEADER_SEPARATOR.repeat(
-                        w + MARKDOWN_COPY.PADDING_WIDTH
-                    )
-                )
-                .join(MARKDOWN_COPY.ROW_SEPARATOR) +
-            MARKDOWN_COPY.ROW_SEPARATOR;
-        const data_rows = data.map(
-            (row) =>
-                MARKDOWN_COPY.CELL_PREFIX +
-                row
-                    .map((cell, i) => padString(cell, col_widths[i]))
-                    .join(MARKDOWN_COPY.CELL_SEPARATOR) +
-                MARKDOWN_COPY.CELL_SUFFIX
-        );
-
-        const text = [header_row, separator, ...data_rows].join(
-            MARKDOWN_COPY.LINE_BREAK
-        );
         navigator.clipboard.writeText(text);
         message.success(RECORD_SUCCESS.COPIED_TO_CLIPBOARD);
     }, [display_records, selected_date]);
@@ -273,125 +167,20 @@ export function DesktopWorkRecordTable() {
     );
 
     // ============================================
-    // Table Columns
+    // Table Columns (extracted hook)
     // ============================================
-    const columns: ColumnsType<WorkRecord> = useMemo(
-        () => [
-            {
-                title: "",
-                key: "timer_action",
-                width: RECORD_COLUMN_WIDTH.TIMER_ACTION,
-                align: "center",
-                render: (_, record) => (
-                    <TimerActionColumn
-                        record={record}
-                        is_active={active_record_id === record.id}
-                        is_timer_running={timer.is_running}
-                        onToggle={handleToggleRecord}
-                    />
-                ),
-            },
-            {
-                title: RECORD_TABLE_COLUMN.DEAL_NAME,
-                dataIndex: "deal_name",
-                key: "deal_name",
-                width: RECORD_COLUMN_WIDTH.DEAL_NAME,
-                render: (_, record) => (
-                    <DealNameColumn
-                        record={record}
-                        is_active={active_record_id === record.id}
-                        is_completed={record.is_completed}
-                        theme_color={theme_color}
-                        elapsed_seconds={getElapsedSeconds()}
-                    />
-                ),
-            },
-            {
-                title: RECORD_TABLE_COLUMN.WORK_NAME,
-                dataIndex: "work_name",
-                key: "work_name",
-                width: RECORD_COLUMN_WIDTH.WORK_NAME,
-                render: (_, record) => (
-                    <WorkNameColumn
-                        record={record}
-                        is_active={active_record_id === record.id}
-                    />
-                ),
-            },
-            {
-                title: RECORD_TABLE_COLUMN.TASK_NAME,
-                dataIndex: "task_name",
-                key: "task_name",
-                width: RECORD_COLUMN_WIDTH.TASK_NAME,
-                render: (_, record) => <TaskNameColumn record={record} />,
-            },
-            {
-                title: RECORD_TABLE_COLUMN.CATEGORY,
-                dataIndex: "category_name",
-                key: "category_name",
-                width: RECORD_COLUMN_WIDTH.CATEGORY,
-                render: (_, record) => <CategoryColumn record={record} />,
-            },
-            {
-                title: RECORD_TABLE_COLUMN.TIME,
-                dataIndex: "duration_minutes",
-                key: "duration_minutes",
-                width: RECORD_COLUMN_WIDTH.DURATION,
-                align: "center",
-                render: (_, record) => (
-                    <DurationColumn
-                        record={record}
-                        selected_date={selected_date}
-                    />
-                ),
-            },
-            {
-                title: RECORD_TABLE_COLUMN.TIME_RANGE,
-                key: "time_range",
-                width: RECORD_COLUMN_WIDTH.TIME_RANGE,
-                render: (_, record) => (
-                    <TimeRangeColumn
-                        record={record}
-                        selected_date={selected_date}
-                    />
-                ),
-            },
-            {
-                title: RECORD_TABLE_COLUMN.DATE,
-                dataIndex: "date",
-                key: "date",
-                width: RECORD_COLUMN_WIDTH.DATE,
-                render: (date: string) => <DateColumn date={date} />,
-            },
-            {
-                title: "",
-                key: "action",
-                width: RECORD_COLUMN_WIDTH.ACTIONS,
-                render: (_, record) => (
-                    <ActionsColumn
-                        record={record}
-                        is_active={record.id === active_record_id}
-                        onComplete={(r) => markAsCompleted(r.id)}
-                        onUncomplete={(r) => markAsIncomplete(r.id)}
-                        onEdit={handleOpenEditModal}
-                        onDelete={handleDelete}
-                    />
-                ),
-            },
-        ],
-        [
-            active_record_id,
-            timer.is_running,
-            theme_color,
-            getElapsedSeconds,
-            selected_date,
-            handleToggleRecord,
-            markAsCompleted,
-            markAsIncomplete,
-            handleOpenEditModal,
-            handleDelete,
-        ]
-    );
+    const columns = useRecordColumns({
+        active_record_id,
+        is_timer_running: timer.is_running,
+        theme_color,
+        selected_date,
+        getElapsedSeconds,
+        onToggle: handleToggleRecord,
+        onComplete: (r) => markAsCompleted(r.id),
+        onUncomplete: (r) => markAsIncomplete(r.id),
+        onEdit: handleOpenEditModal,
+        onDelete: handleDelete,
+    });
 
     // ============================================
     // Expanded Row Render
@@ -401,7 +190,6 @@ export function DesktopWorkRecordTable() {
         []
     );
 
-    // Custom expand icon (▸/▾)
     const customExpandIcon = useCallback(
         ({
             expanded,
@@ -445,7 +233,6 @@ export function DesktopWorkRecordTable() {
     return (
         <>
             <SpotlightCard className="toss-record-table bg-white rounded-xl overflow-hidden">
-                {/* Header */}
                 <RecordHeader
                     selected_date={selected_date}
                     onDateChange={handleDateChange}
@@ -461,7 +248,6 @@ export function DesktopWorkRecordTable() {
                     disabled_copy={display_records.length === 0}
                 />
 
-                {/* 2-1: Table with stagger entrance on date change */}
                 <div className="px-xl pb-0">
                     <AnimatePresence mode="wait">
                         <motion.div
@@ -504,52 +290,14 @@ export function DesktopWorkRecordTable() {
                     </AnimatePresence>
                 </div>
 
-                {/* Footer */}
-                <div className="px-xl py-md flex items-center justify-between border-t border-border-light mt-sm">
-                    <span className="text-sm text-text-secondary">
-                        {FOOTER_TOTAL_PREFIX} {display_records.length}
-                        {FOOTER_TOTAL_SUFFIX}
-                    </span>
-                    <div className="toss-footer-actions flex items-center gap-sm">
-                        <motion.button
-                            whileTap={{ scale: 0.95 }}
-                            className="h-8 px-md rounded-md flex items-center gap-xs hover:bg-bg-grey transition-colors text-sm text-text-secondary cursor-pointer"
-                            onClick={openCompletedModal}
-                        >
-                            <CheckCircleOutlined
-                                style={{
-                                    color: "var(--color-success)",
-                                    fontSize: 13,
-                                }}
-                            />
-                            {RECORD_BUTTON.VIEW_COMPLETED} 목록
-                        </motion.button>
-                        <motion.button
-                            whileTap={{ scale: 0.95 }}
-                            className="h-8 px-md rounded-md flex items-center gap-xs hover:bg-bg-grey transition-colors text-sm text-text-secondary cursor-pointer"
-                            onClick={openTrashModal}
-                        >
-                            <DeleteOutlined
-                                style={{
-                                    color: "var(--color-error)",
-                                    fontSize: 13,
-                                }}
-                            />
-                            {RECORD_BUTTON.VIEW_TRASH}
-                        </motion.button>
-                        <motion.button
-                            whileTap={{ scale: 0.95 }}
-                            className="h-8 px-md rounded-md flex items-center gap-xs hover:bg-bg-grey transition-colors text-sm text-text-secondary cursor-pointer"
-                            onClick={handleCopyToClipboard}
-                        >
-                            <CopyOutlined style={{ fontSize: 13 }} />
-                            {RECORD_BUTTON.COPY_RECORDS}
-                        </motion.button>
-                    </div>
-                </div>
+                <RecordFooter
+                    record_count={display_records.length}
+                    onOpenCompleted={openCompletedModal}
+                    onOpenTrash={openTrashModal}
+                    onCopyRecords={handleCopyToClipboard}
+                />
             </SpotlightCard>
 
-            {/* Modals */}
             <RecordAddModal open={is_add_open} onClose={closeAddModal} />
 
             <RecordEditModal

@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.25";
+export const CURRENT_VERSION = "2.0.26";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,28 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.26",
+        date: "2026-02-25",
+        title: "간트차트 & 작업 기록 편의성 개선",
+        changes: [
+            {
+                type: "improvement",
+                description:
+                    "간트차트 작업 라벨에 마우스를 올리면 전체 이름을 확인할 수 있어요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "마크다운 복사 시 작업명 기준으로 정렬되어 보기 좋아졌어요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "날짜 이동 후 '오늘' 버튼을 눌러 바로 오늘로 돌아올 수 있어요",
+            },
+        ],
+    },
     {
         version: "2.0.25",
         date: "2026-02-24",

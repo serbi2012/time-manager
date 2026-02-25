@@ -72,3 +72,6 @@ export {
     calculateCategoryStats,
     calculateWorkStats,
 } from "./record_stats";
+
+// 마크다운 포맷터
+export { formatRecordsToMarkdown } from "./markdown_formatter";
