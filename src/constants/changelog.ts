@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.26";
+export const CURRENT_VERSION = "2.0.27";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,23 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.27",
+        date: "2026-02-25",
+        title: "작업 기록 푸터 버튼 인터랙션 개선",
+        changes: [
+            {
+                type: "style",
+                description:
+                    "완료 목록·휴지통·내역 복사 버튼이 더 직관적으로 바뀌었어요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "버튼에 마우스를 올리면 애니메이션으로 클릭 가능함을 알려줘요",
+            },
+        ],
+    },
     {
         version: "2.0.26",
         date: "2026-02-25",

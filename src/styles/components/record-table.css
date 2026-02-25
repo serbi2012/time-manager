@@ -143,8 +143,7 @@
    Reset native button styles for icon/action buttons
    ============================================ */
 .toss-record-table .record-row-actions button,
-.toss-record-table .ant-table-row-expand-icon-cell button,
-.toss-record-table .toss-footer-actions button {
+.toss-record-table .ant-table-row-expand-icon-cell button {
     border: 0;
     background: transparent;
     cursor: pointer;

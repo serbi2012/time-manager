@@ -9,8 +9,8 @@ import {
     DeleteOutlined,
     CopyOutlined,
 } from "@ant-design/icons";
-import { motion } from "../../../../shared/ui/animation";
 import { RECORD_BUTTON } from "../../constants";
+import { FooterActionButton } from "./FooterActionButton";
 
 const FOOTER_TOTAL_PREFIX = "총";
 const FOOTER_TOTAL_SUFFIX = "건";
@@ -35,41 +35,36 @@ export function RecordFooter({
                 {FOOTER_TOTAL_PREFIX} {record_count}
                 {FOOTER_TOTAL_SUFFIX}
             </span>
-            <div className="toss-footer-actions flex items-center gap-sm">
-                <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    className="h-8 px-md rounded-md flex items-center gap-xs hover:bg-bg-grey transition-colors text-sm text-text-secondary cursor-pointer"
+            <div className="toss-footer-actions flex items-center gap-xs">
+                <FooterActionButton
+                    icon={
+                        <CheckCircleOutlined
+                            style={{
+                                color: "var(--color-success)",
+                                fontSize: 13,
+                            }}
+                        />
+                    }
+                    label={COMPLETED_LIST_LABEL}
                     onClick={onOpenCompleted}
-                >
-                    <CheckCircleOutlined
-                        style={{
-                            color: "var(--color-success)",
-                            fontSize: 13,
-                        }}
-                    />
-                    {COMPLETED_LIST_LABEL}
-                </motion.button>
-                <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    className="h-8 px-md rounded-md flex items-center gap-xs hover:bg-bg-grey transition-colors text-sm text-text-secondary cursor-pointer"
+                />
+                <FooterActionButton
+                    icon={
+                        <DeleteOutlined
+                            style={{
+                                color: "var(--color-error)",
+                                fontSize: 13,
+                            }}
+                        />
+                    }
+                    label={RECORD_BUTTON.VIEW_TRASH}
                     onClick={onOpenTrash}
-                >
-                    <DeleteOutlined
-                        style={{
-                            color: "var(--color-error)",
-                            fontSize: 13,
-                        }}
-                    />
-                    {RECORD_BUTTON.VIEW_TRASH}
-                </motion.button>
-                <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    className="h-8 px-md rounded-md flex items-center gap-xs hover:bg-bg-grey transition-colors text-sm text-text-secondary cursor-pointer"
+                />
+                <FooterActionButton
+                    icon={<CopyOutlined style={{ fontSize: 13 }} />}
+                    label={RECORD_BUTTON.COPY_RECORDS}
                     onClick={onCopyRecords}
-                >
-                    <CopyOutlined style={{ fontSize: 13 }} />
-                    {RECORD_BUTTON.COPY_RECORDS}
-                </motion.button>
+                />
             </div>
         </div>
     );
