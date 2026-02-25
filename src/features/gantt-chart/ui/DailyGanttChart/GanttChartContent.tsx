@@ -213,28 +213,47 @@ export function GanttChartContent({
                                 }}
                             >
                                 {/* Row label (J: slide from left, staggered) */}
-                                <div
-                                    className="gantt-row-label gantt-label-enter"
-                                    style={{
-                                        animationDelay: `${row_idx * 0.05}s`,
-                                    }}
-                                >
-                                    <div className="text-right min-w-0 flex-1">
-                                        <div className="text-sm font-medium text-gray-800 truncate">
-                                            {group.record.deal_name ||
-                                                group.record.work_name}
-                                        </div>
-                                        {group.record.deal_name && (
-                                            <div className="text-xs text-gray-400 truncate">
-                                                {group.record.work_name}
+                                <Tooltip
+                                    title={
+                                        <div>
+                                            <div className="font-semibold">
+                                                {group.record.deal_name ||
+                                                    group.record.work_name}
                                             </div>
-                                        )}
-                                    </div>
+                                            {group.record.deal_name && (
+                                                <div className="text-xs text-gray-400 mt-xs">
+                                                    {group.record.work_name}
+                                                </div>
+                                            )}
+                                        </div>
+                                    }
+                                    placement="left"
+                                >
                                     <div
-                                        className="w-[3px] h-5 rounded-full flex-shrink-0"
-                                        style={{ background: color }}
-                                    />
-                                </div>
+                                        className="gantt-row-label gantt-label-enter"
+                                        style={{
+                                            animationDelay: `${
+                                                row_idx * 0.05
+                                            }s`,
+                                        }}
+                                    >
+                                        <div className="text-right min-w-0 flex-1">
+                                            <div className="text-sm font-medium text-gray-800 truncate">
+                                                {group.record.deal_name ||
+                                                    group.record.work_name}
+                                            </div>
+                                            {group.record.deal_name && (
+                                                <div className="text-xs text-gray-400 truncate">
+                                                    {group.record.work_name}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div
+                                            className="w-[3px] h-5 rounded-full flex-shrink-0"
+                                            style={{ background: color }}
+                                        />
+                                    </div>
+                                </Tooltip>
 
                                 {/* Session bars */}
                                 <div className="gantt-row-bars">

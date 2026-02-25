@@ -182,7 +182,7 @@ export function GanttStyles({ grouped_works_count }: GanttStylesProps) {
             gap: var(--spacing-sm);
             padding-right: var(--spacing-md);
             overflow: hidden;
-            pointer-events: none;
+            pointer-events: auto;
             opacity: 0.8;
             transition: opacity 0.2s ease;
         }
