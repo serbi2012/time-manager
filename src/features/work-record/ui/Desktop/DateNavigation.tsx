@@ -17,6 +17,7 @@ import type { Dayjs } from "dayjs";
 import { motion, AnimatePresence } from "../../../../shared/ui/animation";
 import { useSpotlight } from "@/shared/hooks/useSpotlight";
 import { useMagnetic } from "@/shared/hooks/useMagnetic";
+import { cn } from "@/shared/lib/cn";
 
 import { RECORD_UI_TEXT } from "../../constants";
 
@@ -156,24 +157,29 @@ export function DateNavigation({
                 </motion.button>
             </div>
 
-            {/* 1-4: "오늘" badge */}
-            <motion.span
+            {/* 1-4: "오늘" badge / button */}
+            <motion.button
                 animate={{
-                    opacity: is_today ? 1 : 0,
-                    scale: is_today ? 1 : 0.8,
+                    scale: 1,
+                    opacity: 1,
                 }}
-                whileHover={is_today ? { scale: 1.08 } : undefined}
+                whileHover={{ scale: 1.08 }}
+                whileTap={is_today ? undefined : { scale: 0.92 }}
                 transition={{
                     duration: 0.2,
                     ease: "easeOut",
                 }}
-                className="ml-xs text-xs text-primary font-semibold bg-primary-light px-md py-xs rounded-full transition-all duration-300 hover:bg-primary hover:text-white hover:shadow-[0_2px_8px_rgba(49,130,246,0.25)]"
-                style={{
-                    pointerEvents: is_today ? "auto" : "none",
-                }}
+                className={cn(
+                    "ml-xs text-xs font-semibold px-md py-xs rounded-full select-none transition-all duration-300",
+                    is_today
+                        ? "bg-primary text-white border-0 cursor-default"
+                        : "bg-transparent text-primary border border-primary/40 cursor-pointer hover:bg-primary hover:text-white hover:border-primary hover:shadow-[0_2px_8px_rgba(49,130,246,0.25)]"
+                )}
+                onClick={is_today ? undefined : () => onDateChange(dayjs())}
+                disabled={is_today}
             >
                 {RECORD_UI_TEXT.TODAY_TEXT}
-            </motion.span>
+            </motion.button>
         </div>
     );
 }
