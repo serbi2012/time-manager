@@ -146,12 +146,16 @@ export function MobileDailyPage() {
             return;
         }
 
+        const sorted = [...filtered].sort((a, b) =>
+            (a.work_name || "").localeCompare(b.work_name || "", "ko")
+        );
+
         const columns = MARKDOWN_COPY.COLUMNS;
-        const data = filtered.map((r) => {
+        const data = sorted.map((r) => {
             const duration = getRecordDurationForDate(r, selected_date);
             return [
-                r.deal_name || r.work_name,
                 r.work_name,
+                r.deal_name || r.work_name,
                 `${duration}${RECORD_UI_TEXT.MINUTE_UNIT}`,
                 r.category_name || "",
                 r.note || "",

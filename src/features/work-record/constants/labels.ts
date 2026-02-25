@@ -200,7 +200,7 @@ export const MOBILE_CONTEXT_MENU_LABEL = {
 // 마크다운 복사 관련
 // ========================================
 export const MARKDOWN_COPY = {
-    COLUMNS: ["거래명", "작업명", "시간", "카테고리", "비고"],
+    COLUMNS: ["작업명", "거래명", "시간", "카테고리", "비고"],
     CELL_PREFIX: "| ",
     CELL_SEPARATOR: " | ",
     CELL_SUFFIX: " |",
