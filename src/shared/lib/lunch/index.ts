@@ -6,6 +6,8 @@
  */
 
 export {
+    // 타입
+    type LunchTimeRange,
     // 상수
     LUNCH_START_MINUTES,
     LUNCH_END_MINUTES,

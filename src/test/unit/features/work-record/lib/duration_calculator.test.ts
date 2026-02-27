@@ -10,6 +10,9 @@ import {
     recalculateRecordDuration,
 } from "../../../../../features/work-record/lib/duration_calculator";
 import type { WorkRecord } from "../../../../../shared/types";
+import type { LunchTimeRange } from "../../../../../shared/lib/lunch/lunch_calculator";
+
+const CUSTOM_LUNCH: LunchTimeRange = { start: 720, end: 780, duration: 60 }; // 12:00~13:00
 
 // 테스트용 레코드 헬퍼
 function createTestRecord(overrides: Partial<WorkRecord> = {}): WorkRecord {
@@ -207,6 +210,62 @@ describe("duration_calculator", () => {
             const updated = recalculateRecordDuration(record);
 
             expect(updated).toBe(record);
+        });
+    });
+
+    describe("사용자 점심시간 (LunchTimeRange) 전달", () => {
+        it("getRecordDurationForDate에 커스텀 점심시간 전달 시 fallback 경로에서 사용", () => {
+            const record = createTestRecord({
+                sessions: [
+                    {
+                        id: "s1",
+                        date: "2024-01-15",
+                        start_time: "11:30",
+                        end_time: "12:30",
+                        duration_minutes: undefined as unknown as number,
+                    },
+                ],
+            });
+
+            // 기본 점심(11:40~12:40): 11:30~11:40 = 10분
+            const default_result = getRecordDurationForDate(record, "2024-01-15");
+            // 커스텀 점심(12:00~13:00): 11:30~12:00 = 30분
+            const custom_result = getRecordDurationForDate(record, "2024-01-15", CUSTOM_LUNCH);
+
+            expect(default_result).toBe(10);
+            expect(custom_result).toBe(30);
+        });
+
+        it("duration_minutes가 있으면 lunch_time 무관하게 그 값 사용", () => {
+            const record = createTestRecord({
+                sessions: [s("s1", "2024-01-15", "11:00", "14:00")],
+            });
+
+            const default_result = getRecordDurationForDate(record, "2024-01-15");
+            const custom_result = getRecordDurationForDate(record, "2024-01-15", CUSTOM_LUNCH);
+
+            expect(default_result).toBe(custom_result);
+        });
+
+        it("recalculateRecordDuration에 커스텀 점심시간 전달", () => {
+            const record = createTestRecord({
+                sessions: [
+                    {
+                        id: "s1",
+                        date: "2024-01-15",
+                        start_time: "11:30",
+                        end_time: "12:30",
+                        duration_minutes: undefined as unknown as number,
+                    },
+                ],
+                duration_minutes: 0,
+            });
+
+            const default_updated = recalculateRecordDuration(record);
+            const custom_updated = recalculateRecordDuration(record, CUSTOM_LUNCH);
+
+            expect(default_updated.duration_minutes).toBe(10);
+            expect(custom_updated.duration_minutes).toBe(30);
         });
     });
 });

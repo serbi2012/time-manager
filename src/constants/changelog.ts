@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.27";
+export const CURRENT_VERSION = "2.0.28";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,28 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.28",
+        date: "2026-02-27",
+        title: "점심시간 설정이 전체 시간 계산에 반영",
+        changes: [
+            {
+                type: "fix",
+                description:
+                    "설정에서 변경한 점심시간이 타이머 종료 시 시간 계산에 반영돼요",
+            },
+            {
+                type: "fix",
+                description:
+                    "내역 복사 시 설정한 점심시간 기준으로 시간이 계산돼요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "간트 차트뿐 아니라 모든 시간 계산이 사용자 점심시간 설정과 일치해요",
+            },
+        ],
+    },
     {
         version: "2.0.27",
         date: "2026-02-25",

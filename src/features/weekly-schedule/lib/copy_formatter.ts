@@ -5,6 +5,7 @@
 import type { WorkRecord } from "../../../shared/types";
 import { formatDuration } from "../../../shared/lib/time";
 import { getRecordDurationForDate } from "../../work-record/lib/duration_calculator";
+import { type LunchTimeRange } from "../../../shared/lib/lunch";
 
 /**
  * 복사 형식 타입
@@ -69,24 +70,19 @@ export function getWeekDates(base_date: string): string[] {
  */
 export function groupRecordsByDate(
     records: WorkRecord[],
-    dates: string[]
+    dates: string[],
+    lunch_time?: LunchTimeRange
 ): DayRecords[] {
     return dates.map((date) => {
         const day_records = records.filter((r) => {
-            // 삭제된 레코드 제외
             if (r.is_deleted) return false;
-            
-            // 레코드 날짜가 해당 날짜인 경우
             if (r.date === date) return true;
-            
-            // 세션 중 해당 날짜가 있는 경우
             if (r.sessions?.some((s) => s.date === date)) return true;
-            
             return false;
         });
         
         const total_minutes = day_records.reduce(
-            (sum, r) => sum + getRecordDurationForDate(r, date),
+            (sum, r) => sum + getRecordDurationForDate(r, date, lunch_time),
             0
         );
         
@@ -102,7 +98,7 @@ export function groupRecordsByDate(
 /**
  * 형식 1로 복사 텍스트 생성 (기본)
  */
-export function formatCopyText1(day_records: DayRecords[]): string {
+export function formatCopyText1(day_records: DayRecords[], lunch_time?: LunchTimeRange): string {
     const lines: string[] = [];
     
     day_records.forEach((day) => {
@@ -110,7 +106,7 @@ export function formatCopyText1(day_records: DayRecords[]): string {
         
         lines.push(`[${day.date} (${day.day_of_week})]`);
         day.records.forEach((r) => {
-            const duration = getRecordDurationForDate(r, day.date);
+            const duration = getRecordDurationForDate(r, day.date, lunch_time);
             lines.push(`- ${r.work_name}: ${formatDuration(duration)}`);
         });
         lines.push(`총: ${formatDuration(day.total_minutes)}`);
@@ -123,7 +119,7 @@ export function formatCopyText1(day_records: DayRecords[]): string {
 /**
  * 형식 2로 복사 텍스트 생성 (상세)
  */
-export function formatCopyText2(day_records: DayRecords[]): string {
+export function formatCopyText2(day_records: DayRecords[], lunch_time?: LunchTimeRange): string {
     const lines: string[] = [];
     
     day_records.forEach((day) => {
@@ -131,7 +127,7 @@ export function formatCopyText2(day_records: DayRecords[]): string {
         
         lines.push(`## ${day.date} (${day.day_of_week})`);
         day.records.forEach((r) => {
-            const duration = getRecordDurationForDate(r, day.date);
+            const duration = getRecordDurationForDate(r, day.date, lunch_time);
             lines.push(`### ${r.work_name}`);
             if (r.deal_name) lines.push(`- 거래: ${r.deal_name}`);
             lines.push(`- 카테고리: ${r.category_name}`);
@@ -149,14 +145,14 @@ export function formatCopyText2(day_records: DayRecords[]): string {
 /**
  * 형식 3로 복사 텍스트 생성 (간단)
  */
-export function formatCopyText3(day_records: DayRecords[]): string {
+export function formatCopyText3(day_records: DayRecords[], lunch_time?: LunchTimeRange): string {
     const lines: string[] = [];
     
     day_records.forEach((day) => {
         if (day.records.length === 0) return;
         
         const items = day.records.map((r) => {
-            const duration = getRecordDurationForDate(r, day.date);
+            const duration = getRecordDurationForDate(r, day.date, lunch_time);
             return `${r.work_name}(${formatDuration(duration)})`;
         });
         
@@ -171,16 +167,17 @@ export function formatCopyText3(day_records: DayRecords[]): string {
  */
 export function formatCopyText(
     day_records: DayRecords[],
-    format: CopyFormat
+    format: CopyFormat,
+    lunch_time?: LunchTimeRange
 ): string {
     switch (format) {
         case "format1":
-            return formatCopyText1(day_records);
+            return formatCopyText1(day_records, lunch_time);
         case "format2":
-            return formatCopyText2(day_records);
+            return formatCopyText2(day_records, lunch_time);
         case "format3":
-            return formatCopyText3(day_records);
+            return formatCopyText3(day_records, lunch_time);
         default:
-            return formatCopyText1(day_records);
+            return formatCopyText1(day_records, lunch_time);
     }
 }

@@ -4,6 +4,7 @@
 
 import type { WorkRecord } from "../../../types";
 import { getRecordDurationForDate } from "./duration_calculator";
+import { type LunchTimeRange } from "../../../shared/lib/lunch";
 import {
     MARKDOWN_COPY,
     RECORD_UI_TEXT,
@@ -38,7 +39,8 @@ function padString(str: string, width: number): string {
  */
 export function formatRecordsToMarkdown(
     records: WorkRecord[],
-    selected_date: string
+    selected_date: string,
+    lunch_time?: LunchTimeRange
 ): string | null {
     const filtered = records.filter((r) => !r.is_deleted);
 
@@ -52,7 +54,7 @@ export function formatRecordsToMarkdown(
 
     const columns = MARKDOWN_COPY.COLUMNS;
     const data = sorted.map((r) => {
-        const duration = getRecordDurationForDate(r, selected_date);
+        const duration = getRecordDurationForDate(r, selected_date, lunch_time);
         return [
             r.work_name,
             r.deal_name || r.work_name,

@@ -61,6 +61,7 @@ export function DesktopWorkRecordTable() {
         softDeleteRecord,
         app_theme,
         records,
+        getLunchTimeMinutes,
     } = useWorkStore();
 
     const shortcut_store = useShortcutStore();
@@ -131,14 +132,15 @@ export function DesktopWorkRecordTable() {
     );
 
     const handleCopyToClipboard = useCallback(() => {
-        const text = formatRecordsToMarkdown(display_records, selected_date);
+        const lunch_time = getLunchTimeMinutes();
+        const text = formatRecordsToMarkdown(display_records, selected_date, lunch_time);
         if (!text) {
             message.warning(RECORD_WARNING.NO_RECORDS_TO_COPY);
             return;
         }
         navigator.clipboard.writeText(text);
         message.success(RECORD_SUCCESS.COPIED_TO_CLIPBOARD);
-    }, [display_records, selected_date]);
+    }, [display_records, selected_date, getLunchTimeMinutes]);
 
     const handlePrevDay = useCallback(() => {
         setSelectedDate(

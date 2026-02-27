@@ -5,6 +5,9 @@
 import { describe, it, expect } from "vitest";
 import { formatRecordsToMarkdown } from "../../../../../features/work-record/lib/markdown_formatter";
 import type { WorkRecord } from "../../../../../shared/types";
+import type { LunchTimeRange } from "../../../../../shared/lib/lunch/lunch_calculator";
+
+const CUSTOM_LUNCH: LunchTimeRange = { start: 720, end: 780, duration: 60 }; // 12:00~13:00
 
 function createTestRecord(overrides: Partial<WorkRecord> = {}): WorkRecord {
     return {
@@ -123,5 +126,28 @@ describe("formatRecordsToMarkdown", () => {
         const original_first = records[0].work_name;
         formatRecordsToMarkdown(records, "2026-02-25");
         expect(records[0].work_name).toBe(original_first);
+    });
+
+    it("커스텀 점심시간을 전달하면 해당 점심시간 기준으로 시간 계산", () => {
+        const records = [
+            createTestRecord({
+                sessions: [
+                    {
+                        id: "s1",
+                        date: "2026-02-25",
+                        start_time: "11:30",
+                        end_time: "12:30",
+                        duration_minutes: undefined as unknown as number,
+                    },
+                ],
+            }),
+        ];
+        // 기본 점심(11:40~12:40): 10분
+        const default_result = formatRecordsToMarkdown(records, "2026-02-25")!;
+        expect(default_result).toContain("10분");
+
+        // 커스텀 점심(12:00~13:00): 30분
+        const custom_result = formatRecordsToMarkdown(records, "2026-02-25", CUSTOM_LUNCH)!;
+        expect(custom_result).toContain("30분");
     });
 });

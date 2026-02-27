@@ -5,13 +5,16 @@
 import type { WorkRecord } from "../../../shared/types";
 import { timeToMinutes } from "../../../shared/lib/time";
 import { getSessionMinutes } from "../../../shared/lib/session";
+import { type LunchTimeRange } from "../../../shared/lib/lunch";
 
 /**
  * 레코드의 총 소요 시간(분) 가져오기
  * NaN 처리 및 세션 기반 재계산 지원
  */
-export function getRecordDurationMinutes(record: WorkRecord): number {
-    // 유효한 duration_minutes가 있으면 반환
+export function getRecordDurationMinutes(
+    record: WorkRecord,
+    lunch_time?: LunchTimeRange
+): number {
     if (
         record.duration_minutes !== undefined &&
         !isNaN(record.duration_minutes) &&
@@ -20,10 +23,9 @@ export function getRecordDurationMinutes(record: WorkRecord): number {
         return record.duration_minutes;
     }
     
-    // 세션에서 계산
     if (record.sessions && record.sessions.length > 0) {
         const total = record.sessions.reduce(
-            (sum, s) => sum + getSessionMinutes(s),
+            (sum, s) => sum + getSessionMinutes(s, lunch_time),
             0
         );
         if (total > 0) {
@@ -31,7 +33,6 @@ export function getRecordDurationMinutes(record: WorkRecord): number {
         }
     }
     
-    // 시작/종료 시간으로 계산
     if (record.start_time && record.end_time) {
         const start_mins = timeToMinutes(record.start_time);
         const end_mins = timeToMinutes(record.end_time);
@@ -49,17 +50,16 @@ export function getRecordDurationMinutes(record: WorkRecord): number {
  */
 export function getRecordDurationForDate(
     record: WorkRecord,
-    target_date: string
+    target_date: string,
+    lunch_time?: LunchTimeRange
 ): number {
     if (!record.sessions || record.sessions.length === 0) {
-        // 세션이 없으면 레코드 날짜가 맞는 경우만 전체 시간 반환
         if (record.date === target_date) {
-            return getRecordDurationMinutes(record);
+            return getRecordDurationMinutes(record, lunch_time);
         }
         return 0;
     }
     
-    // 해당 날짜의 세션들만 필터링하여 시간 합산
     const date_sessions = record.sessions.filter(
         (s) => (s.date || record.date) === target_date
     );
@@ -69,7 +69,7 @@ export function getRecordDurationForDate(
     }
     
     return date_sessions.reduce(
-        (sum, s) => sum + getSessionMinutes(s),
+        (sum, s) => sum + getSessionMinutes(s, lunch_time),
         0
     );
 }
@@ -117,13 +117,16 @@ export function getTimeRangeForDate(
 /**
  * 레코드의 세션들을 재계산하여 총 시간 업데이트
  */
-export function recalculateRecordDuration(record: WorkRecord): WorkRecord {
+export function recalculateRecordDuration(
+    record: WorkRecord,
+    lunch_time?: LunchTimeRange
+): WorkRecord {
     if (!record.sessions || record.sessions.length === 0) {
         return record;
     }
     
     const total = record.sessions.reduce(
-        (sum, s) => sum + getSessionMinutes(s),
+        (sum, s) => sum + getSessionMinutes(s, lunch_time),
         0
     );
     

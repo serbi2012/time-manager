@@ -26,6 +26,7 @@ import {
     mergeRecords,
     calculateTotalMinutes,
     calculateDurationExcludingLunch,
+    type LunchTimeRange,
 } from "../lib";
 
 // Zustand set 함수 타입 정의
@@ -39,7 +40,8 @@ export type SetState = (
  */
 export function createWorkSession(
     start_time: number,
-    end_time: number
+    end_time: number,
+    lunch_time?: LunchTimeRange
 ): WorkSession {
     const start_date = new Date(start_time);
     const end_date = new Date(end_time);
@@ -49,7 +51,7 @@ export function createWorkSession(
 
     const duration_minutes = Math.max(
         1,
-        calculateDurationExcludingLunch(start_mins, end_mins)
+        calculateDurationExcludingLunch(start_mins, end_mins, lunch_time)
     );
 
     const pad = (n: number) => n.toString().padStart(2, "0");
@@ -136,6 +138,7 @@ export function finishCurrentSession(
     get: () => WorkStore
 ): void {
     const { timer, records } = get();
+    const lunch_time = get().getLunchTimeMinutes();
     const { active_record_id, active_session_id } = timer;
     const end_time = Date.now();
     const end_dayjs = dayjs(end_time);
@@ -150,7 +153,7 @@ export function finishCurrentSession(
             const end_minutes = end_dayjs.hour() * 60 + end_dayjs.minute();
             const duration_minutes = Math.max(
                 1,
-                calculateDurationExcludingLunch(start_minutes, end_minutes)
+                calculateDurationExcludingLunch(start_minutes, end_minutes, lunch_time)
             );
 
             set(
@@ -191,14 +194,14 @@ export function finishCurrentSession(
             }
         }
     } else if (timer.active_form_data) {
-        // 이전 버전 호환
         handleLegacySessionFinish(
             set,
             get,
             timer.active_form_data,
             timer.start_time!,
             end_time,
-            records
+            records,
+            lunch_time
         );
     }
 }
@@ -212,10 +215,11 @@ function handleLegacySessionFinish(
     active_form: WorkFormData,
     start_time: number,
     end_time: number,
-    records: WorkRecord[]
+    records: WorkRecord[],
+    lunch_time?: LunchTimeRange
 ): void {
     const record_date = dayjs(start_time).format("YYYY-MM-DD");
-    const new_session = createWorkSession(start_time, end_time);
+    const new_session = createWorkSession(start_time, end_time, lunch_time);
 
     const existing_record = findExistingRecord(
         records,
@@ -277,11 +281,12 @@ export function handleLegacyStopTimer(
     get: () => WorkStore
 ): WorkRecord | null {
     const { timer } = get();
+    const lunch_time = get().getLunchTimeMinutes();
     const records = get().records;
     const active_form = timer.active_form_data!;
     const end_time = Date.now();
     const record_date = dayjs(timer.start_time!).format("YYYY-MM-DD");
-    const new_session = createWorkSession(timer.start_time!, end_time);
+    const new_session = createWorkSession(timer.start_time!, end_time, lunch_time);
 
     const existing_record = findExistingRecord(
         records,

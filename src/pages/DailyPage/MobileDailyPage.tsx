@@ -58,6 +58,7 @@ export function MobileDailyPage() {
     const app_theme = useWorkStore((state) => state.app_theme);
     const records = useWorkStore((state) => state.records);
     const selected_date = useWorkStore((state) => state.selected_date);
+    const getLunchTimeMinutes = useWorkStore((state) => state.getLunchTimeMinutes);
     const { createFromTemplate } = useRecordCreation();
 
     const handleAddRecordOnly = (template_id: string) => {
@@ -140,6 +141,7 @@ export function MobileDailyPage() {
     );
 
     const handleCopyToClipboard = useCallback(() => {
+        const lunch_time = getLunchTimeMinutes();
         const filtered = display_records.filter((r) => !r.is_deleted);
         if (filtered.length === 0) {
             message.warning(RECORD_WARNING.NO_RECORDS_TO_COPY);
@@ -152,7 +154,7 @@ export function MobileDailyPage() {
 
         const columns = MARKDOWN_COPY.COLUMNS;
         const data = sorted.map((r) => {
-            const duration = getRecordDurationForDate(r, selected_date);
+            const duration = getRecordDurationForDate(r, selected_date, lunch_time);
             return [
                 r.work_name,
                 r.deal_name || r.work_name,
@@ -218,7 +220,7 @@ export function MobileDailyPage() {
         );
         navigator.clipboard.writeText(text);
         message.success(RECORD_SUCCESS.COPIED_TO_CLIPBOARD);
-    }, [display_records, selected_date]);
+    }, [display_records, selected_date, getLunchTimeMinutes]);
 
     return (
         <div className="flex flex-col min-h-screen bg-bg-light">

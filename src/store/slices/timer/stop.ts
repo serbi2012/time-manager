@@ -47,13 +47,13 @@ export function createStopTimerAction(set: SetState, get: () => WorkStore) {
             return null;
         }
 
-        // 세션의 종료 시간 및 소요 시간 계산
+        const lunch_time = get().getLunchTimeMinutes();
         const start_dayjs = dayjs(timer.start_time);
         const start_minutes = start_dayjs.hour() * 60 + start_dayjs.minute();
         const end_minutes = end_dayjs.hour() * 60 + end_dayjs.minute();
         const duration_minutes = Math.max(
             1,
-            calculateDurationExcludingLunch(start_minutes, end_minutes)
+            calculateDurationExcludingLunch(start_minutes, end_minutes, lunch_time)
         );
 
         set(

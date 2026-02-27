@@ -4,6 +4,7 @@
 
 import type { WorkRecord } from "../../../shared/types";
 import { getRecordDurationForDate } from "./duration_calculator";
+import { type LunchTimeRange } from "../../../shared/lib/lunch";
 
 /**
  * 오늘 통계 정보
@@ -24,7 +25,8 @@ export interface TodayStats {
  */
 export function calculateTodayStats(
     records: WorkRecord[],
-    selected_date: string
+    selected_date: string,
+    lunch_time?: LunchTimeRange
 ): TodayStats {
     let total_minutes = 0;
     let record_count = 0;
@@ -34,7 +36,7 @@ export function calculateTodayStats(
     records.forEach((record) => {
         if (record.is_deleted) return;
 
-        const duration = getRecordDurationForDate(record, selected_date);
+        const duration = getRecordDurationForDate(record, selected_date, lunch_time);
 
         if (duration > 0) {
             total_minutes += duration;
@@ -70,14 +72,15 @@ export interface CategoryStats {
  */
 export function calculateCategoryStats(
     records: WorkRecord[],
-    selected_date: string
+    selected_date: string,
+    lunch_time?: LunchTimeRange
 ): CategoryStats[] {
     const category_map = new Map<string, { minutes: number; count: number }>();
 
     records.forEach((record) => {
         if (record.is_deleted) return;
 
-        const duration = getRecordDurationForDate(record, selected_date);
+        const duration = getRecordDurationForDate(record, selected_date, lunch_time);
         if (duration <= 0) return;
 
         const category = record.category_name || "기타";
@@ -113,14 +116,15 @@ export interface WorkStats {
  */
 export function calculateWorkStats(
     records: WorkRecord[],
-    selected_date: string
+    selected_date: string,
+    lunch_time?: LunchTimeRange
 ): WorkStats[] {
     const work_map = new Map<string, WorkStats>();
 
     records.forEach((record) => {
         if (record.is_deleted) return;
 
-        const duration = getRecordDurationForDate(record, selected_date);
+        const duration = getRecordDurationForDate(record, selected_date, lunch_time);
         if (duration <= 0) return;
 
         const key = `${record.work_name}::${record.deal_name || ""}`;

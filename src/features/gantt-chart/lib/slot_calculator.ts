@@ -4,7 +4,7 @@
 
 import type { WorkRecord, WorkSession, TimerState } from "../../../shared/types";
 import { timeToMinutes } from "../../../shared/lib/time";
-import { LUNCH_START_MINUTES, LUNCH_END_MINUTES } from "../../../shared/lib/lunch";
+import { LUNCH_START_MINUTES, LUNCH_END_MINUTES, type LunchTimeRange } from "../../../shared/lib/lunch";
 
 /**
  * 시간 슬롯 타입
@@ -103,11 +103,15 @@ export function groupRecordsByDealName(
  * 점유된 시간 슬롯 수집 (충돌 감지용)
  * 점심시간도 점유 슬롯으로 포함
  */
-export function collectOccupiedSlots(grouped_works: GroupedWork[]): TimeSlot[] {
+export function collectOccupiedSlots(
+    grouped_works: GroupedWork[],
+    lunch_time?: LunchTimeRange
+): TimeSlot[] {
     const slots: TimeSlot[] = [];
     
-    // 점심시간 슬롯 추가
-    slots.push({ start: LUNCH_START_MINUTES, end: LUNCH_END_MINUTES });
+    const lunch_start = lunch_time?.start ?? LUNCH_START_MINUTES;
+    const lunch_end = lunch_time?.end ?? LUNCH_END_MINUTES;
+    slots.push({ start: lunch_start, end: lunch_end });
     
     // 각 그룹의 세션을 슬롯으로 변환
     grouped_works.forEach((group) => {

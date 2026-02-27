@@ -7,6 +7,7 @@
 
 import type { WorkRecord } from "../types";
 import { getSessionMinutes } from "@/shared/lib/session";
+import { type LunchTimeRange } from "@/shared/lib/lunch";
 import { timeToMinutes } from "@/shared/lib/time";
 
 /**
@@ -16,7 +17,8 @@ import { timeToMinutes } from "@/shared/lib/time";
  */
 export function recalculateRecordFromSessions(
     record: WorkRecord,
-    base_date?: string
+    base_date?: string,
+    lunch_time?: LunchTimeRange
 ): void {
     const date_fallback = base_date || record.date;
 
@@ -28,7 +30,7 @@ export function recalculateRecordFromSessions(
     });
 
     const total_minutes = record.sessions.reduce(
-        (sum, s) => sum + getSessionMinutes(s),
+        (sum, s) => sum + getSessionMinutes(s, lunch_time),
         0
     );
     record.duration_minutes = Math.max(1, total_minutes);

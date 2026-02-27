@@ -5,7 +5,7 @@
  */
 
 import { timeToMinutes } from "../time";
-import { calculateDurationExcludingLunch } from "../lunch";
+import { calculateDurationExcludingLunch, type LunchTimeRange } from "../lunch";
 
 /**
  * 세션 인터페이스 (shared/types에서 import하기 전 임시 정의)
@@ -31,10 +31,10 @@ interface LegacySession extends SessionLike {
  * 레거시 데이터(duration_seconds)와 호환
  * 
  * @param session 세션 객체
+ * @param lunch_time 사용자 점심시간 설정 (미전달 시 기본값 사용)
  * @returns 소요 시간 (분)
  */
-export function getSessionMinutes(session: SessionLike): number {
-    // 새 형식: duration_minutes
+export function getSessionMinutes(session: SessionLike, lunch_time?: LunchTimeRange): number {
     if (
         session.duration_minutes !== undefined &&
         !isNaN(session.duration_minutes)
@@ -42,7 +42,6 @@ export function getSessionMinutes(session: SessionLike): number {
         return session.duration_minutes;
     }
     
-    // 레거시 형식: duration_seconds
     const legacy = session as LegacySession;
     if (
         legacy.duration_seconds !== undefined &&
@@ -51,12 +50,11 @@ export function getSessionMinutes(session: SessionLike): number {
         return Math.ceil(legacy.duration_seconds / 60);
     }
     
-    // duration 필드가 없으면 시작/종료 시간으로 계산
     if (session.start_time && session.end_time) {
         const start_mins = timeToMinutes(session.start_time);
         const end_mins = timeToMinutes(session.end_time);
         if (end_mins > start_mins) {
-            return calculateDurationExcludingLunch(start_mins, end_mins);
+            return calculateDurationExcludingLunch(start_mins, end_mins, lunch_time);
         }
     }
     
@@ -67,13 +65,14 @@ export function getSessionMinutes(session: SessionLike): number {
  * 세션 목록의 총 시간(분) 계산
  * 
  * @param sessions 세션 배열
+ * @param lunch_time 사용자 점심시간 설정 (미전달 시 기본값 사용)
  * @returns 총 소요 시간 (분, 최소 1분)
  */
-export function calculateTotalMinutes(sessions: SessionLike[]): number {
+export function calculateTotalMinutes(sessions: SessionLike[], lunch_time?: LunchTimeRange): number {
     if (!sessions || sessions.length === 0) return 0;
     
     const total = sessions.reduce(
-        (sum, session) => sum + getSessionMinutes(session),
+        (sum, session) => sum + getSessionMinutes(session, lunch_time),
         0
     );
     
@@ -85,11 +84,13 @@ export function calculateTotalMinutes(sessions: SessionLike[]): number {
  * 
  * @param start_time 시작 시간 (Unix timestamp, milliseconds)
  * @param end_time 종료 시간 (Unix timestamp, milliseconds)
+ * @param lunch_time 사용자 점심시간 설정 (미전달 시 기본값 사용)
  * @returns 새 세션 객체
  */
 export function createSession(
     start_time: number,
-    end_time: number
+    end_time: number,
+    lunch_time?: LunchTimeRange
 ): SessionLike {
     const start_date = new Date(start_time);
     const end_date = new Date(end_time);
@@ -99,7 +100,7 @@ export function createSession(
     
     const duration_minutes = Math.max(
         1,
-        calculateDurationExcludingLunch(start_mins, end_mins)
+        calculateDurationExcludingLunch(start_mins, end_mins, lunch_time)
     );
     
     const pad = (n: number) => n.toString().padStart(2, "0");

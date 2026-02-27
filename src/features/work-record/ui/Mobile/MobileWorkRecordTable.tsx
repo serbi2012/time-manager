@@ -51,7 +51,7 @@ export function MobileWorkRecordTable() {
     // ============================================
     // Store
     // ============================================
-    const { selected_date, setSelectedDate, records } = useWorkStore();
+    const { selected_date, setSelectedDate, records, getLunchTimeMinutes } = useWorkStore();
 
     // ============================================
     // Hooks
@@ -170,6 +170,7 @@ export function MobileWorkRecordTable() {
     );
 
     const handleCopyToClipboard = useCallback(() => {
+        const lunch_time = getLunchTimeMinutes();
         const filtered = display_records.filter((r) => !r.is_deleted);
         if (filtered.length === 0) {
             message.warning(RECORD_WARNING.NO_RECORDS_TO_COPY);
@@ -182,7 +183,7 @@ export function MobileWorkRecordTable() {
 
         const columns = MARKDOWN_COPY.COLUMNS;
         const data = sorted.map((r) => {
-            const duration = getRecordDurationForDate(r, selected_date);
+            const duration = getRecordDurationForDate(r, selected_date, lunch_time);
             return [
                 r.work_name,
                 r.deal_name || r.work_name,
@@ -248,7 +249,7 @@ export function MobileWorkRecordTable() {
         );
         navigator.clipboard.writeText(text);
         message.success(RECORD_SUCCESS.COPIED_TO_CLIPBOARD);
-    }, [display_records, selected_date]);
+    }, [display_records, selected_date, getLunchTimeMinutes]);
 
     // ============================================
     // Render

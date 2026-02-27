@@ -27,6 +27,7 @@ export {
 
 // 점심시간 관련 함수 (shared/lib/lunch 재사용)
 export {
+    type LunchTimeRange,
     calculateDurationExcludingLunch,
     isInLunchTime,
     overlapsWithLunchTime,
