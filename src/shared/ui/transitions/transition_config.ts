@@ -61,4 +61,31 @@ export const PAGE_TRANSITION_DELAYS = {
         header: 0,
         content: 0.15,
     },
+    /** 데스크탑 주간 일정 stagger */
+    desktop_weekly: {
+        header_duration: 0.3,
+        header_y_offset: -20,
+        card_duration: 0.35,
+        card_y_offset: 16,
+        card_start_delay: 0.1,
+        card_stagger: 0.06,
+    },
 } as const;
+
+/** 라우트 순서 (방향 슬라이드 감지용) */
+export const ROUTE_ORDER: Record<string, number> = {
+    "/": 0,
+    "/weekly": 1,
+    "/suggestions": 2,
+    "/guide": 3,
+    "/admin": 4,
+};
+
+/** 라우트/콘텐츠 트랜지션 공통 이징 */
+export const TRANSITION_EASE = [0.22, 1, 0.36, 1] as const;
+
+/** 라우트 트랜지션 오프셋 (px) */
+export const ROUTE_TRANSITION_OFFSET = 60;
+
+/** 콘텐츠 전환 오프셋 (px) */
+export const CONTENT_SLIDE_UP_OFFSET = 30;

@@ -43,4 +43,7 @@ export const DESKTOP_DAILY_DELAYS = PAGE_TRANSITION_DELAYS.desktop_daily;
 /** 모바일 일간 페이지용 트랜지션 딜레이 */
 export const MOBILE_DAILY_DELAYS = PAGE_TRANSITION_DELAYS.mobile_daily;
 
+/** 데스크탑 주간 일정 stagger 설정 */
+export const DESKTOP_WEEKLY_STAGGER = PAGE_TRANSITION_DELAYS.desktop_weekly;
+
 export default usePageTransition;

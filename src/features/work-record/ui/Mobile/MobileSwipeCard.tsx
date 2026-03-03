@@ -44,6 +44,9 @@ export function MobileSwipeCard({
     const base_offset = useRef(0);
     const is_swiping = useRef(false);
 
+    /* ── Swipe threshold haptic ref ── */
+    const threshold_haptic_fired = useRef(false);
+
     /* ── Long-press refs ── */
     const lp_timer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const lp_fired = useRef(false);
@@ -68,6 +71,7 @@ export function MobileSwipeCard({
             start_y.current = cy;
             base_offset.current = offset_x;
             is_swiping.current = false;
+            threshold_haptic_fired.current = false;
             setIsDragging(true);
             if (offset_x < 0) setShowActions(true);
 
@@ -118,6 +122,15 @@ export function MobileSwipeCard({
                 is_swiping.current = true;
                 setShowActions(true);
             }
+
+            if (
+                !threshold_haptic_fired.current &&
+                Math.abs(next) >= SWIPE_THRESHOLD
+            ) {
+                threshold_haptic_fired.current = true;
+                triggerHaptic(8);
+            }
+
             setOffsetX(next);
         },
         [cancelLongPress]
@@ -183,7 +196,10 @@ export function MobileSwipeCard({
                     <button
                         className="mobile-swipe-action-btn"
                         style={{ background: "var(--color-success)" }}
-                        onClick={() => handleAction(onComplete)}
+                        onClick={() => {
+                            triggerHaptic(10);
+                            handleAction(onComplete);
+                        }}
                     >
                         <CheckCircleOutlined style={{ fontSize: 18 }} />
                         <span>{RECORD_BUTTON.COMPLETE}</span>
@@ -191,7 +207,10 @@ export function MobileSwipeCard({
                     <button
                         className="mobile-swipe-action-btn"
                         style={{ background: "var(--color-error)" }}
-                        onClick={() => handleAction(onDelete)}
+                        onClick={() => {
+                            triggerHaptic(15);
+                            handleAction(onDelete);
+                        }}
                     >
                         <DeleteOutlined style={{ fontSize: 18 }} />
                         <span>{RECORD_BUTTON.DELETE}</span>

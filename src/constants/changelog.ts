@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.30";
+export const CURRENT_VERSION = "2.0.31";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,28 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.31",
+        date: "2026-03-03",
+        title: "페이지 이동 및 콘텐츠 전환 애니메이션",
+        changes: [
+            {
+                type: "feature",
+                description:
+                    "메뉴 이동 시 방향에 따라 슬라이드 애니메이션이 적용돼요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "주간 일정 진입 시 카드가 순차적으로 나타나요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "사용설명서 섹션 변경 시 부드러운 슬라이드업 전환이 적용돼요",
+            },
+        ],
+    },
     {
         version: "2.0.30",
         date: "2026-03-03",

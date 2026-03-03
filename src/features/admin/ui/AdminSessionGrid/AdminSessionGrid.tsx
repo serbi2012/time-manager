@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { Layout, Card, Tabs, Empty, Badge } from "antd";
 import { message } from "@/shared/lib/message";
+import { motion } from "framer-motion";
 import {
     CalendarOutlined,
     DatabaseOutlined,
@@ -17,6 +18,12 @@ import {
 import { useAuth } from "../../../../firebase/useAuth";
 import { useWorkStore } from "../../../../store/useWorkStore";
 import { SUCCESS_MESSAGES } from "../../../../shared/constants";
+import {
+    usePageTransitionContext,
+    TRANSITION_SPEED_DURATION,
+    TRANSITION_EASE,
+    ROUTE_TRANSITION_OFFSET,
+} from "../../../../shared/ui";
 import type { WorkRecord, WorkSession } from "../../../../shared/types";
 import { useAdminData } from "../../hooks/useAdminData";
 import { useAdminFilters } from "../../hooks/useAdminFilters";
@@ -47,6 +54,16 @@ import {
     TAB_INTEGRITY,
 } from "../../constants";
 
+const ADMIN_TAB_ORDER: Record<AdminTab, number> = {
+    sessions: 0,
+    records: 1,
+    explorer: 2,
+    statistics: 3,
+    trash: 4,
+    export: 5,
+    integrity: 6,
+};
+
 const { Content } = Layout;
 
 function AdminSessionGridContent() {
@@ -61,6 +78,22 @@ function AdminSessionGridContent() {
 
     const filters = useAdminFilters();
     const tabs = useAdminTabs();
+
+    const { transition_enabled, transition_speed } =
+        usePageTransitionContext();
+    const duration = TRANSITION_SPEED_DURATION[transition_speed];
+
+    const [tab_direction, set_tab_direction] = useState(1);
+    const [prev_tab_index, set_prev_tab_index] = useState(
+        ADMIN_TAB_ORDER[tabs.active_key] ?? 0
+    );
+
+    const handleTabChange = (key: AdminTab) => {
+        const new_index = ADMIN_TAB_ORDER[key] ?? 0;
+        set_tab_direction(new_index > prev_tab_index ? 1 : -1);
+        set_prev_tab_index(new_index);
+        tabs.set_active_key(key);
+    };
 
     const deleteSession = useWorkStore((state) => state.deleteSession);
     const updateRecord = useWorkStore((state) => state.updateRecord);
@@ -312,6 +345,10 @@ function AdminSessionGridContent() {
         },
     ];
 
+    const active_tab_content = tab_items.find(
+        (t) => t.key === tabs.active_key
+    )?.children;
+
     return (
         <Layout className="app-body !p-0">
             <Content className="!p-xl">
@@ -325,13 +362,32 @@ function AdminSessionGridContent() {
                 >
                     <Tabs
                         activeKey={tabs.active_key}
-                        onChange={(k) => tabs.set_active_key(k as AdminTab)}
-                        items={tab_items.map(({ key, label, children }) => ({
+                        onChange={(k) => handleTabChange(k as AdminTab)}
+                        items={tab_items.map(({ key, label }) => ({
                             key,
                             label,
-                            children,
                         }))}
                     />
+                    <motion.div
+                        key={tabs.active_key}
+                        initial={
+                            transition_enabled
+                                ? {
+                                      x:
+                                          tab_direction *
+                                          ROUTE_TRANSITION_OFFSET,
+                                      opacity: 0,
+                                  }
+                                : false
+                        }
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{
+                            duration,
+                            ease: TRANSITION_EASE,
+                        }}
+                    >
+                        {active_tab_content}
+                    </motion.div>
                 </Card>
 
                 <RecordDetailModal

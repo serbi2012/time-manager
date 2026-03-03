@@ -9,6 +9,7 @@ import { PlusOutlined, AppstoreOutlined } from "@ant-design/icons";
 
 import type { AppTheme } from "../../../../shared/config";
 import { APP_THEME_COLORS } from "../../../../shared/config";
+import { triggerHaptic } from "@/shared/lib/haptic";
 import { cn } from "../../../../shared/lib/cn";
 import { MOBILE_RECORD_LABEL } from "../../constants";
 
@@ -26,7 +27,10 @@ export function MobileSpeedDialFab({
     const [is_open, setIsOpen] = useState(false);
 
     const handleToggle = useCallback(() => {
-        setIsOpen((prev) => !prev);
+        setIsOpen((prev) => {
+            if (!prev) triggerHaptic(8);
+            return !prev;
+        });
     }, []);
 
     const handleAddRecord = useCallback(() => {

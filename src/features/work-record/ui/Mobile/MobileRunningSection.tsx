@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 
 import type { WorkRecord } from "../../../../shared/types";
 import { formatTimer } from "../../../../shared/lib/time";
+import { triggerHaptic } from "@/shared/lib/haptic";
 import { MOBILE_RECORD_LABEL } from "../../constants";
 import { useLongPress } from "../../hooks/useLongPress";
 import { MobileContextMenu } from "./MobileContextMenu";
@@ -129,6 +130,7 @@ export function MobileRunningSection({
                                     className="w-[48px] h-[48px] rounded-full bg-error/90 border-0 flex items-center justify-center cursor-pointer"
                                     onClick={(e) => {
                                         e.stopPropagation();
+                                        triggerHaptic(15);
                                         onToggle(record);
                                     }}
                                 >

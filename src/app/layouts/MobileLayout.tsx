@@ -14,7 +14,7 @@ import SettingsModal from "../../components/SettingsModal";
 import { DailyPage } from "../../pages/DailyPage/index";
 import WeeklySchedule from "../../components/WeeklySchedule";
 import GuideBook from "../../components/GuideBook";
-import { PageTransitionProvider } from "../../shared/ui";
+import { RouteTransition, PageTransitionProvider } from "../../shared/ui";
 import type { TransitionSpeed } from "../../shared/ui";
 
 /**
@@ -84,11 +84,13 @@ export function MobileLayout() {
                 transition_enabled={transition_enabled}
                 transition_speed={transition_speed}
             >
-                <Routes>
-                    <Route path="/" element={<DailyPage />} />
-                    <Route path="/weekly" element={<WeeklySchedule />} />
-                    <Route path="/guide" element={<GuideBook />} />
-                </Routes>
+                <RouteTransition>
+                    <Routes>
+                        <Route path="/" element={<DailyPage />} />
+                        <Route path="/weekly" element={<WeeklySchedule />} />
+                        <Route path="/guide" element={<GuideBook />} />
+                    </Routes>
+                </RouteTransition>
             </PageTransitionProvider>
 
             <SettingsModal

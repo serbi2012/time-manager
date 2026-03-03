@@ -36,6 +36,7 @@ import GuideBook from "../../components/GuideBook";
 import { AdminSessionGrid } from "../../features/admin";
 import {
     SlideIn,
+    RouteTransition,
     PageTransitionProvider,
     DESKTOP_DAILY_DELAYS,
 } from "../../shared/ui";
@@ -228,13 +229,18 @@ export function DesktopLayout() {
                 transition_enabled={transition_enabled}
                 transition_speed={transition_speed}
             >
-                <Routes>
-                    <Route path="/" element={<DailyPage />} />
-                    <Route path="/weekly" element={<WeeklySchedule />} />
-                    <Route path="/suggestions" element={<SuggestionBoard />} />
-                    <Route path="/guide" element={<GuideBook />} />
-                    <Route path="/admin" element={<AdminSessionGrid />} />
-                </Routes>
+                <RouteTransition>
+                    <Routes>
+                        <Route path="/" element={<DailyPage />} />
+                        <Route path="/weekly" element={<WeeklySchedule />} />
+                        <Route
+                            path="/suggestions"
+                            element={<SuggestionBoard />}
+                        />
+                        <Route path="/guide" element={<GuideBook />} />
+                        <Route path="/admin" element={<AdminSessionGrid />} />
+                    </Routes>
+                </RouteTransition>
             </PageTransitionProvider>
 
             <SettingsModal

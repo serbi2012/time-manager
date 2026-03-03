@@ -3,8 +3,15 @@ import { Layout, Card } from "antd";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Typography } from "antd";
+import { motion } from "framer-motion";
 import { DOCS } from "@/docs";
 import { DemoRenderer } from "@/components/guide/DemoComponents";
+import {
+    usePageTransitionContext,
+    TRANSITION_SPEED_DURATION,
+    TRANSITION_EASE,
+    CONTENT_SLIDE_UP_OFFSET,
+} from "@/shared/ui";
 import { useGuideNavigation, useGuideSearch } from "../../hooks";
 import { GUIDE_CONFIG } from "../../constants";
 import { GuideSidebar } from "../GuideSidebar";
@@ -264,6 +271,10 @@ export function DesktopGuideBook() {
         [navigateToSection, highlightKeywordInContent]
     );
 
+    const { transition_enabled, transition_speed } =
+        usePageTransitionContext();
+    const duration = TRANSITION_SPEED_DURATION[transition_speed];
+
     return (
         <Layout className="guide-book-layout">
             <Sider
@@ -282,18 +293,31 @@ export function DesktopGuideBook() {
             </Sider>
 
             <Content className="guide-book-content" ref={content_ref}>
-                <div className="guide-book-docs">
+                <motion.div
+                    key={current_section}
+                    className="guide-book-docs"
+                    initial={
+                        transition_enabled
+                            ? { y: CONTENT_SLIDE_UP_OFFSET, opacity: 0 }
+                            : false
+                    }
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{
+                        duration: duration * 1.2,
+                        ease: TRANSITION_EASE,
+                    }}
+                >
                     <SpotlightCard className="rounded-lg overflow-hidden">
-                    <Card className="guide-book-card">
-                        {renderContent(current_doc.content)}
-                    </Card>
+                        <Card className="guide-book-card">
+                            {renderContent(current_doc.content)}
+                        </Card>
                     </SpotlightCard>
 
                     <NavButtons
                         current_section={current_section}
                         on_navigate={navigateToSection}
                     />
-                </div>
+                </motion.div>
             </Content>
         </Layout>
     );

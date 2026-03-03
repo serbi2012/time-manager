@@ -11,6 +11,7 @@ import {
     DeleteOutlined,
 } from "@ant-design/icons";
 
+import { triggerHaptic } from "@/shared/lib/haptic";
 import { MOBILE_CONTEXT_MENU_LABEL } from "../../constants";
 
 interface MobileContextMenuProps {
@@ -141,10 +142,16 @@ export function MobileContextMenu({
         return () => window.removeEventListener("scroll", dismiss, { capture: true });
     }, [open, onClose]);
 
+    const HAPTIC_DURATION: Record<string, number> = {
+        complete: 10,
+        delete: 15,
+    };
+
     const handleAction = useCallback(
-        (action: () => void) => {
+        (key: string, action: () => void) => {
+            const haptic_ms = HAPTIC_DURATION[key];
+            if (haptic_ms) triggerHaptic(haptic_ms);
             onClose();
-            // 메뉴 닫힌 후 액션 실행 (exit 애니메이션 허용)
             requestAnimationFrame(() => action());
         },
         [onClose]
@@ -199,7 +206,10 @@ export function MobileContextMenu({
                                     backgroundColor: action.bg,
                                 }}
                                 onClick={() =>
-                                    handleAction(action_handlers[action.key])
+                                    handleAction(
+                                        action.key,
+                                        action_handlers[action.key]
+                                    )
                                 }
                             >
                                 <span

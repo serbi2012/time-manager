@@ -10,6 +10,7 @@ import { CaretRightFilled, CheckOutlined } from "@ant-design/icons";
 
 import type { WorkRecord } from "../../../../shared/types";
 import { formatDuration } from "../../../../shared/lib/time";
+import { triggerHaptic } from "@/shared/lib/haptic";
 import { getCategoryColor } from "../../../../shared/config";
 import { cn } from "../../../../shared/lib/cn";
 
@@ -70,6 +71,7 @@ export function MobileRecordRow({
                     className="w-[34px] h-[34px] rounded-lg bg-gray-50 border-0 flex items-center justify-center text-gray-400 cursor-pointer shrink-0"
                     onClick={(e) => {
                         e.stopPropagation();
+                        triggerHaptic(15);
                         onToggle();
                     }}
                 >

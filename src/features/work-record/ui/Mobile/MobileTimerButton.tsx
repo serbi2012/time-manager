@@ -5,6 +5,7 @@
  */
 
 import { PlayCircleOutlined, PauseCircleOutlined } from "@ant-design/icons";
+import { triggerHaptic } from "@/shared/lib/haptic";
 import { cn } from "../../../../shared/lib/cn";
 
 interface MobileTimerButtonProps {
@@ -38,6 +39,7 @@ export function MobileTimerButton({
             }}
             onClick={(e) => {
                 e.stopPropagation();
+                triggerHaptic(15);
                 onToggle();
             }}
         >
