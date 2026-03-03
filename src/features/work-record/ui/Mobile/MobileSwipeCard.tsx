@@ -8,6 +8,7 @@ import { useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { CheckCircleOutlined, DeleteOutlined } from "@ant-design/icons";
 
+import { triggerHaptic } from "@/shared/lib/haptic";
 import { RECORD_BUTTON } from "../../constants";
 
 const SWIPE_THRESHOLD = 50;
@@ -77,6 +78,7 @@ export function MobileSwipeCard({
                 lp_timer.current = setTimeout(() => {
                     lp_fired.current = true;
                     setIsPressing(false);
+                    triggerHaptic();
                     const rect = wrapper_ref.current?.getBoundingClientRect();
                     if (rect) onLongPress(rect);
                 }, LONG_PRESS_DELAY_MS);

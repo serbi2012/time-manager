@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>페이지 트랜지션 효과 후보군</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        spacing: {
+                            xs: "4px",
+                            sm: "8px",
+                            md: "12px",
+                            lg: "16px",
+                            xl: "24px",
+                            "2xl": "32px",
+                        },
+                        colors: {
+                            primary: "#3182F6",
+                            "primary-dark": "#1B64DA",
+                            "primary-light": "#ECF2FE",
+                            "text-primary": "#191F28",
+                            "text-secondary": "#6B7684",
+                            "text-hint": "#D1D6DB",
+                            "bg-app": "#F9FAFB",
+                            "bg-grey": "#F2F4F6",
+                            "border-default": "#E5E8EB",
+                            "border-light": "#F2F4F6",
+                            success: "#34C759",
+                            error: "#F04452",
+                            warning: "#FF9500",
+                        },
+                        borderRadius: {
+                            xs: "4px",
+                            sm: "6px",
+                            md: "8px",
+                            lg: "12px",
+                            xl: "16px",
+                        },
+                    },
+                },
+            };
+        </script>
+
+        <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+        <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+        <script src="https://unpkg.com/dayjs@1/dayjs.min.js"></script>
+        <script src="https://unpkg.com/antd@5/dist/antd.min.js"></script>
+        <script src="https://unpkg.com/@ant-design/icons@5/dist/index.umd.min.js"></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                background: #F9FAFB;
+                font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            }
+            #root { min-height: 100vh; }
+
+            @keyframes slideInLeft {
+                from { transform: translateX(-60px); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideInRight {
+                from { transform: translateX(60px); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutLeft {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(-60px); opacity: 0; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(60px); opacity: 0; }
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            @keyframes fadeOut {
+                from { opacity: 1; }
+                to { opacity: 0; }
+            }
+            @keyframes scaleIn {
+                from { transform: scale(0.95); opacity: 0; }
+                to { transform: scale(1); opacity: 1; }
+            }
+            @keyframes slideUp {
+                from { transform: translateY(30px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            @keyframes slideDown {
+                from { transform: translateY(-20px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            @keyframes flipIn {
+                from { transform: perspective(800px) rotateY(-8deg); opacity: 0; }
+                to { transform: perspective(800px) rotateY(0); opacity: 1; }
+            }
+            @keyframes expandIn {
+                from { transform: scale(0.92) translateY(10px); opacity: 0; filter: blur(2px); }
+                to { transform: scale(1) translateY(0); opacity: 1; filter: blur(0); }
+            }
+            @keyframes staggerChild {
+                from { transform: translateY(16px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const { Button, Card, Tag, Tabs, Badge, Space, Select, Empty, Divider, Switch } = antd;
+            const { Text, Title } = antd.Typography;
+            const {
+                HomeOutlined, CalendarOutlined, BookOutlined, ToolOutlined,
+                BarChartOutlined, DatabaseOutlined, SearchOutlined,
+                SafetyCertificateOutlined, DeleteOutlined, ExportOutlined,
+                LeftOutlined, RightOutlined, ReloadOutlined,
+                ClockCircleOutlined, CheckCircleFilled,
+            } = icons;
+
+            const PAGES = [
+                { key: "/", label: "일간 기록", icon: <HomeOutlined /> },
+                { key: "/weekly", label: "주간 일정", icon: <CalendarOutlined /> },
+                { key: "/guide", label: "사용 설명서", icon: <BookOutlined /> },
+                { key: "/admin", label: "관리자", icon: <ToolOutlined /> },
+            ];
+
+            const ADMIN_TABS = [
+                { key: "sessions", label: "세션", icon: <CalendarOutlined /> },
+                { key: "records", label: "레코드", icon: <DatabaseOutlined /> },
+                { key: "explorer", label: "탐색", icon: <SearchOutlined /> },
+                { key: "statistics", label: "통계", icon: <BarChartOutlined /> },
+                { key: "trash", label: "휴지통", icon: <DeleteOutlined /> },
+                { key: "export", label: "내보내기", icon: <ExportOutlined /> },
+                { key: "integrity", label: "무결성", icon: <SafetyCertificateOutlined /> },
+            ];
+
+            const GUIDE_SECTIONS = [
+                "시작하기",
+                "작업 기록",
+                "간트 차트",
+                "프리셋",
+                "주간 일정",
+                "설정",
+                "단축키",
+            ];
+
+            /* ============================================
+               Fake Page Content
+               ============================================ */
+
+            function DailyPageContent() {
+                return (
+                    <div className="flex gap-lg h-full">
+                        <div className="w-[200px] shrink-0">
+                            <div className="bg-white rounded-lg border border-border-default p-lg space-y-sm">
+                                <div className="text-[13px] font-semibold text-text-secondary mb-sm">프리셋</div>
+                                {["프론트엔드 개발", "백엔드 개발", "미팅", "코드리뷰"].map((t, i) => (
+                                    <div key={i} className="bg-bg-grey rounded-md p-sm text-[13px] text-text-primary">{t}</div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="flex-1 space-y-lg">
+                            <div className="bg-white rounded-lg border border-border-default p-lg h-[120px] flex items-center justify-center">
+                                <div className="flex items-center gap-xl w-full">
+                                    {Array.from({ length: 12 }, (_, i) => (
+                                        <div key={i} className="flex-1 h-[60px] rounded-sm" style={{
+                                            background: i >= 2 && i <= 4 ? '#3182F6' : i >= 6 && i <= 7 ? '#34C759' : '#F2F4F6',
+                                            opacity: i >= 2 && i <= 4 ? 0.7 : i >= 6 && i <= 7 ? 0.5 : 1,
+                                        }} />
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="bg-white rounded-lg border border-border-default p-lg">
+                                <table className="w-full text-[13px]">
+                                    <thead><tr className="text-text-secondary border-b border-border-light">
+                                        <th className="text-left py-sm font-medium">작업명</th>
+                                        <th className="text-left py-sm font-medium">프로젝트</th>
+                                        <th className="text-right py-sm font-medium">소요 시간</th>
+                                    </tr></thead>
+                                    <tbody>
+                                        {[
+                                            ["프론트엔드 개발", "TIME-001", "2시간 30분"],
+                                            ["백엔드 API 수정", "TIME-002", "1시간 15분"],
+                                            ["코드 리뷰", "TIME-003", "45분"],
+                                        ].map(([n, p, d], i) => (
+                                            <tr key={i} className="border-b border-border-light">
+                                                <td className="py-sm text-text-primary">{n}</td>
+                                                <td className="py-sm"><Tag color="blue">{p}</Tag></td>
+                                                <td className="py-sm text-right text-text-secondary">{d}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            function WeeklyPageContent() {
+                const days = ["월", "화", "수", "목", "금"];
+                return (
+                    <div className="space-y-lg">
+                        <div className="flex items-center justify-between">
+                            <div className="text-[15px] font-semibold text-text-primary">2026년 3월 1주차</div>
+                            <Space>
+                                <Button size="small" icon={<LeftOutlined />} />
+                                <Button size="small">이번 주</Button>
+                                <Button size="small" icon={<RightOutlined />} />
+                            </Space>
+                        </div>
+                        <div className="grid grid-cols-5 gap-md">
+                            {days.map((d, i) => (
+                                <div key={i} className="bg-white rounded-lg border border-border-default p-lg">
+                                    <div className="text-[13px] font-semibold text-text-primary mb-md">{d}요일</div>
+                                    {Array.from({ length: 2 + Math.floor(Math.random() * 2) }, (_, j) => (
+                                        <div key={j} className="bg-bg-grey rounded-sm p-sm mb-sm text-[11px] text-text-secondary">
+                                            작업 항목 {j + 1}
+                                        </div>
+                                    ))}
+                                    <div className="text-[11px] text-primary font-medium mt-sm">
+                                        {(2 + i * 0.5).toFixed(1)}시간
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
+            function GuidePageContent({ section }) {
+                return (
+                    <div className="flex gap-lg h-full">
+                        <div className="w-[180px] shrink-0">
+                            <div className="space-y-xs">
+                                {GUIDE_SECTIONS.map((s, i) => (
+                                    <div key={i} className={`rounded-md px-md py-sm text-[13px] cursor-pointer transition-colors ${
+                                        s === section ? "bg-primary-light text-primary font-medium" : "text-text-secondary hover:bg-bg-grey"
+                                    }`}>{s}</div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="flex-1 bg-white rounded-lg border border-border-default p-xl">
+                            <div className="text-[17px] font-semibold text-text-primary mb-lg">{section}</div>
+                            <div className="space-y-md text-[14px] text-text-secondary leading-relaxed">
+                                <p>이 섹션에서는 {section} 기능에 대해 자세히 설명합니다.</p>
+                                <p>각 기능의 사용법과 주의사항을 확인할 수 있습니다.</p>
+                                <div className="bg-bg-grey rounded-lg p-lg mt-lg">
+                                    <div className="text-[13px] font-medium text-text-primary mb-sm">예시</div>
+                                    <div className="text-[13px] text-text-secondary">
+                                        기능 사용 예시가 여기에 표시됩니다.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            function AdminPageContent({ tab }) {
+                return (
+                    <div className="bg-white rounded-lg border border-border-default p-lg">
+                        <div className="text-[15px] font-semibold text-text-primary mb-lg">
+                            {ADMIN_TABS.find(t => t.key === tab)?.label || "세션"} 관리
+                        </div>
+                        <div className="space-y-sm">
+                            {Array.from({ length: 4 }, (_, i) => (
+                                <div key={i} className="flex items-center justify-between py-sm px-md bg-bg-grey rounded-md">
+                                    <div className="text-[13px] text-text-primary">항목 {i + 1}</div>
+                                    <Tag color={i === 0 ? "red" : i === 1 ? "orange" : "green"}>
+                                        {i === 0 ? "충돌" : i === 1 ? "경고" : "정상"}
+                                    </Tag>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ============================================
+               Navigation Header (shared across demos)
+               ============================================ */
+
+            function DemoNav({ pages, current, onNavigate, pillStyle }) {
+                return (
+                    <div className="bg-white border-b border-border-default px-xl py-sm flex items-center gap-lg">
+                        <div className="text-[15px] font-semibold text-primary mr-lg">업무 관리</div>
+                        <div className="flex items-center gap-xs bg-bg-grey rounded-full p-xs">
+                            {pages.map((p) => (
+                                <button key={p.key} onClick={() => onNavigate(p.key)}
+                                    className={`relative px-lg py-[6px] rounded-full text-[13px] font-medium transition-all duration-200 border-none cursor-pointer ${
+                                        current === p.key
+                                            ? "text-primary-dark bg-white shadow-sm"
+                                            : "text-text-secondary bg-transparent hover:text-text-primary"
+                                    }`}
+                                    style={current === p.key ? pillStyle : {}}
+                                >
+                                    <span className="flex items-center gap-xs">
+                                        {p.icon}
+                                        {p.label}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                        <div className="ml-auto flex items-center gap-sm">
+                            <div className="w-[6px] h-[6px] rounded-full bg-success" />
+                            <span className="text-[11px] text-text-hint">v2.4.0</span>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ============================================
+               CANDIDATE A: Crossfade (크로스페이드)
+               ============================================ */
+
+            function CandidateA() {
+                const [page, setPage] = React.useState("/");
+                const [anim_key, setAnimKey] = React.useState(0);
+
+                function navigate(key) {
+                    setAnimKey(k => k + 1);
+                    setPage(key);
+                }
+
+                return (
+                    <div className="rounded-xl overflow-hidden border border-border-default bg-bg-app">
+                        <DemoNav pages={PAGES} current={page} onNavigate={navigate} />
+                        <div className="p-lg h-[320px] overflow-hidden" key={anim_key}
+                            style={{ animation: "fadeIn 0.3s ease-out" }}>
+                            {page === "/" && <DailyPageContent />}
+                            {page === "/weekly" && <WeeklyPageContent />}
+                            {page === "/guide" && <GuidePageContent section="시작하기" />}
+                            {page === "/admin" && <AdminPageContent tab="sessions" />}
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ============================================
+               CANDIDATE B: Directional Slide (방향 슬라이드)
+               ============================================ */
+
+            function CandidateB() {
+                const [page, setPage] = React.useState("/");
+                const [anim, setAnim] = React.useState("none");
+                const prev_idx = React.useRef(0);
+
+                function navigate(key) {
+                    const new_idx = PAGES.findIndex(p => p.key === key);
+                    const dir = new_idx > prev_idx.current ? "right" : "left";
+                    prev_idx.current = new_idx;
+                    setAnim(dir);
+                    setPage(key);
+                    setTimeout(() => setAnim("none"), 350);
+                }
+
+                const anim_style = anim === "right"
+                    ? { animation: "slideInRight 0.3s cubic-bezier(0.22, 1, 0.36, 1)" }
+                    : anim === "left"
+                    ? { animation: "slideInLeft 0.3s cubic-bezier(0.22, 1, 0.36, 1)" }
+                    : {};
+
+                return (
+                    <div className="rounded-xl overflow-hidden border border-border-default bg-bg-app">
+                        <DemoNav pages={PAGES} current={page} onNavigate={navigate} />
+                        <div className="p-lg h-[320px] overflow-hidden" key={page} style={anim_style}>
+                            {page === "/" && <DailyPageContent />}
+                            {page === "/weekly" && <WeeklyPageContent />}
+                            {page === "/guide" && <GuidePageContent section="시작하기" />}
+                            {page === "/admin" && <AdminPageContent tab="sessions" />}
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ============================================
+               CANDIDATE C: Scale + Fade (스케일 + 페이드)
+               ============================================ */
+
+            function CandidateC() {
+                const [page, setPage] = React.useState("/");
+                const [anim_key, setAnimKey] = React.useState(0);
+
+                function navigate(key) {
+                    setAnimKey(k => k + 1);
+                    setPage(key);
+                }
+
+                return (
+                    <div className="rounded-xl overflow-hidden border border-border-default bg-bg-app">
+                        <DemoNav pages={PAGES} current={page} onNavigate={navigate} />
+                        <div className="p-lg h-[320px] overflow-hidden" key={anim_key}
+                            style={{ animation: "scaleIn 0.3s cubic-bezier(0.22, 1, 0.36, 1)" }}>
+                            {page === "/" && <DailyPageContent />}
+                            {page === "/weekly" && <WeeklyPageContent />}
+                            {page === "/guide" && <GuidePageContent section="시작하기" />}
+                            {page === "/admin" && <AdminPageContent tab="sessions" />}
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ============================================
+               CANDIDATE D: Slide Up (아래에서 위로)
+               ============================================ */
+
+            function CandidateD() {
+                const [page, setPage] = React.useState("/");
+                const [anim_key, setAnimKey] = React.useState(0);
+
+                function navigate(key) {
+                    setAnimKey(k => k + 1);
+                    setPage(key);
+                }
+
+                return (
+                    <div className="rounded-xl overflow-hidden border border-border-default bg-bg-app">
+                        <DemoNav pages={PAGES} current={page} onNavigate={navigate} />
+                        <div className="p-lg h-[320px] overflow-hidden" key={anim_key}
+                            style={{ animation: "slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1)" }}>
+                            {page === "/" && <DailyPageContent />}
+                            {page === "/weekly" && <WeeklyPageContent />}
+                            {page === "/guide" && <GuidePageContent section="시작하기" />}
+                            {page === "/admin" && <AdminPageContent tab="sessions" />}
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ============================================
+               CANDIDATE E: Expand + Blur (확대 + 블러)
+               ============================================ */
+
+            function CandidateE() {
+                const [page, setPage] = React.useState("/");
+                const [anim_key, setAnimKey] = React.useState(0);
+
+                function navigate(key) {
+                    setAnimKey(k => k + 1);
+                    setPage(key);
+                }
+
+                return (
+                    <div className="rounded-xl overflow-hidden border border-border-default bg-bg-app">
+                        <DemoNav pages={PAGES} current={page} onNavigate={navigate} />
+                        <div className="p-lg h-[320px] overflow-hidden" key={anim_key}
+                            style={{ animation: "expandIn 0.4s cubic-bezier(0.22, 1, 0.36, 1)" }}>
+                            {page === "/" && <DailyPageContent />}
+                            {page === "/weekly" && <WeeklyPageContent />}
+                            {page === "/guide" && <GuidePageContent section="시작하기" />}
+                            {page === "/admin" && <AdminPageContent tab="sessions" />}
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ============================================
+               CANDIDATE F: Stagger Children (순차 등장)
+               ============================================ */
+
+            function StaggerWrapper({ children, animKey }) {
+                const items = React.Children.toArray(children);
+                return (
+                    <div key={animKey}>
+                        {items.map((child, i) => (
+                            <div key={i} style={{
+                                animation: `staggerChild 0.35s cubic-bezier(0.22, 1, 0.36, 1) ${i * 0.06}s both`,
+                            }}>
+                                {child}
+                            </div>
+                        ))}
+                    </div>
+                );
+            }
+
+            function CandidateF() {
+                const [page, setPage] = React.useState("/");
+                const [anim_key, setAnimKey] = React.useState(0);
+
+                function navigate(key) {
+                    setAnimKey(k => k + 1);
+                    setPage(key);
+                }
+
+                return (
+                    <div className="rounded-xl overflow-hidden border border-border-default bg-bg-app">
+                        <DemoNav pages={PAGES} current={page} onNavigate={navigate} />
+                        <div className="p-lg h-[320px] overflow-hidden">
+                            <StaggerWrapper animKey={anim_key}>
+                                {page === "/" && <DailyPageContent />}
+                                {page === "/weekly" && <WeeklyPageContent />}
+                                {page === "/guide" && <GuidePageContent section="시작하기" />}
+                                {page === "/admin" && <AdminPageContent tab="sessions" />}
+                            </StaggerWrapper>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ============================================
+               CANDIDATE G: Flip (플립)
+               ============================================ */
+
+            function CandidateG() {
+                const [page, setPage] = React.useState("/");
+                const [anim_key, setAnimKey] = React.useState(0);
+
+                function navigate(key) {
+                    setAnimKey(k => k + 1);
+                    setPage(key);
+                }
+
+                return (
+                    <div className="rounded-xl overflow-hidden border border-border-default bg-bg-app" style={{ perspective: "800px" }}>
+                        <DemoNav pages={PAGES} current={page} onNavigate={navigate} />
+                        <div className="p-lg h-[320px] overflow-hidden" key={anim_key}
+                            style={{ animation: "flipIn 0.4s cubic-bezier(0.22, 1, 0.36, 1)" }}>
+                            {page === "/" && <DailyPageContent />}
+                            {page === "/weekly" && <WeeklyPageContent />}
+                            {page === "/guide" && <GuidePageContent section="시작하기" />}
+                            {page === "/admin" && <AdminPageContent tab="sessions" />}
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ============================================
+               TAB TRANSITIONS (탭 전환 효과)
+               ============================================ */
+
+            function TabCandidateA() {
+                const [tab, setTab] = React.useState("sessions");
+                const [anim_key, setAnimKey] = React.useState(0);
+                function changeTab(key) { setAnimKey(k => k + 1); setTab(key); }
+
+                return (
+                    <div className="bg-white rounded-lg border border-border-default p-lg">
+                        <div className="text-[13px] font-semibold text-text-secondary mb-md">관리자 탭</div>
+                        <div className="flex gap-xs mb-lg border-b border-border-light pb-sm overflow-x-auto">
+                            {ADMIN_TABS.map(t => (
+                                <button key={t.key} onClick={() => changeTab(t.key)}
+                                    className={`px-md py-xs rounded-md text-[12px] border-none cursor-pointer whitespace-nowrap transition-colors ${
+                                        tab === t.key ? "bg-primary text-white" : "bg-transparent text-text-secondary hover:bg-bg-grey"
+                                    }`}>
+                                    <span className="flex items-center gap-xs">{t.icon}{t.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                        <div key={anim_key} style={{ animation: "fadeIn 0.25s ease-out" }}>
+                            <AdminPageContent tab={tab} />
+                        </div>
+                    </div>
+                );
+            }
+
+            function TabCandidateB() {
+                const [tab, setTab] = React.useState("sessions");
+                const prev_idx = React.useRef(0);
+                const [dir, setDir] = React.useState("none");
+
+                function changeTab(key) {
+                    const new_idx = ADMIN_TABS.findIndex(t => t.key === key);
+                    setDir(new_idx > prev_idx.current ? "right" : "left");
+                    prev_idx.current = new_idx;
+                    setTab(key);
+                }
+
+                const anim_name = dir === "right" ? "slideInRight" : dir === "left" ? "slideInLeft" : "none";
+
+                return (
+                    <div className="bg-white rounded-lg border border-border-default p-lg">
+                        <div className="text-[13px] font-semibold text-text-secondary mb-md">관리자 탭</div>
+                        <div className="flex gap-xs mb-lg border-b border-border-light pb-sm overflow-x-auto">
+                            {ADMIN_TABS.map(t => (
+                                <button key={t.key} onClick={() => changeTab(t.key)}
+                                    className={`px-md py-xs rounded-md text-[12px] border-none cursor-pointer whitespace-nowrap transition-colors ${
+                                        tab === t.key ? "bg-primary text-white" : "bg-transparent text-text-secondary hover:bg-bg-grey"
+                                    }`}>
+                                    <span className="flex items-center gap-xs">{t.icon}{t.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                        <div key={tab} style={{ animation: `${anim_name} 0.25s cubic-bezier(0.22, 1, 0.36, 1)` }}>
+                            <AdminPageContent tab={tab} />
+                        </div>
+                    </div>
+                );
+            }
+
+            function TabCandidateC() {
+                const [tab, setTab] = React.useState("sessions");
+                const [anim_key, setAnimKey] = React.useState(0);
+                function changeTab(key) { setAnimKey(k => k + 1); setTab(key); }
+
+                return (
+                    <div className="bg-white rounded-lg border border-border-default p-lg">
+                        <div className="text-[13px] font-semibold text-text-secondary mb-md">관리자 탭</div>
+                        <div className="flex gap-xs mb-lg border-b border-border-light pb-sm overflow-x-auto">
+                            {ADMIN_TABS.map(t => (
+                                <button key={t.key} onClick={() => changeTab(t.key)}
+                                    className={`px-md py-xs rounded-md text-[12px] border-none cursor-pointer whitespace-nowrap transition-colors ${
+                                        tab === t.key ? "bg-primary text-white" : "bg-transparent text-text-secondary hover:bg-bg-grey"
+                                    }`}>
+                                    <span className="flex items-center gap-xs">{t.icon}{t.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                        <div key={anim_key} style={{ animation: "slideUp 0.3s cubic-bezier(0.22, 1, 0.36, 1)" }}>
+                            <AdminPageContent tab={tab} />
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ============================================
+               GUIDE SECTION TRANSITIONS (가이드 섹션 전환)
+               ============================================ */
+
+            function GuideCandidateA() {
+                const [section, setSection] = React.useState("시작하기");
+                const [anim_key, setAnimKey] = React.useState(0);
+                function changeSection(s) { setAnimKey(k => k + 1); setSection(s); }
+
+                return (
+                    <div className="bg-bg-app rounded-lg border border-border-default p-lg">
+                        <div className="flex gap-lg h-[280px]">
+                            <div className="w-[140px] shrink-0 space-y-xs">
+                                {GUIDE_SECTIONS.map((s, i) => (
+                                    <div key={i} onClick={() => changeSection(s)}
+                                        className={`rounded-md px-md py-sm text-[12px] cursor-pointer transition-all duration-200 ${
+                                            s === section ? "bg-primary-light text-primary font-medium" : "text-text-secondary hover:bg-bg-grey"
+                                        }`}>{s}</div>
+                                ))}
+                            </div>
+                            <div className="flex-1" key={anim_key} style={{ animation: "fadeIn 0.3s ease-out" }}>
+                                <div className="bg-white rounded-lg border border-border-default p-lg h-full">
+                                    <div className="text-[15px] font-semibold text-text-primary mb-md">{section}</div>
+                                    <div className="text-[13px] text-text-secondary leading-relaxed">
+                                        <p>{section} 기능의 상세 설명이 여기에 표시됩니다.</p>
+                                        <div className="bg-bg-grey rounded-md p-md mt-md text-[12px]">예시 코드 블록</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            function GuideCandidateB() {
+                const [section, setSection] = React.useState("시작하기");
+                const [anim_key, setAnimKey] = React.useState(0);
+                function changeSection(s) { setAnimKey(k => k + 1); setSection(s); }
+
+                return (
+                    <div className="bg-bg-app rounded-lg border border-border-default p-lg">
+                        <div className="flex gap-lg h-[280px]">
+                            <div className="w-[140px] shrink-0 space-y-xs">
+                                {GUIDE_SECTIONS.map((s, i) => (
+                                    <div key={i} onClick={() => changeSection(s)}
+                                        className={`rounded-md px-md py-sm text-[12px] cursor-pointer transition-all duration-200 ${
+                                            s === section ? "bg-primary-light text-primary font-medium" : "text-text-secondary hover:bg-bg-grey"
+                                        }`}>{s}</div>
+                                ))}
+                            </div>
+                            <div className="flex-1" key={anim_key} style={{ animation: "slideUp 0.3s cubic-bezier(0.22, 1, 0.36, 1)" }}>
+                                <div className="bg-white rounded-lg border border-border-default p-lg h-full">
+                                    <div className="text-[15px] font-semibold text-text-primary mb-md">{section}</div>
+                                    <div className="text-[13px] text-text-secondary leading-relaxed">
+                                        <p>{section} 기능의 상세 설명이 여기에 표시됩니다.</p>
+                                        <div className="bg-bg-grey rounded-md p-md mt-md text-[12px]">예시 코드 블록</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            function GuideCandidateC() {
+                const [section, setSection] = React.useState("시작하기");
+                const [anim_key, setAnimKey] = React.useState(0);
+                function changeSection(s) { setAnimKey(k => k + 1); setSection(s); }
+
+                return (
+                    <div className="bg-bg-app rounded-lg border border-border-default p-lg">
+                        <div className="flex gap-lg h-[280px]">
+                            <div className="w-[140px] shrink-0 space-y-xs">
+                                {GUIDE_SECTIONS.map((s, i) => (
+                                    <div key={i} onClick={() => changeSection(s)}
+                                        className={`rounded-md px-md py-sm text-[12px] cursor-pointer transition-all duration-200 ${
+                                            s === section ? "bg-primary-light text-primary font-medium" : "text-text-secondary hover:bg-bg-grey"
+                                        }`}>{s}</div>
+                                ))}
+                            </div>
+                            <div className="flex-1" key={anim_key} style={{ animation: "scaleIn 0.3s cubic-bezier(0.22, 1, 0.36, 1)" }}>
+                                <div className="bg-white rounded-lg border border-border-default p-lg h-full">
+                                    <div className="text-[15px] font-semibold text-text-primary mb-md">{section}</div>
+                                    <div className="text-[13px] text-text-secondary leading-relaxed">
+                                        <p>{section} 기능의 상세 설명이 여기에 표시됩니다.</p>
+                                        <div className="bg-bg-grey rounded-md p-md mt-md text-[12px]">예시 코드 블록</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ============================================
+               WEEKLY PAGE ENTER TRANSITIONS (주간 일정 페이지 진입)
+               ============================================ */
+
+            function WeeklyEnterA() {
+                const [show, setShow] = React.useState(false);
+                React.useEffect(() => { setShow(true); }, []);
+
+                function replay() { setShow(false); setTimeout(() => setShow(true), 50); }
+
+                return (
+                    <div>
+                        <Button size="small" icon={<ReloadOutlined />} onClick={replay} className="mb-md">다시 재생</Button>
+                        <div className="bg-bg-app rounded-lg border border-border-default p-lg h-[280px] overflow-hidden">
+                            {show && (
+                                <div>
+                                    <div style={{ animation: "slideDown 0.3s cubic-bezier(0.22, 1, 0.36, 1) 0s both" }}>
+                                        <div className="flex items-center justify-between mb-lg">
+                                            <div className="text-[15px] font-semibold text-text-primary">2026년 3월 1주차</div>
+                                            <Space><Button size="small" icon={<LeftOutlined />} /><Button size="small">이번 주</Button><Button size="small" icon={<RightOutlined />} /></Space>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-5 gap-md">
+                                        {["월", "화", "수", "목", "금"].map((d, i) => (
+                                            <div key={i} style={{ animation: `staggerChild 0.35s cubic-bezier(0.22, 1, 0.36, 1) ${0.1 + i * 0.06}s both` }}>
+                                                <div className="bg-white rounded-lg border border-border-default p-lg">
+                                                    <div className="text-[13px] font-semibold text-text-primary mb-md">{d}요일</div>
+                                                    <div className="bg-bg-grey rounded-sm p-sm mb-sm text-[11px] text-text-secondary">작업 항목 1</div>
+                                                    <div className="bg-bg-grey rounded-sm p-sm mb-sm text-[11px] text-text-secondary">작업 항목 2</div>
+                                                    <div className="text-[11px] text-primary font-medium mt-sm">{(2 + i * 0.5).toFixed(1)}시간</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+            }
+
+            function WeeklyEnterB() {
+                const [show, setShow] = React.useState(false);
+                React.useEffect(() => { setShow(true); }, []);
+
+                function replay() { setShow(false); setTimeout(() => setShow(true), 50); }
+
+                return (
+                    <div>
+                        <Button size="small" icon={<ReloadOutlined />} onClick={replay} className="mb-md">다시 재생</Button>
+                        <div className="bg-bg-app rounded-lg border border-border-default p-lg h-[280px] overflow-hidden">
+                            {show && (
+                                <div style={{ animation: "expandIn 0.4s cubic-bezier(0.22, 1, 0.36, 1)" }}>
+                                    <WeeklyPageContent />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+            }
+
+            function WeeklyEnterC() {
+                const [show, setShow] = React.useState(false);
+                React.useEffect(() => { setShow(true); }, []);
+
+                function replay() { setShow(false); setTimeout(() => setShow(true), 50); }
+
+                return (
+                    <div>
+                        <Button size="small" icon={<ReloadOutlined />} onClick={replay} className="mb-md">다시 재생</Button>
+                        <div className="bg-bg-app rounded-lg border border-border-default p-lg h-[280px] overflow-hidden">
+                            {show && (
+                                <div>
+                                    <div style={{ animation: "fadeIn 0.3s ease-out 0s both" }}>
+                                        <div className="flex items-center justify-between mb-lg">
+                                            <div className="text-[15px] font-semibold text-text-primary">2026년 3월 1주차</div>
+                                            <Space><Button size="small" icon={<LeftOutlined />} /><Button size="small">이번 주</Button><Button size="small" icon={<RightOutlined />} /></Space>
+                                        </div>
+                                    </div>
+                                    <div style={{ animation: "slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both" }}>
+                                        <div className="grid grid-cols-5 gap-md">
+                                            {["월", "화", "수", "목", "금"].map((d, i) => (
+                                                <div key={i} className="bg-white rounded-lg border border-border-default p-lg">
+                                                    <div className="text-[13px] font-semibold text-text-primary mb-md">{d}요일</div>
+                                                    <div className="bg-bg-grey rounded-sm p-sm mb-sm text-[11px] text-text-secondary">작업 항목 1</div>
+                                                    <div className="text-[11px] text-primary font-medium mt-sm">{(2 + i * 0.5).toFixed(1)}시간</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ============================================
+               MAIN APP
+               ============================================ */
+
+            function MockupApp() {
+                return (
+                    <div className="max-w-[960px] mx-auto px-xl py-2xl">
+                        <div className="mb-2xl">
+                            <h1 className="text-[22px] font-semibold text-text-primary m-0 mb-xs">
+                                페이지 트랜지션 효과 후보군
+                            </h1>
+                            <p className="text-[13px] text-text-secondary m-0">
+                                메뉴 이동, 탭 전환, 페이지 진입 시 적용할 트랜지션 효과입니다. 각 네비게이션을 클릭해서 확인하세요.
+                            </p>
+                        </div>
+
+                        {/* ── Section 1: Route Change ── */}
+                        <div className="mb-[48px]">
+                            <div className="flex items-center gap-sm mb-lg">
+                                <div className="w-[8px] h-[8px] rounded-full bg-primary" />
+                                <span className="text-[13px] font-semibold text-text-secondary tracking-wide uppercase">
+                                    1. 메뉴 이동 트랜지션 (페이지 간 전환)
+                                </span>
+                            </div>
+                            <p className="text-[13px] text-text-secondary mb-xl ml-lg">
+                                일간 → 주간 → 설명서 → 관리자 등 메뉴를 클릭했을 때 콘텐츠 영역에 적용되는 효과
+                            </p>
+
+                            <div className="space-y-2xl">
+                                <div>
+                                    <div className="flex items-baseline gap-sm mb-md ml-xs">
+                                        <Tag color="blue">A</Tag>
+                                        <span className="text-[15px] font-semibold text-text-primary">Crossfade (크로스페이드)</span>
+                                        <span className="text-[12px] text-text-hint">가장 심플하고 자연스러운 페이드 전환</span>
+                                    </div>
+                                    <CandidateA />
+                                </div>
+
+                                <div>
+                                    <div className="flex items-baseline gap-sm mb-md ml-xs">
+                                        <Tag color="blue">B</Tag>
+                                        <span className="text-[15px] font-semibold text-text-primary">Directional Slide (방향 슬라이드)</span>
+                                        <span className="text-[12px] text-text-hint">메뉴 위치에 따라 좌/우 슬라이드</span>
+                                    </div>
+                                    <CandidateB />
+                                </div>
+
+                                <div>
+                                    <div className="flex items-baseline gap-sm mb-md ml-xs">
+                                        <Tag color="blue">C</Tag>
+                                        <span className="text-[15px] font-semibold text-text-primary">Scale + Fade (스케일 + 페이드)</span>
+                                        <span className="text-[12px] text-text-hint">살짝 축소된 상태에서 원래 크기로 확대</span>
+                                    </div>
+                                    <CandidateC />
+                                </div>
+
+                                <div>
+                                    <div className="flex items-baseline gap-sm mb-md ml-xs">
+                                        <Tag color="blue">D</Tag>
+                                        <span className="text-[15px] font-semibold text-text-primary">Slide Up (아래에서 위로)</span>
+                                        <span className="text-[12px] text-text-hint">콘텐츠가 아래에서 올라오는 느낌</span>
+                                    </div>
+                                    <CandidateD />
+                                </div>
+
+                                <div>
+                                    <div className="flex items-baseline gap-sm mb-md ml-xs">
+                                        <Tag color="blue">E</Tag>
+                                        <span className="text-[15px] font-semibold text-text-primary">Expand + Blur (확대 + 블러)</span>
+                                        <span className="text-[12px] text-text-hint">블러에서 선명해지며 확대되는 효과</span>
+                                    </div>
+                                    <CandidateE />
+                                </div>
+
+                                <div>
+                                    <div className="flex items-baseline gap-sm mb-md ml-xs">
+                                        <Tag color="blue">F</Tag>
+                                        <span className="text-[15px] font-semibold text-text-primary">Stagger Children (순차 등장)</span>
+                                        <span className="text-[12px] text-text-hint">하위 요소들이 순차적으로 나타남</span>
+                                    </div>
+                                    <CandidateF />
+                                </div>
+
+                                <div>
+                                    <div className="flex items-baseline gap-sm mb-md ml-xs">
+                                        <Tag color="blue">G</Tag>
+                                        <span className="text-[15px] font-semibold text-text-primary">Flip (플립)</span>
+                                        <span className="text-[12px] text-text-hint">3D 회전하며 등장하는 효과</span>
+                                    </div>
+                                    <CandidateG />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ── Section 2: Tab Transitions ── */}
+                        <div className="mb-[48px]">
+                            <div className="flex items-center gap-sm mb-lg">
+                                <div className="w-[8px] h-[8px] rounded-full bg-[#34C759]" />
+                                <span className="text-[13px] font-semibold text-text-secondary tracking-wide uppercase">
+                                    2. 탭 전환 트랜지션 (관리자 / 주간일정 탭)
+                                </span>
+                            </div>
+                            <p className="text-[13px] text-text-secondary mb-xl ml-lg">
+                                관리자 페이지의 탭, 주간 일정의 콘텐츠 등 내부 탭 전환 시 적용되는 효과
+                            </p>
+
+                            <div className="space-y-2xl">
+                                <div>
+                                    <div className="flex items-baseline gap-sm mb-md ml-xs">
+                                        <Tag color="green">A</Tag>
+                                        <span className="text-[15px] font-semibold text-text-primary">Fade (페이드)</span>
+                                        <span className="text-[12px] text-text-hint">심플한 페이드 인</span>
+                                    </div>
+                                    <TabCandidateA />
+                                </div>
+
+                                <div>
+                                    <div className="flex items-baseline gap-sm mb-md ml-xs">
+                                        <Tag color="green">B</Tag>
+                                        <span className="text-[15px] font-semibold text-text-primary">Directional Slide (방향 슬라이드)</span>
+                                        <span className="text-[12px] text-text-hint">탭 위치에 따라 좌/우 슬라이드</span>
+                                    </div>
+                                    <TabCandidateB />
+                                </div>
+
+                                <div>
+                                    <div className="flex items-baseline gap-sm mb-md ml-xs">
+                                        <Tag color="green">C</Tag>
+                                        <span className="text-[15px] font-semibold text-text-primary">Slide Up (아래에서 위로)</span>
+                                        <span className="text-[12px] text-text-hint">콘텐츠가 아래에서 올라오며 교체</span>
+                                    </div>
+                                    <TabCandidateC />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ── Section 3: Guide Section Transitions ── */}
+                        <div className="mb-[48px]">
+                            <div className="flex items-center gap-sm mb-lg">
+                                <div className="w-[8px] h-[8px] rounded-full bg-[#AF52DE]" />
+                                <span className="text-[13px] font-semibold text-text-secondary tracking-wide uppercase">
+                                    3. 사용 설명서 섹션 전환 트랜지션
+                                </span>
+                            </div>
+                            <p className="text-[13px] text-text-secondary mb-xl ml-lg">
+                                사이드바 메뉴를 클릭해서 섹션을 변경할 때 콘텐츠 영역에 적용되는 효과
+                            </p>
+
+                            <div className="space-y-2xl">
+                                <div>
+                                    <div className="flex items-baseline gap-sm mb-md ml-xs">
+                                        <Tag color="purple">A</Tag>
+                                        <span className="text-[15px] font-semibold text-text-primary">Fade (페이드)</span>
+                                        <span className="text-[12px] text-text-hint">부드러운 페이드 전환</span>
+                                    </div>
+                                    <GuideCandidateA />
+                                </div>
+
+                                <div>
+                                    <div className="flex items-baseline gap-sm mb-md ml-xs">
+                                        <Tag color="purple">B</Tag>
+                                        <span className="text-[15px] font-semibold text-text-primary">Slide Up (아래에서 위로)</span>
+                                        <span className="text-[12px] text-text-hint">새 콘텐츠가 위로 올라옴</span>
+                                    </div>
+                                    <GuideCandidateB />
+                                </div>
+
+                                <div>
+                                    <div className="flex items-baseline gap-sm mb-md ml-xs">
+                                        <Tag color="purple">C</Tag>
+                                        <span className="text-[15px] font-semibold text-text-primary">Scale + Fade (스케일 + 페이드)</span>
+                                        <span className="text-[12px] text-text-hint">살짝 작은 상태에서 확대되며 등장</span>
+                                    </div>
+                                    <GuideCandidateC />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ── Section 4: Page Enter ── */}
+                        <div className="mb-[48px]">
+                            <div className="flex items-center gap-sm mb-lg">
+                                <div className="w-[8px] h-[8px] rounded-full bg-[#FF9500]" />
+                                <span className="text-[13px] font-semibold text-text-secondary tracking-wide uppercase">
+                                    4. 주간 일정 페이지 진입 트랜지션
+                                </span>
+                            </div>
+                            <p className="text-[13px] text-text-secondary mb-xl ml-lg">
+                                주간 일정 페이지에 처음 진입할 때 요소들이 등장하는 효과 (일간 기록 페이지의 SlideIn과 유사)
+                            </p>
+
+                            <div className="space-y-2xl">
+                                <div>
+                                    <div className="flex items-baseline gap-sm mb-md ml-xs">
+                                        <Tag color="orange">A</Tag>
+                                        <span className="text-[15px] font-semibold text-text-primary">Stagger Cards (카드 순차 등장)</span>
+                                        <span className="text-[12px] text-text-hint">헤더 → 월~금 카드가 순차적으로 등장</span>
+                                    </div>
+                                    <WeeklyEnterA />
+                                </div>
+
+                                <div>
+                                    <div className="flex items-baseline gap-sm mb-md ml-xs">
+                                        <Tag color="orange">B</Tag>
+                                        <span className="text-[15px] font-semibold text-text-primary">Expand In (확대 등장)</span>
+                                        <span className="text-[12px] text-text-hint">전체 콘텐츠가 확대되며 선명해짐</span>
+                                    </div>
+                                    <WeeklyEnterB />
+                                </div>
+
+                                <div>
+                                    <div className="flex items-baseline gap-sm mb-md ml-xs">
+                                        <Tag color="orange">C</Tag>
+                                        <span className="text-[15px] font-semibold text-text-primary">Header Fade + Content Slide (분리 등장)</span>
+                                        <span className="text-[12px] text-text-hint">헤더는 페이드, 콘텐츠는 아래에서 슬라이드</span>
+                                    </div>
+                                    <WeeklyEnterC />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ── Comparison ── */}
+                        <div className="mb-2xl">
+                            <div className="flex items-center gap-sm mb-lg">
+                                <div className="w-[8px] h-[8px] rounded-full bg-text-hint" />
+                                <span className="text-[13px] font-semibold text-text-secondary tracking-wide uppercase">
+                                    추천 조합
+                                </span>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
+                                <div className="bg-white rounded-lg border border-border-default p-xl">
+                                    <div className="text-[11px] text-primary font-semibold mb-sm uppercase tracking-wider">조합 1: 미니멀</div>
+                                    <div className="text-[15px] font-semibold text-text-primary mb-md">심플 & 깔끔</div>
+                                    <div className="space-y-sm text-[13px] text-text-secondary">
+                                        <div className="flex items-center gap-sm"><Tag color="blue" className="!m-0">A</Tag> Crossfade</div>
+                                        <div className="flex items-center gap-sm"><Tag color="green" className="!m-0">A</Tag> Tab Fade</div>
+                                        <div className="flex items-center gap-sm"><Tag color="purple" className="!m-0">A</Tag> Guide Fade</div>
+                                        <div className="flex items-center gap-sm"><Tag color="orange" className="!m-0">C</Tag> Header+Slide</div>
+                                    </div>
+                                    <div className="mt-lg text-[11px] text-text-hint">토스 스타일에 가장 부합. 과하지 않고 자연스러움.</div>
+                                </div>
+
+                                <div className="bg-white rounded-lg border-2 border-primary p-xl">
+                                    <div className="text-[11px] text-primary font-semibold mb-sm uppercase tracking-wider">조합 2: 추천</div>
+                                    <div className="text-[15px] font-semibold text-text-primary mb-md">생동감 & 직관적</div>
+                                    <div className="space-y-sm text-[13px] text-text-secondary">
+                                        <div className="flex items-center gap-sm"><Tag color="blue" className="!m-0">B</Tag> Directional Slide</div>
+                                        <div className="flex items-center gap-sm"><Tag color="green" className="!m-0">B</Tag> Tab Dir. Slide</div>
+                                        <div className="flex items-center gap-sm"><Tag color="purple" className="!m-0">B</Tag> Guide Slide Up</div>
+                                        <div className="flex items-center gap-sm"><Tag color="orange" className="!m-0">A</Tag> Stagger Cards</div>
+                                    </div>
+                                    <div className="mt-lg text-[11px] text-text-hint">방향성이 있어 직관적. 네비게이션 위치를 반영.</div>
+                                </div>
+
+                                <div className="bg-white rounded-lg border border-border-default p-xl">
+                                    <div className="text-[11px] text-primary font-semibold mb-sm uppercase tracking-wider">조합 3: 화려함</div>
+                                    <div className="text-[15px] font-semibold text-text-primary mb-md">다이내믹 & 모던</div>
+                                    <div className="space-y-sm text-[13px] text-text-secondary">
+                                        <div className="flex items-center gap-sm"><Tag color="blue" className="!m-0">E</Tag> Expand + Blur</div>
+                                        <div className="flex items-center gap-sm"><Tag color="green" className="!m-0">C</Tag> Tab Slide Up</div>
+                                        <div className="flex items-center gap-sm"><Tag color="purple" className="!m-0">C</Tag> Guide Scale</div>
+                                        <div className="flex items-center gap-sm"><Tag color="orange" className="!m-0">A</Tag> Stagger Cards</div>
+                                    </div>
+                                    <div className="mt-lg text-[11px] text-text-hint">블러+스케일로 고급진 느낌. 성능 요구사항 높음.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="pt-lg border-t border-border-light text-center">
+                            <span className="text-[11px] text-text-hint">
+                                각 후보를 직접 클릭해서 효과를 비교해 보세요
+                            </span>
+                        </div>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            root.render(<MockupApp />);
+        </script>
+    </body>
+</html>

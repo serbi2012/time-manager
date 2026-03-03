@@ -95,4 +95,34 @@ describe("MobileContextMenu", () => {
             expect(onDelete).toHaveBeenCalledTimes(1);
         });
     });
+
+    it("open=true일 때 스크롤하면 onClose가 호출된다", () => {
+        const onClose = vi.fn();
+        render(
+            <MobileContextMenu
+                {...default_props}
+                open={true}
+                onClose={onClose}
+            />
+        );
+
+        fireEvent.scroll(window);
+
+        expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it("open=false일 때 스크롤해도 onClose가 호출되지 않는다", () => {
+        const onClose = vi.fn();
+        render(
+            <MobileContextMenu
+                {...default_props}
+                open={false}
+                onClose={onClose}
+            />
+        );
+
+        fireEvent.scroll(window);
+
+        expect(onClose).not.toHaveBeenCalled();
+    });
 });

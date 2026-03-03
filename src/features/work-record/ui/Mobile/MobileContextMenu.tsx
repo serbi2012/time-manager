@@ -3,7 +3,7 @@
  * Uses framer-motion for entrance/exit and stagger effects.
  */
 
-import { useMemo, useRef, useCallback } from "react";
+import { useMemo, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     EditOutlined,
@@ -133,6 +133,13 @@ export function MobileContextMenu({
     const menu_ref = useRef<HTMLDivElement>(null);
 
     const position = useMemo(() => calcPosition(anchor_rect), [anchor_rect]);
+
+    useEffect(() => {
+        if (!open) return;
+        const dismiss = () => onClose();
+        window.addEventListener("scroll", dismiss, { capture: true, passive: true });
+        return () => window.removeEventListener("scroll", dismiss, { capture: true });
+    }, [open, onClose]);
 
     const handleAction = useCallback(
         (action: () => void) => {
