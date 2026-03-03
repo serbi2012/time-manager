@@ -1523,6 +1523,52 @@ describe("useWorkStore", () => {
             expect(lunch_time.end).toBe(13 * 60 + 30); // 810분
             expect(lunch_time.duration).toBe(90); // 90분
         });
+
+        it("stopTimer 시 점심시간이 duration_minutes에 반영된다", () => {
+            vi.setSystemTime(new Date("2026-01-19T11:00:00"));
+            const store = useWorkStore.getState();
+            store.setLunchTime("11:40", "12:40");
+            store.setFormData({
+                work_name: "점심 테스트",
+                deal_name: "테스트",
+            });
+            store.startTimer();
+
+            vi.advanceTimersByTime(120 * 60 * 1000);
+
+            const result = store.stopTimer();
+            expect(result).not.toBeNull();
+
+            const state = useWorkStore.getState();
+            const record = state.records[0];
+            expect(record.duration_minutes).toBe(60);
+            expect(record.sessions[0].duration_minutes).toBe(60);
+        });
+
+        it("updateSession 시 점심시간이 duration_minutes에 반영된다", () => {
+            const record = createTestRecord({
+                sessions: [
+                    {
+                        id: "s1",
+                        start_time: "09:00",
+                        end_time: "10:00",
+                        duration_minutes: 60,
+                        date: "2026-01-19",
+                    },
+                ],
+            });
+            useWorkStore.setState({ records: [record] });
+
+            const store = useWorkStore.getState();
+            store.setLunchTime("11:40", "12:40");
+            store.updateSession(record.id, "s1", "11:00", "13:00");
+
+            const updated = useWorkStore.getState().records[0];
+            const session = updated.sessions[0];
+            expect(session.start_time).toBe("11:00");
+            expect(session.end_time).toBe("13:00");
+            expect(session.duration_minutes).toBe(60);
+        });
     });
 
     // =====================================================

@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.28";
+export const CURRENT_VERSION = "2.0.29";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,28 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.29",
+        date: "2026-03-03",
+        title: "간트 차트 바 조작성 개선 및 캘린더 버그 수정",
+        changes: [
+            {
+                type: "fix",
+                description:
+                    "타이머 실행 중 날짜 네비게이션 캘린더에서 다른 월로 이동해도 원래대로 돌아오지 않아요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "간트 차트에서 짧은 작업의 바가 실제 시간에 더 가깝게 표시돼요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "간트 차트에서 좁은 바도 클릭 위치에 따라 시작·종료 시간을 쉽게 조절할 수 있어요",
+            },
+        ],
+    },
     {
         version: "2.0.28",
         date: "2026-02-27",

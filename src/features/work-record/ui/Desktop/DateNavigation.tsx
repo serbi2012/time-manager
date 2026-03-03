@@ -5,7 +5,7 @@
  * 1-4: "오늘" badge scale bounce (no flicker)
  */
 
-import { useRef, useState } from "react";
+import { useRef, useState, useMemo, memo } from "react";
 import { DatePicker } from "antd";
 import {
     LeftOutlined,
@@ -47,7 +47,7 @@ function formatDateLabel(date_str: string): string {
     return `${month}월 ${day}일 ${weekday}요일`;
 }
 
-export function DateNavigation({
+export const DateNavigation = memo(function DateNavigation({
     selected_date,
     onDateChange,
     onPrevDay,
@@ -57,6 +57,7 @@ export function DateNavigation({
     const [prev_date, setPrevDate] = useState(selected_date);
     const [picker_open, setPickerOpen] = useState(false);
     const is_today = selected_date === dayjs().format(DATE_FORMAT);
+    const picker_value = useMemo(() => dayjs(selected_date), [selected_date]);
 
     const {
         ref: spotlight_ref,
@@ -133,7 +134,7 @@ export function DateNavigation({
                 </div>
                 <DatePicker
                     ref={picker_ref as never}
-                    value={dayjs(selected_date)}
+                    value={picker_value}
                     onChange={onDateChange}
                     open={picker_open}
                     onOpenChange={setPickerOpen}
@@ -182,4 +183,4 @@ export function DateNavigation({
             </motion.button>
         </div>
     );
-}
+});

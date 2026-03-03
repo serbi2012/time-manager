@@ -72,7 +72,7 @@ export function createStopTimerAction(set: SetState, get: () => WorkStore) {
                     }
 
                     // 총 시간 재계산
-                    const total_minutes = calculateTotalMinutes(rec.sessions);
+                    const total_minutes = calculateTotalMinutes(rec.sessions, lunch_time);
                     rec.duration_minutes = total_minutes;
 
                     // 마지막 종료 시간 결정
@@ -98,7 +98,7 @@ export function createStopTimerAction(set: SetState, get: () => WorkStore) {
 
         return {
             ...record,
-            duration_minutes: calculateTotalMinutes(record.sessions),
+            duration_minutes: calculateTotalMinutes(record.sessions, lunch_time),
         };
     };
 }
@@ -137,8 +137,9 @@ export function createResetTimerAction(set: SetState, get: () => WorkStore) {
                     );
                 } else {
                     // 남은 세션으로 레코드 업데이트
+                    const lunch_time = get().getLunchTimeMinutes();
                     const total_minutes =
-                        calculateTotalMinutes(remaining_sessions);
+                        calculateTotalMinutes(remaining_sessions, lunch_time);
                     set(
                         create((state) => {
                             const rec = state.records.find(

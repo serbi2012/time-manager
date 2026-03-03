@@ -5,6 +5,8 @@
 import { useMemo } from "react";
 import { Form, Input } from "antd";
 import { timeToMinutes, formatDuration } from "../../../../shared/lib/time";
+import { calculateDurationExcludingLunch } from "../../../../shared/lib/lunch";
+import { useWorkStore } from "../../../../store/useWorkStore";
 import {
     GANTT_MODAL_SESSION_TIME_HEADER,
     GANTT_FORM_LABEL_START,
@@ -56,6 +58,7 @@ const HERO_INPUT_CLASS =
 export function SessionTimeSection({
     is_active_session,
 }: SessionTimeSectionProps) {
+    const getLunchTimeMinutes = useWorkStore((s) => s.getLunchTimeMinutes);
     const start_time = Form.useWatch("session_start_time");
     const end_time = Form.useWatch("session_end_time");
 
@@ -63,10 +66,14 @@ export function SessionTimeSection({
         if (!start_time || !end_time) return null;
         if (!TIME_PATTERN.test(start_time) || !TIME_PATTERN.test(end_time))
             return null;
-        const diff = timeToMinutes(end_time) - timeToMinutes(start_time);
-        if (diff <= 0) return null;
-        return formatDuration(diff);
-    }, [start_time, end_time]);
+        const start_mins = timeToMinutes(start_time);
+        const end_mins = timeToMinutes(end_time);
+        if (end_mins <= start_mins) return null;
+        const lunch_time = getLunchTimeMinutes();
+        const duration = calculateDurationExcludingLunch(start_mins, end_mins, lunch_time);
+        if (duration <= 0) return null;
+        return formatDuration(duration);
+    }, [start_time, end_time, getLunchTimeMinutes]);
 
     return (
         <div className="mb-lg px-xl py-xl bg-bg-grey rounded-lg">

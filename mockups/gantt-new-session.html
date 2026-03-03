@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>간트 차트 - 막 시작한 세션 UI/UX 개선</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        spacing: {
+                            xs: "4px",
+                            sm: "8px",
+                            md: "12px",
+                            lg: "16px",
+                            xl: "24px",
+                            "2xl": "32px",
+                        },
+                        colors: {
+                            primary: "#3182F6",
+                            "primary-dark": "#1B64DA",
+                            "primary-light": "#ECF2FE",
+                            "text-primary": "#191F28",
+                            "text-secondary": "#6B7684",
+                            "text-hint": "#D1D6DB",
+                            "bg-app": "#F9FAFB",
+                            "bg-grey": "#F2F4F6",
+                            "border-default": "#E5E8EB",
+                            "border-light": "#F2F4F6",
+                            success: "#34C759",
+                            error: "#F04452",
+                        },
+                        borderRadius: {
+                            xs: "4px",
+                            sm: "6px",
+                            md: "8px",
+                            lg: "12px",
+                            xl: "16px",
+                        },
+                    },
+                },
+            };
+        </script>
+
+        <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+        <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+        <script src="https://unpkg.com/dayjs@1/dayjs.min.js"></script>
+        <script src="https://unpkg.com/antd@5/dist/antd.min.js"></script>
+        <script src="https://unpkg.com/@ant-design/icons@5/dist/index.umd.min.js"></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+        <style>
+            body {
+                margin: 0;
+                padding: 24px;
+                background: #f5f5f5;
+                font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            }
+            #root {
+                max-width: 1100px;
+                margin: 0 auto;
+            }
+            .mockup-header {
+                text-align: center;
+                margin-bottom: 32px;
+                padding-bottom: 16px;
+                border-bottom: 1px solid #e8e8e8;
+            }
+            .mockup-header h1 { font-size: 20px; font-weight: 700; color: #333; margin: 0 0 4px; }
+            .mockup-header p { font-size: 13px; color: #999; margin: 0; }
+            .mockup-section { margin-bottom: 48px; }
+            .mockup-section-label {
+                font-size: 11px; font-weight: 700; text-transform: uppercase;
+                letter-spacing: 1px; color: #3182F6; margin-bottom: 12px;
+            }
+            .mockup-frame {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+                padding: 24px;
+                overflow: hidden;
+            }
+
+            /* Gantt shared styles */
+            .gantt-bar-base {
+                position: absolute;
+                height: 24px;
+                top: 10px;
+                border-radius: 8px;
+                opacity: 0.85;
+            }
+            .gantt-bar-active {
+                opacity: 1;
+            }
+
+            /* Shimmer */
+            @keyframes shimmer {
+                0% { background-position: -200% 0; }
+                100% { background-position: 200% 0; }
+            }
+            .shimmer-overlay {
+                position: absolute;
+                inset: 0;
+                border-radius: 8px;
+                background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.35) 40%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.35) 60%, transparent 100%);
+                background-size: 200% 100%;
+                animation: shimmer 2.5s ease-in-out infinite;
+                pointer-events: none;
+            }
+
+            /* Pulse */
+            @keyframes pulse {
+                0%, 100% { box-shadow: 0 0 0 0 rgba(49,130,246,0.3); }
+                50% { box-shadow: 0 0 0 4px rgba(49,130,246,0.08); }
+            }
+            .bar-pulse { animation: pulse 2s ease-in-out infinite; }
+
+            /* Ripple */
+            @keyframes ripple {
+                0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0.8; }
+                100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+            }
+            .ripple-ring {
+                position: absolute;
+                width: 24px; height: 24px;
+                border-radius: 50%;
+                border: 2px solid #3182F6;
+                top: 50%; left: 50%;
+                transform: translate(-50%, -50%) scale(0.5);
+                animation: ripple 2s ease-out infinite;
+                pointer-events: none;
+            }
+            .ripple-ring-2 { animation-delay: 0.7s; }
+            .ripple-ring-3 { animation-delay: 1.4s; }
+
+            /* Breathing glow */
+            @keyframes breatheGlow {
+                0%, 100% { box-shadow: 0 0 6px rgba(49,130,246,0.3), 0 0 12px rgba(49,130,246,0.15); }
+                50% { box-shadow: 0 0 10px rgba(49,130,246,0.5), 0 0 20px rgba(49,130,246,0.25); }
+            }
+
+            /* Marker bounce */
+            @keyframes markerBounce {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-3px); }
+            }
+
+            /* Badge blink */
+            @keyframes badgeBlink {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.6; }
+            }
+
+            /* Current time line pulse */
+            @keyframes lineGlow {
+                0%, 100% { opacity: 0.6; }
+                50% { opacity: 1; }
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const { Tag, Badge } = antd;
+            const { ClockCircleOutlined, CaretRightFilled, PlayCircleFilled, EnvironmentFilled } = icons;
+
+            const COLORS = {
+                blue: "#3182F6",
+                green: "#34C759",
+                purple: "#AF52DE",
+                orange: "#FF9500",
+                teal: "#5AC8FA",
+            };
+
+            const TIME_START = 9 * 60;
+            const TIME_END = 18 * 60;
+            const TOTAL = TIME_END - TIME_START;
+            const CURRENT_TIME = 16 * 60 + 49;
+
+            function toPercent(mins) {
+                return ((mins - TIME_START) / TOTAL) * 100;
+            }
+
+            function formatTime(mins) {
+                const h = Math.floor(mins / 60);
+                const m = mins % 60;
+                return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+            }
+
+            const SESSIONS = [
+                { name: "세트메뉴설정 - 집계...", start: 9*60+30, end: 11*60+30, color: COLORS.blue },
+                { name: "세트메뉴설정 - 세트...", start: 9*60, end: 10*60, color: COLORS.teal },
+                { name: "QA 테스트", start: 11*60+45, end: 12*60+30, color: COLORS.green },
+            ];
+
+            const ACTIVE_SESSION = {
+                name: "세트메뉴설정 - 소메뉴간 동기화",
+                start: CURRENT_TIME,
+                color: COLORS.blue,
+            };
+
+            function TimeHeader() {
+                const labels = [];
+                for (let h = 9; h <= 18; h++) {
+                    labels.push(
+                        <span key={h} className="absolute text-[11px] text-gray-400 font-medium"
+                            style={{ left: `${toPercent(h*60)}%`, transform: "translateX(-50%)" }}>
+                            {`${String(h).padStart(2,"0")}:00`}
+                        </span>
+                    );
+                }
+                return <div className="relative h-6 mb-1">{labels}</div>;
+            }
+
+            function GridLines() {
+                const lines = [];
+                for (let h = 9; h <= 18; h++) {
+                    lines.push(
+                        <div key={h} className="absolute top-0 bottom-0 w-px bg-gray-100"
+                            style={{ left: `${toPercent(h*60)}%` }} />
+                    );
+                }
+                return <>{lines}</>;
+            }
+
+            function LunchOverlay() {
+                const left = toPercent(12*60);
+                const width = toPercent(13*60) - left;
+                return (
+                    <div className="absolute top-0 bottom-0 z-[1]"
+                        style={{
+                            left: `${left}%`, width: `${width}%`,
+                            background: "repeating-linear-gradient(-45deg, transparent, transparent 6px, rgba(0,0,0,0.018) 6px, rgba(0,0,0,0.018) 12px), rgba(242,244,246,0.5)",
+                            borderLeft: "1px dashed #D1D6DB", borderRight: "1px dashed #D1D6DB",
+                        }} />
+                );
+            }
+
+            function CurrentTimeLine({ withBadge = false, badgeText = "" }) {
+                const left = toPercent(CURRENT_TIME);
+                return (
+                    <div className="absolute top-0 bottom-0 z-[8]" style={{ left: `${left}%` }}>
+                        <div className="absolute top-0 bottom-0 w-[2px] -ml-px" style={{ background: "#F04452" }} />
+                        <div className="absolute -top-1 w-[8px] h-[8px] rounded-full -ml-[3px]" style={{ background: "#F04452" }} />
+                        {withBadge && (
+                            <div className="absolute -top-7 -ml-[28px] bg-red-500 text-white text-[10px] font-semibold px-[6px] py-[1px] rounded-sm whitespace-nowrap"
+                                style={{ animation: "badgeBlink 2s ease-in-out infinite" }}>
+                                {badgeText}
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+
+            function NormalBars({ rowIndex = 0 }) {
+                return SESSIONS.map((s, i) => {
+                    const left = toPercent(s.start);
+                    const width = toPercent(s.end) - left;
+                    return (
+                        <div key={i} className="gantt-bar-base"
+                            style={{
+                                left: `${left}%`, width: `${width}%`,
+                                backgroundColor: s.color,
+                                boxShadow: `0 1px 3px ${s.color}30`,
+                                top: `${10 + rowIndex * 44}px`,
+                            }} />
+                    );
+                });
+            }
+
+            function RowLabel({ name, top, isActive = false }) {
+                return (
+                    <div className="absolute right-full pr-md flex items-center gap-sm"
+                        style={{ top, width: 140, justifyContent: "flex-end", opacity: isActive ? 1 : 0.7 }}>
+                        <span className={`text-[11px] font-medium truncate ${isActive ? "text-primary" : "text-gray-600"}`}>
+                            {name}
+                        </span>
+                    </div>
+                );
+            }
+
+            function GanttFrame({ title, description, children, rows = 3 }) {
+                const gridHeight = Math.max(rows * 44 + 16, 80);
+                return (
+                    <div className="mockup-frame" style={{ padding: "20px 24px" }}>
+                        <div className="flex items-center justify-between mb-md">
+                            <div className="flex items-center gap-sm">
+                                <span className="text-[15px] font-semibold text-gray-900">{title}</span>
+                                {description && (
+                                    <span className="text-[12px] text-gray-400 ml-sm">{description}</span>
+                                )}
+                            </div>
+                        </div>
+                        <div style={{ paddingLeft: 150 }}>
+                            <TimeHeader />
+                            <div className="relative" style={{ height: gridHeight }}>
+                                <GridLines />
+                                <LunchOverlay />
+                                {children}
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* =========================================================
+             *  CANDIDATE A: Wider Minimum Width
+             * ========================================================= */
+            function CandidateA() {
+                const left = toPercent(ACTIVE_SESSION.start);
+                const minWidthPx = 50;
+                const minWidthPct = (minWidthPx / 800) * 100;
+                return (
+                    <GanttFrame title="일간 타임라인" description="방금 시작한 세션 — 최소 너비 확대" rows={3}>
+                        <NormalBars />
+                        <CurrentTimeLine />
+                        <RowLabel name="세트메뉴설정 - 집계..." top="20px" />
+                        <RowLabel name="세트메뉴설정 - 세트..." top="64px" />
+                        <RowLabel name={ACTIVE_SESSION.name} top="108px" isActive />
+
+                        {/* Active session bar with wider minimum */}
+                        <div className="gantt-bar-base gantt-bar-active bar-pulse"
+                            style={{
+                                left: `${left}%`,
+                                width: `${Math.max(minWidthPct, 0.5)}%`,
+                                minWidth: `${minWidthPx}px`,
+                                backgroundColor: ACTIVE_SESSION.color,
+                                boxShadow: `0 2px 8px ${ACTIVE_SESSION.color}40`,
+                                top: "98px",
+                            }}>
+                            <div className="shimmer-overlay" />
+                        </div>
+                    </GanttFrame>
+                );
+            }
+
+            /* =========================================================
+             *  CANDIDATE B: Start Marker + Growing Bar
+             * ========================================================= */
+            function CandidateB() {
+                const left = toPercent(ACTIVE_SESSION.start);
+                return (
+                    <GanttFrame title="일간 타임라인" description="시작점 마커 + 성장 바" rows={3}>
+                        <NormalBars />
+                        <CurrentTimeLine />
+                        <RowLabel name="세트메뉴설정 - 집계..." top="20px" />
+                        <RowLabel name="세트메뉴설정 - 세트..." top="64px" />
+                        <RowLabel name={ACTIVE_SESSION.name} top="108px" isActive />
+
+                        {/* Diamond marker at start point */}
+                        <div className="absolute z-[10]"
+                            style={{ left: `${left}%`, top: "100px", transform: "translateX(-50%)" }}>
+                            {/* Marker pin */}
+                            <div style={{
+                                width: 14, height: 14,
+                                backgroundColor: ACTIVE_SESSION.color,
+                                transform: "rotate(45deg)",
+                                borderRadius: 2,
+                                boxShadow: `0 2px 8px ${ACTIVE_SESSION.color}50`,
+                                animation: "markerBounce 2s ease-in-out infinite",
+                            }} />
+                        </div>
+
+                        {/* Tiny growing bar */}
+                        <div className="gantt-bar-base gantt-bar-active"
+                            style={{
+                                left: `${left}%`,
+                                width: "6px",
+                                backgroundColor: ACTIVE_SESSION.color,
+                                boxShadow: `0 2px 8px ${ACTIVE_SESSION.color}40`,
+                                top: "98px",
+                                borderRadius: "0 8px 8px 0",
+                            }}>
+                            <div className="shimmer-overlay" />
+                        </div>
+
+                        {/* Time label */}
+                        <div className="absolute z-[12] text-[10px] font-semibold text-primary whitespace-nowrap"
+                            style={{ left: `${left}%`, top: "84px", transform: "translateX(-50%)" }}>
+                            {formatTime(ACTIVE_SESSION.start)}
+                        </div>
+                    </GanttFrame>
+                );
+            }
+
+            /* =========================================================
+             *  CANDIDATE C: Ripple Pulse Indicator
+             * ========================================================= */
+            function CandidateC() {
+                const left = toPercent(ACTIVE_SESSION.start);
+                return (
+                    <GanttFrame title="일간 타임라인" description="Ripple 펄스 인디케이터" rows={3}>
+                        <NormalBars />
+                        <CurrentTimeLine />
+                        <RowLabel name="세트메뉴설정 - 집계..." top="20px" />
+                        <RowLabel name="세트메뉴설정 - 세트..." top="64px" />
+                        <RowLabel name={ACTIVE_SESSION.name} top="108px" isActive />
+
+                        {/* Ripple center dot + rings */}
+                        <div className="absolute z-[10]"
+                            style={{ left: `${left}%`, top: "110px" }}>
+                            {/* Core dot */}
+                            <div style={{
+                                width: 12, height: 12,
+                                backgroundColor: ACTIVE_SESSION.color,
+                                borderRadius: "50%",
+                                position: "absolute",
+                                top: "50%", left: "50%",
+                                transform: "translate(-50%, -50%)",
+                                boxShadow: `0 0 8px ${ACTIVE_SESSION.color}60`,
+                                zIndex: 3,
+                            }} />
+                            {/* Ripple rings */}
+                            <div className="ripple-ring" />
+                            <div className="ripple-ring ripple-ring-2" />
+                            <div className="ripple-ring ripple-ring-3" />
+                        </div>
+
+                        {/* Tiny bar hint */}
+                        <div className="gantt-bar-base gantt-bar-active"
+                            style={{
+                                left: `${left}%`,
+                                width: "4px",
+                                backgroundColor: ACTIVE_SESSION.color,
+                                boxShadow: `0 2px 8px ${ACTIVE_SESSION.color}40`,
+                                top: "98px",
+                                borderRadius: "8px",
+                            }} />
+                    </GanttFrame>
+                );
+            }
+
+            /* =========================================================
+             *  CANDIDATE D: Wider Min Width + Inline Label
+             * ========================================================= */
+            function CandidateD() {
+                const left = toPercent(ACTIVE_SESSION.start);
+                const minWidthPx = 50;
+                const minWidthPct = (minWidthPx / 800) * 100;
+                return (
+                    <GanttFrame title="일간 타임라인" description="최소 너비 확대 + 인라인 라벨" rows={3}>
+                        <NormalBars />
+                        <CurrentTimeLine />
+                        <RowLabel name="세트메뉴설정 - 집계..." top="20px" />
+                        <RowLabel name="세트메뉴설정 - 세트..." top="64px" />
+                        <RowLabel name={ACTIVE_SESSION.name} top="108px" isActive />
+
+                        {/* Active bar with label */}
+                        <div className="gantt-bar-base gantt-bar-active bar-pulse"
+                            style={{
+                                left: `${left}%`,
+                                width: `${Math.max(minWidthPct, 0.5)}%`,
+                                minWidth: `${minWidthPx}px`,
+                                backgroundColor: ACTIVE_SESSION.color,
+                                boxShadow: `0 2px 8px ${ACTIVE_SESSION.color}40`,
+                                top: "98px",
+                            }}>
+                            <div className="shimmer-overlay" />
+                        </div>
+
+                        {/* Floating label above bar */}
+                        <div className="absolute z-[12] flex items-center gap-[4px]"
+                            style={{ left: `${left}%`, top: "78px" }}>
+                            <div className="flex items-center gap-[3px] bg-primary text-white text-[10px] font-semibold px-[6px] py-[2px] rounded-sm whitespace-nowrap shadow-sm">
+                                <PlayCircleFilled style={{ fontSize: 9 }} />
+                                <span>{formatTime(ACTIVE_SESSION.start)}~</span>
+                            </div>
+                        </div>
+                    </GanttFrame>
+                );
+            }
+
+            /* =========================================================
+             *  CANDIDATE E: Enhanced Current Time Marker
+             * ========================================================= */
+            function CandidateE() {
+                const left = toPercent(ACTIVE_SESSION.start);
+                return (
+                    <GanttFrame title="일간 타임라인" description="강화된 현재 시간 마커 + 녹화 뱃지" rows={3}>
+                        <NormalBars />
+                        <RowLabel name="세트메뉴설정 - 집계..." top="20px" />
+                        <RowLabel name="세트메뉴설정 - 세트..." top="64px" />
+                        <RowLabel name={ACTIVE_SESSION.name} top="108px" isActive />
+
+                        {/* Enhanced current time line with glow */}
+                        <div className="absolute top-0 bottom-0 z-[8]" style={{ left: `${left}%` }}>
+                            <div className="absolute top-0 bottom-0 w-[2px] -ml-px"
+                                style={{
+                                    background: "linear-gradient(180deg, #F04452 0%, #3182F6 100%)",
+                                    animation: "lineGlow 2s ease-in-out infinite",
+                                }} />
+                            <div className="absolute -top-1 w-[8px] h-[8px] rounded-full -ml-[3px]" style={{ background: "#F04452" }} />
+
+                            {/* Recording badge */}
+                            <div className="absolute -top-7 -ml-[32px] flex items-center gap-[3px] bg-primary text-white text-[10px] font-semibold px-[6px] py-[2px] rounded-sm whitespace-nowrap shadow-md"
+                                style={{ animation: "badgeBlink 2s ease-in-out infinite" }}>
+                                <span style={{
+                                    width: 6, height: 6, borderRadius: "50%", background: "#FF6B6B",
+                                    display: "inline-block",
+                                }} />
+                                녹화 중
+                            </div>
+                        </div>
+
+                        {/* Original thin bar */}
+                        <div className="gantt-bar-base gantt-bar-active"
+                            style={{
+                                left: `${left}%`,
+                                width: "6px",
+                                backgroundColor: ACTIVE_SESSION.color,
+                                boxShadow: `0 2px 8px ${ACTIVE_SESSION.color}40`,
+                                top: "98px",
+                                animation: "breatheGlow 2s ease-in-out infinite",
+                            }}>
+                            <div className="shimmer-overlay" />
+                        </div>
+                    </GanttFrame>
+                );
+            }
+
+            /* =========================================================
+             *  CURRENT (Before) - showing the problem
+             * ========================================================= */
+            function CurrentDesign() {
+                const left = toPercent(ACTIVE_SESSION.start);
+                const minWidthPct = Math.max((5 / TOTAL) * 100, 1);
+                return (
+                    <GanttFrame title="일간 타임라인" description="현재 상태 — 거의 보이지 않는 바" rows={3}>
+                        <NormalBars />
+                        <CurrentTimeLine />
+                        <RowLabel name="세트메뉴설정 - 집계..." top="20px" />
+                        <RowLabel name="세트메뉴설정 - 세트..." top="64px" />
+                        <RowLabel name={ACTIVE_SESSION.name} top="108px" isActive />
+
+                        {/* Current: tiny dot-like bar */}
+                        <div className="gantt-bar-base gantt-bar-active bar-pulse"
+                            style={{
+                                left: `${left}%`,
+                                width: `${minWidthPct}%`,
+                                backgroundColor: ACTIVE_SESSION.color,
+                                boxShadow: `0 2px 8px ${ACTIVE_SESSION.color}40`,
+                                top: "98px",
+                            }}>
+                            <div className="shimmer-overlay" />
+                        </div>
+                    </GanttFrame>
+                );
+            }
+
+            /* =========================================================
+             *  MAIN APP
+             * ========================================================= */
+            function MockupApp() {
+                return (
+                    <div>
+                        <div className="mockup-header">
+                            <h1>간트 차트 - 막 시작한 세션 UI/UX 개선</h1>
+                            <p>0분짜리 세션이 간트 차트에서 잘 보이도록 하는 5가지 디자인 후보</p>
+                        </div>
+
+                        {/* Current (problem) */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label" style={{ color: "#F04452" }}>
+                                현재 상태 (문제)
+                            </div>
+                            <CurrentDesign />
+                            <div className="mt-sm px-sm">
+                                <span className="text-[12px] text-gray-400">
+                                    16:49에 시작한 세션이 1% 너비의 작은 점으로만 보임. border-radius 8px로 인해 원형으로 축소됨.
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Candidate A */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                후보 A — 최소 너비 확대
+                            </div>
+                            <CandidateA />
+                            <div className="mt-sm px-sm">
+                                <span className="text-[12px] text-gray-400">
+                                    진행 중인 세션의 최소 시각 너비를 50px로 확대. 가장 단순한 접근. shimmer + pulse 유지.
+                                    바가 시간에 따라 자연스럽게 성장. 다만 실제 시간보다 넓게 표시되므로 약간의 정보 왜곡.
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Candidate B */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                후보 B — 시작점 마커 + 성장 바
+                            </div>
+                            <CandidateB />
+                            <div className="mt-sm px-sm">
+                                <span className="text-[12px] text-gray-400">
+                                    다이아몬드 마커가 시작 시점을 명확히 표시. 바는 실제 시간 비례로 성장.
+                                    0분이어도 마커는 항상 보임. 시간 정확성을 유지하면서 가시성 확보.
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Candidate C */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                후보 C — Ripple 펄스 인디케이터
+                            </div>
+                            <CandidateC />
+                            <div className="mt-sm px-sm">
+                                <span className="text-[12px] text-gray-400">
+                                    시작 위치에 펄스 ripple 애니메이션. "지금 막 시작됨"을 강조하는 시각 효과.
+                                    바가 자라면 ripple이 바 안으로 자연스럽게 흡수됨. 시선을 강하게 끔.
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Candidate D */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                후보 D — 최소 너비 확대 + 인라인 라벨
+                            </div>
+                            <CandidateD />
+                            <div className="mt-sm px-sm">
+                                <span className="text-[12px] text-gray-400">
+                                    후보 A + 바 위에 시작시간 라벨. 정보량이 많아 한눈에 파악 가능.
+                                    라벨이 다른 바와 겹칠 수 있는 경우 처리 필요.
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Candidate E */}
+                        <div className="mockup-section">
+                            <div className="mockup-section-label">
+                                후보 E — 강화된 현재 시간 마커 + 녹화 뱃지
+                            </div>
+                            <CandidateE />
+                            <div className="mt-sm px-sm">
+                                <span className="text-[12px] text-gray-400">
+                                    현재 시간 수직 라인을 그라데이션으로 강화 + "녹화 중" 뱃지 추가.
+                                    바 자체는 얇게 유지하되 전체 차트에서 현재 위치가 부각됨.
+                                    기존 현재 시간 마커를 활용하는 형태.
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            root.render(<MockupApp />);
+        </script>
+    </body>
+</html>

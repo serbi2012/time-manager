@@ -3,7 +3,7 @@
  * Animation F: Date text slides left/right on navigation
  */
 
-import { useRef, useState } from "react";
+import { useRef, useState, useMemo, memo } from "react";
 import { DatePicker } from "antd";
 import {
     LeftOutlined,
@@ -34,7 +34,7 @@ function formatDateLabel(date_str: string): string {
     return `${month}월 ${day}일 (${weekday})`;
 }
 
-export function MobileDateHeader({
+export const MobileDateHeader = memo(function MobileDateHeader({
     selected_date,
     total_minutes,
     onPrevDay,
@@ -47,6 +47,7 @@ export function MobileDateHeader({
     const [slide_dir, setSlideDir] = useState<"left" | "right" | null>(null);
     const [slide_key, setSlideKey] = useState(0);
     const [prev_date, setPrevDate] = useState(selected_date);
+    const picker_value = useMemo(() => dayjs(selected_date), [selected_date]);
 
     if (prev_date !== selected_date) {
         const dir = dayjs(selected_date).isAfter(dayjs(prev_date))
@@ -96,7 +97,7 @@ export function MobileDateHeader({
                     </div>
                     <DatePicker
                         ref={picker_ref as never}
-                        value={dayjs(selected_date)}
+                        value={picker_value}
                         onChange={onDateChange}
                         allowClear={false}
                         className="!absolute !inset-0 !opacity-0 !cursor-pointer"
@@ -126,4 +127,4 @@ export function MobileDateHeader({
             </div>
         </div>
     );
-}
+});

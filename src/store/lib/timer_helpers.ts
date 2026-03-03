@@ -171,7 +171,7 @@ export function finishCurrentSession(
                         }
 
                         const total_minutes = calculateTotalMinutes(
-                            rec.sessions
+                            rec.sessions, lunch_time
                         );
                         rec.duration_minutes = total_minutes;
 
@@ -236,7 +236,7 @@ function handleLegacySessionFinish(
                 );
                 if (rec) {
                     rec.sessions.push(new_session);
-                    const total_minutes = calculateTotalMinutes(rec.sessions);
+                    const total_minutes = calculateTotalMinutes(rec.sessions, lunch_time);
                     rec.duration_minutes = total_minutes;
                     rec.start_time = rec.start_time || new_session.start_time;
                     rec.end_time = new_session.end_time;
@@ -255,7 +255,7 @@ function handleLegacySessionFinish(
             id: crypto.randomUUID(),
             ...active_form,
             project_code: active_form.project_code || DEFAULT_PROJECT_CODE,
-            duration_minutes: calculateTotalMinutes([new_session]),
+            duration_minutes: calculateTotalMinutes([new_session], lunch_time),
             start_time: new_session.start_time,
             end_time: new_session.end_time,
             date: record_date,
@@ -303,7 +303,7 @@ export function handleLegacyStopTimer(
                 );
                 if (rec) {
                     rec.sessions.push(new_session);
-                    const total_minutes = calculateTotalMinutes(rec.sessions);
+                    const total_minutes = calculateTotalMinutes(rec.sessions, lunch_time);
                     rec.duration_minutes = total_minutes;
                     rec.start_time = rec.start_time || new_session.start_time;
                     rec.end_time = new_session.end_time;
@@ -326,14 +326,14 @@ export function handleLegacyStopTimer(
             duration_minutes: calculateTotalMinutes([
                 ...existing_record.sessions,
                 new_session,
-            ]),
+            ], lunch_time),
         };
     } else {
         const new_record: WorkRecord = {
             id: crypto.randomUUID(),
             ...active_form,
             project_code: active_form.project_code || DEFAULT_PROJECT_CODE,
-            duration_minutes: calculateTotalMinutes([new_session]),
+            duration_minutes: calculateTotalMinutes([new_session], lunch_time),
             start_time: new_session.start_time,
             end_time: new_session.end_time,
             date: record_date,

@@ -3,12 +3,13 @@
  * - One bar per session with colored shadow, shimmer for running
  */
 
+import { useRef, useCallback } from "react";
 import { Popover, Tooltip } from "antd";
 import { minutesToTime } from "../../../../shared/lib/time";
 import type { WorkRecord, WorkSession } from "../../../../shared/types";
 import { SessionContextMenu } from "./SessionContextMenu";
 import { SessionBarTooltip } from "./SessionBarTooltip";
-import type { BarStyle } from "../../lib/bar_calculator";
+import { resolveSmartEdge, type BarStyle } from "../../lib/bar_calculator";
 
 export interface ResizeStateDisplay {
     session_id: string;
@@ -53,6 +54,8 @@ const BAR_CLASS_NAMES = {
     conflict: "gantt-bar-conflict",
 };
 
+const NARROW_BAR_THRESHOLD_PX = 40;
+
 const TOOLTIP_OVERLAY_STYLE: React.CSSProperties = { maxWidth: "none" };
 
 const TOOLTIP_INNER_STYLE: React.CSSProperties = {
@@ -82,6 +85,24 @@ export function GanttBarCell({
     on_context_open_change,
     on_resize_start,
 }: GanttBarCellProps) {
+    const bar_ref = useRef<HTMLDivElement>(null);
+
+    const handleSmartEdgeCapture = useCallback(
+        (e: React.MouseEvent) => {
+            if (e.button !== 0) return;
+            const el = bar_ref.current;
+            if (!el || el.offsetWidth >= NARROW_BAR_THRESHOLD_PX) return;
+
+            e.stopPropagation();
+
+            const rect = el.getBoundingClientRect();
+            const click_x = e.clientX - rect.left;
+            const handle = resolveSmartEdge(click_x, el.offsetWidth, is_running);
+            on_resize_start(e, session, record, handle);
+        },
+        [is_running, on_resize_start, session, record]
+    );
+
     const bar_class = [
         BAR_CLASS_NAMES.base,
         is_running && BAR_CLASS_NAMES.running,
@@ -146,8 +167,10 @@ export function GanttBarCell({
                 overlayInnerStyle={TOOLTIP_INNER_STYLE}
             >
                 <div
+                    ref={bar_ref}
                     className={bar_class}
                     style={bar_style || {}}
+                    onMouseDownCapture={handleSmartEdgeCapture}
                     onDoubleClick={(e) => on_double_click(record, session, e)}
                     onContextMenu={on_context_menu}
                 >

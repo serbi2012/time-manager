@@ -113,7 +113,7 @@ export function calculateBarStyle(
     let left = ((start - time_range.start) / total_minutes) * 100;
     left = Math.max(0, Math.min(left, 100));
 
-    const min_width_percent = Math.max((5 / total_minutes) * 100, 1);
+    const min_width_percent = Math.max((3 / total_minutes) * 100, 0.5);
     let width: number;
 
     if (is_running) {
@@ -298,4 +298,18 @@ export function formatResizeTimeIndicator(
     const start = handle === "left" ? current_value : original_start;
     const end = handle === "right" ? current_value : original_end;
     return `${minutesToTime(start)} ~ ${minutesToTime(end)}`;
+}
+
+/**
+ * 좁은 바에서 클릭 위치 기반 리사이즈 핸들 결정
+ * - 실행 중인 세션: 항상 "left" (시작 시간만 조절)
+ * - 일반 세션: 바 중앙 기준 좌/우 판별
+ */
+export function resolveSmartEdge(
+    click_x: number,
+    bar_width: number,
+    is_running: boolean
+): "left" | "right" {
+    if (is_running) return "left";
+    return click_x < bar_width / 2 ? "left" : "right";
 }

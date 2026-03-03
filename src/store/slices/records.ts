@@ -92,7 +92,7 @@ export const createRecordsSlice: StateCreator<
                             );
                             if (new_sessions.length > 0) {
                                 rec.sessions.push(...new_sessions);
-                                recalculateRecordFromSessions(rec);
+                                recalculateRecordFromSessions(rec, undefined, get().getLunchTimeMinutes());
                             }
                         }
                     })
@@ -206,11 +206,12 @@ export const createRecordsSlice: StateCreator<
         const target_date =
             new_date || current_session?.date || record?.date || "";
 
+        const lunch_time = get().getLunchTimeMinutes();
         const final_start_mins = timeToMinutes(adjusted_start);
         const final_end_mins = timeToMinutes(adjusted_end);
         const duration_minutes = Math.max(
             1,
-            calculateDurationExcludingLunch(final_start_mins, final_end_mins)
+            calculateDurationExcludingLunch(final_start_mins, final_end_mins, lunch_time)
         );
 
         set(
@@ -226,7 +227,7 @@ export const createRecordsSlice: StateCreator<
                         session.end_time = adjusted_end;
                         session.duration_minutes = duration_minutes;
                     }
-                    recalculateRecordFromSessions(rec);
+                    recalculateRecordFromSessions(rec, undefined, lunch_time);
                 }
             })
         );
@@ -272,7 +273,7 @@ export const createRecordsSlice: StateCreator<
                     if (session_index !== -1) {
                         rec.sessions.splice(session_index, 1);
                     }
-                    recalculateRecordFromSessions(rec);
+                    recalculateRecordFromSessions(rec, undefined, get().getLunchTimeMinutes());
                 }
             })
         );

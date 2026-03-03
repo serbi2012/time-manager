@@ -12,6 +12,7 @@ import {
     generateTimeLabels,
     calculateLunchOverlayStyle,
     calculateSelectionStyle,
+    resolveSmartEdge,
     type TimeRange,
 } from "../../../../../features/gantt-chart/lib/bar_calculator";
 import type { WorkSession } from "../../../../../shared/types";
@@ -120,7 +121,7 @@ describe("calculateBarStyle", () => {
         );
 
         const width = parseFloat(result.width);
-        const min_width = Math.max((5 / 540) * 100, 1);
+        const min_width = Math.max((3 / 540) * 100, 0.5);
 
         expect(width).toBeGreaterThanOrEqual(min_width);
     });
@@ -224,5 +225,33 @@ describe("calculateSelectionStyle", () => {
 
         expect(left).toBeCloseTo(((600 - 540) / 540) * 100, 1);
         expect(width).toBeCloseTo((60 / 540) * 100, 1);
+    });
+});
+
+describe("resolveSmartEdge", () => {
+    it("실행 중인 세션이면 항상 left를 반환한다", () => {
+        expect(resolveSmartEdge(30, 40, true)).toBe("left");
+        expect(resolveSmartEdge(0, 40, true)).toBe("left");
+        expect(resolveSmartEdge(39, 40, true)).toBe("left");
+    });
+
+    it("클릭 위치가 바 왼쪽 절반이면 left를 반환한다", () => {
+        expect(resolveSmartEdge(5, 40, false)).toBe("left");
+        expect(resolveSmartEdge(0, 40, false)).toBe("left");
+        expect(resolveSmartEdge(19, 40, false)).toBe("left");
+    });
+
+    it("클릭 위치가 바 오른쪽 절반이면 right를 반환한다", () => {
+        expect(resolveSmartEdge(25, 40, false)).toBe("right");
+        expect(resolveSmartEdge(39, 40, false)).toBe("right");
+    });
+
+    it("클릭 위치가 정확히 중앙이면 right를 반환한다", () => {
+        expect(resolveSmartEdge(20, 40, false)).toBe("right");
+    });
+
+    it("매우 좁은 바(4px)에서도 정상 동작한다", () => {
+        expect(resolveSmartEdge(1, 4, false)).toBe("left");
+        expect(resolveSmartEdge(3, 4, false)).toBe("right");
     });
 });
