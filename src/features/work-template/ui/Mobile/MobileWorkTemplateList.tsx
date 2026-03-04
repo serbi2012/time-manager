@@ -36,8 +36,30 @@ const CARD_VARIANTS = {
 export function MobileWorkTemplateList({
     onAddRecordOnly,
 }: MobileWorkTemplateListProps) {
-    const { templates, records } = useWorkStore(
-        useShallow((s) => ({ templates: s.templates, records: s.records }))
+    const {
+        templates,
+        records,
+        getAutoCompleteOptions,
+        getProjectCodeOptions,
+        custom_task_options,
+        custom_category_options,
+        hidden_autocomplete_options,
+        addCustomTaskOption,
+        addCustomCategoryOption,
+        hideAutoCompleteOption,
+    } = useWorkStore(
+        useShallow((s) => ({
+            templates: s.templates,
+            records: s.records,
+            getAutoCompleteOptions: s.getAutoCompleteOptions,
+            getProjectCodeOptions: s.getProjectCodeOptions,
+            custom_task_options: s.custom_task_options,
+            custom_category_options: s.custom_category_options,
+            hidden_autocomplete_options: s.hidden_autocomplete_options,
+            addCustomTaskOption: s.addCustomTaskOption,
+            addCustomCategoryOption: s.addCustomCategoryOption,
+            hideAutoCompleteOption: s.hideAutoCompleteOption,
+        }))
     );
 
     const {
@@ -150,16 +172,14 @@ export function MobileWorkTemplateList({
                 form={form}
                 records={records}
                 templates={templates}
-                getAutoCompleteOptions={work_store.getAutoCompleteOptions}
-                getProjectCodeOptions={work_store.getProjectCodeOptions}
-                custom_task_options={work_store.custom_task_options}
-                custom_category_options={work_store.custom_category_options}
-                hidden_autocomplete_options={
-                    work_store.hidden_autocomplete_options
-                }
-                addCustomTaskOption={work_store.addCustomTaskOption}
-                addCustomCategoryOption={work_store.addCustomCategoryOption}
-                hideAutoCompleteOption={work_store.hideAutoCompleteOption}
+                getAutoCompleteOptions={getAutoCompleteOptions}
+                getProjectCodeOptions={getProjectCodeOptions}
+                custom_task_options={custom_task_options}
+                custom_category_options={custom_category_options}
+                hidden_autocomplete_options={hidden_autocomplete_options}
+                addCustomTaskOption={addCustomTaskOption}
+                addCustomCategoryOption={addCustomCategoryOption}
+                hideAutoCompleteOption={hideAutoCompleteOption}
                 onSubmit={handleSubmit}
                 onClose={handleCloseModal}
             />
