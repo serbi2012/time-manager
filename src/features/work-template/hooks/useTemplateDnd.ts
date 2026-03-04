@@ -15,7 +15,7 @@ import { useWorkStore } from "@/store/useWorkStore";
  * dnd-kit 센서 설정 및 드래그 이벤트 핸들링
  */
 export function useTemplateDnd() {
-    const { reorderTemplates } = useWorkStore();
+    const reorderTemplates = useWorkStore((s) => s.reorderTemplates);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {

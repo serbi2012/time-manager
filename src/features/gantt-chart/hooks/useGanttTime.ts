@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "../../../store/useWorkStore";
 import {
     calculateDurationExcludingLunch as calcDuration,
@@ -27,7 +28,12 @@ export interface UseGanttTimeReturn {
  * 간트 차트 시간 관련 상태 훅
  */
 export function useGanttTime(): UseGanttTimeReturn {
-    const { timer, getLunchTimeMinutes } = useWorkStore();
+    const { timer, getLunchTimeMinutes } = useWorkStore(
+        useShallow((s) => ({
+            timer: s.timer,
+            getLunchTimeMinutes: s.getLunchTimeMinutes,
+        }))
+    );
 
     const [gantt_tick, setGanttTick] = useState(0);
 

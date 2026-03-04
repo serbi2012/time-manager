@@ -9,6 +9,7 @@ import {
 } from "@dnd-kit/sortable";
 import { motion, AnimatePresence } from "framer-motion";
 import { SPRING, STAGGER } from "@/shared/ui/animation";
+import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "@/store/useWorkStore";
 import {
     TemplateModal,
@@ -35,8 +36,9 @@ const CARD_VARIANTS = {
 export function MobileWorkTemplateList({
     onAddRecordOnly,
 }: MobileWorkTemplateListProps) {
-    const work_store = useWorkStore();
-    const { templates, records } = work_store;
+    const { templates, records } = useWorkStore(
+        useShallow((s) => ({ templates: s.templates, records: s.records }))
+    );
 
     const {
         is_modal_open,

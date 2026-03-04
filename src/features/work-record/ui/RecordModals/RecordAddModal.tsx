@@ -4,6 +4,7 @@
 
 import { Modal, Form, Button } from "antd";
 import { message } from "@/shared/lib/message";
+import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "../../../../store/useWorkStore";
 import { useShortcutStore } from "../../../../store/useShortcutStore";
 import {
@@ -44,7 +45,22 @@ export function RecordAddModal({ open, onClose }: RecordAddModalProps) {
         addCustomTaskOption,
         addCustomCategoryOption,
         hideAutoCompleteOption,
-    } = useWorkStore();
+    } = useWorkStore(
+        useShallow((s) => ({
+            records: s.records,
+            templates: s.templates,
+            selected_date: s.selected_date,
+            addRecord: s.addRecord,
+            getAutoCompleteOptions: s.getAutoCompleteOptions,
+            getProjectCodeOptions: s.getProjectCodeOptions,
+            custom_task_options: s.custom_task_options,
+            custom_category_options: s.custom_category_options,
+            hidden_autocomplete_options: s.hidden_autocomplete_options,
+            addCustomTaskOption: s.addCustomTaskOption,
+            addCustomCategoryOption: s.addCustomCategoryOption,
+            hideAutoCompleteOption: s.hideAutoCompleteOption,
+        }))
+    );
 
     // Form
     const [form] = Form.useForm();

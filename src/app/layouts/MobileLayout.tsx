@@ -2,7 +2,7 @@
  * 모바일 레이아웃
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { Layout, Spin } from "antd";
 import { Routes, Route } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -12,10 +12,11 @@ import { useSyncStatus } from "../../features/sync";
 import { useAuthHandlers, useDataImportExport } from "../../shared/hooks";
 import SettingsModal from "../../components/SettingsModal";
 import { DailyPage } from "../../pages/DailyPage/index";
-import WeeklySchedule from "../../components/WeeklySchedule";
-import GuideBook from "../../components/GuideBook";
 import { RouteTransition, PageTransitionProvider } from "../../shared/ui";
 import type { TransitionSpeed } from "../../shared/ui";
+
+const WeeklySchedule = lazy(() => import("../../components/WeeklySchedule"));
+const GuideBook = lazy(() => import("../../components/GuideBook"));
 
 /**
  * 모바일 레이아웃
@@ -52,6 +53,10 @@ export function MobileLayout() {
         setIsSettingsOpen(true);
     }, []);
 
+    const handleCloseSettings = useCallback(() => {
+        setIsSettingsOpen(false);
+    }, []);
+
     useEffect(() => {
         window.addEventListener("openSettings", handleOpenSettings);
         return () => {
@@ -85,17 +90,25 @@ export function MobileLayout() {
                 transition_speed={transition_speed}
             >
                 <RouteTransition>
-                    <Routes>
-                        <Route path="/" element={<DailyPage />} />
-                        <Route path="/weekly" element={<WeeklySchedule />} />
-                        <Route path="/guide" element={<GuideBook />} />
-                    </Routes>
+                    <Suspense fallback={null}>
+                        <Routes>
+                            <Route path="/" element={<DailyPage />} />
+                            <Route
+                                path="/weekly"
+                                element={<WeeklySchedule />}
+                            />
+                            <Route
+                                path="/guide"
+                                element={<GuideBook />}
+                            />
+                        </Routes>
+                    </Suspense>
                 </RouteTransition>
             </PageTransitionProvider>
 
             <SettingsModal
                 open={is_settings_open}
-                onClose={() => setIsSettingsOpen(false)}
+                onClose={handleCloseSettings}
                 onExport={handleExport}
                 onImport={handleImport}
                 isAuthenticated={isAuthenticated}

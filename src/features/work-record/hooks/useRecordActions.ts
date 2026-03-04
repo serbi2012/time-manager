@@ -3,6 +3,7 @@
  */
 
 import { useCallback } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { message } from "@/shared/lib/message";
 import { useWorkStore } from "../../../store/useWorkStore";
 import type { WorkRecord } from "../../../shared/types";
@@ -52,7 +53,20 @@ export function useRecordActions(): UseRecordActionsReturn {
         updateSession: storeUpdateSession,
         deleteSession: storeDeleteSession,
         selected_date,
-    } = useWorkStore();
+    } = useWorkStore(
+        useShallow((s) => ({
+            addRecord: s.addRecord,
+            updateRecord: s.updateRecord,
+            softDeleteRecord: s.softDeleteRecord,
+            restoreRecord: s.restoreRecord,
+            permanentlyDeleteRecord: s.permanentlyDeleteRecord,
+            markAsCompleted: s.markAsCompleted,
+            markAsIncomplete: s.markAsIncomplete,
+            updateSession: s.updateSession,
+            deleteSession: s.deleteSession,
+            selected_date: s.selected_date,
+        }))
+    );
 
     const deleteRecord = useCallback(
         (record_id: string) => {

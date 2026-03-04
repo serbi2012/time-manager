@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "../../../store/useWorkStore";
 
 export interface UseRecordTimerReturn {
@@ -41,7 +42,15 @@ export function useRecordTimer(): UseRecordTimerReturn {
         stopTimer,
         updateActiveFormData,
         getElapsedSeconds,
-    } = useWorkStore();
+    } = useWorkStore(
+        useShallow((s) => ({
+            timer: s.timer,
+            startTimerForRecord: s.startTimerForRecord,
+            stopTimer: s.stopTimer,
+            updateActiveFormData: s.updateActiveFormData,
+            getElapsedSeconds: s.getElapsedSeconds,
+        }))
+    );
 
     // 타이머 리렌더링용 tick
     const [, setTick] = useState(0);

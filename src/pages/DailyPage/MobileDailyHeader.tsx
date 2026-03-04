@@ -7,6 +7,7 @@ import { useState, useCallback, useMemo } from "react";
 import { SettingOutlined, DownOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 
+import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "../../store/useWorkStore";
 import { useAuthHandlers } from "../../shared/hooks";
 import { useSyncStatus } from "../../features/sync";
@@ -32,7 +33,16 @@ export function MobileDailyHeader() {
         timer,
         mobile_gantt_list_expanded,
         setMobileGanttListExpanded,
-    } = useWorkStore();
+    } = useWorkStore(
+        useShallow((s) => ({
+            selected_date: s.selected_date,
+            setSelectedDate: s.setSelectedDate,
+            records: s.records,
+            timer: s.timer,
+            mobile_gantt_list_expanded: s.mobile_gantt_list_expanded,
+            setMobileGanttListExpanded: s.setMobileGanttListExpanded,
+        }))
+    );
 
     const {
         user,

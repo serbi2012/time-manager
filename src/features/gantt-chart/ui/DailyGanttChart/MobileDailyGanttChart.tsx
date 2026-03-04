@@ -6,6 +6,7 @@
 
 import { useState, useCallback, useMemo } from "react";
 import dayjs from "dayjs";
+import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "../../../../store/useWorkStore";
 import { getSessionMinutes } from "../../../../shared/lib/session";
 import type { WorkRecord, WorkSession } from "../../../../shared/types";
@@ -29,7 +30,15 @@ export function MobileDailyGanttChart() {
         setSelectedDate,
         mobile_gantt_list_expanded,
         setMobileGanttListExpanded,
-    } = useWorkStore();
+    } = useWorkStore(
+        useShallow((s) => ({
+            selected_date: s.selected_date,
+            timer: s.timer,
+            setSelectedDate: s.setSelectedDate,
+            mobile_gantt_list_expanded: s.mobile_gantt_list_expanded,
+            setMobileGanttListExpanded: s.setMobileGanttListExpanded,
+        }))
+    );
 
     const { gantt_tick, lunch_time, calculateDurationExcludingLunch } =
         useGanttTime();

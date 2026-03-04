@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.32";
+export const CURRENT_VERSION = "2.0.33";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,23 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.33",
+        date: "2026-03-04",
+        title: "성능 최적화",
+        changes: [
+            {
+                type: "performance",
+                description:
+                    "페이지 초기 로딩 속도가 크게 빨라졌어요 (번들 87% 감소)",
+            },
+            {
+                type: "performance",
+                description:
+                    "타이머 실행 중 화면이 더 부드럽게 동작해요",
+            },
+        ],
+    },
     {
         version: "2.0.32",
         date: "2026-03-03",

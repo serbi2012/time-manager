@@ -10,6 +10,7 @@ import {
 } from "@dnd-kit/sortable";
 import { motion, AnimatePresence } from "framer-motion";
 import { SPRING, STAGGER } from "@/shared/ui/animation";
+import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "@/store/useWorkStore";
 import { useShortcutStore } from "@/store/useShortcutStore";
 import { formatShortcutKeyForPlatform } from "@/hooks/useShortcuts";
@@ -38,7 +39,20 @@ const CARD_VARIANTS = {
 export function DesktopWorkTemplateList({
     onAddRecordOnly,
 }: DesktopWorkTemplateListProps) {
-    const work_store = useWorkStore();
+    const work_store = useWorkStore(
+        useShallow((s) => ({
+            templates: s.templates,
+            records: s.records,
+            getAutoCompleteOptions: s.getAutoCompleteOptions,
+            getProjectCodeOptions: s.getProjectCodeOptions,
+            custom_task_options: s.custom_task_options,
+            custom_category_options: s.custom_category_options,
+            hidden_autocomplete_options: s.hidden_autocomplete_options,
+            addCustomTaskOption: s.addCustomTaskOption,
+            addCustomCategoryOption: s.addCustomCategoryOption,
+            hideAutoCompleteOption: s.hideAutoCompleteOption,
+        }))
+    );
     const { templates, records } = work_store;
 
     const new_preset_shortcut = useShortcutStore((state) =>

@@ -7,6 +7,7 @@
 
 import { useMemo } from "react";
 import dayjs from "dayjs";
+import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "../../../store/useWorkStore";
 import {
     groupRecordsByDealName,
@@ -49,7 +50,15 @@ export interface UseGanttDataReturn {
  */
 export function useGanttData(gantt_tick: number = 0): UseGanttDataReturn {
     const { records, selected_date, templates, timer, getLunchTimeMinutes } =
-        useWorkStore();
+        useWorkStore(
+            useShallow((s) => ({
+                records: s.records,
+                selected_date: s.selected_date,
+                templates: s.templates,
+                timer: s.timer,
+                getLunchTimeMinutes: s.getLunchTimeMinutes,
+            }))
+        );
 
     // 점심시간 가져오기
     const lunch_time = useMemo(

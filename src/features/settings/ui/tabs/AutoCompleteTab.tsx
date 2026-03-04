@@ -12,6 +12,7 @@ import {
     AppstoreOutlined,
     TagsOutlined,
 } from "@ant-design/icons";
+import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "@/store/useWorkStore";
 import {
     DEFAULT_TASK_OPTIONS,
@@ -49,7 +50,17 @@ export function AutoCompleteTab() {
         hidden_autocomplete_options,
         hideAutoCompleteOption,
         unhideAutoCompleteOption,
-    } = useWorkStore();
+    } = useWorkStore(
+        useShallow((s) => ({
+            records: s.records,
+            templates: s.templates,
+            custom_task_options: s.custom_task_options,
+            custom_category_options: s.custom_category_options,
+            hidden_autocomplete_options: s.hidden_autocomplete_options,
+            hideAutoCompleteOption: s.hideAutoCompleteOption,
+            unhideAutoCompleteOption: s.unhideAutoCompleteOption,
+        }))
+    );
 
     const [selected_work_names, setSelectedWorkNames] = useState<string[]>([]);
     const [selected_task_names, setSelectedTaskNames] = useState<string[]>([]);

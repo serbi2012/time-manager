@@ -5,6 +5,7 @@
  * Press animation driven by is_pressing prop from MobileSwipeCard.
  */
 
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { CaretRightFilled, CheckOutlined } from "@ant-design/icons";
 
@@ -21,7 +22,7 @@ interface MobileRecordRowProps {
     is_pressing?: boolean;
 }
 
-export function MobileRecordRow({
+export const MobileRecordRow = memo(function MobileRecordRow({
     record,
     onToggle,
     is_pressing = false,
@@ -118,4 +119,4 @@ export function MobileRecordRow({
             </div>
         </motion.div>
     );
-}
+});

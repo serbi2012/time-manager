@@ -18,6 +18,7 @@ import {
 } from "../../../../shared/ui/animation";
 
 // Store
+import { useShallow } from "zustand/react/shallow";
 import { useWorkStore, APP_THEME_COLORS } from "../../../../store/useWorkStore";
 import { useShortcutStore } from "../../../../store/useShortcutStore";
 
@@ -62,7 +63,18 @@ export function DesktopWorkRecordTable() {
         app_theme,
         records,
         getLunchTimeMinutes,
-    } = useWorkStore();
+    } = useWorkStore(
+        useShallow((s) => ({
+            selected_date: s.selected_date,
+            setSelectedDate: s.setSelectedDate,
+            timer: s.timer,
+            getElapsedSeconds: s.getElapsedSeconds,
+            softDeleteRecord: s.softDeleteRecord,
+            app_theme: s.app_theme,
+            records: s.records,
+            getLunchTimeMinutes: s.getLunchTimeMinutes,
+        }))
+    );
 
     const shortcut_store = useShortcutStore();
     const theme_color = String(
@@ -172,6 +184,26 @@ export function DesktopWorkRecordTable() {
     // ============================================
     // Table Columns (extracted hook)
     // ============================================
+    const handleComplete = useCallback(
+        (r: WorkRecord) => markAsCompleted(r.id),
+        [markAsCompleted]
+    );
+
+    const handleUncomplete = useCallback(
+        (r: WorkRecord) => markAsIncomplete(r.id),
+        [markAsIncomplete]
+    );
+
+    const handleRestore = useCallback(
+        (r: WorkRecord) => restoreRecord(r.id),
+        [restoreRecord]
+    );
+
+    const handlePermanentDelete = useCallback(
+        (r: WorkRecord) => permanentlyDeleteRecord(r.id),
+        [permanentlyDeleteRecord]
+    );
+
     const columns = useRecordColumns({
         active_record_id,
         is_timer_running: timer.is_running,
@@ -179,8 +211,8 @@ export function DesktopWorkRecordTable() {
         selected_date,
         getElapsedSeconds,
         onToggle: handleToggleRecord,
-        onComplete: (r) => markAsCompleted(r.id),
-        onUncomplete: (r) => markAsIncomplete(r.id),
+        onComplete: handleComplete,
+        onUncomplete: handleUncomplete,
         onEdit: handleOpenEditModal,
         onDelete: handleDelete,
     });
@@ -318,15 +350,15 @@ export function DesktopWorkRecordTable() {
                 open={is_completed_open}
                 on_close={closeCompletedModal}
                 records={completed_records}
-                on_restore={(r) => markAsIncomplete(r.id)}
+                on_restore={handleUncomplete}
             />
 
             <TrashModal
                 open={is_trash_open}
                 on_close={closeTrashModal}
                 records={deleted_records}
-                on_restore={(r) => restoreRecord(r.id)}
-                on_permanent_delete={(r) => permanentlyDeleteRecord(r.id)}
+                on_restore={handleRestore}
+                on_permanent_delete={handlePermanentDelete}
             />
         </>
     );

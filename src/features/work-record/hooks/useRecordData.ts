@@ -3,6 +3,7 @@
  */
 
 import { useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "../../../store/useWorkStore";
 import {
     filterDisplayableRecords,
@@ -34,7 +35,15 @@ export function useRecordData(search_text: string = ""): UseRecordDataReturn {
         timer,
         getCompletedRecords,
         getDeletedRecords,
-    } = useWorkStore();
+    } = useWorkStore(
+        useShallow((s) => ({
+            records: s.records,
+            selected_date: s.selected_date,
+            timer: s.timer,
+            getCompletedRecords: s.getCompletedRecords,
+            getDeletedRecords: s.getDeletedRecords,
+        }))
+    );
 
     // 표시할 레코드 필터링 및 정렬
     const display_records = useMemo(() => {

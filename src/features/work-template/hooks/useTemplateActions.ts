@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { Form } from "antd";
+import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "@/store/useWorkStore";
 import type { WorkTemplate } from "@/shared/types";
 
@@ -14,7 +15,13 @@ interface TemplateFormValues {
 }
 
 export function useTemplateActions() {
-    const { addTemplate, updateTemplate, deleteTemplate } = useWorkStore();
+    const { addTemplate, updateTemplate, deleteTemplate } = useWorkStore(
+        useShallow((s) => ({
+            addTemplate: s.addTemplate,
+            updateTemplate: s.updateTemplate,
+            deleteTemplate: s.deleteTemplate,
+        }))
+    );
 
     const [is_modal_open, setIsModalOpen] = useState(false);
     const [is_edit_mode, setIsEditMode] = useState(false);

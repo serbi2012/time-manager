@@ -2,7 +2,7 @@
  * 데스크탑 레이아웃
  */
 
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, lazy, Suspense } from "react";
 import { Layout, Spin } from "antd";
 import { message } from "@/shared/lib/message";
 import { useNavigate, useLocation, Routes, Route } from "react-router-dom";
@@ -30,10 +30,6 @@ import { CURRENT_VERSION } from "../../constants/changelog";
 import SettingsModal from "../../components/SettingsModal";
 import ChangelogModal from "../../components/ChangelogModal";
 import { DailyPage } from "../../pages/DailyPage/index";
-import WeeklySchedule from "../../components/WeeklySchedule";
-import SuggestionBoard from "../../components/SuggestionBoard";
-import GuideBook from "../../components/GuideBook";
-import { AdminSessionGrid } from "../../features/admin";
 import {
     SlideIn,
     RouteTransition,
@@ -41,6 +37,13 @@ import {
     DESKTOP_DAILY_DELAYS,
 } from "../../shared/ui";
 import type { TransitionSpeed } from "../../shared/ui";
+
+const WeeklySchedule = lazy(() => import("../../components/WeeklySchedule"));
+const SuggestionBoard = lazy(() => import("../../components/SuggestionBoard"));
+const GuideBook = lazy(() => import("../../components/GuideBook"));
+const AdminSessionGrid = lazy(() =>
+    import("../../features/admin/ui/AdminSessionGrid/AdminSessionGrid")
+);
 
 const ADMIN_EMAIL = "rlaxo0306@gmail.com";
 
@@ -85,51 +88,71 @@ export function DesktopLayout() {
         handleManualSync,
     } = useSyncStatus({ user, is_authenticated: isAuthenticated });
 
-    // 단축키 이벤트 발생 함수
+    const handleOpenSettings = useCallback(() => setIsSettingsOpen(true), []);
+    const handleOpenChangelog = useCallback(
+        () => setIsChangelogOpen(true),
+        []
+    );
+    const handleCloseSettings = useCallback(
+        () => setIsSettingsOpen(false),
+        []
+    );
+    const handleCloseChangelog = useCallback(
+        () => setIsChangelogOpen(false),
+        []
+    );
+
     const emitEvent = useCallback((event_name: string) => {
         window.dispatchEvent(new CustomEvent(event_name));
     }, []);
 
-    // 단축키 핸들러 - React Compiler가 자동으로 최적화
-    const shortcut_handlers = {
-        openNewWorkModal: () => emitEvent("shortcut:openNewWorkModal"),
-        openNewPresetModal: () => emitEvent("shortcut:openNewPresetModal"),
-        openSettings: () => setIsSettingsOpen(true),
-        showShortcuts: () => setIsSettingsOpen(true),
-        toggleTimer: () => {
-            const timer = useWorkStore.getState().timer;
-            if (timer.is_running) {
-                useWorkStore.getState().stopTimer();
-                message.info(INFO_MESSAGES.timerStopped);
-            } else {
-                message.warning(WARNING_MESSAGES.selectWorkFirst);
-            }
-        },
-        resetTimer: () => {
-            useWorkStore.getState().resetTimer();
-            message.info(INFO_MESSAGES.timerReset);
-        },
-        goToday: () => {
-            useWorkStore
-                .getState()
-                .setSelectedDate(dayjs().format("YYYY-MM-DD"));
-            message.info(INFO_MESSAGES.movedToToday);
-        },
-        prevDay: () => {
-            const current = useWorkStore.getState().selected_date;
-            const prev = dayjs(current).subtract(1, "day").format("YYYY-MM-DD");
-            useWorkStore.getState().setSelectedDate(prev);
-        },
-        nextDay: () => {
-            const current = useWorkStore.getState().selected_date;
-            const next = dayjs(current).add(1, "day").format("YYYY-MM-DD");
-            useWorkStore.getState().setSelectedDate(next);
-        },
-        goDaily: () => navigate("/"),
-        goWeekly: () => navigate("/weekly"),
-        exportData: handleExport,
-        syncData: () => handleManualSync(),
-    };
+    const shortcut_handlers = useMemo(
+        () => ({
+            openNewWorkModal: () => emitEvent("shortcut:openNewWorkModal"),
+            openNewPresetModal: () =>
+                emitEvent("shortcut:openNewPresetModal"),
+            openSettings: () => setIsSettingsOpen(true),
+            showShortcuts: () => setIsSettingsOpen(true),
+            toggleTimer: () => {
+                const timer = useWorkStore.getState().timer;
+                if (timer.is_running) {
+                    useWorkStore.getState().stopTimer();
+                    message.info(INFO_MESSAGES.timerStopped);
+                } else {
+                    message.warning(WARNING_MESSAGES.selectWorkFirst);
+                }
+            },
+            resetTimer: () => {
+                useWorkStore.getState().resetTimer();
+                message.info(INFO_MESSAGES.timerReset);
+            },
+            goToday: () => {
+                useWorkStore
+                    .getState()
+                    .setSelectedDate(dayjs().format("YYYY-MM-DD"));
+                message.info(INFO_MESSAGES.movedToToday);
+            },
+            prevDay: () => {
+                const current = useWorkStore.getState().selected_date;
+                const prev = dayjs(current)
+                    .subtract(1, "day")
+                    .format("YYYY-MM-DD");
+                useWorkStore.getState().setSelectedDate(prev);
+            },
+            nextDay: () => {
+                const current = useWorkStore.getState().selected_date;
+                const next = dayjs(current)
+                    .add(1, "day")
+                    .format("YYYY-MM-DD");
+                useWorkStore.getState().setSelectedDate(next);
+            },
+            goDaily: () => navigate("/"),
+            goWeekly: () => navigate("/weekly"),
+            exportData: handleExport,
+            syncData: () => handleManualSync(),
+        }),
+        [emitEvent, navigate, handleExport, handleManualSync]
+    );
 
     useShortcuts(shortcut_handlers);
 
@@ -188,8 +211,8 @@ export function DesktopLayout() {
                     on_login={handleLogin}
                     on_logout={handleLogout}
                     on_manual_sync={handleManualSync}
-                    on_settings_open={() => setIsSettingsOpen(true)}
-                    on_changelog_open={() => setIsChangelogOpen(true)}
+                    on_settings_open={handleOpenSettings}
+                    on_changelog_open={handleOpenChangelog}
                 />
             </SlideIn>
 
@@ -230,22 +253,30 @@ export function DesktopLayout() {
                 transition_speed={transition_speed}
             >
                 <RouteTransition>
-                    <Routes>
-                        <Route path="/" element={<DailyPage />} />
-                        <Route path="/weekly" element={<WeeklySchedule />} />
-                        <Route
-                            path="/suggestions"
-                            element={<SuggestionBoard />}
-                        />
-                        <Route path="/guide" element={<GuideBook />} />
-                        <Route path="/admin" element={<AdminSessionGrid />} />
-                    </Routes>
+                    <Suspense fallback={null}>
+                        <Routes>
+                            <Route path="/" element={<DailyPage />} />
+                            <Route
+                                path="/weekly"
+                                element={<WeeklySchedule />}
+                            />
+                            <Route
+                                path="/suggestions"
+                                element={<SuggestionBoard />}
+                            />
+                            <Route path="/guide" element={<GuideBook />} />
+                            <Route
+                                path="/admin"
+                                element={<AdminSessionGrid />}
+                            />
+                        </Routes>
+                    </Suspense>
                 </RouteTransition>
             </PageTransitionProvider>
 
             <SettingsModal
                 open={is_settings_open}
-                onClose={() => setIsSettingsOpen(false)}
+                onClose={handleCloseSettings}
                 onExport={handleExport}
                 onImport={handleImport}
                 isAuthenticated={isAuthenticated}
@@ -253,7 +284,7 @@ export function DesktopLayout() {
 
             <ChangelogModal
                 open={is_changelog_open}
-                onClose={() => setIsChangelogOpen(false)}
+                onClose={handleCloseChangelog}
             />
 
             <input

@@ -4,6 +4,7 @@
 
 import { useCallback } from "react";
 import { message } from "@/shared/lib/message";
+import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "../../../store/useWorkStore";
 import type { WorkRecord } from "../../../shared/types";
 import { SUCCESS_MESSAGES, ERROR_MESSAGES } from "../../../shared/constants";
@@ -49,7 +50,17 @@ export function useAdminActions(): UseAdminActionsReturn {
         updateSession: storeUpdateSession,
         updateRecord: storeUpdateRecord,
         records,
-    } = useWorkStore();
+    } = useWorkStore(
+        useShallow((s) => ({
+            deleteSession: s.deleteSession,
+            softDeleteRecord: s.softDeleteRecord,
+            restoreRecord: s.restoreRecord,
+            permanentlyDeleteRecord: s.permanentlyDeleteRecord,
+            updateSession: s.updateSession,
+            updateRecord: s.updateRecord,
+            records: s.records,
+        }))
+    );
 
     const deleteSession = useCallback(
         (record_id: string, session_id: string) => {

@@ -4,6 +4,7 @@
  * 5-1: Press scale
  */
 
+import { memo } from "react";
 import { Tooltip, Popconfirm } from "antd";
 import {
     CheckOutlined,
@@ -24,7 +25,7 @@ interface ActionsColumnProps {
     onDelete: (record_id: string) => void;
 }
 
-export function ActionsColumn({
+export const ActionsColumn = memo(function ActionsColumn({
     record,
     is_active,
     onComplete,
@@ -93,4 +94,4 @@ export function ActionsColumn({
             )}
         </div>
     );
-}
+});

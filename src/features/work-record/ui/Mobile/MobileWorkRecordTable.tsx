@@ -15,6 +15,7 @@ import { CalendarOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import type { Dayjs } from "dayjs";
 
+import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "../../../../store/useWorkStore";
 import type { WorkRecord } from "../../../../shared/types";
 import { cn } from "../../../../shared/lib/cn";
@@ -51,7 +52,15 @@ export function MobileWorkRecordTable() {
     // ============================================
     // Store
     // ============================================
-    const { selected_date, setSelectedDate, records, getLunchTimeMinutes } = useWorkStore();
+    const { selected_date, setSelectedDate, records, getLunchTimeMinutes } =
+        useWorkStore(
+            useShallow((s) => ({
+                selected_date: s.selected_date,
+                setSelectedDate: s.setSelectedDate,
+                records: s.records,
+                getLunchTimeMinutes: s.getLunchTimeMinutes,
+            }))
+        );
 
     // ============================================
     // Hooks
@@ -168,6 +177,31 @@ export function MobileWorkRecordTable() {
             setSelectedDate(date_str);
         },
         [setSelectedDate]
+    );
+
+    const handleComplete = useCallback(
+        (r: WorkRecord) => markAsCompleted(r.id),
+        [markAsCompleted]
+    );
+
+    const handleDeleteRecord = useCallback(
+        (r: WorkRecord) => deleteRecord(r.id),
+        [deleteRecord]
+    );
+
+    const handleRestore = useCallback(
+        (r: WorkRecord) => restoreRecord(r.id),
+        [restoreRecord]
+    );
+
+    const handleUncomplete = useCallback(
+        (r: WorkRecord) => markAsIncomplete(r.id),
+        [markAsIncomplete]
+    );
+
+    const handlePermanentDelete = useCallback(
+        (r: WorkRecord) => permanentlyDeleteRecord(r.id),
+        [permanentlyDeleteRecord]
     );
 
     const handleCopyToClipboard = useCallback(() => {
@@ -302,8 +336,8 @@ export function MobileWorkRecordTable() {
                     elapsed_seconds={elapsed_seconds}
                     onToggle={handleToggleRecord}
                     onEdit={handleEditRecord}
-                    onComplete={(r) => markAsCompleted(r.id)}
-                    onDelete={(r) => deleteRecord(r.id)}
+                    onComplete={handleComplete}
+                    onDelete={handleDeleteRecord}
                     animation_key={animation_key}
                 />
 
@@ -316,8 +350,8 @@ export function MobileWorkRecordTable() {
                     onOpenCompleted={openCompletedModal}
                     onOpenTrash={openTrashModal}
                     onCopyRecords={handleCopyToClipboard}
-                    onComplete={(r) => markAsCompleted(r.id)}
-                    onDelete={(r) => deleteRecord(r.id)}
+                    onComplete={handleComplete}
+                    onDelete={handleDeleteRecord}
                     animation_key={animation_key}
                 />
             </div>
@@ -343,15 +377,15 @@ export function MobileWorkRecordTable() {
                 open={is_completed_open}
                 on_close={closeCompletedModal}
                 records={completed_records}
-                on_restore={(r) => markAsIncomplete(r.id)}
+                on_restore={handleUncomplete}
             />
 
             <TrashModal
                 open={is_trash_open}
                 on_close={closeTrashModal}
                 records={deleted_records}
-                on_restore={(r) => restoreRecord(r.id)}
-                on_permanent_delete={(r) => permanentlyDeleteRecord(r.id)}
+                on_restore={handleRestore}
+                on_permanent_delete={handlePermanentDelete}
             />
         </>
     );

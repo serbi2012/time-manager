@@ -7,6 +7,7 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { Card } from "antd";
 import { message } from "@/shared/lib/message";
 import dayjs from "dayjs";
+import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "../../../../store/useWorkStore";
 import { minutesToTime } from "../../../../shared/lib/time";
 import { getSessionMinutes } from "../../../../shared/lib/session";
@@ -36,7 +37,14 @@ import { SpotlightCard } from "@/shared/ui/cursor-tracking";
 
 export function DesktopDailyGanttChart() {
     const { selected_date, timer, deleteSession, setSelectedDate } =
-        useWorkStore();
+        useWorkStore(
+            useShallow((s) => ({
+                selected_date: s.selected_date,
+                timer: s.timer,
+                deleteSession: s.deleteSession,
+                setSelectedDate: s.setSelectedDate,
+            }))
+        );
 
     const { gantt_tick, lunch_time, calculateDurationExcludingLunch } =
         useGanttTime();

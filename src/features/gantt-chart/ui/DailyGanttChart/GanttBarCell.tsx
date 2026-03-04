@@ -3,7 +3,7 @@
  * - One bar per session with colored shadow, shimmer for running
  */
 
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, memo } from "react";
 import { Popover, Tooltip } from "antd";
 import { minutesToTime } from "../../../../shared/lib/time";
 import type { WorkRecord, WorkSession } from "../../../../shared/types";
@@ -67,7 +67,7 @@ const TOOLTIP_INNER_STYLE: React.CSSProperties = {
     overflow: "hidden",
 };
 
-export function GanttBarCell({
+export const GanttBarCell = memo(function GanttBarCell({
     record,
     session,
     bar_style,
@@ -195,4 +195,4 @@ export function GanttBarCell({
             </Tooltip>
         </Popover>
     );
-}
+});

@@ -3,6 +3,7 @@
  */
 
 import { useState, useCallback } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { message } from "@/shared/lib/message";
 import dayjs from "dayjs";
 import { useWorkStore } from "../../../store/useWorkStore";
@@ -44,7 +45,13 @@ export function useGanttResize(
 ): UseGanttResizeReturn {
     const { time_range, selected_date } = options;
 
-    const { timer, updateSession, updateTimerStartTime } = useWorkStore();
+    const { timer, updateSession, updateTimerStartTime } = useWorkStore(
+        useShallow((s) => ({
+            timer: s.timer,
+            updateSession: s.updateSession,
+            updateTimerStartTime: s.updateTimerStartTime,
+        }))
+    );
     const [resize_state, setResizeState] = useState<ResizeState | null>(null);
 
     // 리사이즈 시작
