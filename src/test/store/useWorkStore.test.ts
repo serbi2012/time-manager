@@ -669,6 +669,35 @@ describe("useWorkStore", () => {
             expect(state.records[0].is_completed).toBe(false);
             expect(state.records[0].completed_at).toBeUndefined();
         });
+
+        it("완료된 작업에 타이머 시작 시 완료 상태가 해제된다", () => {
+            const record = createTestRecord({
+                is_completed: true,
+                completed_at: "2026-01-19T00:00:00.000Z",
+            });
+            useWorkStore.setState({ records: [record] });
+
+            useWorkStore.getState().markAsIncomplete("test-record-1");
+            useWorkStore.getState().startTimerForRecord("test-record-1");
+
+            const state = useWorkStore.getState();
+            expect(state.records[0].is_completed).toBe(false);
+            expect(state.records[0].completed_at).toBeUndefined();
+            expect(state.timer.is_running).toBe(true);
+            expect(state.timer.active_record_id).toBe("test-record-1");
+        });
+
+        it("미완료 작업에 타이머 시작 시 완료 상태는 변경되지 않는다", () => {
+            const record = createTestRecord({ is_completed: false });
+            useWorkStore.setState({ records: [record] });
+
+            useWorkStore.getState().startTimerForRecord("test-record-1");
+
+            const state = useWorkStore.getState();
+            expect(state.records[0].is_completed).toBe(false);
+            expect(state.timer.is_running).toBe(true);
+            expect(state.timer.active_record_id).toBe("test-record-1");
+        });
     });
 
     // =====================================================

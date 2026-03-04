@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.31";
+export const CURRENT_VERSION = "2.0.32";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,18 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.32",
+        date: "2026-03-03",
+        title: "완료된 작업 재시작 시 자동 완료 해제",
+        changes: [
+            {
+                type: "improvement",
+                description:
+                    "완료된 작업의 녹화 버튼을 누르면 완료 상태가 자동으로 풀려요",
+            },
+        ],
+    },
     {
         version: "2.0.31",
         date: "2026-03-03",

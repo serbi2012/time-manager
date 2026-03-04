@@ -130,10 +130,11 @@ export function MobileWorkRecordTable() {
             if (active_record_id === record.id && is_timer_running) {
                 stopTimer();
             } else {
+                if (record.is_completed) markAsIncomplete(record.id);
                 startTimer(record.id);
             }
         },
-        [active_record_id, is_timer_running, startTimer, stopTimer]
+        [active_record_id, is_timer_running, startTimer, stopTimer, markAsIncomplete]
     );
 
     const handleEditRecord = useCallback(

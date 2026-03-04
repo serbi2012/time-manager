@@ -110,10 +110,11 @@ export function DesktopWorkRecordTable() {
             if (active_record_id === record.id && timer.is_running) {
                 stopTimer();
             } else {
+                if (record.is_completed) markAsIncomplete(record.id);
                 startTimer(record.id);
             }
         },
-        [active_record_id, timer.is_running, startTimer, stopTimer]
+        [active_record_id, timer.is_running, startTimer, stopTimer, markAsIncomplete]
     );
 
     const handleOpenEditModal = useCallback(
