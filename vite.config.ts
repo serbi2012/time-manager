@@ -17,19 +17,26 @@ export default defineConfig({
         rollupOptions: {
             external: ["mermaid"],
             output: {
-                manualChunks: {
-                    "vendor-react": [
-                        "react",
-                        "react-dom",
-                        "react-router-dom",
-                    ],
-                    "vendor-antd": ["antd", "@ant-design/icons"],
-                    "vendor-firebase": [
-                        "firebase/app",
-                        "firebase/auth",
-                        "firebase/firestore",
-                    ],
-                    "vendor-motion": ["framer-motion"],
+                manualChunks(id) {
+                    if (
+                        id.includes("node_modules/react/") ||
+                        id.includes("node_modules/react-dom/") ||
+                        id.includes("node_modules/react-router")
+                    ) {
+                        return "vendor-react";
+                    }
+                    if (
+                        id.includes("node_modules/antd/") ||
+                        id.includes("node_modules/@ant-design/")
+                    ) {
+                        return "vendor-antd";
+                    }
+                    if (id.includes("node_modules/firebase/")) {
+                        return "vendor-firebase";
+                    }
+                    if (id.includes("node_modules/framer-motion/")) {
+                        return "vendor-motion";
+                    }
                 },
             },
         },
