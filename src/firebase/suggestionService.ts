@@ -1,26 +1,23 @@
-import {
-    collection,
-    doc,
-    setDoc,
-    updateDoc,
-    deleteDoc,
-    getDoc,
-    query,
-    orderBy,
-    onSnapshot,
-    arrayUnion,
-} from "firebase/firestore";
 import type { Unsubscribe } from "firebase/firestore";
-import { db } from "./config";
+import { getDbInstance } from "./config";
 import type {
     SuggestionPost,
     SuggestionReply,
     SuggestionStatus,
 } from "../types";
 
+let _fs: typeof import("firebase/firestore") | null = null;
+
+async function fs() {
+    if (!_fs) _fs = await import("firebase/firestore");
+    return _fs;
+}
+
 const COLLECTION_NAME = "suggestions";
 
 export async function addSuggestion(post: SuggestionPost): Promise<void> {
+    const db = await getDbInstance();
+    const { doc, setDoc } = await fs();
     const doc_ref = doc(db, COLLECTION_NAME, post.id);
     await setDoc(doc_ref, post);
 }
@@ -29,6 +26,8 @@ export async function addReply(
     post_id: string,
     reply: SuggestionReply
 ): Promise<void> {
+    const db = await getDbInstance();
+    const { doc, updateDoc, arrayUnion } = await fs();
     const doc_ref = doc(db, COLLECTION_NAME, post_id);
     await updateDoc(doc_ref, {
         replies: arrayUnion(reply),
@@ -40,6 +39,8 @@ export async function updateReply(
     reply_id: string,
     new_content: string
 ): Promise<void> {
+    const db = await getDbInstance();
+    const { doc, getDoc, updateDoc } = await fs();
     const doc_ref = doc(db, COLLECTION_NAME, post_id);
     const doc_snap = await getDoc(doc_ref);
     if (!doc_snap.exists()) return;
@@ -56,6 +57,8 @@ export async function deleteReply(
     post_id: string,
     reply_id: string
 ): Promise<void> {
+    const db = await getDbInstance();
+    const { doc, getDoc, updateDoc } = await fs();
     const doc_ref = doc(db, COLLECTION_NAME, post_id);
     const doc_snap = await getDoc(doc_ref);
     if (!doc_snap.exists()) return;
@@ -67,6 +70,8 @@ export async function deleteReply(
 }
 
 export async function deleteSuggestion(post_id: string): Promise<void> {
+    const db = await getDbInstance();
+    const { doc, deleteDoc } = await fs();
     const doc_ref = doc(db, COLLECTION_NAME, post_id);
     await deleteDoc(doc_ref);
 }
@@ -77,6 +82,8 @@ export async function updateSuggestionStatus(
     resolved_version?: string,
     admin_comment?: string
 ): Promise<void> {
+    const db = await getDbInstance();
+    const { doc, updateDoc } = await fs();
     const doc_ref = doc(db, COLLECTION_NAME, post_id);
     const update_data: Record<string, unknown> = { status };
     if (resolved_version !== undefined) {
@@ -93,6 +100,8 @@ export async function updateSuggestion(
     title: string,
     content: string
 ): Promise<void> {
+    const db = await getDbInstance();
+    const { doc, updateDoc } = await fs();
     const doc_ref = doc(db, COLLECTION_NAME, post_id);
     await updateDoc(doc_ref, { title, content });
 }
@@ -100,25 +109,38 @@ export async function updateSuggestion(
 export function subscribeToSuggestions(
     callback: (posts: SuggestionPost[]) => void
 ): Unsubscribe {
-    const suggestions_ref = collection(db, COLLECTION_NAME);
-    const q = query(suggestions_ref, orderBy("created_at", "desc"));
+    let unsubscribe_fn: Unsubscribe | null = null;
+    let cancelled = false;
 
-    return onSnapshot(q, (snapshot) => {
-        const posts = snapshot.docs.map((doc) => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                author_id: data.author_id || "",
-                author_name: data.author_name || "",
-                title: data.title || "",
-                content: data.content || "",
-                created_at: data.created_at || "",
-                replies: data.replies || [],
-                status: data.status || "pending",
-                resolved_version: data.resolved_version,
-                admin_comment: data.admin_comment,
-            } as SuggestionPost;
+    (async () => {
+        const db = await getDbInstance();
+        const { collection, query, orderBy, onSnapshot } = await fs();
+        if (cancelled) return;
+        const suggestions_ref = collection(db, COLLECTION_NAME);
+        const q = query(suggestions_ref, orderBy("created_at", "desc"));
+
+        unsubscribe_fn = onSnapshot(q, (snapshot) => {
+            const posts = snapshot.docs.map((d) => {
+                const data = d.data();
+                return {
+                    id: d.id,
+                    author_id: data.author_id || "",
+                    author_name: data.author_name || "",
+                    title: data.title || "",
+                    content: data.content || "",
+                    created_at: data.created_at || "",
+                    replies: data.replies || [],
+                    status: data.status || "pending",
+                    resolved_version: data.resolved_version,
+                    admin_comment: data.admin_comment,
+                } as SuggestionPost;
+            });
+            callback(posts);
         });
-        callback(posts);
-    });
+    })();
+
+    return () => {
+        cancelled = true;
+        unsubscribe_fn?.();
+    };
 }
