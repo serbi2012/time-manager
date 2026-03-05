@@ -13,6 +13,7 @@
 
 import { Spin } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
+import { LOADING_LABELS } from "@/shared/constants";
 import { useAnimationConfig } from "../animation/hooks/useAnimationConfig";
 
 export interface LoadingOverlayProps {
@@ -35,7 +36,7 @@ export interface LoadingOverlayProps {
  */
 export function LoadingOverlay({
     loading,
-    message = "로딩 중...",
+    message = LOADING_LABELS.loading,
     backgroundColor = "#fff",
     zIndex = 1000,
     spinSize = "large",

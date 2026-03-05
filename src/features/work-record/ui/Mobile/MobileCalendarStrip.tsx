@@ -9,6 +9,7 @@ import dayjs from "dayjs";
 import type { WorkRecord } from "../../../../shared/types";
 import { cn } from "../../../../shared/lib/cn";
 import { DATE_FORMAT } from "../../constants";
+import { DAY_NAMES_MON_START } from "@/shared/constants";
 
 interface MobileCalendarStripProps {
     selected_date: string;
@@ -25,8 +26,6 @@ interface DayInfo {
     is_weekend: boolean;
     has_records: boolean;
 }
-
-const WEEKDAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"];
 
 function getWeekDays(selected_date: string, records: WorkRecord[]): DayInfo[] {
     const selected = dayjs(selected_date);
@@ -52,7 +51,7 @@ function getWeekDays(selected_date: string, records: WorkRecord[]): DayInfo[] {
         const date_str = d.format(DATE_FORMAT);
         return {
             key: date_str,
-            day_label: WEEKDAY_LABELS[i],
+            day_label: DAY_NAMES_MON_START[i],
             date_num: d.date(),
             date_str,
             is_today: date_str === today_str,

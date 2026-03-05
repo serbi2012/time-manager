@@ -13,6 +13,7 @@ import {
     type TimeDisplayFormat,
     type ProductivityStats,
 } from "../../lib/statistics";
+import { STATS_LABEL } from "../../constants";
 
 const { Title } = Typography;
 
@@ -28,13 +29,13 @@ export function ProductivitySection({
     return (
         <>
             <Title level={5}>
-                <ThunderboltOutlined /> 생산성 지표
+                <ThunderboltOutlined /> {STATS_LABEL.productivity}
             </Title>
             <Row gutter={[16, 16]} className="!mb-xl">
                 <Col xs={12} sm={8} md={4}>
                     <Card size="small">
                         <Statistic
-                            title="일 평균"
+                            title={STATS_LABEL.dailyAvg}
                             value={formatDuration(
                                 productivity.daily_avg_minutes,
                                 time_format
@@ -46,7 +47,7 @@ export function ProductivitySection({
                 <Col xs={12} sm={8} md={4}>
                     <Card size="small">
                         <Statistic
-                            title="주 평균 (5일)"
+                            title={STATS_LABEL.weeklyAvg5}
                             value={formatDuration(
                                 productivity.weekly_avg_minutes,
                                 time_format
@@ -58,7 +59,7 @@ export function ProductivitySection({
                 <Col xs={12} sm={8} md={4}>
                     <Card size="small">
                         <Statistic
-                            title="월 평균 (22일)"
+                            title={STATS_LABEL.monthlyAvg22}
                             value={formatDuration(
                                 productivity.monthly_avg_minutes,
                                 time_format
@@ -70,18 +71,18 @@ export function ProductivitySection({
                 <Col xs={12} sm={8} md={4}>
                     <Card size="small">
                         <Statistic
-                            title="일 평균 세션"
+                            title={STATS_LABEL.dailyAvgSessions}
                             value={productivity.daily_avg_sessions}
-                            suffix="개"
+                            suffix={STATS_LABEL.unit_count}
                             valueStyle={{ fontSize: 16 }}
                         />
                     </Card>
                 </Col>
                 <Col xs={12} sm={8} md={4}>
                     <Card size="small">
-                        <Tooltip title="가장 많이 일한 요일">
+                        <Tooltip title={STATS_LABEL.busiestDay}>
                             <Statistic
-                                title="최고 생산 요일"
+                                title={STATS_LABEL.busiestDayLabel}
                                 value={productivity.most_productive_day}
                                 prefix={
                                     <TrophyOutlined className="!text-warning" />
@@ -93,9 +94,9 @@ export function ProductivitySection({
                 </Col>
                 <Col xs={12} sm={8} md={4}>
                     <Card size="small">
-                        <Tooltip title="가장 많이 일한 시간대">
+                        <Tooltip title={STATS_LABEL.busiestHour}>
                             <Statistic
-                                title="최고 생산 시간"
+                                title={STATS_LABEL.busiestHourLabel}
                                 value={productivity.most_productive_hour}
                                 prefix={
                                     <TrophyOutlined className="!text-warning" />
@@ -110,14 +111,14 @@ export function ProductivitySection({
             <Row gutter={[16, 16]} className="!mb-xl">
                 <Col xs={12} sm={6}>
                     <Card size="small">
-                        <Tooltip title="연속으로 작업한 일수 (오늘/어제 기준)">
+                        <Tooltip title={STATS_LABEL.streakDesc}>
                             <Statistic
-                                title="현재 스트릭"
+                                title={STATS_LABEL.currentStreak}
                                 value={productivity.streak_current}
                                 prefix={
                                     <FireOutlined className="!text-error" />
                                 }
-                                suffix="일"
+                                suffix={STATS_LABEL.dayUnit}
                                 valueStyle={{
                                     color:
                                         productivity.streak_current >= 5
@@ -131,28 +132,28 @@ export function ProductivitySection({
                 <Col xs={12} sm={6}>
                     <Card size="small">
                         <Statistic
-                            title="최대 스트릭"
+                            title={STATS_LABEL.maxStreak}
                             value={productivity.streak_max}
                             prefix={<FireOutlined className="!text-warning" />}
-                            suffix="일"
+                            suffix={STATS_LABEL.dayUnit}
                         />
                     </Card>
                 </Col>
                 <Col xs={12} sm={6}>
                     <Card size="small">
                         <Statistic
-                            title="활동일 수"
+                            title={STATS_LABEL.activeDays}
                             value={productivity.active_days_count}
-                            suffix="일"
+                            suffix={STATS_LABEL.dayUnit}
                         />
                     </Card>
                 </Col>
                 <Col xs={12} sm={6}>
                     <Card size="small">
                         <Statistic
-                            title="총 기간"
+                            title={STATS_LABEL.totalPeriod}
                             value={productivity.total_days_range}
-                            suffix="일"
+                            suffix={STATS_LABEL.dayUnit}
                         />
                     </Card>
                 </Col>

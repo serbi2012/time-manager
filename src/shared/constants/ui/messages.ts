@@ -134,6 +134,23 @@ export const ERROR_MESSAGES = {
     syncFailedMessage: "데이터 동기화에 실패했습니다",
     templateNotFound: "템플릿을 찾을 수 없습니다",
 
+    // 스토어 관련
+    recordNotFoundStore: "레코드를 찾을 수 없습니다.",
+    sessionNotFoundStore: "세션을 찾을 수 없습니다.",
+    endTimeBeforeStart: "종료 시간은 시작 시간보다 나중이어야 합니다.",
+    conflictUnavoidable: "충돌을 피할 수 없습니다. 다른 시간을 선택하세요.",
+    timerNotRunning: "타이머가 실행 중이 아닙니다.",
+    startTimeInFuture: "시작 시간은 현재 시간보다 미래일 수 없습니다.",
+    noRecordsToMerge: "병합할 레코드가 없습니다.",
+
+    // 충돌 메시지 (함수형)
+    conflictOverlap: (date: string, info: string) =>
+        `${date}에 ${info} 작업과 시간이 겹칩니다. 시간을 조정하세요.`,
+    conflictFullOverlap: (info: string) =>
+        `${info} 작업과 시간이 완전히 겹칩니다.`,
+    conflictContained: (info: string) =>
+        `${info} 작업 안에 완전히 포함됩니다.`,
+
     // 기타
     unknown: "오류가 발생했습니다",
     networkError: "네트워크 오류가 발생했습니다",

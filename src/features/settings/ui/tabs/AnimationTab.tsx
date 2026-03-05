@@ -16,6 +16,7 @@ import {
     SETTINGS_ANIMATION_CURSOR_TRACKING_DESC,
     SETTINGS_ANIMATION_CURSOR_TRACKING_CARD_TITLE,
 } from "../../constants/labels";
+import { TRANSITION_LABELS } from "@/shared/constants";
 import { cn } from "@/shared/lib/cn";
 
 const { Text } = Typography;
@@ -104,14 +105,14 @@ export function AnimationTab({ is_mobile }: AnimationTabProps) {
                 title={
                     <Space>
                         <ThunderboltOutlined style={{ color: theme_color }} />
-                        <span>트랜지션 효과</span>
+                        <span>{TRANSITION_LABELS.title}</span>
                     </Space>
                 }
                 styles={{ body: { padding: is_mobile ? "12px" : "16px" } }}
             >
                 <SettingItem
-                    title="페이지 진입 애니메이션"
-                    description="페이지 로딩 후 UI가 슬라이드되며 나타납니다"
+                    title={TRANSITION_LABELS.pageEntry}
+                    description={TRANSITION_LABELS.pageEntryDesc}
                     is_mobile={is_mobile}
                     action={
                         <Switch
@@ -121,8 +122,8 @@ export function AnimationTab({ is_mobile }: AnimationTabProps) {
                     }
                 />
                 <SettingItem
-                    title="애니메이션 속도"
-                    description="트랜지션 효과의 속도를 조절합니다"
+                    title={TRANSITION_LABELS.speed}
+                    description={TRANSITION_LABELS.speedDesc}
                     is_mobile={is_mobile}
                     action={
                         <Select

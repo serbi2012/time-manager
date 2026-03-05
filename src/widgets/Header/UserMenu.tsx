@@ -11,6 +11,7 @@ import {
     InfoCircleOutlined,
 } from "@ant-design/icons";
 import type { User } from "firebase/auth";
+import { BUTTON_TEXT, APP_LABELS } from "@/shared/constants";
 
 interface UserMenuProps {
     user: User | null;
@@ -41,7 +42,7 @@ export function UserMenu({
         {
             key: "refresh",
             icon: <SyncOutlined spin={is_syncing} />,
-            label: "서버에서 새로고침",
+            label: APP_LABELS.refreshFromServer,
             onClick: on_manual_sync,
         },
         ...(on_changelog_open
@@ -50,8 +51,8 @@ export function UserMenu({
                       key: "changelog",
                       icon: <InfoCircleOutlined />,
                       label: current_version
-                          ? `변경 내역 (v${current_version})`
-                          : "변경 내역",
+                          ? APP_LABELS.changelogWithVersion(current_version)
+                          : APP_LABELS.changelog,
                       onClick: on_changelog_open,
                   },
               ]
@@ -63,7 +64,7 @@ export function UserMenu({
         {
             key: "logout",
             icon: <LogoutOutlined />,
-            label: "로그아웃",
+            label: BUTTON_TEXT.logout,
             onClick: on_logout,
             danger: true,
         },
@@ -79,7 +80,7 @@ export function UserMenu({
                 <Space className="cursor-pointer">
                     <Avatar
                         src={user.photoURL}
-                        alt={user.displayName || "사용자 프로필"}
+                        alt={user.displayName || APP_LABELS.userProfile}
                         icon={<UserOutlined />}
                         size={26}
                         style={{
@@ -113,7 +114,7 @@ export function UserMenu({
             }}
         >
             <GoogleOutlined style={{ fontSize: 12 }} />
-            로그인
+            {BUTTON_TEXT.login}
         </button>
     );
 }

@@ -44,20 +44,13 @@ import {
     checkIntegrity,
     filterIssuesBySeverity,
 } from "../../lib/integrity";
+import { INTEGRITY_LABEL } from "../../constants";
 
 const { Title, Text, Paragraph } = Typography;
 
 // 문제 유형별 라벨
 const ISSUE_TYPE_LABELS: Record<IssueType, string> = {
-    orphan_session: "고아 세션",
-    time_mismatch: "시간 불일치",
-    date_mismatch: "날짜 불일치",
-    duplicate_id: "중복 ID",
-    missing_required: "필수 필드 누락",
-    invalid_time_range: "잘못된 시간 범위",
-    zero_duration: "0분 세션",
-    future_date: "미래 날짜",
-    negative_duration: "음수 시간",
+    ...INTEGRITY_LABEL.issueTypes,
 };
 
 // 심각도별 색상
@@ -132,7 +125,7 @@ export function IntegrityChecker({
 
     const columns: ColumnsType<IntegrityIssue> = [
         {
-            title: "심각도",
+            title: INTEGRITY_LABEL.severity,
             key: "severity",
             width: 80,
             render: (_, issue) => (
@@ -141,15 +134,15 @@ export function IntegrityChecker({
                     icon={SEVERITY_ICONS[issue.severity]}
                 >
                     {issue.severity === "error"
-                        ? "오류"
+                        ? INTEGRITY_LABEL.severityError
                         : issue.severity === "warning"
-                        ? "경고"
-                        : "정보"}
+                        ? INTEGRITY_LABEL.severityWarning
+                        : INTEGRITY_LABEL.severityInfo}
                 </Tag>
             ),
         },
         {
-            title: "유형",
+            title: INTEGRITY_LABEL.type,
             key: "type",
             width: 140,
             render: (_, issue) => (
@@ -157,13 +150,13 @@ export function IntegrityChecker({
             ),
         },
         {
-            title: "설명",
+            title: INTEGRITY_LABEL.description,
             dataIndex: "description",
             key: "description",
             ellipsis: true,
         },
         {
-            title: "상세",
+            title: INTEGRITY_LABEL.detail,
             dataIndex: "details",
             key: "details",
             ellipsis: true,
@@ -172,7 +165,7 @@ export function IntegrityChecker({
             ),
         },
         {
-            title: "레코드",
+            title: INTEGRITY_LABEL.recordLabel,
             dataIndex: "record_id",
             key: "record_id",
             width: 120,
@@ -188,7 +181,7 @@ export function IntegrityChecker({
                 ),
         },
         {
-            title: "수정",
+            title: INTEGRITY_LABEL.fix,
             key: "action",
             width: 80,
             render: (_, issue) =>
@@ -239,7 +232,7 @@ export function IntegrityChecker({
                                 }
                             }}
                         >
-                            수정
+                            {INTEGRITY_LABEL.fix}
                         </Button>
                     </Tooltip>
                 ) : (
@@ -254,12 +247,12 @@ export function IntegrityChecker({
             <div className="text-center p-[48px]">
                 <BugOutlined className="!text-[64px] !text-[#1890ff]" />
                 <Title level={4} className="!mt-xl">
-                    데이터 정합성 검사
+                    {INTEGRITY_LABEL.title}
                 </Title>
                 <Paragraph type="secondary">
-                    레코드와 세션 데이터의 무결성을 검사합니다.
+                    {INTEGRITY_LABEL.titleDesc}
                     <br />
-                    문제가 발견되면 상세 정보와 수정 방법을 안내합니다.
+                    {INTEGRITY_LABEL.titleHint}
                 </Paragraph>
                 <Button
                     type="primary"
@@ -268,35 +261,37 @@ export function IntegrityChecker({
                     onClick={runCheck}
                     loading={is_checking}
                 >
-                    {is_checking ? "검사 중..." : "검사 시작"}
+                    {is_checking
+                        ? INTEGRITY_LABEL.checking
+                        : INTEGRITY_LABEL.startCheck}
                 </Button>
 
                 <Card className="!mt-[32px] !text-left">
-                    <Title level={5}>검사 항목</Title>
+                    <Title level={5}>{INTEGRITY_LABEL.checkItems}</Title>
                     <Row gutter={[16, 8]}>
                         <Col span={12}>
-                            <Text>- 필수 필드 누락</Text>
+                            <Text>- {INTEGRITY_LABEL.checkMissingField}</Text>
                         </Col>
                         <Col span={12}>
-                            <Text>- 중복 ID 검사</Text>
+                            <Text>- {INTEGRITY_LABEL.checkDuplicateId}</Text>
                         </Col>
                         <Col span={12}>
-                            <Text>- 시간 불일치 (레코드 vs 세션 합계)</Text>
+                            <Text>- {INTEGRITY_LABEL.checkTimeMismatch}</Text>
                         </Col>
                         <Col span={12}>
-                            <Text>- 날짜 불일치</Text>
+                            <Text>- {INTEGRITY_LABEL.checkDateMismatch}</Text>
                         </Col>
                         <Col span={12}>
-                            <Text>- 잘못된 시간 범위</Text>
+                            <Text>- {INTEGRITY_LABEL.checkInvalidTimeRange}</Text>
                         </Col>
                         <Col span={12}>
-                            <Text>- 0분 세션</Text>
+                            <Text>- {INTEGRITY_LABEL.checkZeroSession}</Text>
                         </Col>
                         <Col span={12}>
-                            <Text>- 미래 날짜</Text>
+                            <Text>- {INTEGRITY_LABEL.checkFutureDate}</Text>
                         </Col>
                         <Col span={12}>
-                            <Text>- 음수 소요 시간</Text>
+                            <Text>- {INTEGRITY_LABEL.checkNegativeDuration}</Text>
                         </Col>
                     </Row>
                 </Card>
@@ -312,7 +307,7 @@ export function IntegrityChecker({
                 <Col span={6}>
                     <Card size="small">
                         <Statistic
-                            title="총 문제"
+                            title={INTEGRITY_LABEL.totalIssues}
                             value={result.issues.length}
                             prefix={<BugOutlined />}
                             valueStyle={{
@@ -327,7 +322,7 @@ export function IntegrityChecker({
                 <Col span={6}>
                     <Card size="small">
                         <Statistic
-                            title="오류"
+                            title={INTEGRITY_LABEL.severityError}
                             value={result.error_count}
                             prefix={<CloseCircleOutlined />}
                             valueStyle={{
@@ -342,7 +337,7 @@ export function IntegrityChecker({
                 <Col span={6}>
                     <Card size="small">
                         <Statistic
-                            title="경고"
+                            title={INTEGRITY_LABEL.severityWarning}
                             value={result.warning_count}
                             prefix={<WarningOutlined />}
                             valueStyle={{
@@ -357,7 +352,7 @@ export function IntegrityChecker({
                 <Col span={6}>
                     <Card size="small">
                         <Statistic
-                            title="정보"
+                            title={INTEGRITY_LABEL.severityInfo}
                             value={result.info_count}
                             prefix={<InfoCircleOutlined />}
                             valueStyle={{
@@ -375,8 +370,8 @@ export function IntegrityChecker({
             {result.issues.length === 0 ? (
                 <Alert
                     type="success"
-                    message="문제 없음"
-                    description="데이터 정합성 검사를 통과했습니다. 모든 데이터가 정상입니다."
+                    message={INTEGRITY_LABEL.noIssues}
+                    description={INTEGRITY_LABEL.noIssuesDesc}
                     icon={<CheckCircleOutlined />}
                     showIcon
                     className="!mb-lg"
@@ -384,8 +379,12 @@ export function IntegrityChecker({
             ) : (
                 <Alert
                     type="warning"
-                    message={`${result.issues.length}개의 문제가 발견되었습니다`}
-                    description={`오류: ${result.error_count}개, 경고: ${result.warning_count}개, 정보: ${result.info_count}개`}
+                    message={INTEGRITY_LABEL.issuesFound(result.issues.length)}
+                    description={INTEGRITY_LABEL.issuesSummary(
+                        result.error_count,
+                        result.warning_count,
+                        result.info_count
+                    )}
                     showIcon
                     className="!mb-lg"
                 />
@@ -398,7 +397,7 @@ export function IntegrityChecker({
                     onClick={runCheck}
                     loading={is_checking}
                 >
-                    다시 검사
+                    {INTEGRITY_LABEL.recheck}
                 </Button>
                 <Space.Compact>
                     <Button
@@ -407,7 +406,7 @@ export function IntegrityChecker({
                         }
                         onClick={() => setSelectedSeverity("all")}
                     >
-                        전체 ({result.issues.length})
+                        {INTEGRITY_LABEL.filterAll} ({result.issues.length})
                     </Button>
                     <Button
                         type={
@@ -418,7 +417,7 @@ export function IntegrityChecker({
                         onClick={() => setSelectedSeverity("error")}
                         danger={result.error_count > 0}
                     >
-                        오류 ({result.error_count})
+                        {INTEGRITY_LABEL.filterError} ({result.error_count})
                     </Button>
                     <Button
                         type={
@@ -428,7 +427,8 @@ export function IntegrityChecker({
                         }
                         onClick={() => setSelectedSeverity("warning")}
                     >
-                        경고 ({result.warning_count})
+                        {INTEGRITY_LABEL.filterWarning} (
+                        {result.warning_count})
                     </Button>
                     <Button
                         type={
@@ -436,7 +436,7 @@ export function IntegrityChecker({
                         }
                         onClick={() => setSelectedSeverity("info")}
                     >
-                        정보 ({result.info_count})
+                        {INTEGRITY_LABEL.filterInfo} ({result.info_count})
                     </Button>
                 </Space.Compact>
             </Space>
@@ -485,12 +485,14 @@ export function IntegrityChecker({
                     )}
                 />
             ) : (
-                <Empty description="필터 조건에 맞는 문제가 없습니다" />
+                <Empty
+                    description={INTEGRITY_LABEL.noFilteredIssues}
+                />
             )}
 
             {/* 검사 시간 */}
             <Text type="secondary" className="!block !mt-lg !text-right">
-                검사 시각:{" "}
+                {INTEGRITY_LABEL.checkedAt}{" "}
                 {dayjs(result.checked_at).format("YYYY-MM-DD HH:mm:ss")}
             </Text>
         </div>

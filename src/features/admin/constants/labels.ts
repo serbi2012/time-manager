@@ -150,3 +150,341 @@ export const PAGINATION_TOTAL = (
     range1: number,
     total: number
 ) => `${range0}-${range1} / 총 ${total}개`;
+
+// ============================================
+// 데이터 탐색기 (Explorer) 레이블
+// ============================================
+
+export const EXPLORER_LABEL = {
+    searchPlaceholderSessions: "검색 (작업명, 거래명, 프로젝트 코드)",
+    searchPlaceholderRecords: "검색 (거래명, 작업명, 프로젝트 코드)",
+    filterReset: "필터 초기화",
+    sessionCount: "세션 수",
+    recordCount: "레코드 수",
+    runningCount: "진행중",
+    totalTime: "총 시간",
+    avgTime: "평균 시간",
+    unit_count: "개",
+    unit_record: "건",
+    completed: "완료",
+    inProgress: "진행중",
+    duration: "소요",
+    recordId: "세션 ID",
+    record: "레코드",
+    paginationTotal: (total: number) => `총 ${total}개`,
+    paginationTotalRecords: (total: number) => `총 ${total}건`,
+    // RecordsExplorer 전용
+    statusAll: "전체 상태",
+    statusCompleted: "완료됨",
+    statusIncomplete: "미완료",
+    deleteExclude: "삭제 제외",
+    deleteInclude: "삭제 포함",
+    deleteOnly: "삭제만",
+    deleted: "삭제됨",
+    totalSessions: "총 세션",
+    // RecordsExplorer 상세 모달
+    recordDetail: "레코드 상세",
+    projectCode: "프로젝트 코드",
+    taskName: "업무명",
+    totalTimeLabel: "총 시간",
+    startTime: "시작 시간",
+    endTime: "종료 시간",
+    completedYesNo: "완료 여부",
+    completedYes: "완료",
+    completedNo: "미완료",
+    deletedYesNo: "삭제 여부",
+    deletedYes: "삭제됨",
+    deletedNo: "활성",
+    completedAt: "완료 시각",
+    deletedAt: "삭제 시각",
+    note: "비고",
+    sessionCountLabel: "세션 수",
+    sessionList: "세션 목록",
+    start: "시작",
+    end: "종료",
+    endInProgress: "(진행중)",
+} as const;
+
+// ============================================
+// 휴지통 (Trash) 레이블
+// ============================================
+
+export const TRASH_LABEL = {
+    deletedDate: "삭제일",
+    originalDate: "원본 날짜",
+    restore: "복원",
+    permanentDelete: "영구 삭제",
+    permanentDeleteConfirm:
+        "이 항목을 영구 삭제하시겠습니까? 복구할 수 없습니다.",
+    trashEmpty: "휴지통이 비어있습니다",
+    searchPlaceholder: "검색 (거래명, 작업명, 프로젝트 코드)",
+    deleteStartDate: "삭제 시작일",
+    deleteEndDate: "삭제 종료일",
+    filterReset: "필터 초기화",
+    deletedRecords: "삭제된 레코드",
+    totalSessions: "총 세션",
+    totalTime: "총 시간",
+    restoreSelected: "선택 항목 복원",
+    permanentDeleteSelected: "선택 항목 영구 삭제",
+    permanentDeleteSelectedConfirm: (n: number) =>
+        `${n}개 항목을 영구 삭제하시겠습니까?`,
+    deleteSelectedBtn: "선택 항목 삭제",
+    emptyTrash: "휴지통 비우기",
+    emptyTrashConfirm: (n: number) =>
+        `${n}개의 모든 항목이 영구 삭제됩니다. 이 작업은 되돌릴 수 없습니다.`,
+    emptyTrashBtn: "비우기",
+} as const;
+
+// ============================================
+// 정합성 검사 (Integrity) 레이블
+// ============================================
+
+export const INTEGRITY_LABEL = {
+    issueTypes: {
+        orphan_session: "고아 세션",
+        time_mismatch: "시간 불일치",
+        date_mismatch: "날짜 불일치",
+        duplicate_id: "중복 ID",
+        missing_required: "필수 필드 누락",
+        invalid_time_range: "잘못된 시간 범위",
+        zero_duration: "0분 세션",
+        future_date: "미래 날짜",
+        negative_duration: "음수 시간",
+    },
+    severity: "심각도",
+    severityError: "오류",
+    severityWarning: "경고",
+    severityInfo: "정보",
+    type: "유형",
+    description: "설명",
+    detail: "상세",
+    recordLabel: "레코드",
+    fix: "수정",
+    title: "데이터 정합성 검사",
+    titleDesc: "레코드와 세션 데이터의 무결성을 검사합니다.",
+    titleHint: "문제가 발견되면 상세 정보와 수정 방법을 안내합니다.",
+    checking: "검사 중...",
+    startCheck: "검사 시작",
+    checkItems: "검사 항목",
+    checkMissingField: "필수 필드 누락",
+    checkDuplicateId: "중복 ID 검사",
+    checkTimeMismatch: "시간 불일치 (레코드 vs 세션 합계)",
+    checkDateMismatch: "날짜 불일치",
+    checkInvalidTimeRange: "잘못된 시간 범위",
+    checkZeroSession: "0분 세션",
+    checkFutureDate: "미래 날짜",
+    checkNegativeDuration: "음수 소요 시간",
+    totalIssues: "총 문제",
+    noIssues: "문제 없음",
+    noIssuesDesc:
+        "데이터 정합성 검사를 통과했습니다. 모든 데이터가 정상입니다.",
+    issuesFound: (n: number) => `${n}개의 문제가 발견되었습니다`,
+    issuesSummary: (
+        errors: number,
+        warnings: number,
+        infos: number
+    ) => `오류: ${errors}개, 경고: ${warnings}개, 정보: ${infos}개`,
+    recheck: "다시 검사",
+    filterAll: "전체",
+    filterError: "오류",
+    filterWarning: "경고",
+    filterInfo: "정보",
+    noFilteredIssues: "필터 조건에 맞는 문제가 없습니다",
+    checkedAt: "검사 시각:",
+} as const;
+
+// ============================================
+// 문제 감지기 (Problem Detector) 레이블
+// ============================================
+
+export const PROBLEM_LABEL = {
+    missingTime: "시간 정보 누락",
+    invalidTimeFormat: "잘못된 시간 형식",
+    zeroSession: "0분 세션",
+    futureSession: "미래 날짜 세션",
+} as const;
+
+// ============================================
+// 통계 (Statistics) 레이블
+// ============================================
+
+export const STATS_LABEL = {
+    // TodayStatsCard
+    todayStats: "오늘 통계",
+    todayWorkTime: "오늘 작업 시간",
+    sessionCount: "세션 수",
+    recordCount: "레코드 수",
+    completed: "완료",
+    firstWork: "첫 작업",
+    lastWork: "마지막 작업",
+
+    // SessionStatsSection
+    sessionStats: "세션 통계",
+    avgSessionTime: "평균 세션 시간",
+    longestSession: "최장 세션",
+    shortestSession: "최단 세션",
+    sessionTimeDist: "세션 시간 분포",
+    under15: "15분 미만",
+    range15to30: "15-30분",
+    range30to60: "30분-1시간",
+    range1to2: "1-2시간",
+    over2: "2시간 이상",
+
+    // ProductivitySection
+    productivity: "생산성 지표",
+    dailyAvg: "일 평균",
+    weeklyAvg5: "주 평균 (5일)",
+    monthlyAvg22: "월 평균 (22일)",
+    dailyAvgSessions: "일 평균 세션",
+    busiestDay: "가장 많이 일한 요일",
+    busiestDayLabel: "최고 생산 요일",
+    busiestHour: "가장 많이 일한 시간대",
+    busiestHourLabel: "최고 생산 시간",
+    streakDesc: "연속으로 작업한 일수 (오늘/어제 기준)",
+    currentStreak: "현재 스트릭",
+    maxStreak: "최대 스트릭",
+    activeDays: "활동일 수",
+    totalPeriod: "총 기간",
+    dayUnit: "일",
+
+    // PeriodComparison
+    workTime: "작업 시간",
+    sessions: "세션",
+    records: "레코드",
+    weekComparison: "이번 주 vs 지난 주",
+    monthComparison: "이번 달 vs 지난 달",
+
+    // StatsDashboard
+    dailyChart: "일별 작업 시간 (최근 30일)",
+    weeklyChart: "주별 작업 시간 (최근 12주)",
+    monthlyChart: "월별 작업 시간 (최근 12개월)",
+    overallSummary: "전체 요약",
+    totalRecords: "총 레코드",
+    totalSessions: "총 세션",
+    totalTime: "총 시간",
+    completedRecords: "완료됨",
+    deletedRecords: "삭제됨",
+    sessionsPerRecord: "레코드당 세션",
+    timeTrend: "작업 시간 추이",
+    daily: "일별",
+    weekly: "주별",
+    monthly: "월별",
+    categoryAnalysis: "카테고리별 분석",
+    workNameTop10: "작업명별 TOP 10",
+
+    // TimePatternSection
+    hourlyPattern: "시간대별 작업 패턴",
+    sessionPrefix: "세션:",
+    weeklyPattern: "요일별 작업 패턴",
+    dayOfWeek: "요일",
+    recordPrefix: "레코드:",
+    hour0: "0시",
+    hour6: "6시",
+    hour12: "12시",
+    hour18: "18시",
+    hour24: "24시",
+
+    // CategoryAnalysis
+    rank: "순위",
+    time: "시간",
+    categoryTimeDist: "카테고리별 시간 분포",
+    defaultCategories: {
+        dev: "개발",
+        meeting: "회의",
+        docs: "문서작업",
+        analysis: "분석",
+        test: "테스트",
+        etc: "기타",
+    },
+
+    // CompletionSection
+    completionRate: "완료율",
+    completionAnalysis: "완료율 분석",
+    completedRecordCount: "완료된 레코드",
+    avgCompletionTime: "평균 완료 시간",
+    categoryCompletionRate: "카테고리별 완료율",
+    dealProjectAnalysis: "딜/프로젝트별 분석",
+    dealName: "딜명",
+    completedTotal: "완료/전체",
+
+    // 공통
+    unit_count: "개",
+    unit_record: "건",
+} as const;
+
+// ============================================
+// 내보내기 (Export) 레이블
+// ============================================
+
+export const EXPORT_LABEL = {
+    exportOptions: "내보내기 옵션",
+    fileFormat: "파일 형식",
+    csvFormat: "CSV (엑셀 호환)",
+    jsonFormat: "JSON (백업용)",
+    csvDesc: "CSV 형식은 Excel에서 바로 열 수 있습니다.",
+    jsonDesc: "JSON 형식은 전체 데이터를 구조화된 형태로 저장합니다.",
+    dataType: "데이터 유형",
+    records: "레코드",
+    sessions: "세션",
+    all: "전체",
+    recordsDesc: "작업 기록 단위로 내보냅니다.",
+    sessionsDesc: "개별 세션 단위로 내보냅니다.",
+    allDesc: "레코드와 세션을 모두 포함합니다.",
+    dateRange: "날짜 범위",
+    startDate: "시작일",
+    endDate: "종료일",
+    resetToAllPeriod: "전체 기간으로 초기화",
+    periodData: "기간의 데이터",
+    allPeriodData: "전체 기간의 데이터를 내보냅니다.",
+    additionalOptions: "추가 옵션",
+    includeDeleted: "삭제된 데이터 포함",
+    exportPreview: "내보내기 미리보기",
+    recordCountLabel: "레코드 수",
+    sessionCountLabel: "세션 수",
+    totalWorkTime: "총 작업 시간",
+    exportInfo: "내보내기 정보",
+    formatLabel: "형식:",
+    dataLabel: "데이터:",
+    periodLabel: "기간:",
+    deletedDataLabel: "삭제된 데이터:",
+    include: "포함",
+    exclude: "제외",
+    exporting: "내보내는 중...",
+    download: "다운로드",
+    noDataToExport: "내보낼 데이터가 없습니다",
+    helpTitle: "도움말",
+    helpCsvTitle: "CSV 형식",
+    helpCsvDesc:
+        "Microsoft Excel, Google Sheets 등에서 바로 열 수 있습니다. 한글이 깨지는 경우 UTF-8 BOM 인코딩을 지원하는 프로그램을 사용하세요.",
+    helpJsonTitle: "JSON 형식",
+    helpJsonDesc:
+        "전체 데이터를 구조화된 형태로 저장합니다. 데이터 백업이나 다른 시스템으로 이전할 때 유용합니다.",
+    unit_record: "건",
+    unit_count: "개",
+    jsonLabel: "JSON",
+} as const;
+
+// ============================================
+// 충돌 (Conflicts) 레이블
+// ============================================
+
+export const CONFLICTS_LABEL = {
+    noConflicts: "충돌이 없습니다.",
+    session1: "세션 1",
+    session2: "세션 2",
+    overlap: "겹침",
+    resolve: "해결",
+    total: "총",
+    conflictCountSuffix: "개의 충돌",
+} as const;
+
+// ============================================
+// 중복 (Duplicates) 레이블
+// ============================================
+
+export const DUPLICATES_LABEL = {
+    noDuplicates: "중복된 레코드가 없습니다.",
+    duplicateCount: "중복 수",
+    total: "총",
+    duplicateGroupSuffix: "개의 중복 그룹",
+} as const;

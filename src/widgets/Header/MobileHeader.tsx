@@ -17,19 +17,24 @@ import { UserMenu } from "./UserMenu";
 import { SyncIndicator } from "../SyncStatus";
 import type { SyncStatus } from "../../features/sync";
 import { APP_THEME_COLORS, type AppTheme } from "../../shared/config";
-import { FEATURE_FLAGS } from "../../shared/constants";
+import {
+    FEATURE_FLAGS,
+    NAV_LABELS,
+    DAY_NAMES_SHORT,
+    DATE_FORMAT_LABELS,
+} from "@/shared/constants";
 
 const { Header } = Layout;
 const { Text } = Typography;
 
 /** 페이지 정보 매핑 */
 const PAGE_INFO: Record<string, { label: string; icon: React.ReactNode }> = {
-    "/": { label: "일간 기록", icon: <HomeOutlined /> },
-    "/weekly": { label: "주간 일정", icon: <CalendarOutlined /> },
+    "/": { label: NAV_LABELS.daily, icon: <HomeOutlined /> },
+    "/weekly": { label: NAV_LABELS.weekly, icon: <CalendarOutlined /> },
     ...(FEATURE_FLAGS.suggestions.visible
-        ? { "/suggestions": { label: "건의사항", icon: <MessageOutlined /> } }
+        ? { "/suggestions": { label: NAV_LABELS.suggestions, icon: <MessageOutlined /> } }
         : {}),
-    "/guide": { label: "설명서", icon: <BookOutlined /> },
+    "/guide": { label: NAV_LABELS.guideShort, icon: <BookOutlined /> },
 };
 
 /** 오늘 날짜 포맷 (예: 1월 28일 화요일) */
@@ -37,9 +42,8 @@ function formatToday(): string {
     const today = new Date();
     const month = today.getMonth() + 1;
     const date = today.getDate();
-    const days = ["일", "월", "화", "수", "목", "금", "토"];
-    const day_name = days[today.getDay()];
-    return `${month}월 ${date}일 ${day_name}요일`;
+    const day_name = DAY_NAMES_SHORT[today.getDay()];
+    return DATE_FORMAT_LABELS.formatMonthDayWeekday(month, date, day_name);
 }
 
 interface MobileHeaderProps {

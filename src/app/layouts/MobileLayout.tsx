@@ -12,6 +12,7 @@ import { useSyncStatus } from "../../features/sync";
 import { useAuthHandlers, useDataImportExport } from "../../shared/hooks";
 import { DailyPage } from "../../pages/DailyPage/index";
 import { RouteTransition, PageTransitionProvider } from "../../shared/ui";
+import { LOADING_LABELS } from "@/shared/constants";
 import type { TransitionSpeed } from "../../shared/ui";
 
 const WeeklySchedule = lazy(() => import("../../components/WeeklySchedule"));
@@ -77,8 +78,8 @@ export function MobileLayout() {
                         <Spin size="large" />
                         <span className="!text-[#666]">
                             {auth_loading
-                                ? "로그인 확인 중..."
-                                : "데이터를 불러오는 중..."}
+                                ? LOADING_LABELS.checkingLogin
+                                : LOADING_LABELS.loadingData}
                         </span>
                     </motion.div>
                 )}

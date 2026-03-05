@@ -175,3 +175,20 @@ export const GANTT_FORM_VALIDATE_WORK_NAME_REQUIRED = "작업명을 입력하세
 export const GANTT_FORM_VALIDATE_START_REQUIRED = "시작 시간 필수";
 export const GANTT_FORM_VALIDATE_END_REQUIRED = "종료 시간 필수";
 export const GANTT_FORM_VALIDATE_TIME_FORMAT = "HH:mm 형식";
+
+// ---------- 세션/드래그 검증 메시지 ----------
+
+export const GANTT_VALIDATION = {
+    invalidTimeFormat: "시간 형식이 올바르지 않습니다. (HH:mm)",
+    startAfterEnd: "시작 시간이 종료 시간보다 늦습니다.",
+    minDuration: (min: number) =>
+        `작업 시간은 최소 ${min}분 이상이어야 합니다.`,
+    overlap: (start: string, end: string) =>
+        `다른 세션과 시간이 겹칩니다. (${start} ~ ${end})`,
+    overlapSimple: "다른 세션과 시간이 겹칩니다.",
+    endBeforeStart: "종료 시간이 시작 시간보다 이전입니다.",
+    minDragDuration: (min: number) =>
+        `최소 ${min}분 이상 선택해야 합니다.`,
+    minDragRequired: (min: number) =>
+        `최소 ${min}분 이상이어야 합니다.`,
+} as const;

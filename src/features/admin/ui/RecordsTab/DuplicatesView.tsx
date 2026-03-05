@@ -8,6 +8,17 @@ import type { ColumnsType } from "antd/es/table";
 import type { DuplicatesViewProps } from "../../lib/types";
 import type { WorkRecord } from "../../../../shared/types";
 import { formatDuration } from "../../../../shared/lib/time";
+import {
+    DUPLICATES_LABEL,
+    TABLE_COL_WORK_NAME,
+    TABLE_COL_DEAL_NAME,
+    TABLE_COL_DATE,
+    TABLE_COL_TIME,
+    TABLE_COL_SESSIONS,
+    MERGE,
+    STATS_LABEL,
+    EXPLORER_LABEL,
+} from "../../constants";
 
 const { Text } = Typography;
 
@@ -19,28 +30,31 @@ type DuplicateGroup = DuplicatesViewProps["duplicates"][0];
  */
 export function DuplicatesView({ duplicates, on_merge }: DuplicatesViewProps) {
     if (duplicates.length === 0) {
-        return <Empty description="중복된 레코드가 없습니다." />;
+        return <Empty description={DUPLICATES_LABEL.noDuplicates} />;
     }
 
     const group_columns: ColumnsType<DuplicateGroup> = [
         {
-            title: "작업명",
+            title: TABLE_COL_WORK_NAME,
             dataIndex: "work_name",
             key: "work_name",
             ellipsis: true,
         },
         {
-            title: "거래명",
+            title: TABLE_COL_DEAL_NAME,
             dataIndex: "deal_name",
             key: "deal_name",
             ellipsis: true,
         },
         {
-            title: "중복 수",
+            title: DUPLICATES_LABEL.duplicateCount,
             key: "count",
             width: 100,
             render: (_, group) => (
-                <Tag color="blue">{group.records.length}개</Tag>
+                <Tag color="blue">
+                    {group.records.length}
+                    {STATS_LABEL.unit_count}
+                </Tag>
             ),
         },
         {
@@ -54,7 +68,7 @@ export function DuplicatesView({ duplicates, on_merge }: DuplicatesViewProps) {
                     onClick={() => on_merge(group.records)}
                     size="small"
                 >
-                    병합
+                    {MERGE}
                 </Button>
             ),
         },
@@ -64,13 +78,13 @@ export function DuplicatesView({ duplicates, on_merge }: DuplicatesViewProps) {
     const expand_render = (group: DuplicateGroup) => {
         const record_columns: ColumnsType<WorkRecord> = [
             {
-                title: "날짜",
+                title: TABLE_COL_DATE,
                 dataIndex: "date",
                 key: "date",
                 width: 100,
             },
             {
-                title: "시간",
+                title: TABLE_COL_TIME,
                 key: "time",
                 render: (_, record) => (
                     <Text type="secondary">
@@ -79,17 +93,20 @@ export function DuplicatesView({ duplicates, on_merge }: DuplicatesViewProps) {
                 ),
             },
             {
-                title: "소요",
+                title: EXPLORER_LABEL.duration,
                 key: "duration",
                 width: 100,
                 render: (_, record) => formatDuration(record.duration_minutes),
             },
             {
-                title: "세션",
+                title: TABLE_COL_SESSIONS,
                 key: "sessions",
                 width: 80,
                 render: (_, record) => (
-                    <Tag>{record.sessions?.length || 0}개</Tag>
+                    <Tag>
+                        {record.sessions?.length || 0}
+                        {STATS_LABEL.unit_count}
+                    </Tag>
                 ),
             },
         ];
@@ -109,7 +126,8 @@ export function DuplicatesView({ duplicates, on_merge }: DuplicatesViewProps) {
         <div>
             <Space className="!mb-lg">
                 <Text type="secondary">
-                    총 {duplicates.length}개의 중복 그룹
+                    {DUPLICATES_LABEL.total} {duplicates.length}
+                    {DUPLICATES_LABEL.duplicateGroupSuffix}
                 </Text>
             </Space>
             <Table

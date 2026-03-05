@@ -18,20 +18,25 @@ import {
     CloudOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
+import {
+    ShortcutCategory,
+    SHORTCUT_CATEGORY_LABELS,
+} from "@/shared/constants";
+import { DEMO_MISC_LABELS } from "@/features/guide/constants";
 
 const { Text } = Typography;
 
 export function DemoEmptyState() {
     return (
         <div className="demo-component">
-            <Card size="small" title="작업 프리셋">
+            <Card size="small" title={DEMO_MISC_LABELS.presetTitle}>
                 <Empty
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
                     description={
                         <div className="flex flex-col items-center gap-xs">
-                            <Text strong>아직 프리셋이 없어요</Text>
+                            <Text strong>{DEMO_MISC_LABELS.emptyPreset}</Text>
                             <Text type="secondary" className="text-sm">
-                                자주 쓰는 작업을 저장해 보세요
+                                {DEMO_MISC_LABELS.emptyPresetDesc}
                             </Text>
                         </div>
                     }
@@ -44,18 +49,17 @@ export function DemoEmptyState() {
 export function DemoSettingsPanel() {
     return (
         <div className="demo-component">
-            <Card size="small" title="데이터">
+            <Card size="small" title={DEMO_MISC_LABELS.dataTab}>
                 <div className="mb-lg">
                     <Text strong className="block mb-sm">
-                        시간 설정
+                        {DEMO_MISC_LABELS.timeSetting}
                     </Text>
                     <div className="flex justify-between items-center p-sm bg-bg-light rounded-md">
                         <div>
-                            <Text>점심시간</Text>
+                            <Text>{DEMO_MISC_LABELS.lunchTime}</Text>
                             <br />
                             <Text type="secondary" className="text-sm">
-                                간트차트에 표시되며 작업 시간 계산 시 자동
-                                제외돼요
+                                {DEMO_MISC_LABELS.lunchTimeDesc}
                             </Text>
                         </div>
                         <Tag>11:40 ~ 12:40</Tag>
@@ -64,15 +68,14 @@ export function DemoSettingsPanel() {
 
                 <div className="mb-lg">
                     <Text strong className="block mb-sm">
-                        프리셋 설정
+                        {DEMO_MISC_LABELS.presetSetting}
                     </Text>
                     <div className="flex justify-between items-center p-sm bg-bg-light rounded-md">
                         <div>
-                            <Text>고유 식별자 자동 추가</Text>
+                            <Text>{DEMO_MISC_LABELS.autoIdentifier}</Text>
                             <br />
                             <Text type="secondary" className="text-sm">
-                                프리셋으로 작업 추가 시 거래명에 타임스탬프를
-                                붙여요
+                                {DEMO_MISC_LABELS.autoIdentifierDesc}
                             </Text>
                         </div>
                         <Switch size="small" disabled />
@@ -81,7 +84,7 @@ export function DemoSettingsPanel() {
 
                 <div className="mb-lg">
                     <Text strong className="block mb-sm">
-                        데이터 관리
+                        {DEMO_MISC_LABELS.dataManagement}
                     </Text>
                     <Space direction="vertical" className="w-full" size="small">
                         <Button
@@ -90,7 +93,7 @@ export function DemoSettingsPanel() {
                             disabled
                             className="text-left"
                         >
-                            데이터 내보내기
+                            {DEMO_MISC_LABELS.exportData}
                         </Button>
                         <Button
                             icon={<UploadOutlined />}
@@ -98,27 +101,26 @@ export function DemoSettingsPanel() {
                             disabled
                             className="text-left"
                         >
-                            데이터 가져오기
+                            {DEMO_MISC_LABELS.importData}
                         </Button>
                         <Text type="secondary" className="text-sm">
-                            JSON 파일로 데이터를 백업하거나 복원할 수 있어요.
-                            가져오기 시 기존 데이터가 대체돼요.
+                            {DEMO_MISC_LABELS.dataManagementDesc}
                         </Text>
                     </Space>
                 </div>
 
                 <div>
                     <Text strong className="block mb-sm">
-                        저장소
+                        {DEMO_MISC_LABELS.storage}
                     </Text>
                     <div className="flex justify-between items-center p-sm bg-bg-light rounded-md">
                         <Space>
                             <CloudOutlined className="text-success" />
-                            <Text>클라우드 연결됨</Text>
+                            <Text>{DEMO_MISC_LABELS.cloudConnected}</Text>
                         </Space>
                     </div>
                     <Text type="secondary" className="text-sm mt-xs block">
-                        모든 데이터가 자동으로 동기화돼요
+                        {DEMO_MISC_LABELS.cloudSyncDesc}
                     </Text>
                 </div>
             </Card>
@@ -134,87 +136,102 @@ interface ShortcutItem {
 }
 
 const DEMO_SHORTCUTS: ShortcutItem[] = [
-    { key: "Alt + N", action: "새 작업 추가", category: "일반", enabled: true },
+    {
+        key: "Alt + N",
+        action: "새 작업 추가",
+        category: SHORTCUT_CATEGORY_LABELS[ShortcutCategory.General],
+        enabled: true,
+    },
     {
         key: "Alt + P",
         action: "새 프리셋 추가",
-        category: "일반",
+        category: SHORTCUT_CATEGORY_LABELS[ShortcutCategory.General],
         enabled: true,
     },
-    { key: "Alt + ,", action: "설정 열기", category: "일반", enabled: true },
-    { key: "F8", action: "모달 저장/추가", category: "일반", enabled: true },
+    {
+        key: "Alt + ,",
+        action: "설정 열기",
+        category: SHORTCUT_CATEGORY_LABELS[ShortcutCategory.General],
+        enabled: true,
+    },
+    {
+        key: "F8",
+        action: "모달 저장/추가",
+        category: SHORTCUT_CATEGORY_LABELS[ShortcutCategory.General],
+        enabled: true,
+    },
     {
         key: "Alt + S",
         action: "타이머 시작/중지",
-        category: "타이머",
+        category: SHORTCUT_CATEGORY_LABELS[ShortcutCategory.Timer],
         enabled: true,
     },
     {
         key: "Alt + R",
         action: "타이머 초기화",
-        category: "타이머",
+        category: SHORTCUT_CATEGORY_LABELS[ShortcutCategory.Timer],
         enabled: true,
     },
     {
         key: "Alt + T",
         action: "오늘로 이동",
-        category: "네비게이션",
+        category: SHORTCUT_CATEGORY_LABELS[ShortcutCategory.Navigation],
         enabled: true,
     },
     {
         key: "Alt + ←",
         action: "이전 날짜",
-        category: "네비게이션",
+        category: SHORTCUT_CATEGORY_LABELS[ShortcutCategory.Navigation],
         enabled: true,
     },
     {
         key: "Alt + →",
         action: "다음 날짜",
-        category: "네비게이션",
+        category: SHORTCUT_CATEGORY_LABELS[ShortcutCategory.Navigation],
         enabled: true,
     },
     {
         key: "Alt + 1",
         action: "일간 기록 페이지",
-        category: "네비게이션",
+        category: SHORTCUT_CATEGORY_LABELS[ShortcutCategory.Navigation],
         enabled: true,
     },
     {
         key: "Alt + 2",
         action: "주간 일정 페이지",
-        category: "네비게이션",
+        category: SHORTCUT_CATEGORY_LABELS[ShortcutCategory.Navigation],
         enabled: true,
     },
     {
         key: "Alt + E",
         action: "데이터 내보내기",
-        category: "데이터",
+        category: SHORTCUT_CATEGORY_LABELS[ShortcutCategory.Data],
         enabled: true,
     },
     {
         key: "Alt + Shift + S",
         action: "수동 동기화",
-        category: "데이터",
+        category: SHORTCUT_CATEGORY_LABELS[ShortcutCategory.Data],
         enabled: true,
     },
 ];
 
 const CATEGORY_COLORS: Record<string, string> = {
-    일반: "blue",
-    타이머: "orange",
-    네비게이션: "green",
-    데이터: "purple",
+    [SHORTCUT_CATEGORY_LABELS[ShortcutCategory.General]]: "blue",
+    [SHORTCUT_CATEGORY_LABELS[ShortcutCategory.Timer]]: "orange",
+    [SHORTCUT_CATEGORY_LABELS[ShortcutCategory.Navigation]]: "green",
+    [SHORTCUT_CATEGORY_LABELS[ShortcutCategory.Data]]: "purple",
 };
 
 export function DemoShortcutsTable() {
     const columns: ColumnsType<ShortcutItem> = [
         {
-            title: "기능",
+            title: DEMO_MISC_LABELS.feature,
             dataIndex: "action",
             key: "action",
         },
         {
-            title: "단축키",
+            title: DEMO_MISC_LABELS.shortcut,
             dataIndex: "key",
             key: "key",
             width: 140,
@@ -223,7 +240,7 @@ export function DemoShortcutsTable() {
             ),
         },
         {
-            title: "카테고리",
+            title: DEMO_MISC_LABELS.category,
             dataIndex: "category",
             key: "category",
             width: 100,
@@ -232,7 +249,7 @@ export function DemoShortcutsTable() {
             ),
         },
         {
-            title: "활성화",
+            title: DEMO_MISC_LABELS.enabled,
             dataIndex: "enabled",
             key: "enabled",
             width: 80,
@@ -245,7 +262,7 @@ export function DemoShortcutsTable() {
 
     return (
         <div className="demo-component">
-            <Card size="small" title="단축키 목록">
+            <Card size="small" title={DEMO_MISC_LABELS.shortcutList}>
                 <Table
                     columns={columns}
                     dataSource={DEMO_SHORTCUTS}

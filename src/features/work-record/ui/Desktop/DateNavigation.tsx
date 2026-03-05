@@ -19,6 +19,7 @@ import { useSpotlight } from "@/shared/hooks/useSpotlight";
 import { useMagnetic } from "@/shared/hooks/useMagnetic";
 import { cn } from "@/shared/lib/cn";
 
+import { DAY_NAMES_SHORT, DATE_FORMAT_LABELS } from "@/shared/constants";
 import { RECORD_UI_TEXT } from "../../constants";
 
 interface DateNavigationProps {
@@ -42,9 +43,8 @@ function formatDateLabel(date_str: string): string {
     const d = dayjs(date_str);
     const month = d.month() + 1;
     const day = d.date();
-    const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
-    const weekday = weekdays[d.day()];
-    return `${month}월 ${day}일 ${weekday}요일`;
+    const weekday = DAY_NAMES_SHORT[d.day()];
+    return DATE_FORMAT_LABELS.formatMonthDayWeekday(month, day, weekday);
 }
 
 export const DateNavigation = memo(function DateNavigation({

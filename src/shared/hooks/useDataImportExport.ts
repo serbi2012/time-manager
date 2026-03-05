@@ -79,7 +79,7 @@ export function useDataImportExport(): UseDataImportExportReturn {
         };
 
         if (!hasExportableData(export_data)) {
-            message.warning("내보낼 데이터가 없습니다");
+            message.warning(WARNING_MESSAGES.noDataToExport);
             return;
         }
 

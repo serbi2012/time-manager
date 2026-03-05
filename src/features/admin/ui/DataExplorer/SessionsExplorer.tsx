@@ -31,6 +31,17 @@ import {
   formatDuration,
   type TimeDisplayFormat,
 } from "../../lib/statistics";
+import {
+  TABLE_COL_DATE,
+  TABLE_COL_TIME,
+  TABLE_COL_WORK_NAME,
+  TABLE_COL_DEAL_NAME,
+  TABLE_TAG_RUNNING,
+  PLACEHOLDER_START_DATE,
+  PLACEHOLDER_END_DATE,
+  VIEW_MODE_ALL,
+  EXPLORER_LABEL,
+} from "../../constants";
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
@@ -153,7 +164,7 @@ export function SessionsExplorer({
 
   const columns: ColumnsType<SessionWithRecord> = [
     {
-      title: "날짜",
+      title: TABLE_COL_DATE,
       key: "date",
       width: 110,
       sorter: (a, b) => {
@@ -169,7 +180,7 @@ export function SessionsExplorer({
       ),
     },
     {
-      title: "시간",
+      title: TABLE_COL_TIME,
       key: "time_range",
       width: 130,
       render: (_, session) => (
@@ -177,13 +188,13 @@ export function SessionsExplorer({
           <Text>{session.start_time}</Text>
           <Text type="secondary">~</Text>
           <Text>
-            {session.end_time || <Tag color="green">진행중</Tag>}
+            {session.end_time || <Tag color="green">{TABLE_TAG_RUNNING}</Tag>}
           </Text>
         </Space>
       ),
     },
     {
-      title: "소요",
+      title: EXPLORER_LABEL.duration,
       dataIndex: "duration_minutes",
       key: "duration_minutes",
       width: 90,
@@ -197,7 +208,7 @@ export function SessionsExplorer({
       ),
     },
     {
-      title: "작업명",
+      title: TABLE_COL_WORK_NAME,
       dataIndex: "work_name",
       key: "work_name",
       width: 150,
@@ -206,14 +217,14 @@ export function SessionsExplorer({
       render: (text: string) => <Tag color="blue">{text}</Tag>,
     },
     {
-      title: "거래명",
+      title: TABLE_COL_DEAL_NAME,
       dataIndex: "deal_name",
       key: "deal_name",
       ellipsis: true,
       sorter: (a, b) => (a.deal_name || "").localeCompare(b.deal_name || ""),
     },
     {
-      title: "레코드",
+      title: EXPLORER_LABEL.record,
       dataIndex: "record_id",
       key: "record_id",
       width: 120,
@@ -227,7 +238,7 @@ export function SessionsExplorer({
       ),
     },
     {
-      title: "세션 ID",
+      title: EXPLORER_LABEL.recordId,
       dataIndex: "id",
       key: "id",
       width: 120,
@@ -248,7 +259,7 @@ export function SessionsExplorer({
         <Row gutter={[16, 16]} align="middle">
           <Col xs={24} sm={12} md={8}>
             <Input
-              placeholder="검색 (작업명, 거래명, 프로젝트 코드)"
+              placeholder={EXPLORER_LABEL.searchPlaceholderSessions}
               prefix={<SearchOutlined />}
               value={search_text}
               onChange={(e) => setSearchText(e.target.value)}
@@ -262,7 +273,7 @@ export function SessionsExplorer({
                 setDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs] | null)
               }
               className="!w-full"
-              placeholder={["시작일", "종료일"]}
+              placeholder={[PLACEHOLDER_START_DATE, PLACEHOLDER_END_DATE]}
             />
           </Col>
           <Col xs={12} sm={6} md={4}>
@@ -271,19 +282,19 @@ export function SessionsExplorer({
                 type={time_filter === "all" ? "primary" : "default"}
                 onClick={() => setTimeFilter("all")}
               >
-                전체
+                {VIEW_MODE_ALL}
               </Button>
               <Button
                 type={time_filter === "running" ? "primary" : "default"}
                 onClick={() => setTimeFilter("running")}
               >
-                진행중
+                {TABLE_TAG_RUNNING}
               </Button>
               <Button
                 type={time_filter === "completed" ? "primary" : "default"}
                 onClick={() => setTimeFilter("completed")}
               >
-                완료
+                {EXPLORER_LABEL.completed}
               </Button>
             </Space.Compact>
           </Col>
@@ -295,7 +306,7 @@ export function SessionsExplorer({
                 setTimeFilter("all");
               }}
             >
-              필터 초기화
+              {EXPLORER_LABEL.filterReset}
             </Button>
           </Col>
         </Row>
@@ -306,28 +317,28 @@ export function SessionsExplorer({
         <Col span={6}>
           <Card size="small">
             <Statistic
-              title="세션 수"
+              title={EXPLORER_LABEL.sessionCount}
               value={stats.count}
-              suffix="개"
+              suffix={EXPLORER_LABEL.unit_count}
             />
           </Card>
         </Col>
         <Col span={6}>
           <Card size="small">
             <Statistic
-              title="진행중"
+              title={EXPLORER_LABEL.runningCount}
               value={stats.running_count}
               valueStyle={{
                 color: stats.running_count > 0 ? "#52c41a" : undefined,
               }}
-              suffix="개"
+              suffix={EXPLORER_LABEL.unit_count}
             />
           </Card>
         </Col>
         <Col span={6}>
           <Card size="small">
             <Statistic
-              title="총 시간"
+              title={EXPLORER_LABEL.totalTime}
               value={formatDuration(stats.total_minutes, time_format)}
             />
           </Card>
@@ -335,7 +346,7 @@ export function SessionsExplorer({
         <Col span={6}>
           <Card size="small">
             <Statistic
-              title="평균 시간"
+              title={EXPLORER_LABEL.avgTime}
               value={formatDuration(stats.avg_duration, time_format)}
             />
           </Card>
@@ -351,7 +362,7 @@ export function SessionsExplorer({
         pagination={{
           pageSize: 20,
           showSizeChanger: true,
-          showTotal: (total) => `총 ${total}개`,
+          showTotal: (total) => EXPLORER_LABEL.paginationTotal(total),
         }}
         scroll={{ x: 900 }}
       />

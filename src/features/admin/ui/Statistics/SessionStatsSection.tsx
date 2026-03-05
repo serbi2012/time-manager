@@ -10,6 +10,7 @@ import {
     type SessionStats,
     type SessionTimeDistribution,
 } from "../../lib/statistics";
+import { STATS_LABEL } from "../../constants";
 
 const { Title, Text } = Typography;
 
@@ -22,25 +23,25 @@ interface SessionStatsSectionProps {
 const DISTRIBUTION_ITEMS = [
     {
         key: "under_15min" as const,
-        label: "15분 미만",
+        label: STATS_LABEL.under15,
         color: "var(--color-error)",
     },
     {
         key: "min_15_to_30" as const,
-        label: "15-30분",
+        label: STATS_LABEL.range15to30,
         color: "var(--color-warning)",
     },
     {
         key: "min_30_to_60" as const,
-        label: "30분-1시간",
+        label: STATS_LABEL.range30to60,
         color: "var(--color-success)",
     },
     {
         key: "hour_1_to_2" as const,
-        label: "1-2시간",
+        label: STATS_LABEL.range1to2,
         color: "var(--color-primary)",
     },
-    { key: "over_2hours" as const, label: "2시간 이상", color: "#722ed1" },
+    { key: "over_2hours" as const, label: STATS_LABEL.over2, color: "#722ed1" },
 ] as const;
 
 export function SessionStatsSection({
@@ -58,13 +59,13 @@ export function SessionStatsSection({
     return (
         <>
             <Title level={5}>
-                <ClockCircleOutlined /> 세션 통계
+                <ClockCircleOutlined /> {STATS_LABEL.sessionStats}
             </Title>
             <Row gutter={[16, 16]} className="!mb-xl">
                 <Col xs={12} sm={6}>
                     <Card size="small">
                         <Statistic
-                            title="평균 세션 시간"
+                            title={STATS_LABEL.avgSessionTime}
                             value={formatDuration(
                                 session_stats.average_minutes,
                                 time_format
@@ -75,7 +76,7 @@ export function SessionStatsSection({
                 <Col xs={12} sm={6}>
                     <Card size="small">
                         <Statistic
-                            title="최장 세션"
+                            title={STATS_LABEL.longestSession}
                             value={formatDuration(
                                 session_stats.longest_minutes,
                                 time_format
@@ -89,7 +90,7 @@ export function SessionStatsSection({
                 <Col xs={12} sm={6}>
                     <Card size="small">
                         <Statistic
-                            title="최단 세션"
+                            title={STATS_LABEL.shortestSession}
                             value={formatDuration(
                                 session_stats.shortest_minutes,
                                 time_format
@@ -103,15 +104,15 @@ export function SessionStatsSection({
                 <Col xs={12} sm={6}>
                     <Card size="small">
                         <Statistic
-                            title="세션 수"
+                            title={STATS_LABEL.sessionCount}
                             value={session_stats.total_count}
-                            suffix="개"
+                            suffix={STATS_LABEL.unit_count}
                         />
                     </Card>
                 </Col>
             </Row>
 
-            <Card size="small" title="세션 시간 분포" className="!mb-xl">
+            <Card size="small" title={STATS_LABEL.sessionTimeDist} className="!mb-xl">
                 <Row gutter={16}>
                     {DISTRIBUTION_ITEMS.map((item) => (
                         <Col
@@ -130,7 +131,7 @@ export function SessionStatsSection({
                                         100
                                 )}
                                 format={() =>
-                                    `${session_distribution[item.key]}개`
+                                    `${session_distribution[item.key]}${STATS_LABEL.unit_count}`
                                 }
                                 strokeColor={item.color}
                             />

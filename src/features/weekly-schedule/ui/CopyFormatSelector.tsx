@@ -5,7 +5,7 @@
 import { Radio, Space, Button } from "antd";
 import { CopyOutlined } from "@ant-design/icons";
 import type { CopyFormat } from "../lib/copy_formatter";
-import { COPY_FORMAT_LABELS } from "../lib/copy_formatter";
+import { COPY_FORMAT_LABELS } from "../constants";
 
 export interface CopyFormatSelectorProps {
     selected_format: CopyFormat;
@@ -33,7 +33,7 @@ export function CopyFormatSelector({
                     buttonStyle="solid"
                     size="small"
                 >
-                    {(Object.keys(COPY_FORMAT_LABELS) as CopyFormat[]).map(
+                    {(["format1", "format2", "format3"] as CopyFormat[]).map(
                         (format) => (
                             <Radio.Button key={format} value={format}>
                                 {COPY_FORMAT_LABELS[format]}

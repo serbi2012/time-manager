@@ -10,6 +10,7 @@ export const PLACEHOLDERS = {
     taskName: "업무를 선택하세요",
     categoryName: "카테고리를 선택하세요",
     note: "메모를 입력하세요",
+    noteAdditional: "추가 메모",
 
     // 검색/필터
     search: "검색어를 입력하세요",

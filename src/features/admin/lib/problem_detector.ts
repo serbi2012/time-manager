@@ -3,6 +3,7 @@
  */
 
 import type { WorkRecord, WorkSession } from "../../../shared/types";
+import { PROBLEM_LABEL } from "../constants";
 import { timeToMinutes } from "../../../shared/lib/time";
 
 /**
@@ -36,7 +37,7 @@ export function detectSessionProblems(
     if (!session.start_time || !session.end_time) {
         problems.push({
             type: "missing_time",
-            description: "시간 정보 누락",
+            description: PROBLEM_LABEL.missingTime,
         });
         return problems; // 시간이 없으면 다른 검사 불가
     }
@@ -49,7 +50,7 @@ export function detectSessionProblems(
     ) {
         problems.push({
             type: "invalid_time",
-            description: "잘못된 시간 형식",
+            description: PROBLEM_LABEL.invalidTimeFormat,
         });
     }
 
@@ -59,7 +60,7 @@ export function detectSessionProblems(
     if (start_mins === end_mins) {
         problems.push({
             type: "zero_duration",
-            description: `0분 세션 (${session.start_time})`,
+            description: `${PROBLEM_LABEL.zeroSession} (${session.start_time})`,
         });
     }
 
@@ -69,7 +70,7 @@ export function detectSessionProblems(
     if (session_date > today_str) {
         problems.push({
             type: "future_time",
-            description: `미래 날짜 세션 (${session_date})`,
+            description: `${PROBLEM_LABEL.futureSession} (${session_date})`,
         });
     }
 

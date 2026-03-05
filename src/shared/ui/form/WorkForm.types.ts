@@ -4,6 +4,11 @@
 
 import type { Control } from "react-hook-form";
 import { z } from "zod";
+import {
+    ERROR_MESSAGES,
+    FORM_LABELS,
+    PLACEHOLDERS,
+} from "@/shared/constants";
 
 // ============================================================================
 // 폼 데이터 타입
@@ -24,7 +29,7 @@ export interface WorkFormData {
 
 export const workFormSchema = z.object({
     project_code: z.string(),
-    work_name: z.string().min(1, "작업명을 입력하세요"),
+    work_name: z.string().min(1, ERROR_MESSAGES.workNameRequired),
     task_name: z.string(),
     deal_name: z.string(),
     category_name: z.string(),
@@ -77,19 +82,19 @@ export interface UseWorkFormOptions {
 // ============================================================================
 
 export const DEFAULT_LABELS: Record<WorkFormFieldName, string> = {
-    project_code: "프로젝트 코드",
-    work_name: "작업명",
-    task_name: "업무명",
-    deal_name: "거래명 (상세 작업)",
-    category_name: "카테고리",
-    note: "비고",
+    project_code: FORM_LABELS.projectCode,
+    work_name: FORM_LABELS.workName,
+    task_name: FORM_LABELS.taskName,
+    deal_name: FORM_LABELS.dealName,
+    category_name: FORM_LABELS.categoryName,
+    note: FORM_LABELS.remark,
 };
 
 export const DEFAULT_PLACEHOLDERS: Record<WorkFormFieldName, string> = {
-    project_code: "예: A25_01846 (미입력 시 A00_00000)",
-    work_name: "예: 5.6 프레임워크 FE",
-    task_name: "업무 선택",
-    deal_name: "예: 5.6 테스트 케이스 확인 및 이슈 처리",
-    category_name: "카테고리 선택",
-    note: "추가 메모",
+    project_code: PLACEHOLDERS.projectCode,
+    work_name: PLACEHOLDERS.workName,
+    task_name: PLACEHOLDERS.taskName,
+    deal_name: PLACEHOLDERS.dealName,
+    category_name: PLACEHOLDERS.categoryName,
+    note: PLACEHOLDERS.noteAdditional,
 };

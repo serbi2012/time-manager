@@ -4,6 +4,7 @@
 
 import type { WorkSession } from "../../../shared/types";
 import { timeToMinutes } from "../../../shared/lib/time";
+import { GANTT_VALIDATION } from "../constants";
 
 export interface ValidationResult {
     is_valid: boolean;
@@ -22,7 +23,7 @@ export function validateTimeFormat(time_str: string): ValidationResult {
     if (!pattern.test(time_str)) {
         return {
             is_valid: false,
-            error_message: "시간 형식이 올바르지 않습니다. (HH:mm)",
+            error_message: GANTT_VALIDATION.invalidTimeFormat,
         };
     }
 
@@ -46,7 +47,7 @@ export function validateTimeOrder(
     if (start_mins >= end_mins) {
         return {
             is_valid: false,
-            error_message: "시작 시간이 종료 시간보다 늦습니다.",
+            error_message: GANTT_VALIDATION.startAfterEnd,
         };
     }
 
@@ -73,7 +74,7 @@ export function validateMinDuration(
     if (duration < min_duration) {
         return {
             is_valid: false,
-            error_message: `작업 시간은 최소 ${min_duration}분 이상이어야 합니다.`,
+            error_message: GANTT_VALIDATION.minDuration(min_duration),
         };
     }
 
@@ -116,7 +117,10 @@ export function validateSessionOverlap(
         if (start_mins < session_end && end_mins > session_start) {
             return {
                 is_valid: false,
-                error_message: `다른 세션과 시간이 겹칩니다. (${session.start_time} ~ ${session.end_time})`,
+                error_message: GANTT_VALIDATION.overlap(
+                    session.start_time,
+                    session.end_time
+                ),
             };
         }
     }

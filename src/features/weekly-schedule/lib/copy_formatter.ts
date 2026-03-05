@@ -6,20 +6,15 @@ import type { WorkRecord } from "../../../shared/types";
 import { formatDuration } from "../../../shared/lib/time";
 import { getRecordDurationForDate } from "../../work-record/lib/duration_calculator";
 import { type LunchTimeRange } from "../../../shared/lib/lunch";
+import { DAY_NAMES_SHORT } from "@/shared/constants";
+import { COPY_FORMAT_LABELS } from "../constants";
+
+export { COPY_FORMAT_LABELS } from "../constants";
 
 /**
  * 복사 형식 타입
  */
 export type CopyFormat = "format1" | "format2" | "format3";
-
-/**
- * 복사 형식 라벨
- */
-export const COPY_FORMAT_LABELS: Record<CopyFormat, string> = {
-    format1: "형식 1 (기본)",
-    format2: "형식 2 (상세)",
-    format3: "형식 3 (간단)",
-};
 
 /**
  * 날짜별 레코드 그룹화
@@ -32,16 +27,11 @@ export interface DayRecords {
 }
 
 /**
- * 요일 라벨
- */
-const DAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
-
-/**
  * 날짜 문자열에서 요일 가져오기
  */
 export function getDayOfWeek(date_str: string): string {
     const date = new Date(date_str);
-    return DAY_LABELS[date.getDay()];
+    return DAY_NAMES_SHORT[date.getDay()];
 }
 
 /**
@@ -109,7 +99,7 @@ export function formatCopyText1(day_records: DayRecords[], lunch_time?: LunchTim
             const duration = getRecordDurationForDate(r, day.date, lunch_time);
             lines.push(`- ${r.work_name}: ${formatDuration(duration)}`);
         });
-        lines.push(`총: ${formatDuration(day.total_minutes)}`);
+        lines.push(`${COPY_FORMAT_LABELS.totalPrefix}${formatDuration(day.total_minutes)}`);
         lines.push("");
     });
     
@@ -129,13 +119,13 @@ export function formatCopyText2(day_records: DayRecords[], lunch_time?: LunchTim
         day.records.forEach((r) => {
             const duration = getRecordDurationForDate(r, day.date, lunch_time);
             lines.push(`### ${r.work_name}`);
-            if (r.deal_name) lines.push(`- 거래: ${r.deal_name}`);
-            lines.push(`- 카테고리: ${r.category_name}`);
-            lines.push(`- 시간: ${formatDuration(duration)}`);
-            if (r.note) lines.push(`- 비고: ${r.note}`);
+            if (r.deal_name) lines.push(`- ${COPY_FORMAT_LABELS.dealPrefix}${r.deal_name}`);
+            lines.push(`- ${COPY_FORMAT_LABELS.categoryPrefix}${r.category_name}`);
+            lines.push(`- ${COPY_FORMAT_LABELS.timePrefix}${formatDuration(duration)}`);
+            if (r.note) lines.push(`- ${COPY_FORMAT_LABELS.notePrefix}${r.note}`);
             lines.push("");
         });
-        lines.push(`**총 ${formatDuration(day.total_minutes)}**`);
+        lines.push(`**${COPY_FORMAT_LABELS.totalBoldPrefix}${formatDuration(day.total_minutes)}**`);
         lines.push("");
     });
     

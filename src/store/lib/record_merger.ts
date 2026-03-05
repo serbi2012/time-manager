@@ -6,6 +6,7 @@
 
 import type { WorkRecord, WorkSession } from "@/shared/types";
 import { getSessionMinutes } from "@/shared/lib/session";
+import { ERROR_MESSAGES } from "@/shared/constants";
 
 /**
  * 같은 작업 기록 찾기 (미완료 작업 우선)
@@ -80,7 +81,7 @@ export function mergeRecords(records_to_merge: WorkRecord[]): {
     deleted_ids: string[];
 } {
     if (records_to_merge.length === 0) {
-        throw new Error("병합할 레코드가 없습니다.");
+        throw new Error(ERROR_MESSAGES.noRecordsToMerge);
     }
 
     if (records_to_merge.length === 1) {

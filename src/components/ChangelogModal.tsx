@@ -50,7 +50,7 @@ function VersionEntry({
                 </Title>
                 {is_latest && (
                     <Tag color="blue" className="!text-[11px]">
-                        최신
+                        {PRESET_LABELS.latest}
                     </Tag>
                 )}
                 <Text type="secondary" className="!text-xs">
@@ -77,7 +77,7 @@ export default function ChangelogModal({ open, onClose }: ChangelogModalProps) {
         <Modal
             title={
                 <div className="flex items-center gap-sm">
-                    <span>📋 업데이트 내역</span>
+                    <span>📋 {MODAL_TITLES.changelog}</span>
                     <Tag color="geekblue" className="!text-xs">
                         v{CURRENT_VERSION}
                     </Tag>
@@ -96,7 +96,7 @@ export default function ChangelogModal({ open, onClose }: ChangelogModalProps) {
             }}
         >
             {CHANGELOG.length === 0 ? (
-                <Empty description="변경 내역이 없습니다" />
+                <Empty description={EMPTY_MESSAGES.noChangelog} />
             ) : (
                 <Timeline
                     items={CHANGELOG.map((entry, index) => ({
@@ -115,7 +115,7 @@ export default function ChangelogModal({ open, onClose }: ChangelogModalProps) {
 
             <div className="text-center">
                 <Text type="secondary" className="!text-xs">
-                    업무 관리 v{CURRENT_VERSION} • Made By Kim Tae Seop
+                    {APP_LABELS.footerText(CURRENT_VERSION)}
                 </Text>
             </div>
         </Modal>

@@ -8,6 +8,11 @@
 import dayjs from "dayjs";
 import type { WorkRecord, WorkSession } from "../types";
 import { timeToMinutes, minutesToTime } from "@/shared/lib/time";
+import {
+    ERROR_MESSAGES,
+    WARNING_MESSAGES,
+    STATUS_LABELS,
+} from "@/shared/constants";
 
 const MAX_ADJUST_ITERATIONS = 10;
 
@@ -97,7 +102,8 @@ export function collectSameDaySessions(
                     start_mins: timer_start_mins,
                     end_mins: timer_end_mins,
                     work_name:
-                        timer.active_form_data.work_name || "진행 중인 작업",
+                        timer.active_form_data.work_name ||
+                        `${STATUS_LABELS.inProgress}인 작업`,
                     deal_name: timer.active_form_data.deal_name || "",
                 });
             }
@@ -124,9 +130,10 @@ export function checkDateChangeConflicts(
             return {
                 success: false,
                 adjusted: false,
-                message: `${target_date}에 ${formatConflictInfo(
-                    other
-                )} 작업과 시간이 겹칩니다. 시간을 조정하세요.`,
+                message: ERROR_MESSAGES.conflictOverlap(
+                    target_date,
+                    formatConflictInfo(other)
+                ),
             };
         }
     }
@@ -170,9 +177,9 @@ export function autoAdjustForConflicts(
                     return {
                         success: false,
                         adjusted: false,
-                        message: `${formatConflictInfo(
-                            other
-                        )} 작업과 시간이 완전히 겹칩니다.`,
+                        message: ERROR_MESSAGES.conflictFullOverlap(
+                            formatConflictInfo(other)
+                        ),
                     };
                 }
 
@@ -183,9 +190,9 @@ export function autoAdjustForConflicts(
                     return {
                         success: false,
                         adjusted: false,
-                        message: `${formatConflictInfo(
-                            other
-                        )} 작업 안에 완전히 포함됩니다.`,
+                        message: ERROR_MESSAGES.conflictContained(
+                            formatConflictInfo(other)
+                        ),
                     };
                 }
 
@@ -234,7 +241,7 @@ export function validateAndAdjustSessionTime(
         return {
             success: false,
             adjusted: false,
-            message: "레코드를 찾을 수 없습니다.",
+            message: ERROR_MESSAGES.recordNotFoundStore,
         };
     }
 
@@ -243,7 +250,7 @@ export function validateAndAdjustSessionTime(
         return {
             success: false,
             adjusted: false,
-            message: "세션을 찾을 수 없습니다.",
+            message: ERROR_MESSAGES.sessionNotFoundStore,
         };
     }
 
@@ -258,7 +265,7 @@ export function validateAndAdjustSessionTime(
         return {
             success: false,
             adjusted: false,
-            message: "종료 시간은 시작 시간보다 나중이어야 합니다.",
+            message: ERROR_MESSAGES.endTimeBeforeStart,
         };
     }
 
@@ -306,7 +313,7 @@ export function validateAndAdjustSessionTime(
         return {
             success: false,
             adjusted: false,
-            message: "충돌을 피할 수 없습니다. 다른 시간을 선택하세요.",
+            message: ERROR_MESSAGES.conflictUnavoidable,
         };
     }
 
@@ -316,7 +323,7 @@ export function validateAndAdjustSessionTime(
         adjusted_start,
         adjusted_end,
         message: result.was_adjusted
-            ? "시간 충돌로 인해 자동 조정되었습니다."
+            ? WARNING_MESSAGES.autoAdjustedConflict
             : undefined,
     };
 }

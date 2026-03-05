@@ -35,6 +35,7 @@ import {
 import { Pagination, Spin, Checkbox } from "antd";
 import clsx from "clsx";
 
+import { STATUS_LABELS, TIME_DISPLAY_LABELS } from "@/shared/constants";
 import type { DataTableProps } from "./DataTable.types";
 import { DataTableHeader } from "./DataTableHeader";
 import { DataTableBody } from "./DataTableBody";
@@ -53,7 +54,7 @@ export function DataTable<TData>({
     data,
     columns,
     loading = false,
-    emptyText = "데이터가 없습니다",
+    emptyText = STATUS_LABELS.noData,
     enableSorting = false,
     enableFiltering = false,
     enablePagination = false,
@@ -264,7 +265,7 @@ export function DataTable<TData>({
                         showSizeChanger
                         pageSizeOptions={pageSizeOptions.map(String)}
                         showTotal={(total, range) =>
-                            `${range[0]}-${range[1]} / ${total}건`
+                            TIME_DISPLAY_LABELS.paginationTotal(range, total)
                         }
                         size={size === "small" ? "small" : undefined}
                     />

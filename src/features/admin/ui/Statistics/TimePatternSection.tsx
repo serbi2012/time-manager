@@ -9,8 +9,17 @@ import {
     type HourlyStats,
     type WeekdayStats,
 } from "../../lib/statistics";
+import { STATS_LABEL } from "../../constants";
 
 const { Text } = Typography;
+
+const HOUR_LABELS = [
+    STATS_LABEL.hour0,
+    STATS_LABEL.hour6,
+    STATS_LABEL.hour12,
+    STATS_LABEL.hour18,
+    STATS_LABEL.hour24,
+] as const;
 
 interface TimePatternSectionProps {
     hourly_stats: HourlyStats[];
@@ -28,7 +37,7 @@ function HourlyChart({
     const hourly_max = Math.max(...hourly_stats.map((h) => h.total_minutes), 1);
 
     return (
-        <Card size="small" title="시간대별 작업 패턴">
+        <Card size="small" title={STATS_LABEL.hourlyPattern}>
             <div className="flex items-end h-[150px] gap-[2px]">
                 {hourly_stats.map((stat) => (
                     <Tooltip
@@ -42,7 +51,11 @@ function HourlyChart({
                                         time_format
                                     )}
                                 </div>
-                                <div>세션: {stat.session_count}개</div>
+                                <div>
+                                    {STATS_LABEL.sessionPrefix}{" "}
+                                    {stat.session_count}
+                                    {STATS_LABEL.unit_count}
+                                </div>
                             </div>
                         }
                     >
@@ -65,7 +78,7 @@ function HourlyChart({
                 ))}
             </div>
             <div className="flex justify-between mt-sm">
-                {["0시", "6시", "12시", "18시", "24시"].map((label) => (
+                {HOUR_LABELS.map((label) => (
                     <Text key={label} type="secondary" className="!text-xs">
                         {label}
                     </Text>
@@ -88,7 +101,7 @@ function WeekdayChart({
     );
 
     return (
-        <Card size="small" title="요일별 작업 패턴">
+        <Card size="small" title={STATS_LABEL.weeklyPattern}>
             <div className="flex items-end h-[150px] gap-sm">
                 {weekday_stats.map((stat) => {
                     const is_weekend = stat.weekday === 0 || stat.weekday === 6;
@@ -104,8 +117,16 @@ function WeekdayChart({
                                             time_format
                                         )}
                                     </div>
-                                    <div>세션: {stat.session_count}개</div>
-                                    <div>레코드: {stat.record_count}건</div>
+                                    <div>
+                                        {STATS_LABEL.sessionPrefix}{" "}
+                                        {stat.session_count}
+                                        {STATS_LABEL.unit_count}
+                                    </div>
+                                    <div>
+                                        {STATS_LABEL.recordPrefix}{" "}
+                                        {stat.record_count}
+                                        {STATS_LABEL.unit_record}
+                                    </div>
                                 </div>
                             }
                         >

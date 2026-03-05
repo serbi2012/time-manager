@@ -4,6 +4,7 @@
  */
 import { useEffect } from "react";
 import { motion, useSpring, useTransform } from "framer-motion";
+import { TIME_DISPLAY_LABELS } from "@/shared/constants";
 
 interface AnimatedNumberProps {
     /** 표시할 숫자 값 */
@@ -107,11 +108,13 @@ export function AnimatedDuration({
     const display = useTransform(spring, (current) => {
         const m = Math.round(current);
         if (!useHourFormat || m < 60) {
-            return `${m}분`;
+            return `${m}${TIME_DISPLAY_LABELS.minute}`;
         }
         const hours = Math.floor(m / 60);
         const mins = m % 60;
-        return mins > 0 ? `${hours}시간 ${mins}분` : `${hours}시간`;
+        return mins > 0
+            ? TIME_DISPLAY_LABELS.hourMinute(hours, mins)
+            : TIME_DISPLAY_LABELS.hourOnly(hours);
     });
 
     useEffect(() => {
@@ -122,7 +125,8 @@ export function AnimatedDuration({
         if (!useHourFormat || minutes < 60) {
             return (
                 <span className={className} style={style}>
-                    {minutes}분
+                    {minutes}
+                    {TIME_DISPLAY_LABELS.minute}
                 </span>
             );
         }
@@ -130,7 +134,9 @@ export function AnimatedDuration({
         const mins = minutes % 60;
         return (
             <span className={className} style={style}>
-                {mins > 0 ? `${hours}시간 ${mins}분` : `${hours}시간`}
+                {mins > 0
+                    ? TIME_DISPLAY_LABELS.hourMinute(hours, mins)
+                    : TIME_DISPLAY_LABELS.hourOnly(hours)}
             </span>
         );
     }

@@ -5,6 +5,7 @@
 import { Typography, Tag, Empty } from "antd";
 import type { DayRecords } from "../lib/copy_formatter";
 import { formatDuration } from "../../../shared/lib/time";
+import { DATE_FORMAT_LABELS, STATUS_LABELS } from "@/shared/constants";
 import { getRecordDurationForDate } from "../../work-record/lib/duration_calculator";
 import { getCategoryColor } from "../../../shared/config";
 
@@ -25,7 +26,7 @@ export function DayColumn({ day, is_today }: DayColumnProps) {
         <div className={`day-column ${is_today ? "day-column-today" : ""}`}>
             {/* 헤더 */}
             <div className="day-column-header">
-                <Text strong>{day_of_week}요일</Text>
+                <Text strong>{DATE_FORMAT_LABELS.formatDayOfWeek(day_of_week)}</Text>
                 <Text type="secondary" className="!text-sm">
                     {date.slice(5)}
                 </Text>
@@ -35,7 +36,7 @@ export function DayColumn({ day, is_today }: DayColumnProps) {
             <div className="day-column-content">
                 {records.length === 0 ? (
                     <Empty
-                        description="작업 없음"
+                        description={STATUS_LABELS.noWork}
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
                     />
                 ) : (

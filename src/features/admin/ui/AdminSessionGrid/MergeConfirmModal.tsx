@@ -24,6 +24,13 @@ import {
     CANCEL,
     MERGE_MODAL_COMPLETED,
     MERGE_MODAL_INCOMPLETE,
+    TABLE_COL_DATE,
+    TABLE_COL_PROJECT,
+    TABLE_COL_SESSIONS,
+    TABLE_COL_DURATION,
+    TABLE_COL_TIME,
+    TABLE_COL_STATE,
+    STATS_LABEL,
 } from "../../constants";
 
 interface MergeConfirmModalProps {
@@ -83,10 +90,12 @@ export function MergeConfirmModal({
                         {group.deal_name}
                     </Descriptions.Item>
                     <Descriptions.Item label={MERGE_MODAL_LABEL_TARGET}>
-                        {group.records.length}개
+                        {group.records.length}
+                        {STATS_LABEL.unit_count}
                     </Descriptions.Item>
                     <Descriptions.Item label={MERGE_MODAL_LABEL_TOTAL_SESSIONS}>
-                        {group.total_sessions}개
+                        {group.total_sessions}
+                        {STATS_LABEL.unit_count}
                     </Descriptions.Item>
                     <Descriptions.Item label={MERGE_MODAL_LABEL_TOTAL_DURATION}>
                         {formatDuration(group.total_duration || 0, time_format)}
@@ -112,27 +121,31 @@ export function MergeConfirmModal({
                                     </Tag>
                                 ),
                             },
-                            { title: "날짜", dataIndex: "date", width: 110 },
                             {
-                                title: "프로젝트",
+                                title: TABLE_COL_DATE,
+                                dataIndex: "date",
+                                width: 110,
+                            },
+                            {
+                                title: TABLE_COL_PROJECT,
                                 dataIndex: "project_code",
                                 width: 120,
                             },
                             {
-                                title: "세션",
+                                title: TABLE_COL_SESSIONS,
                                 width: 70,
                                 render: (_, r) =>
-                                    `${r.sessions?.length || 0}개`,
+                                    `${r.sessions?.length || 0}${STATS_LABEL.unit_count}`,
                             },
                             {
-                                title: "소요시간",
+                                title: TABLE_COL_DURATION,
                                 dataIndex: "duration_minutes",
                                 width: 90,
                                 render: (mins: number) =>
                                     formatDuration(mins || 0, time_format),
                             },
                             {
-                                title: "시간",
+                                title: TABLE_COL_TIME,
                                 width: 130,
                                 render: (_, r) =>
                                     `${r.start_time || "-"} ~ ${
@@ -140,7 +153,7 @@ export function MergeConfirmModal({
                                     }`,
                             },
                             {
-                                title: "상태",
+                                title: TABLE_COL_STATE,
                                 width: 80,
                                 render: (_, r) =>
                                     r.is_completed ? (

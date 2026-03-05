@@ -1,5 +1,6 @@
 // 단축키 설정 Store
-import { create } from 'zustand';
+import { create } from "zustand";
+import { SHORTCUT_LABELS, SHORTCUT_CATEGORIES } from "@/shared/constants";
 
 // 단축키 정의 타입
 export interface ShortcutDefinition {
@@ -14,149 +15,145 @@ export interface ShortcutDefinition {
 
 // 기본 단축키 목록
 export const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
-  // 일반
-  {
-    id: 'new-work',
-    name: '새 작업 추가',
-    description: '작업 기록에 새 작업을 추가하는 모달을 엽니다',
-    keys: 'Alt+N',
-    category: 'general',
-    enabled: true,
-    action: 'openNewWorkModal',
-  },
-  {
-    id: 'new-preset',
-    name: '새 프리셋 추가',
-    description: '새 작업 프리셋을 추가하는 모달을 엽니다',
-    keys: 'Alt+P',
-    category: 'general',
-    enabled: true,
-    action: 'openNewPresetModal',
-  },
-  {
-    id: 'open-settings',
-    name: '설정 열기',
-    description: '설정 모달을 엽니다',
-    keys: 'Alt+,',
-    category: 'general',
-    enabled: true,
-    action: 'openSettings',
-  },
-  {
-    id: 'show-shortcuts',
-    name: '단축키 도움말',
-    description: '단축키 목록을 표시합니다',
-    keys: 'Alt+/',
-    category: 'general',
-    enabled: true,
-    action: 'showShortcuts',
-  },
-  
-  // 타이머
-  {
-    id: 'start-stop-timer',
-    name: '타이머 시작/중지',
-    description: '현재 작업의 타이머를 시작하거나 중지합니다',
-    keys: 'Alt+S',
-    category: 'timer',
-    enabled: true,
-    action: 'toggleTimer',
-  },
-  {
-    id: 'reset-timer',
-    name: '타이머 초기화',
-    description: '타이머를 초기화합니다',
-    keys: 'Alt+R',
-    category: 'timer',
-    enabled: true,
-    action: 'resetTimer',
-  },
-  
-  // 네비게이션
-  {
-    id: 'go-today',
-    name: '오늘로 이동',
-    description: '오늘 날짜로 이동합니다',
-    keys: 'Alt+T',
-    category: 'navigation',
-    enabled: true,
-    action: 'goToday',
-  },
-  {
-    id: 'prev-day',
-    name: '이전 날짜',
-    description: '이전 날짜로 이동합니다',
-    keys: 'Alt+Left',
-    category: 'navigation',
-    enabled: true,
-    action: 'prevDay',
-  },
-  {
-    id: 'next-day',
-    name: '다음 날짜',
-    description: '다음 날짜로 이동합니다',
-    keys: 'Alt+Right',
-    category: 'navigation',
-    enabled: true,
-    action: 'nextDay',
-  },
-  {
-    id: 'go-daily',
-    name: '일간 기록 페이지',
-    description: '일간 기록 페이지로 이동합니다',
-    keys: 'Alt+1',
-    category: 'navigation',
-    enabled: true,
-    action: 'goDaily',
-  },
-  {
-    id: 'go-weekly',
-    name: '주간 일정 페이지',
-    description: '주간 일정 페이지로 이동합니다',
-    keys: 'Alt+2',
-    category: 'navigation',
-    enabled: true,
-    action: 'goWeekly',
-  },
-  
-  // 일반 - 모달 제출
-  {
-    id: 'modal-submit',
-    name: '모달 저장/추가',
-    description: '작업 추가, 수정, 프리셋 추가 등 모달에서 저장/추가 실행',
-    keys: 'F8',
-    category: 'general',
-    enabled: true,
-    action: 'modalSubmit',
-  },
-  
-  // 데이터
-  {
-    id: 'export-data',
-    name: '데이터 내보내기',
-    description: '데이터를 JSON 파일로 내보냅니다',
-    keys: 'Alt+E',
-    category: 'data',
-    enabled: true,
-    action: 'exportData',
-  },
-  {
-    id: 'sync-data',
-    name: '수동 동기화',
-    description: '클라우드와 수동으로 동기화합니다',
-    keys: 'Alt+Shift+S',
-    category: 'data',
-    enabled: true,
-    action: 'syncData',
-  },
+    // 일반
+    {
+        id: "new-work",
+        name: SHORTCUT_LABELS.addNewWork,
+        description: SHORTCUT_LABELS.addNewWorkDesc,
+        keys: "Alt+N",
+        category: "general",
+        enabled: true,
+        action: "openNewWorkModal",
+    },
+    {
+        id: "new-preset",
+        name: SHORTCUT_LABELS.addNewPreset,
+        description: SHORTCUT_LABELS.addNewPresetDesc,
+        keys: "Alt+P",
+        category: "general",
+        enabled: true,
+        action: "openNewPresetModal",
+    },
+    {
+        id: "open-settings",
+        name: SHORTCUT_LABELS.openSettings,
+        description: SHORTCUT_LABELS.openSettingsDesc,
+        keys: "Alt+,",
+        category: "general",
+        enabled: true,
+        action: "openSettings",
+    },
+    {
+        id: "show-shortcuts",
+        name: SHORTCUT_LABELS.shortcutHelp,
+        description: SHORTCUT_LABELS.shortcutHelpDesc,
+        keys: "Alt+/",
+        category: "general",
+        enabled: true,
+        action: "showShortcuts",
+    },
+    // 타이머
+    {
+        id: "start-stop-timer",
+        name: SHORTCUT_LABELS.timerToggle,
+        description: SHORTCUT_LABELS.timerToggleDesc,
+        keys: "Alt+S",
+        category: "timer",
+        enabled: true,
+        action: "toggleTimer",
+    },
+    {
+        id: "reset-timer",
+        name: SHORTCUT_LABELS.timerReset,
+        description: SHORTCUT_LABELS.timerResetDesc,
+        keys: "Alt+R",
+        category: "timer",
+        enabled: true,
+        action: "resetTimer",
+    },
+    // 네비게이션
+    {
+        id: "go-today",
+        name: SHORTCUT_LABELS.goToToday,
+        description: SHORTCUT_LABELS.goToTodayDesc,
+        keys: "Alt+T",
+        category: "navigation",
+        enabled: true,
+        action: "goToday",
+    },
+    {
+        id: "prev-day",
+        name: SHORTCUT_LABELS.prevDate,
+        description: SHORTCUT_LABELS.prevDateDesc,
+        keys: "Alt+Left",
+        category: "navigation",
+        enabled: true,
+        action: "prevDay",
+    },
+    {
+        id: "next-day",
+        name: SHORTCUT_LABELS.nextDate,
+        description: SHORTCUT_LABELS.nextDateDesc,
+        keys: "Alt+Right",
+        category: "navigation",
+        enabled: true,
+        action: "nextDay",
+    },
+    {
+        id: "go-daily",
+        name: SHORTCUT_LABELS.dailyPage,
+        description: SHORTCUT_LABELS.dailyPageDesc,
+        keys: "Alt+1",
+        category: "navigation",
+        enabled: true,
+        action: "goDaily",
+    },
+    {
+        id: "go-weekly",
+        name: SHORTCUT_LABELS.weeklyPage,
+        description: SHORTCUT_LABELS.weeklyPageDesc,
+        keys: "Alt+2",
+        category: "navigation",
+        enabled: true,
+        action: "goWeekly",
+    },
+    // 일반 - 모달 제출
+    {
+        id: "modal-submit",
+        name: SHORTCUT_LABELS.modalSave,
+        description: SHORTCUT_LABELS.modalSaveDesc,
+        keys: "F8",
+        category: "general",
+        enabled: true,
+        action: "modalSubmit",
+    },
+    // 데이터
+    {
+        id: "export-data",
+        name: SHORTCUT_LABELS.exportData,
+        description: SHORTCUT_LABELS.exportDataDesc,
+        keys: "Alt+E",
+        category: "data",
+        enabled: true,
+        action: "exportData",
+    },
+    {
+        id: "sync-data",
+        name: SHORTCUT_LABELS.manualSync,
+        description: SHORTCUT_LABELS.manualSyncDesc,
+        keys: "Alt+Shift+S",
+        category: "data",
+        enabled: true,
+        action: "syncData",
+    },
 ];
 
 // 카테고리 라벨
-export const CATEGORY_LABELS: Record<ShortcutDefinition['category'], string> = {
-  general: '일반',
-  timer: '타이머',
-  navigation: '네비게이션',
-  data: '데이터',
+export const CATEGORY_LABELS: Record<ShortcutDefinition["category"], string> = {
+    general: SHORTCUT_CATEGORIES.general,
+    timer: SHORTCUT_CATEGORIES.timer,
+    navigation: SHORTCUT_CATEGORIES.navigation,
+    data: SHORTCUT_CATEGORIES.data,
 };
 
 interface ShortcutStore {
@@ -252,10 +249,10 @@ export const useShortcutStore = create<ShortcutStore>()((set, get) => ({
     );
     
     if (duplicate) {
-      return { 
-        success: false, 
-        message: `이미 "${duplicate.name}"에서 사용 중인 단축키입니다` 
-      };
+        return {
+            success: false,
+            message: SHORTCUT_LABELS.duplicateShortcut(duplicate.name),
+        };
     }
     
     set((state) => {

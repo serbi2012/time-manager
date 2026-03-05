@@ -12,6 +12,7 @@ import {
     BookFilled,
 } from "@ant-design/icons";
 import { cn } from "../../shared/lib/cn";
+import { NAV_LABELS } from "@/shared/constants";
 
 interface NavItem {
     key: string;
@@ -25,19 +26,19 @@ const NAV_ITEMS: NavItem[] = [
         key: "/",
         icon: <HomeOutlined />,
         active_icon: <HomeFilled />,
-        label: "일간",
+        label: NAV_LABELS.dailyShort,
     },
     {
         key: "/weekly",
         icon: <CalendarOutlined />,
         active_icon: <CalendarFilled />,
-        label: "주간",
+        label: NAV_LABELS.weeklyShort,
     },
     {
         key: "/guide",
         icon: <BookOutlined />,
         active_icon: <BookFilled />,
-        label: "설명서",
+        label: NAV_LABELS.guideShort,
     },
 ];
 

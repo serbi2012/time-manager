@@ -2,6 +2,8 @@
  * 트랜지션 공통 설정
  */
 
+import { TRANSITION_LABELS } from "@/shared/constants";
+
 /** 트랜지션 속도 타입 */
 export type TransitionSpeed = "slow" | "normal" | "fast";
 
@@ -21,9 +23,9 @@ export const TRANSITION_SPEED_STAGGER: Record<TransitionSpeed, number> = {
 
 /** 속도 레이블 */
 export const TRANSITION_SPEED_LABELS: Record<TransitionSpeed, string> = {
-    slow: "느리게",
-    normal: "보통",
-    fast: "빠르게",
+    slow: TRANSITION_LABELS.slow,
+    normal: TRANSITION_LABELS.normal,
+    fast: TRANSITION_LABELS.fast,
 };
 
 /** 트랜지션 기본 설정 */

@@ -19,6 +19,12 @@ import type { ColumnsType } from "antd/es/table";
 import { useShortcutStore } from "../../store/useShortcutStore";
 import { formatShortcutKeyForPlatform } from "../../hooks/useShortcuts";
 import { formatDuration } from "../../shared/lib/time";
+import {
+    BUTTON_TEXT,
+    TABLE_COLUMNS,
+    TOOLTIP_TEXT,
+} from "@/shared/constants";
+import { DEMO_UI_LABELS } from "@/features/guide/constants";
 import { DEMO_RECORDS, getCategoryColor, type DemoRecord } from "./demo_data";
 
 const { Text } = Typography;
@@ -36,7 +42,13 @@ export function DemoWorkRecordTable() {
             width: 50,
             align: "center",
             render: (_, record) => (
-                <Tooltip title={record.is_running ? "정지" : "시작"}>
+                <Tooltip
+                    title={
+                        record.is_running
+                            ? BUTTON_TEXT.stop
+                            : BUTTON_TEXT.start
+                    }
+                >
                     <Button
                         type={record.is_running ? "primary" : "default"}
                         danger={record.is_running}
@@ -54,7 +66,7 @@ export function DemoWorkRecordTable() {
             ),
         },
         {
-            title: "거래명",
+            title: TABLE_COLUMNS.dealName,
             dataIndex: "deal_name",
             key: "deal_name",
             width: 200,
@@ -86,7 +98,7 @@ export function DemoWorkRecordTable() {
             ),
         },
         {
-            title: "작업명",
+            title: TABLE_COLUMNS.workName,
             dataIndex: "work_name",
             key: "work_name",
             width: 120,
@@ -97,7 +109,7 @@ export function DemoWorkRecordTable() {
             ),
         },
         {
-            title: "업무명",
+            title: TABLE_COLUMNS.taskName,
             dataIndex: "task_name",
             key: "task_name",
             width: 80,
@@ -105,7 +117,7 @@ export function DemoWorkRecordTable() {
                 text ? <Tag color="cyan">{text}</Tag> : "-",
         },
         {
-            title: "카테고리",
+            title: TABLE_COLUMNS.categoryName,
             dataIndex: "category_name",
             key: "category_name",
             width: 90,
@@ -113,7 +125,7 @@ export function DemoWorkRecordTable() {
                 text ? <Tag color={getCategoryColor(text)}>{text}</Tag> : "-",
         },
         {
-            title: "시간",
+            title: TABLE_COLUMNS.time,
             key: "duration",
             width: 60,
             align: "center",
@@ -130,7 +142,7 @@ export function DemoWorkRecordTable() {
             ),
         },
         {
-            title: "시작-종료",
+            title: TABLE_COLUMNS.timeRange,
             key: "time_range",
             width: 120,
             render: (_, record) => (
@@ -142,7 +154,7 @@ export function DemoWorkRecordTable() {
             ),
         },
         {
-            title: "날짜",
+            title: TABLE_COLUMNS.date,
             dataIndex: "date",
             key: "date",
             width: 90,
@@ -160,7 +172,7 @@ export function DemoWorkRecordTable() {
             render: (_, record) => (
                 <Space size={4}>
                     {!record.is_running && !record.is_completed && (
-                        <Tooltip title="완료">
+                        <Tooltip title={TOOLTIP_TEXT.complete}>
                             <Button
                                 type="text"
                                 size="small"
@@ -170,7 +182,7 @@ export function DemoWorkRecordTable() {
                         </Tooltip>
                     )}
                     {record.is_completed && (
-                        <Tooltip title="완료 취소">
+                        <Tooltip title={TOOLTIP_TEXT.cancelComplete}>
                             <Button
                                 type="text"
                                 size="small"
@@ -178,7 +190,7 @@ export function DemoWorkRecordTable() {
                             />
                         </Tooltip>
                     )}
-                    <Tooltip title="수정">
+                    <Tooltip title={TOOLTIP_TEXT.edit}>
                         <Button
                             type="text"
                             size="small"
@@ -186,7 +198,7 @@ export function DemoWorkRecordTable() {
                         />
                     </Tooltip>
                     {!record.is_running && (
-                        <Tooltip title="삭제">
+                        <Tooltip title={TOOLTIP_TEXT.delete}>
                             <Button
                                 type="text"
                                 size="small"
@@ -206,14 +218,14 @@ export function DemoWorkRecordTable() {
                 <div className="flex items-center justify-between flex-wrap gap-sm mb-md">
                     <Space>
                         <Button size="small" icon={<LeftOutlined />} disabled />
-                        <Text strong>2월 11일 화요일</Text>
+                        <Text strong>{DEMO_UI_LABELS.demoDate}</Text>
                         <Button
                             size="small"
                             icon={<RightOutlined />}
                             disabled
                         />
                         <Tag color="processing" className="text-xs">
-                            오늘
+                            {DEMO_UI_LABELS.today}
                         </Tag>
                     </Space>
                     <Space>
@@ -223,7 +235,7 @@ export function DemoWorkRecordTable() {
                             icon={<PlusOutlined />}
                             disabled
                         >
-                            새 작업{" "}
+                            {DEMO_UI_LABELS.newWork}{" "}
                             <span className="text-xs opacity-85 ml-xs px-xs rounded-xs bg-white/20">
                                 {formatShortcutKeyForPlatform(new_work_keys)}
                             </span>
@@ -251,7 +263,7 @@ export function DemoWorkRecordTable() {
                     }
                     footer={() => (
                         <Text type="secondary" className="text-sm">
-                            총 {DEMO_RECORDS.length}건
+                            {DEMO_UI_LABELS.totalCount(DEMO_RECORDS.length)}
                         </Text>
                     )}
                 />

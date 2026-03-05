@@ -35,6 +35,7 @@ import {
     generateExportFilename,
 } from "../../lib/export";
 import { formatDuration, type TimeDisplayFormat } from "../../lib/statistics";
+import { EXPORT_LABEL } from "../../constants";
 
 const { Title, Text, Paragraph } = Typography;
 const { RangePicker } = DatePicker;
@@ -131,10 +132,10 @@ export function ExportPanel({
             <Row gutter={[24, 24]}>
                 {/* 내보내기 옵션 */}
                 <Col xs={24} lg={14}>
-                    <Card title="내보내기 옵션">
+                    <Card title={EXPORT_LABEL.exportOptions}>
                         {/* 파일 형식 */}
                         <div className="mb-xl">
-                            <Title level={5}>파일 형식</Title>
+                            <Title level={5}>{EXPORT_LABEL.fileFormat}</Title>
                             <Radio.Group
                                 value={format}
                                 onChange={(e) => setFormat(e.target.value)}
@@ -142,10 +143,10 @@ export function ExportPanel({
                                 buttonStyle="solid"
                             >
                                 <Radio.Button value="csv">
-                                    <FileExcelOutlined /> CSV (엑셀 호환)
+                                    <FileExcelOutlined /> {EXPORT_LABEL.csvFormat}
                                 </Radio.Button>
                                 <Radio.Button value="json">
-                                    <FileTextOutlined /> JSON (백업용)
+                                    <FileTextOutlined /> {EXPORT_LABEL.jsonFormat}
                                 </Radio.Button>
                             </Radio.Group>
                             <Paragraph
@@ -153,8 +154,8 @@ export function ExportPanel({
                                 className="!mt-sm"
                             >
                                 {format === "csv"
-                                    ? "CSV 형식은 Excel에서 바로 열 수 있습니다."
-                                    : "JSON 형식은 전체 데이터를 구조화된 형태로 저장합니다."}
+                                    ? EXPORT_LABEL.csvDesc
+                                    : EXPORT_LABEL.jsonDesc}
                             </Paragraph>
                         </div>
 
@@ -162,7 +163,7 @@ export function ExportPanel({
 
                         {/* 데이터 유형 */}
                         <div className="mb-xl">
-                            <Title level={5}>데이터 유형</Title>
+                            <Title level={5}>{EXPORT_LABEL.dataType}</Title>
                             <Radio.Group
                                 value={data_type}
                                 onChange={(e) => setDataType(e.target.value)}
@@ -170,23 +171,24 @@ export function ExportPanel({
                                 buttonStyle="solid"
                             >
                                 <Radio.Button value="records">
-                                    <DatabaseOutlined /> 레코드
+                                    <DatabaseOutlined /> {EXPORT_LABEL.records}
                                 </Radio.Button>
                                 <Radio.Button value="sessions">
-                                    <ClockCircleOutlined /> 세션
+                                    <ClockCircleOutlined /> {EXPORT_LABEL.sessions}
                                 </Radio.Button>
-                                <Radio.Button value="all">전체</Radio.Button>
+                                <Radio.Button value="all">
+                                    {EXPORT_LABEL.all}
+                                </Radio.Button>
                             </Radio.Group>
                             <Paragraph
                                 type="secondary"
                                 className="!mt-sm"
                             >
                                 {data_type === "records" &&
-                                    "작업 기록 단위로 내보냅니다."}
+                                    EXPORT_LABEL.recordsDesc}
                                 {data_type === "sessions" &&
-                                    "개별 세션 단위로 내보냅니다."}
-                                {data_type === "all" &&
-                                    "레코드와 세션을 모두 포함합니다."}
+                                    EXPORT_LABEL.sessionsDesc}
+                                {data_type === "all" && EXPORT_LABEL.allDesc}
                             </Paragraph>
                         </div>
 
@@ -194,7 +196,7 @@ export function ExportPanel({
 
                         {/* 날짜 범위 */}
                         <div className="mb-xl">
-                            <Title level={5}>날짜 범위</Title>
+                            <Title level={5}>{EXPORT_LABEL.dateRange}</Title>
                             <Space direction="vertical">
                                 <RangePicker
                                     value={date_range}
@@ -205,7 +207,10 @@ export function ExportPanel({
                                                 | null
                                         )
                                     }
-                                    placeholder={["시작일", "종료일"]}
+                                    placeholder={[
+                                        EXPORT_LABEL.startDate,
+                                        EXPORT_LABEL.endDate,
+                                    ]}
                                     className="!w-[300px]"
                                 />
                                 {date_range && (
@@ -213,7 +218,7 @@ export function ExportPanel({
                                         type="link"
                                         onClick={() => setDateRange(null)}
                                     >
-                                        전체 기간으로 초기화
+                                        {EXPORT_LABEL.resetToAllPeriod}
                                     </Button>
                                 )}
                             </Space>
@@ -226,8 +231,8 @@ export function ExportPanel({
                                           "YYYY-MM-DD"
                                       )} ~ ${date_range[1].format(
                                           "YYYY-MM-DD"
-                                      )} 기간의 데이터`
-                                    : "전체 기간의 데이터를 내보냅니다."}
+                                      )} ${EXPORT_LABEL.periodData}`
+                                    : EXPORT_LABEL.allPeriodData}
                             </Paragraph>
                         </div>
 
@@ -235,14 +240,14 @@ export function ExportPanel({
 
                         {/* 추가 옵션 */}
                         <div className="mb-xl">
-                            <Title level={5}>추가 옵션</Title>
+                            <Title level={5}>{EXPORT_LABEL.additionalOptions}</Title>
                             <Checkbox
                                 checked={include_deleted}
                                 onChange={(e) =>
                                     setIncludeDeleted(e.target.checked)
                                 }
                             >
-                                삭제된 데이터 포함
+                                {EXPORT_LABEL.includeDeleted}
                             </Checkbox>
                         </div>
                     </Card>
@@ -250,25 +255,25 @@ export function ExportPanel({
 
                 {/* 미리보기 및 다운로드 */}
                 <Col xs={24} lg={10}>
-                    <Card title="내보내기 미리보기">
+                    <Card title={EXPORT_LABEL.exportPreview}>
                         <Row gutter={[16, 16]}>
                             <Col span={12}>
                                 <Statistic
-                                    title="레코드 수"
+                                    title={EXPORT_LABEL.recordCountLabel}
                                     value={preview_stats.record_count}
-                                    suffix="건"
+                                    suffix={EXPORT_LABEL.unit_record}
                                 />
                             </Col>
                             <Col span={12}>
                                 <Statistic
-                                    title="세션 수"
+                                    title={EXPORT_LABEL.sessionCountLabel}
                                     value={preview_stats.session_count}
-                                    suffix="개"
+                                    suffix={EXPORT_LABEL.unit_count}
                                 />
                             </Col>
                             <Col span={24}>
                                 <Statistic
-                                    title="총 작업 시간"
+                                    title={EXPORT_LABEL.totalWorkTime}
                                     value={formatDuration(
                                         preview_stats.total_minutes,
                                         time_format
@@ -281,38 +286,40 @@ export function ExportPanel({
 
                         <Alert
                             type="info"
-                            message="내보내기 정보"
+                            message={EXPORT_LABEL.exportInfo}
                             description={
                                 <ul
                                     className="my-sm pl-[20px]"
                                 >
                                     <li>
-                                        형식:{" "}
+                                        {EXPORT_LABEL.formatLabel}{" "}
                                         {format === "csv"
-                                            ? "CSV (엑셀 호환)"
-                                            : "JSON"}
+                                            ? EXPORT_LABEL.csvFormat
+                                            : EXPORT_LABEL.jsonLabel}
                                     </li>
                                     <li>
-                                        데이터:{" "}
+                                        {EXPORT_LABEL.dataLabel}{" "}
                                         {data_type === "records"
-                                            ? "레코드"
+                                            ? EXPORT_LABEL.records
                                             : data_type === "sessions"
-                                            ? "세션"
-                                            : "전체"}
+                                            ? EXPORT_LABEL.sessions
+                                            : EXPORT_LABEL.all}
                                     </li>
                                     <li>
-                                        기간:{" "}
+                                        {EXPORT_LABEL.periodLabel}{" "}
                                         {date_range
                                             ? `${date_range[0].format(
                                                   "YYYY-MM-DD"
                                               )} ~ ${date_range[1].format(
                                                   "YYYY-MM-DD"
                                               )}`
-                                            : "전체"}
+                                            : EXPORT_LABEL.all}
                                     </li>
                                     <li>
-                                        삭제된 데이터:{" "}
-                                        {include_deleted ? "포함" : "제외"}
+                                        {EXPORT_LABEL.deletedDataLabel}{" "}
+                                        {include_deleted
+                                            ? EXPORT_LABEL.include
+                                            : EXPORT_LABEL.exclude}
                                     </li>
                                 </ul>
                             }
@@ -328,32 +335,31 @@ export function ExportPanel({
                             block
                             disabled={preview_stats.record_count === 0}
                         >
-                            {is_exporting ? "내보내는 중..." : "다운로드"}
+                            {is_exporting
+                                ? EXPORT_LABEL.exporting
+                                : EXPORT_LABEL.download}
                         </Button>
 
                         {preview_stats.record_count === 0 && (
                             <Alert
                                 type="warning"
-                                message="내보낼 데이터가 없습니다"
+                                message={EXPORT_LABEL.noDataToExport}
                                 className="!mt-lg"
                             />
                         )}
                     </Card>
 
                     {/* 도움말 */}
-                    <Card title="도움말" size="small" className="!mt-lg">
+                    <Card title={EXPORT_LABEL.helpTitle} size="small" className="!mt-lg">
                         <Paragraph>
-                            <Text strong>CSV 형식</Text>
+                            <Text strong>{EXPORT_LABEL.helpCsvTitle}</Text>
                             <br />
-                            Microsoft Excel, Google Sheets 등에서 바로 열 수
-                            있습니다. 한글이 깨지는 경우 UTF-8 BOM 인코딩을
-                            지원하는 프로그램을 사용하세요.
+                            {EXPORT_LABEL.helpCsvDesc}
                         </Paragraph>
                         <Paragraph>
-                            <Text strong>JSON 형식</Text>
+                            <Text strong>{EXPORT_LABEL.helpJsonTitle}</Text>
                             <br />
-                            전체 데이터를 구조화된 형태로 저장합니다. 데이터
-                            백업이나 다른 시스템으로 이전할 때 유용합니다.
+                            {EXPORT_LABEL.helpJsonDesc}
                         </Paragraph>
                     </Card>
                 </Col>

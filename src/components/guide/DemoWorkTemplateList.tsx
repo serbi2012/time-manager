@@ -8,6 +8,8 @@ import {
     HolderOutlined,
     EllipsisOutlined,
 } from "@ant-design/icons";
+import { PRESET_LABELS, BUTTON_TEXT } from "@/shared/constants";
+import { DEMO_TEMPLATE_LABELS } from "@/features/guide/constants";
 import { DEMO_TEMPLATES } from "./demo_data";
 
 const { Text } = Typography;
@@ -18,7 +20,7 @@ export function DemoWorkTemplateList() {
             <Card size="small" className="demo-template-list-card">
                 <div className="flex items-center justify-between mb-md">
                     <Text strong className="text-md">
-                        작업 프리셋
+                        {PRESET_LABELS.title}
                     </Text>
                 </div>
 
@@ -29,7 +31,7 @@ export function DemoWorkTemplateList() {
                     className="mb-md rounded-xl"
                     style={{ borderStyle: "dashed" }}
                 >
-                    새 프리셋 추가
+                    {DEMO_TEMPLATE_LABELS.addNewPreset}
                 </Button>
 
                 <div className="demo-template-items">
@@ -84,14 +86,14 @@ export function DemoWorkTemplateList() {
                             </div>
 
                             <div className="demo-template-actions">
-                                <Tooltip title="더보기">
+                                <Tooltip title={BUTTON_TEXT.more}>
                                     <Button
                                         size="small"
                                         type="text"
                                         icon={<EllipsisOutlined />}
                                     />
                                 </Tooltip>
-                                <Tooltip title="작업 추가">
+                                <Tooltip title={DEMO_TEMPLATE_LABELS.addWork}>
                                     <Button
                                         size="small"
                                         type="text"

@@ -2,6 +2,8 @@
  * 데모 컴포넌트 공용 더미 데이터 (store와 완전 격리)
  */
 
+import { DEMO_DATA_LABELS } from "@/features/guide/constants";
+
 export interface DemoRecord {
     id: string;
     project_code: string;
@@ -31,10 +33,10 @@ export const DEMO_RECORDS: DemoRecord[] = [
     {
         id: "1",
         project_code: "A25_01846",
-        work_name: "5.6 프레임워크 FE",
-        deal_name: "컴포넌트 개발",
-        task_name: "개발",
-        category_name: "개발",
+        work_name: DEMO_DATA_LABELS.frameworkFE,
+        deal_name: DEMO_DATA_LABELS.componentDev,
+        task_name: DEMO_DATA_LABELS.dev,
+        category_name: DEMO_DATA_LABELS.dev,
         duration_minutes: 90,
         start_time: "09:00",
         end_time: "10:30",
@@ -45,10 +47,10 @@ export const DEMO_RECORDS: DemoRecord[] = [
     {
         id: "2",
         project_code: "A25_01846",
-        work_name: "5.6 프레임워크 FE",
-        deal_name: "API 연동 작업",
-        task_name: "개발",
-        category_name: "개발",
+        work_name: DEMO_DATA_LABELS.frameworkFE,
+        deal_name: DEMO_DATA_LABELS.apiIntegration,
+        task_name: DEMO_DATA_LABELS.dev,
+        category_name: DEMO_DATA_LABELS.dev,
         duration_minutes: 45,
         start_time: "10:30",
         end_time: "",
@@ -59,10 +61,10 @@ export const DEMO_RECORDS: DemoRecord[] = [
     {
         id: "3",
         project_code: "A00_00000",
-        work_name: "관리업무",
-        deal_name: "주간회의",
-        task_name: "기타",
-        category_name: "회의",
+        work_name: DEMO_DATA_LABELS.management,
+        deal_name: DEMO_DATA_LABELS.weeklyMeeting,
+        task_name: DEMO_DATA_LABELS.etc,
+        category_name: DEMO_DATA_LABELS.meeting,
         duration_minutes: 30,
         start_time: "14:00",
         end_time: "14:30",
@@ -75,27 +77,27 @@ export const DEMO_RECORDS: DemoRecord[] = [
 export const DEMO_TEMPLATES: DemoTemplate[] = [
     {
         id: "1",
-        work_name: "5.6 프레임워크 FE",
-        deal_name: "컴포넌트 개발",
-        task_name: "개발",
-        category_name: "개발",
+        work_name: DEMO_DATA_LABELS.frameworkFE,
+        deal_name: DEMO_DATA_LABELS.componentDev,
+        task_name: DEMO_DATA_LABELS.dev,
+        category_name: DEMO_DATA_LABELS.dev,
         project_code: "A25_01846",
         color: "var(--color-primary)",
     },
     {
         id: "2",
-        work_name: "5.6 프레임워크 BE",
-        deal_name: "API 설계",
-        task_name: "설계",
-        category_name: "개발",
+        work_name: DEMO_DATA_LABELS.frameworkBE,
+        deal_name: DEMO_DATA_LABELS.apiDesign,
+        task_name: DEMO_DATA_LABELS.design,
+        category_name: DEMO_DATA_LABELS.dev,
         color: "var(--color-success)",
     },
     {
         id: "3",
-        work_name: "관리업무",
-        deal_name: "주간회의",
-        task_name: "기타",
-        category_name: "회의",
+        work_name: DEMO_DATA_LABELS.management,
+        deal_name: DEMO_DATA_LABELS.weeklyMeeting,
+        task_name: DEMO_DATA_LABELS.etc,
+        category_name: DEMO_DATA_LABELS.meeting,
         project_code: "A00_00000",
         color: "var(--color-warning)",
     },
@@ -103,13 +105,13 @@ export const DEMO_TEMPLATES: DemoTemplate[] = [
 
 export function getCategoryColor(category: string): string {
     const color_map: Record<string, string> = {
-        개발: "green",
-        문서작업: "orange",
-        회의: "purple",
-        환경세팅: "cyan",
-        코드리뷰: "magenta",
-        테스트: "blue",
-        기타: "default",
+        [DEMO_DATA_LABELS.dev]: "green",
+        [DEMO_DATA_LABELS.docs]: "orange",
+        [DEMO_DATA_LABELS.meeting]: "purple",
+        [DEMO_DATA_LABELS.envSetup]: "cyan",
+        [DEMO_DATA_LABELS.codeReview]: "magenta",
+        [DEMO_DATA_LABELS.test]: "blue",
+        [DEMO_DATA_LABELS.etc]: "default",
     };
     return color_map[category] || "default";
 }

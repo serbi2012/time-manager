@@ -6,9 +6,7 @@ import { Drawer } from "antd";
 import { AppstoreOutlined } from "@ant-design/icons";
 import WorkTemplateList from "../../components/WorkTemplateList";
 import { APP_THEME_COLORS, type AppTheme } from "../../shared/config";
-
-const DRAWER_TITLE = "작업 프리셋";
-const DRAWER_ARIA_LABEL = "프리셋 열기";
+import { PRESET_LABELS } from "@/shared/constants";
 
 const DRAWER_BODY_STYLE = { padding: 12 };
 const DRAWER_WRAPPER_STYLE = { maxHeight: "70vh" };
@@ -39,7 +37,7 @@ export function MobilePresetFab({
         <button
             className="mobile-preset-fab"
             onClick={on_open}
-            aria-label={DRAWER_ARIA_LABEL}
+            aria-label={PRESET_LABELS.openPreset}
             style={fab_style}
         >
             <AppstoreOutlined />
@@ -57,7 +55,7 @@ export function MobilePresetDrawer({
 }: MobilePresetDrawerProps) {
     return (
         <Drawer
-            title={DRAWER_TITLE}
+            title={PRESET_LABELS.title}
             placement="bottom"
             open={is_open}
             onClose={on_close}

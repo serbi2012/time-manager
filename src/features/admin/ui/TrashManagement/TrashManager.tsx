@@ -31,6 +31,16 @@ import dayjs from "dayjs";
 import type { WorkRecord } from "../../../../shared/types";
 import { SUCCESS_MESSAGES } from "../../../../shared/constants";
 import { formatDuration, type TimeDisplayFormat } from "../../lib/statistics";
+import {
+    TABLE_COL_DEAL_NAME,
+    TABLE_COL_WORK_NAME,
+    TABLE_COL_TIME,
+    TABLE_COL_SESSIONS,
+    DELETE,
+    CANCEL,
+    TRASH_LABEL,
+    EXPLORER_LABEL,
+} from "../../constants";
 
 const { RangePicker } = DatePicker;
 
@@ -140,7 +150,7 @@ export function TrashManager({
 
     const columns: ColumnsType<WorkRecord> = [
         {
-            title: "삭제일",
+            title: TRASH_LABEL.deletedDate,
             key: "deleted_at",
             width: 150,
             sorter: (a, b) =>
@@ -151,20 +161,20 @@ export function TrashManager({
                     : "-",
         },
         {
-            title: "원본 날짜",
+            title: TRASH_LABEL.originalDate,
             dataIndex: "date",
             key: "date",
             width: 110,
             sorter: (a, b) => a.date.localeCompare(b.date),
         },
         {
-            title: "거래명",
+            title: TABLE_COL_DEAL_NAME,
             dataIndex: "deal_name",
             key: "deal_name",
             ellipsis: true,
         },
         {
-            title: "작업명",
+            title: TABLE_COL_WORK_NAME,
             dataIndex: "work_name",
             key: "work_name",
             width: 150,
@@ -172,17 +182,18 @@ export function TrashManager({
             render: (text: string) => <Tag color="blue">{text}</Tag>,
         },
         {
-            title: "시간",
+            title: TABLE_COL_TIME,
             dataIndex: "duration_minutes",
             key: "duration_minutes",
             width: 100,
             render: (mins: number) => formatDuration(mins || 0, time_format),
         },
         {
-            title: "세션",
+            title: TABLE_COL_SESSIONS,
             key: "sessions",
             width: 70,
-            render: (_, record) => `${record.sessions.length}개`,
+            render: (_, record) =>
+                `${record.sessions.length}${EXPLORER_LABEL.unit_count}`,
         },
         {
             title: "",
@@ -198,23 +209,23 @@ export function TrashManager({
                             message.success(SUCCESS_MESSAGES.restored);
                         }}
                     >
-                        복원
+                        {TRASH_LABEL.restore}
                     </Button>
                     <Popconfirm
-                        title="영구 삭제"
-                        description="이 항목을 영구 삭제하시겠습니까? 복구할 수 없습니다."
+                        title={TRASH_LABEL.permanentDelete}
+                        description={TRASH_LABEL.permanentDeleteConfirm}
                         onConfirm={() => {
                             on_permanent_delete(record.id);
                             message.success(
                                 SUCCESS_MESSAGES.recordPermanentlyDeletedAdmin
                             );
                         }}
-                        okText="삭제"
-                        cancelText="취소"
+                        okText={DELETE}
+                        cancelText={CANCEL}
                         okButtonProps={{ danger: true }}
                     >
                         <Button type="text" danger icon={<DeleteOutlined />}>
-                            삭제
+                            {DELETE}
                         </Button>
                     </Popconfirm>
                 </Space>
@@ -231,7 +242,7 @@ export function TrashManager({
         return (
             <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description="휴지통이 비어있습니다"
+                description={TRASH_LABEL.trashEmpty}
             />
         );
     }
@@ -243,7 +254,7 @@ export function TrashManager({
                 <Row gutter={[16, 16]} align="middle">
                     <Col xs={24} sm={12} md={8}>
                         <Input
-                            placeholder="검색 (거래명, 작업명, 프로젝트 코드)"
+                            placeholder={TRASH_LABEL.searchPlaceholder}
                             prefix={<SearchOutlined />}
                             value={search_text}
                             onChange={(e) => setSearchText(e.target.value)}
@@ -259,7 +270,10 @@ export function TrashManager({
                                 )
                             }
                             className="!w-full"
-                            placeholder={["삭제 시작일", "삭제 종료일"]}
+                            placeholder={[
+                                TRASH_LABEL.deleteStartDate,
+                                TRASH_LABEL.deleteEndDate,
+                            ]}
                         />
                     </Col>
                     <Col xs={24} md={8}>
@@ -269,7 +283,7 @@ export function TrashManager({
                                 setDateRange(null);
                             }}
                         >
-                            필터 초기화
+                            {TRASH_LABEL.filterReset}
                         </Button>
                     </Col>
                 </Row>
@@ -280,26 +294,26 @@ export function TrashManager({
                 <Col span={8}>
                     <Card size="small">
                         <Statistic
-                            title="삭제된 레코드"
+                            title={TRASH_LABEL.deletedRecords}
                             value={stats.count}
                             valueStyle={{ color: "#ff4d4f" }}
-                            suffix="건"
+                            suffix={EXPLORER_LABEL.unit_record}
                         />
                     </Card>
                 </Col>
                 <Col span={8}>
                     <Card size="small">
                         <Statistic
-                            title="총 세션"
+                            title={TRASH_LABEL.totalSessions}
                             value={stats.total_sessions}
-                            suffix="개"
+                            suffix={EXPLORER_LABEL.unit_count}
                         />
                     </Card>
                 </Col>
                 <Col span={8}>
                     <Card size="small">
                         <Statistic
-                            title="총 시간"
+                            title={TRASH_LABEL.totalTime}
                             value={formatDuration(
                                 stats.total_minutes,
                                 time_format
@@ -316,14 +330,16 @@ export function TrashManager({
                     onClick={handleBatchRestore}
                     disabled={selected_ids.length === 0}
                 >
-                    선택 항목 복원 ({selected_ids.length})
+                    {TRASH_LABEL.restoreSelected} ({selected_ids.length})
                 </Button>
                 <Popconfirm
-                    title="선택 항목 영구 삭제"
-                    description={`${selected_ids.length}개 항목을 영구 삭제하시겠습니까?`}
+                    title={TRASH_LABEL.permanentDeleteSelected}
+                    description={TRASH_LABEL.permanentDeleteSelectedConfirm(
+                        selected_ids.length
+                    )}
                     onConfirm={handleBatchDelete}
-                    okText="삭제"
-                    cancelText="취소"
+                    okText={DELETE}
+                    cancelText={CANCEL}
                     okButtonProps={{ danger: true }}
                     disabled={selected_ids.length === 0}
                 >
@@ -332,26 +348,28 @@ export function TrashManager({
                         icon={<DeleteOutlined />}
                         disabled={selected_ids.length === 0}
                     >
-                        선택 항목 삭제 ({selected_ids.length})
+                        {TRASH_LABEL.deleteSelectedBtn} ({selected_ids.length})
                     </Button>
                 </Popconfirm>
                 <Popconfirm
-                    title="휴지통 비우기"
+                    title={TRASH_LABEL.emptyTrash}
                     description={
                         <Alert
                             type="warning"
-                            message={`${deleted_records.length}개의 모든 항목이 영구 삭제됩니다. 이 작업은 되돌릴 수 없습니다.`}
+                            message={TRASH_LABEL.emptyTrashConfirm(
+                                deleted_records.length
+                            )}
                             icon={<WarningOutlined />}
                             showIcon
                         />
                     }
                     onConfirm={handleEmptyTrash}
-                    okText="비우기"
-                    cancelText="취소"
+                    okText={TRASH_LABEL.emptyTrashBtn}
+                    cancelText={CANCEL}
                     okButtonProps={{ danger: true }}
                 >
                     <Button danger icon={<ClearOutlined />}>
-                        휴지통 비우기
+                        {TRASH_LABEL.emptyTrash}
                     </Button>
                 </Popconfirm>
             </Space>
@@ -366,7 +384,8 @@ export function TrashManager({
                 pagination={{
                     pageSize: 20,
                     showSizeChanger: true,
-                    showTotal: (total) => `총 ${total}건`,
+                    showTotal: (total) =>
+                        EXPLORER_LABEL.paginationTotalRecords(total),
                 }}
                 scroll={{ x: 900 }}
             />

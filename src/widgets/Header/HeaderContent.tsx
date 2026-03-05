@@ -5,6 +5,7 @@
 
 import { ClockCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import { APP_LABELS } from "@/shared/constants";
 
 export function HeaderContent() {
     const navigate = useNavigate();
@@ -19,7 +20,7 @@ export function HeaderContent() {
             onClick={handleClick}
         >
             <ClockCircleOutlined style={{ color: "white", fontSize: 18 }} />
-            <span className="text-md font-semibold text-white">업무 관리</span>
+            <span className="text-md font-semibold text-white">{APP_LABELS.appName}</span>
         </div>
     );
 }

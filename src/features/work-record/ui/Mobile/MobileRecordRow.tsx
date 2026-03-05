@@ -11,6 +11,7 @@ import { CaretRightFilled, CheckOutlined } from "@ant-design/icons";
 
 import type { WorkRecord } from "../../../../shared/types";
 import { formatDuration } from "../../../../shared/lib/time";
+import { STATUS_LABELS } from "@/shared/constants";
 import { triggerHaptic } from "@/shared/lib/haptic";
 import { getCategoryColor } from "../../../../shared/config";
 import { cn } from "../../../../shared/lib/cn";
@@ -32,7 +33,7 @@ export const MobileRecordRow = memo(function MobileRecordRow({
     const color = getCategoryColor(category);
     const is_done = record.is_completed;
     const sessions_text = record.start_time
-        ? `${record.start_time} ~ ${record.end_time || "진행 중"}`
+        ? `${record.start_time} ~ ${record.end_time || STATUS_LABELS.inProgress}`
         : "";
     const sub_info = [category, sessions_text].filter(Boolean).join(" · ");
 

@@ -11,6 +11,7 @@ import { motion } from "../../../../shared/ui/animation";
 import type { WorkRecord } from "../../../../shared/types";
 import { CursorHaloContainer } from "@/shared/ui/cursor-tracking";
 import { cn } from "../../../../shared/lib/cn";
+import { DAY_NAMES_MON_START } from "@/shared/constants";
 import { DATE_FORMAT } from "../../constants";
 
 interface WeeklyCalendarStripProps {
@@ -28,8 +29,6 @@ interface DayInfo {
     is_weekend: boolean;
     has_records: boolean;
 }
-
-const WEEKDAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"];
 
 function getWeekDays(selected_date: string, records: WorkRecord[]): DayInfo[] {
     const selected = dayjs(selected_date);
@@ -55,7 +54,7 @@ function getWeekDays(selected_date: string, records: WorkRecord[]): DayInfo[] {
         const date_str = d.format(DATE_FORMAT);
         return {
             key: date_str,
-            day_label: WEEKDAY_LABELS[i],
+            day_label: DAY_NAMES_MON_START[i],
             date_num: d.date(),
             date_str,
             is_today: date_str === today_str,

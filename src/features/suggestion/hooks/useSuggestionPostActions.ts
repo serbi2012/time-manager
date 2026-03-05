@@ -49,7 +49,7 @@ export function useSuggestionPostActions({
 
                 return true;
             } catch {
-                message.error("등록에 실패했습니다");
+                message.error(SUGGESTION_MESSAGES.registerFailed);
                 return false;
             }
         },

@@ -8,7 +8,7 @@
 import { useCallback } from "react";
 import { message } from "@/shared/lib/message";
 import { useWorkStore } from "../../store/useWorkStore";
-import { SUCCESS_MESSAGES } from "../constants";
+import { SUCCESS_MESSAGES, ERROR_MESSAGES } from "../constants";
 import {
     generateDealName,
     createRecordFromTemplate,
@@ -65,7 +65,7 @@ export function useRecordCreation(): UseRecordCreationReturn {
             const template = state.templates.find((t) => t.id === template_id);
 
             if (!template) {
-                message.error("템플릿을 찾을 수 없습니다");
+                message.error(ERROR_MESSAGES.templateNotFound);
                 return null;
             }
 

@@ -7,6 +7,7 @@ import { ExclamationCircleOutlined, ToolOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import type { ConflictsViewProps } from "../../lib/types";
 import { formatDuration } from "../../../../shared/lib/time";
+import { CONFLICTS_LABEL, TABLE_COL_DATE } from "../../constants";
 
 const { Text } = Typography;
 
@@ -18,18 +19,18 @@ type ConflictItem = ConflictsViewProps["conflicts"][0];
  */
 export function ConflictsView({ conflicts, on_resolve }: ConflictsViewProps) {
     if (conflicts.length === 0) {
-        return <Empty description="충돌이 없습니다." />;
+        return <Empty description={CONFLICTS_LABEL.noConflicts} />;
     }
 
     const columns: ColumnsType<ConflictItem> = [
         {
-            title: "날짜",
+            title: TABLE_COL_DATE,
             dataIndex: "date",
             key: "date",
             width: 100,
         },
         {
-            title: "세션 1",
+            title: CONFLICTS_LABEL.session1,
             key: "session1",
             render: (_, item) => (
                 <div>
@@ -42,7 +43,7 @@ export function ConflictsView({ conflicts, on_resolve }: ConflictsViewProps) {
             ),
         },
         {
-            title: "세션 2",
+            title: CONFLICTS_LABEL.session2,
             key: "session2",
             render: (_, item) => (
                 <div>
@@ -55,7 +56,7 @@ export function ConflictsView({ conflicts, on_resolve }: ConflictsViewProps) {
             ),
         },
         {
-            title: "겹침",
+            title: CONFLICTS_LABEL.overlap,
             key: "overlap",
             width: 100,
             render: (_, item) => (
@@ -75,7 +76,7 @@ export function ConflictsView({ conflicts, on_resolve }: ConflictsViewProps) {
                     onClick={() => on_resolve(item)}
                     size="small"
                 >
-                    해결
+                    {CONFLICTS_LABEL.resolve}
                 </Button>
             ),
         },
@@ -84,7 +85,10 @@ export function ConflictsView({ conflicts, on_resolve }: ConflictsViewProps) {
     return (
         <div>
             <Space className="!mb-lg">
-                <Text type="secondary">총 {conflicts.length}개의 충돌</Text>
+                <Text type="secondary">
+                    {CONFLICTS_LABEL.total} {conflicts.length}
+                    {CONFLICTS_LABEL.conflictCountSuffix}
+                </Text>
             </Space>
             <Table
                 dataSource={conflicts}

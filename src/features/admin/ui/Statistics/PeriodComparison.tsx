@@ -13,6 +13,7 @@ import {
     type TimeDisplayFormat,
     type PeriodComparison as PeriodComparisonData,
 } from "../../lib/statistics";
+import { STATS_LABEL } from "../../constants";
 
 const { Text } = Typography;
 
@@ -68,7 +69,7 @@ function ComparisonCard({
             <Row gutter={16}>
                 <Col span={8}>
                     <Statistic
-                        title="작업 시간"
+                        title={STATS_LABEL.workTime}
                         value={formatDuration(
                             data.current_minutes,
                             time_format
@@ -81,9 +82,9 @@ function ComparisonCard({
                 </Col>
                 <Col span={8}>
                     <Statistic
-                        title="세션"
+                        title={STATS_LABEL.sessions}
                         value={data.current_sessions}
-                        suffix="개"
+                        suffix={STATS_LABEL.unit_count}
                         valueStyle={{ fontSize: 16 }}
                     />
                     <div className="mt-xs">
@@ -94,9 +95,9 @@ function ComparisonCard({
                 </Col>
                 <Col span={8}>
                     <Statistic
-                        title="레코드"
+                        title={STATS_LABEL.records}
                         value={data.current_records}
-                        suffix="건"
+                        suffix={STATS_LABEL.unit_record}
                         valueStyle={{ fontSize: 16 }}
                     />
                     <div className="mt-xs">
@@ -119,14 +120,14 @@ export function PeriodComparison({
         <Row gutter={[16, 16]} className="!mb-lg">
             <Col xs={24} md={12}>
                 <ComparisonCard
-                    title="이번 주 vs 지난 주"
+                    title={STATS_LABEL.weekComparison}
                     data={week_comparison}
                     time_format={time_format}
                 />
             </Col>
             <Col xs={24} md={12}>
                 <ComparisonCard
-                    title="이번 달 vs 지난 달"
+                    title={STATS_LABEL.monthComparison}
                     data={month_comparison}
                     time_format={time_format}
                 />

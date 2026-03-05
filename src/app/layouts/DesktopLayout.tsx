@@ -25,7 +25,9 @@ import {
     INFO_MESSAGES,
     WARNING_MESSAGES,
     FEATURE_FLAGS,
-} from "../../shared/constants";
+    NAV_LABELS,
+    LOADING_LABELS,
+} from "@/shared/constants";
 import { CURRENT_VERSION } from "../../constants/changelog";
 import { DailyPage } from "../../pages/DailyPage/index";
 import {
@@ -160,23 +162,23 @@ export function DesktopLayout() {
 
     const nav_items = useMemo<NavItem[]>(
         () => [
-            { key: "/", label: "일간 기록", icon: <HomeOutlined /> },
-            { key: "/weekly", label: "주간 일정", icon: <CalendarOutlined /> },
+            { key: "/", label: NAV_LABELS.daily, icon: <HomeOutlined /> },
+            { key: "/weekly", label: NAV_LABELS.weekly, icon: <CalendarOutlined /> },
             ...(FEATURE_FLAGS.suggestions.visible
                 ? [
                       {
                           key: "/suggestions",
-                          label: "건의사항",
+                          label: NAV_LABELS.suggestions,
                           icon: <MessageOutlined />,
                       },
                   ]
                 : []),
-            { key: "/guide", label: "사용 설명서", icon: <BookOutlined /> },
+            { key: "/guide", label: NAV_LABELS.guide, icon: <BookOutlined /> },
             ...(is_admin
                 ? [
                       {
                           key: "/admin",
-                          label: "관리자",
+                          label: NAV_LABELS.admin,
                           icon: <ToolOutlined />,
                       },
                   ]
@@ -240,8 +242,8 @@ export function DesktopLayout() {
                         <Spin size="large" />
                         <span className="text-[#666]">
                             {auth_loading
-                                ? "로그인 확인 중..."
-                                : "데이터를 불러오는 중..."}
+                                ? LOADING_LABELS.checkingLogin
+                                : LOADING_LABELS.loadingData}
                         </span>
                     </motion.div>
                 )}

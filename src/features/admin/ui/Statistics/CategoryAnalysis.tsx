@@ -6,9 +6,15 @@ import { Progress, Typography, Space, Table, Tag, Empty } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { CategoryStat, WorkNameStat } from "../../lib/statistics";
 import {
-  formatDuration,
-  type TimeDisplayFormat,
+    formatDuration,
+    type TimeDisplayFormat,
 } from "../../lib/statistics";
+import {
+    STATS_LABEL,
+    TABLE_COL_WORK_NAME,
+    TABLE_COL_SESSIONS,
+} from "../../constants";
+import { STATUS_LABELS } from "@/shared/constants";
 
 const { Text } = Typography;
 
@@ -34,7 +40,7 @@ export function CategoryChart({
   time_format = "hours",
 }: CategoryChartProps) {
   if (data.length === 0) {
-    return <Empty description="데이터가 없습니다" />;
+    return <Empty description={STATUS_LABELS.noData} />;
   }
 
   return (
@@ -77,7 +83,7 @@ export function WorkNameTable({
 }: WorkNameTableProps) {
   const columns: ColumnsType<WorkNameStat> = [
     {
-      title: "순위",
+      title: STATS_LABEL.rank,
       key: "rank",
       width: 50,
       render: (_, __, index) => (
@@ -85,13 +91,13 @@ export function WorkNameTable({
       ),
     },
     {
-      title: "작업명",
+      title: TABLE_COL_WORK_NAME,
       dataIndex: "work_name",
       key: "work_name",
       ellipsis: true,
     },
     {
-      title: "시간",
+      title: STATS_LABEL.time,
       dataIndex: "total_minutes",
       key: "total_minutes",
       width: 100,
@@ -148,13 +154,13 @@ export function CategoryAnalysis({
     <div>
       <CategoryChart
         data={category_stats}
-        title="카테고리별 시간 분포"
+        title={STATS_LABEL.categoryTimeDist}
         time_format={time_format}
       />
       <div className="mt-xl">
         <WorkNameTable
           data={work_name_stats}
-          title="작업명별 TOP 10"
+          title={STATS_LABEL.workNameTop10}
           time_format={time_format}
         />
       </div>

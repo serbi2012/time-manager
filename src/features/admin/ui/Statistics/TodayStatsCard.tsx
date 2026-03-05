@@ -6,6 +6,7 @@ import { Card, Row, Col, Statistic, Space } from "antd";
 import { CalendarOutlined } from "@ant-design/icons";
 import { formatDuration, type TimeDisplayFormat } from "../../lib/statistics";
 import type { TodayStats } from "../../lib/statistics";
+import { STATS_LABEL } from "../../constants";
 
 interface TodayStatsCardProps {
     today_stats: TodayStats;
@@ -22,7 +23,7 @@ export function TodayStatsCard({
             title={
                 <Space>
                     <CalendarOutlined />
-                    오늘 통계
+                    {STATS_LABEL.todayStats}
                 </Space>
             }
             className="!mb-lg"
@@ -30,7 +31,7 @@ export function TodayStatsCard({
             <Row gutter={[16, 8]}>
                 <Col xs={12} sm={6} md={4}>
                     <Statistic
-                        title="오늘 작업 시간"
+                        title={STATS_LABEL.todayWorkTime}
                         value={formatDuration(
                             today_stats.total_minutes,
                             time_format
@@ -43,25 +44,25 @@ export function TodayStatsCard({
                 </Col>
                 <Col xs={12} sm={6} md={4}>
                     <Statistic
-                        title="세션 수"
+                        title={STATS_LABEL.sessionCount}
                         value={today_stats.session_count}
-                        suffix="개"
+                        suffix={STATS_LABEL.unit_count}
                         valueStyle={{ fontSize: 18 }}
                     />
                 </Col>
                 <Col xs={12} sm={6} md={4}>
                     <Statistic
-                        title="레코드 수"
+                        title={STATS_LABEL.recordCount}
                         value={today_stats.record_count}
-                        suffix="건"
+                        suffix={STATS_LABEL.unit_record}
                         valueStyle={{ fontSize: 18 }}
                     />
                 </Col>
                 <Col xs={12} sm={6} md={4}>
                     <Statistic
-                        title="완료"
+                        title={STATS_LABEL.completed}
                         value={today_stats.completed_count}
-                        suffix="건"
+                        suffix={STATS_LABEL.unit_record}
                         valueStyle={{
                             color: "var(--color-success)",
                             fontSize: 18,
@@ -70,14 +71,14 @@ export function TodayStatsCard({
                 </Col>
                 <Col xs={12} sm={6} md={4}>
                     <Statistic
-                        title="첫 작업"
+                        title={STATS_LABEL.firstWork}
                         value={today_stats.first_session_time || "-"}
                         valueStyle={{ fontSize: 18 }}
                     />
                 </Col>
                 <Col xs={12} sm={6} md={4}>
                     <Statistic
-                        title="마지막 작업"
+                        title={STATS_LABEL.lastWork}
                         value={today_stats.last_session_time || "-"}
                         valueStyle={{ fontSize: 18 }}
                     />

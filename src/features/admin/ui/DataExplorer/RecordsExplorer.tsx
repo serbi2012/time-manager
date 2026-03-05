@@ -35,6 +35,18 @@ import {
   formatDuration,
   type TimeDisplayFormat,
 } from "../../lib/statistics";
+import {
+  TABLE_COL_DATE,
+  TABLE_COL_TIME,
+  TABLE_COL_WORK_NAME,
+  TABLE_COL_DEAL_NAME,
+  TABLE_COL_SESSIONS,
+  TABLE_COL_STATE,
+  TABLE_LABEL_CATEGORY,
+  PLACEHOLDER_START_DATE,
+  PLACEHOLDER_END_DATE,
+  EXPLORER_LABEL,
+} from "../../constants";
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
@@ -129,7 +141,7 @@ export function RecordsExplorer({
 
   const columns: ColumnsType<WorkRecord> = [
     {
-      title: "날짜",
+      title: TABLE_COL_DATE,
       dataIndex: "date",
       key: "date",
       width: 110,
@@ -142,14 +154,14 @@ export function RecordsExplorer({
       ),
     },
     {
-      title: "거래명",
+      title: TABLE_COL_DEAL_NAME,
       dataIndex: "deal_name",
       key: "deal_name",
       ellipsis: true,
       sorter: (a, b) => (a.deal_name || "").localeCompare(b.deal_name || ""),
     },
     {
-      title: "작업명",
+      title: TABLE_COL_WORK_NAME,
       dataIndex: "work_name",
       key: "work_name",
       width: 150,
@@ -158,14 +170,14 @@ export function RecordsExplorer({
       render: (text: string) => <Tag color="blue">{text}</Tag>,
     },
     {
-      title: "카테고리",
+      title: TABLE_LABEL_CATEGORY,
       dataIndex: "category_name",
       key: "category_name",
       width: 100,
       render: (text: string) => text || "-",
     },
     {
-      title: "시간",
+      title: TABLE_COL_TIME,
       dataIndex: "duration_minutes",
       key: "duration_minutes",
       width: 100,
@@ -179,7 +191,7 @@ export function RecordsExplorer({
       ),
     },
     {
-      title: "세션",
+      title: TABLE_COL_SESSIONS,
       key: "sessions",
       width: 70,
       sorter: (a, b) => a.sessions.length - b.sessions.length,
@@ -188,15 +200,19 @@ export function RecordsExplorer({
       ),
     },
     {
-      title: "상태",
+      title: TABLE_COL_STATE,
       key: "status",
       width: 100,
       render: (_, record) => (
         <Space>
-          {record.is_completed && <Tag color="green">완료</Tag>}
-          {record.is_deleted && <Tag color="red">삭제됨</Tag>}
+          {record.is_completed && (
+            <Tag color="green">{EXPLORER_LABEL.completedYes}</Tag>
+          )}
+          {record.is_deleted && (
+            <Tag color="red">{EXPLORER_LABEL.deletedYes}</Tag>
+          )}
           {!record.is_completed && !record.is_deleted && (
-            <Tag color="default">진행중</Tag>
+            <Tag color="default">{EXPLORER_LABEL.inProgress}</Tag>
           )}
         </Space>
       ),
@@ -222,7 +238,7 @@ export function RecordsExplorer({
         <Row gutter={[16, 16]} align="middle">
           <Col xs={24} sm={12} md={6}>
             <Input
-              placeholder="검색 (거래명, 작업명, 프로젝트 코드)"
+              placeholder={EXPLORER_LABEL.searchPlaceholderRecords}
               prefix={<SearchOutlined />}
               value={search_text}
               onChange={(e) => setSearchText(e.target.value)}
@@ -236,7 +252,7 @@ export function RecordsExplorer({
                 setDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs] | null)
               }
               className="!w-full"
-              placeholder={["시작일", "종료일"]}
+              placeholder={[PLACEHOLDER_START_DATE, PLACEHOLDER_END_DATE]}
             />
           </Col>
           <Col xs={12} sm={6} md={4}>
@@ -245,9 +261,9 @@ export function RecordsExplorer({
               onChange={setStatusFilter}
               className="!w-full"
               options={[
-                { value: "all", label: "전체 상태" },
-                { value: "completed", label: "완료됨" },
-                { value: "incomplete", label: "미완료" },
+                { value: "all", label: EXPLORER_LABEL.statusAll },
+                { value: "completed", label: EXPLORER_LABEL.statusCompleted },
+                { value: "incomplete", label: EXPLORER_LABEL.statusIncomplete },
               ]}
             />
           </Col>
@@ -257,9 +273,9 @@ export function RecordsExplorer({
               onChange={setDeletedFilter}
               className="!w-full"
               options={[
-                { value: "exclude", label: "삭제 제외" },
-                { value: "include", label: "삭제 포함" },
-                { value: "only", label: "삭제만" },
+                { value: "exclude", label: EXPLORER_LABEL.deleteExclude },
+                { value: "include", label: EXPLORER_LABEL.deleteInclude },
+                { value: "only", label: EXPLORER_LABEL.deleteOnly },
               ]}
             />
           </Col>
@@ -272,7 +288,7 @@ export function RecordsExplorer({
                 setDeletedFilter("exclude");
               }}
             >
-              필터 초기화
+              {EXPLORER_LABEL.filterReset}
             </Button>
           </Col>
         </Row>
@@ -283,27 +299,27 @@ export function RecordsExplorer({
         <Col span={8}>
           <Card size="small">
             <Statistic
-              title="레코드 수"
+              title={EXPLORER_LABEL.recordCount}
               value={stats.count}
               prefix={<FileTextOutlined />}
-              suffix="건"
+              suffix={EXPLORER_LABEL.unit_record}
             />
           </Card>
         </Col>
         <Col span={8}>
           <Card size="small">
             <Statistic
-              title="총 세션"
+              title={EXPLORER_LABEL.totalSessions}
               value={stats.total_sessions}
               prefix={<ClockCircleOutlined />}
-              suffix="개"
+              suffix={EXPLORER_LABEL.unit_count}
             />
           </Card>
         </Col>
         <Col span={8}>
           <Card size="small">
             <Statistic
-              title="총 시간"
+              title={EXPLORER_LABEL.totalTime}
               value={formatDuration(stats.total_minutes, time_format)}
             />
           </Card>
@@ -319,14 +335,14 @@ export function RecordsExplorer({
         pagination={{
           pageSize: 20,
           showSizeChanger: true,
-          showTotal: (total) => `총 ${total}건`,
+          showTotal: (total) => EXPLORER_LABEL.paginationTotalRecords(total),
         }}
         scroll={{ x: 900 }}
       />
 
       {/* 상세 모달 */}
       <Modal
-        title="레코드 상세"
+        title={EXPLORER_LABEL.recordDetail}
         open={!!detail_record}
         onCancel={() => setDetailRecord(null)}
         footer={null}
@@ -339,71 +355,72 @@ export function RecordsExplorer({
                 {detail_record.id}
               </Text>
             </Descriptions.Item>
-            <Descriptions.Item label="날짜">
+            <Descriptions.Item label={TABLE_COL_DATE}>
               {detail_record.date}
             </Descriptions.Item>
-            <Descriptions.Item label="프로젝트 코드">
+            <Descriptions.Item label={EXPLORER_LABEL.projectCode}>
               {detail_record.project_code}
             </Descriptions.Item>
-            <Descriptions.Item label="작업명">
+            <Descriptions.Item label={TABLE_COL_WORK_NAME}>
               {detail_record.work_name}
             </Descriptions.Item>
-            <Descriptions.Item label="업무명">
+            <Descriptions.Item label={EXPLORER_LABEL.taskName}>
               {detail_record.task_name}
             </Descriptions.Item>
-            <Descriptions.Item label="거래명" span={2}>
+            <Descriptions.Item label={TABLE_COL_DEAL_NAME} span={2}>
               {detail_record.deal_name}
             </Descriptions.Item>
-            <Descriptions.Item label="카테고리">
+            <Descriptions.Item label={TABLE_LABEL_CATEGORY}>
               {detail_record.category_name}
             </Descriptions.Item>
-            <Descriptions.Item label="총 시간">
+            <Descriptions.Item label={EXPLORER_LABEL.totalTimeLabel}>
               {formatDuration(detail_record.duration_minutes || 0, time_format)}
             </Descriptions.Item>
-            <Descriptions.Item label="시작 시간">
+            <Descriptions.Item label={EXPLORER_LABEL.startTime}>
               {detail_record.start_time || "-"}
             </Descriptions.Item>
-            <Descriptions.Item label="종료 시간">
+            <Descriptions.Item label={EXPLORER_LABEL.endTime}>
               {detail_record.end_time || "-"}
             </Descriptions.Item>
-            <Descriptions.Item label="완료 여부">
+            <Descriptions.Item label={EXPLORER_LABEL.completedYesNo}>
               {detail_record.is_completed ? (
-                <Tag color="green">완료</Tag>
+                <Tag color="green">{EXPLORER_LABEL.completedYes}</Tag>
               ) : (
-                <Tag>미완료</Tag>
+                <Tag>{EXPLORER_LABEL.completedNo}</Tag>
               )}
             </Descriptions.Item>
-            <Descriptions.Item label="삭제 여부">
+            <Descriptions.Item label={EXPLORER_LABEL.deletedYesNo}>
               {detail_record.is_deleted ? (
-                <Tag color="red">삭제됨</Tag>
+                <Tag color="red">{EXPLORER_LABEL.deletedYes}</Tag>
               ) : (
-                <Tag color="blue">활성</Tag>
+                <Tag color="blue">{EXPLORER_LABEL.deletedNo}</Tag>
               )}
             </Descriptions.Item>
             {detail_record.completed_at && (
-              <Descriptions.Item label="완료 시각" span={2}>
+              <Descriptions.Item label={EXPLORER_LABEL.completedAt} span={2}>
                 {dayjs(detail_record.completed_at).format(
                   "YYYY-MM-DD HH:mm:ss"
                 )}
               </Descriptions.Item>
             )}
             {detail_record.deleted_at && (
-              <Descriptions.Item label="삭제 시각" span={2}>
+              <Descriptions.Item label={EXPLORER_LABEL.deletedAt} span={2}>
                 {dayjs(detail_record.deleted_at).format("YYYY-MM-DD HH:mm:ss")}
               </Descriptions.Item>
             )}
-            <Descriptions.Item label="비고" span={2}>
+            <Descriptions.Item label={EXPLORER_LABEL.note} span={2}>
               {detail_record.note || "-"}
             </Descriptions.Item>
-            <Descriptions.Item label="세션 수" span={2}>
-              {detail_record.sessions.length}개
+            <Descriptions.Item label={EXPLORER_LABEL.sessionCountLabel} span={2}>
+              {detail_record.sessions.length}
+              {EXPLORER_LABEL.unit_count}
             </Descriptions.Item>
           </Descriptions>
         )}
 
         {detail_record && detail_record.sessions.length > 0 && (
           <div className="mt-lg">
-            <Text strong>세션 목록</Text>
+            <Text strong>{EXPLORER_LABEL.sessionList}</Text>
             <Table
               dataSource={detail_record.sessions}
               rowKey="id"
@@ -412,25 +429,25 @@ export function RecordsExplorer({
               className="!mt-sm"
               columns={[
                 {
-                  title: "날짜",
+                  title: TABLE_COL_DATE,
                   dataIndex: "date",
                   key: "date",
                   render: (date: string) =>
                     date || detail_record.date,
                 },
                 {
-                  title: "시작",
+                  title: EXPLORER_LABEL.start,
                   dataIndex: "start_time",
                   key: "start_time",
                 },
                 {
-                  title: "종료",
+                  title: EXPLORER_LABEL.end,
                   dataIndex: "end_time",
                   key: "end_time",
-                  render: (time: string) => time || "(진행중)",
+                  render: (time: string) => time || EXPLORER_LABEL.endInProgress,
                 },
                 {
-                  title: "시간",
+                  title: TABLE_COL_TIME,
                   dataIndex: "duration_minutes",
                   key: "duration_minutes",
                   render: (mins: number) =>

@@ -21,6 +21,7 @@ import {
     type CompletionStats,
     type DealStats,
 } from "../../lib/statistics";
+import { STATS_LABEL, TABLE_LABEL_CATEGORY } from "../../constants";
 
 const { Title } = Typography;
 
@@ -37,7 +38,7 @@ export function CompletionSection({
 }: CompletionSectionProps) {
     const completion_columns: ColumnsType<CompletionStats["by_category"][0]> = [
         {
-            title: "카테고리",
+            title: TABLE_LABEL_CATEGORY,
             dataIndex: "category",
             key: "category",
         },
@@ -49,7 +50,7 @@ export function CompletionSection({
             render: (_, record) => `${record.completed}/${record.total}`,
         },
         {
-            title: "완료율",
+            title: STATS_LABEL.completionRate,
             dataIndex: "rate",
             key: "rate",
             width: 120,
@@ -71,7 +72,7 @@ export function CompletionSection({
 
     const deal_columns: ColumnsType<DealStats> = [
         {
-            title: "딜명",
+            title: STATS_LABEL.dealName,
             dataIndex: "deal_name",
             key: "deal_name",
             ellipsis: true,
@@ -89,7 +90,7 @@ export function CompletionSection({
             ),
         },
         {
-            title: "시간",
+            title: STATS_LABEL.time,
             dataIndex: "total_minutes",
             key: "total_minutes",
             width: 100,
@@ -98,7 +99,7 @@ export function CompletionSection({
             render: (mins: number) => formatDuration(mins, time_format),
         },
         {
-            title: "레코드",
+            title: STATS_LABEL.records,
             dataIndex: "record_count",
             key: "record_count",
             width: 70,
@@ -108,7 +109,7 @@ export function CompletionSection({
             ),
         },
         {
-            title: "완료율",
+            title: STATS_LABEL.completionRate,
             dataIndex: "completion_rate",
             key: "completion_rate",
             width: 80,
@@ -128,7 +129,7 @@ export function CompletionSection({
     return (
         <>
             <Title level={5}>
-                <CheckCircleOutlined /> 완료율 분석
+                <CheckCircleOutlined /> {STATS_LABEL.completionAnalysis}
             </Title>
             <Row gutter={[16, 16]} className="!mb-xl">
                 <Col xs={24} sm={12} md={6}>
@@ -143,7 +144,7 @@ export function CompletionSection({
                                             {p}%
                                         </div>
                                         <div className="text-xs text-text-secondary">
-                                            완료율
+                                            {STATS_LABEL.completionRate}
                                         </div>
                                     </div>
                                 )}
@@ -158,13 +159,13 @@ export function CompletionSection({
                 <Col xs={24} sm={12} md={6}>
                     <Card size="small">
                         <Statistic
-                            title="완료된 레코드"
+                            title={STATS_LABEL.completedRecordCount}
                             value={completion_stats.completed_records}
-                            suffix={`/ ${completion_stats.total_records}건`}
+                            suffix={`/ ${completion_stats.total_records}${STATS_LABEL.unit_record}`}
                         />
                         <div className="mt-sm">
                             <Statistic
-                                title="평균 완료 시간"
+                                title={STATS_LABEL.avgCompletionTime}
                                 value={formatDuration(
                                     completion_stats.avg_completion_time_minutes,
                                     time_format
@@ -175,7 +176,7 @@ export function CompletionSection({
                     </Card>
                 </Col>
                 <Col xs={24} md={12}>
-                    <Card size="small" title="카테고리별 완료율">
+                    <Card size="small" title={STATS_LABEL.categoryCompletionRate}>
                         <Table
                             dataSource={completion_stats.by_category}
                             columns={completion_columns}
@@ -189,7 +190,7 @@ export function CompletionSection({
             </Row>
 
             <Title level={5}>
-                <PieChartOutlined /> 딜/프로젝트별 분석
+                <PieChartOutlined /> {STATS_LABEL.dealProjectAnalysis}
             </Title>
             <Card size="small" className="!mb-xl">
                 <Table

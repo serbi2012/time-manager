@@ -10,6 +10,7 @@ import {
     UserOutlined,
 } from "@ant-design/icons";
 import type { SyncStatus } from "../../features/sync";
+import { SYNC_LABELS } from "@/shared/constants";
 
 interface SyncIndicatorProps {
     sync_status: SyncStatus;
@@ -76,7 +77,7 @@ export function SyncIndicator({
                             className="text-xs"
                             style={{ color: "rgba(255,255,255,0.7)" }}
                         >
-                            동기화 중
+                            {SYNC_LABELS.syncing}
                         </span>
                     </>
                 )}
@@ -90,7 +91,7 @@ export function SyncIndicator({
                             className="text-xs"
                             style={{ color: "rgba(255,255,255,0.7)" }}
                         >
-                            동기화됨
+                            {SYNC_LABELS.synced}
                         </span>
                         {show_sync_check && (
                             <CheckCircleFilled
@@ -113,7 +114,7 @@ export function SyncIndicator({
                             }}
                         />
                         <span className="text-xs" style={{ color: "#ff6b6b" }}>
-                            오류
+                            {SYNC_LABELS.error}
                         </span>
                     </>
                 )}
@@ -153,7 +154,7 @@ export function SyncIndicator({
                     className="text-xs"
                     style={{ color: "rgba(255,255,255,0.55)" }}
                 >
-                    게스트
+                    {SYNC_LABELS.guest}
                 </span>
             </div>
         );

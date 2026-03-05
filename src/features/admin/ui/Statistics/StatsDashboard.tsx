@@ -50,6 +50,7 @@ import { ProductivitySection } from "./ProductivitySection";
 import { SessionStatsSection } from "./SessionStatsSection";
 import { TimePatternSection } from "./TimePatternSection";
 import { CompletionSection } from "./CompletionSection";
+import { STATS_LABEL } from "../../constants";
 
 const { Title } = Typography;
 
@@ -165,33 +166,33 @@ export function StatsDashboard({
             />
 
             <Title level={5}>
-                <FileTextOutlined /> 전체 요약
+                <FileTextOutlined /> {STATS_LABEL.overallSummary}
             </Title>
             <Row gutter={[16, 16]}>
                 <Col xs={12} sm={8} md={4}>
                     <Card size="small">
                         <Statistic
-                            title="총 레코드"
+                            title={STATS_LABEL.totalRecords}
                             value={summary.total_records}
                             prefix={<FileTextOutlined />}
-                            suffix="건"
+                            suffix={STATS_LABEL.unit_record}
                         />
                     </Card>
                 </Col>
                 <Col xs={12} sm={8} md={4}>
                     <Card size="small">
                         <Statistic
-                            title="총 세션"
+                            title={STATS_LABEL.totalSessions}
                             value={summary.total_sessions}
                             prefix={<ClockCircleOutlined />}
-                            suffix="개"
+                            suffix={STATS_LABEL.unit_count}
                         />
                     </Card>
                 </Col>
                 <Col xs={12} sm={8} md={4}>
                     <Card size="small">
                         <Statistic
-                            title="총 시간"
+                            title={STATS_LABEL.totalTime}
                             value={formatDuration(
                                 summary.total_minutes,
                                 time_format
@@ -203,10 +204,10 @@ export function StatsDashboard({
                 <Col xs={12} sm={8} md={4}>
                     <Card size="small">
                         <Statistic
-                            title="완료됨"
+                            title={STATS_LABEL.completedRecords}
                             value={summary.completed_records}
                             prefix={<CheckCircleOutlined />}
-                            suffix="건"
+                            suffix={STATS_LABEL.unit_record}
                             valueStyle={{
                                 color: "var(--color-success)",
                             }}
@@ -216,10 +217,10 @@ export function StatsDashboard({
                 <Col xs={12} sm={8} md={4}>
                     <Card size="small">
                         <Statistic
-                            title="삭제됨"
+                            title={STATS_LABEL.deletedRecords}
                             value={summary.deleted_records}
                             prefix={<DeleteOutlined />}
-                            suffix="건"
+                            suffix={STATS_LABEL.unit_record}
                             valueStyle={{
                                 color:
                                     summary.deleted_records > 0
@@ -232,10 +233,10 @@ export function StatsDashboard({
                 <Col xs={12} sm={8} md={4}>
                     <Card size="small">
                         <Statistic
-                            title="레코드당 세션"
+                            title={STATS_LABEL.sessionsPerRecord}
                             value={summary.avg_sessions_per_record}
                             prefix={<BranchesOutlined />}
-                            suffix="개"
+                            suffix={STATS_LABEL.unit_count}
                         />
                     </Card>
                 </Col>
@@ -269,15 +270,15 @@ export function StatsDashboard({
             <div className="mb-lg">
                 <Space>
                     <Title level={5} className="!m-0">
-                        작업 시간 추이
+                        {STATS_LABEL.timeTrend}
                     </Title>
                     <Segmented
                         value={time_range}
                         onChange={(value) => setTimeRange(value as TimeRange)}
                         options={[
-                            { label: "일별", value: "daily" },
-                            { label: "주별", value: "weekly" },
-                            { label: "월별", value: "monthly" },
+                            { label: STATS_LABEL.daily, value: "daily" },
+                            { label: STATS_LABEL.weekly, value: "weekly" },
+                            { label: STATS_LABEL.monthly, value: "monthly" },
                         ]}
                     />
                 </Space>
@@ -304,7 +305,7 @@ export function StatsDashboard({
 
             <Row gutter={[24, 24]}>
                 <Col xs={24} lg={12}>
-                    <Card size="small" title="카테고리별 분석">
+                    <Card size="small" title={STATS_LABEL.categoryAnalysis}>
                         <CategoryAnalysis
                             category_stats={category_stats}
                             work_name_stats={[]}
@@ -313,7 +314,7 @@ export function StatsDashboard({
                     </Card>
                 </Col>
                 <Col xs={24} lg={12}>
-                    <Card size="small" title="작업명별 TOP 10">
+                    <Card size="small" title={STATS_LABEL.workNameTop10}>
                         <CategoryAnalysis
                             category_stats={[]}
                             work_name_stats={work_name_stats}

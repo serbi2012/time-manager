@@ -6,6 +6,7 @@
  */
 
 import { Typography } from "antd";
+import { DEMO_COMPONENT_LABELS } from "@/features/guide/constants";
 import { DemoWorkRecordTable } from "./DemoWorkRecordTable";
 import { DemoWorkTemplateList } from "./DemoWorkTemplateList";
 import { DemoDailyGanttChart } from "./DemoDailyGanttChart";
@@ -34,7 +35,7 @@ export function DemoRenderer({ componentName }: { componentName: string }) {
         return (
             <div className="demo-not-found">
                 <Text type="secondary">
-                    데모 컴포넌트를 찾을 수 없습니다: {componentName}
+                    {DEMO_COMPONENT_LABELS.notFound(componentName)}
                 </Text>
             </div>
         );
@@ -42,7 +43,9 @@ export function DemoRenderer({ componentName }: { componentName: string }) {
 
     return (
         <div className="demo-wrapper">
-            <div className="demo-badge">실제 UI 미리보기</div>
+            <div className="demo-badge">
+                {DEMO_COMPONENT_LABELS.uiPreview}
+            </div>
             <Component />
         </div>
     );

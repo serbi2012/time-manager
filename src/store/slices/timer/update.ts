@@ -11,6 +11,7 @@ import type { WorkStore, WorkFormData } from "../../types";
 import { syncRecord, syncSettings } from "@/firebase/syncService";
 import { timeToMinutes } from "../../lib";
 import type { SetState } from "../../lib/timer_helpers";
+import { ERROR_MESSAGES, WARNING_MESSAGES } from "@/shared/constants";
 
 /**
  * updateActiveFormData 액션 생성
@@ -69,7 +70,7 @@ export function createUpdateTimerStartTimeAction(
             return {
                 success: false,
                 adjusted: false,
-                message: "타이머가 실행 중이 아닙니다.",
+                message: ERROR_MESSAGES.timerNotRunning,
             };
         }
 
@@ -78,7 +79,7 @@ export function createUpdateTimerStartTimeAction(
             return {
                 success: false,
                 adjusted: false,
-                message: "시작 시간은 현재 시간보다 미래일 수 없습니다.",
+                message: ERROR_MESSAGES.startTimeInFuture,
             };
         }
 
@@ -148,9 +149,9 @@ export function createUpdateTimerStartTimeAction(
                         return {
                             success: false,
                             adjusted: false,
-                            message: `${formatConflictInfo(
-                                other
-                            )} 작업과 시간이 완전히 겹칩니다.`,
+                            message: ERROR_MESSAGES.conflictFullOverlap(
+                                formatConflictInfo(other)
+                            ),
                         };
                     }
 
@@ -161,9 +162,9 @@ export function createUpdateTimerStartTimeAction(
                         return {
                             success: false,
                             adjusted: false,
-                            message: `${formatConflictInfo(
-                                other
-                            )} 작업 안에 완전히 포함됩니다.`,
+                            message: ERROR_MESSAGES.conflictContained(
+                                formatConflictInfo(other)
+                            ),
                         };
                     }
 
@@ -185,7 +186,7 @@ export function createUpdateTimerStartTimeAction(
             return {
                 success: false,
                 adjusted: false,
-                message: "충돌을 피할 수 없습니다. 다른 시간을 선택하세요.",
+                message: ERROR_MESSAGES.conflictUnavoidable,
             };
         }
 
@@ -249,7 +250,7 @@ export function createUpdateTimerStartTimeAction(
             success: true,
             adjusted: was_adjusted,
             message: was_adjusted
-                ? "시간 충돌로 인해 자동 조정되었습니다."
+                ? WARNING_MESSAGES.autoAdjustedConflict
                 : undefined,
             adjusted_start_time: was_adjusted ? adjusted_start_time : undefined,
         };

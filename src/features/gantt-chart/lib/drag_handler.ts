@@ -3,6 +3,7 @@
  */
 
 import type { TimeSlot, DragSelection } from "./slot_calculator";
+import { GANTT_VALIDATION } from "../constants";
 
 /**
  * 드래그 결과 타입
@@ -40,7 +41,7 @@ export function validateDragSelection(
             is_valid: false,
             start_mins: start,
             end_mins: end,
-            message: `최소 ${MIN_DRAG_DURATION}분 이상 선택해야 합니다.`,
+            message: GANTT_VALIDATION.minDragDuration(MIN_DRAG_DURATION),
         };
     }
     
@@ -66,7 +67,7 @@ export function validateResizeResult(
             is_valid: false,
             start_mins: new_start,
             end_mins: new_end,
-            message: "종료 시간이 시작 시간보다 이전입니다.",
+            message: GANTT_VALIDATION.endBeforeStart,
         };
     }
     
@@ -76,7 +77,7 @@ export function validateResizeResult(
             is_valid: false,
             start_mins: new_start,
             end_mins: new_end,
-            message: `최소 ${MIN_DRAG_DURATION}분 이상이어야 합니다.`,
+            message: GANTT_VALIDATION.minDragRequired(MIN_DRAG_DURATION),
         };
     }
     
@@ -89,7 +90,7 @@ export function validateResizeResult(
                 is_valid: false,
                 start_mins: new_start,
                 end_mins: new_end,
-                message: "다른 세션과 시간이 겹칩니다.",
+                message: GANTT_VALIDATION.overlapSimple,
             };
         }
     }

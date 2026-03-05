@@ -5,8 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/shared/lib/cn";
 import { SPRING } from "@/shared/ui/animation";
 import { TEMPLATE_COLORS } from "@/shared/config";
-
-const CUSTOM_COLOR_LABEL = "직접 선택";
+import { PRESET_LABELS } from "@/shared/constants";
 const BOUNCE_DURATION = 400;
 
 const CHECK_VARIANTS = {
@@ -96,10 +95,10 @@ export function PresetColorGrid({ value, onChange }: PresetColorGridProps) {
                     size="small"
                     showText={() => (
                         <span className="text-xs text-text-secondary">
-                            {CUSTOM_COLOR_LABEL}
+                            {PRESET_LABELS.directSelect}
                         </span>
                     )}
-                    presets={[{ label: "프리셋", colors: TEMPLATE_COLORS }]}
+                    presets={[{ label: PRESET_LABELS.preset, colors: TEMPLATE_COLORS }]}
                 />
                 {is_custom && (
                     <span className="text-xs text-text-secondary">

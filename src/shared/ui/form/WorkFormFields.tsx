@@ -28,6 +28,7 @@ import {
     useAutoCompleteOptions,
     type AutoCompleteField,
 } from "../../hooks/useAutoCompleteOptions";
+import { FORM_ADD_LABELS } from "@/shared/constants";
 import type { WorkFormFieldName, WorkFormFieldsProps } from "./WorkForm.types";
 import { DEFAULT_LABELS, DEFAULT_PLACEHOLDERS } from "./WorkForm.types";
 
@@ -268,7 +269,9 @@ export function WorkFormFields({
                                                         value
                                                     )
                                                 }
-                                                addPlaceholder="새 업무명"
+                                                addPlaceholder={
+                                                    FORM_ADD_LABELS.newTaskName
+                                                }
                                                 className="!w-full"
                                             />
                                         )}
@@ -304,7 +307,9 @@ export function WorkFormFields({
                                                         value
                                                     )
                                                 }
-                                                addPlaceholder="새 카테고리"
+                                                addPlaceholder={
+                                                    FORM_ADD_LABELS.newCategory
+                                                }
                                                 className="!w-full"
                                             />
                                         )}

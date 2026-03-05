@@ -4,6 +4,7 @@
  * JSON 파일에서 작업 데이터를 가져오는 순수 함수들
  */
 
+import { ERROR_MESSAGES } from "@/shared/constants";
 import type { WorkRecord, WorkTemplate } from "../../types";
 import type { ExportData } from "./export";
 
@@ -118,7 +119,7 @@ export function readFileAsText(file: File): Promise<string> {
             resolve(content);
         };
         reader.onerror = () => {
-            reject(new Error("파일을 읽는 중 오류가 발생했습니다"));
+            reject(new Error(ERROR_MESSAGES.fileReadFailed));
         };
         reader.readAsText(file);
     });
@@ -135,7 +136,7 @@ export async function importFromFile(file: File): Promise<ImportResult> {
     const result = parseImportContent(content);
 
     if (!result) {
-        throw new Error("유효하지 않은 데이터 형식입니다");
+        throw new Error(ERROR_MESSAGES.invalidImportFormat);
     }
 
     return result;
