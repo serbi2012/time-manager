@@ -76,7 +76,7 @@ export function WeeklyCalendarStrip({
     );
 
     return (
-        <CursorHaloContainer className="flex gap-xs justify-center rounded-lg">
+        <CursorHaloContainer className="flex gap-xs justify-center rounded-lg pb-1">
             {days.map((d) => {
                 const is_selected = d.date_str === selected_date;
                 return (
