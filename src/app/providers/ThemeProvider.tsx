@@ -70,7 +70,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
             <ConfigProvider
                 locale={koKR}
                 theme={{
-                    cssVar: true,
+                    cssVar: {},
                     algorithm: theme.defaultAlgorithm,
                     token: {
                         colorPrimary: theme_colors.primary,
