@@ -12,7 +12,6 @@ import {
 import {
     STATS_LABEL,
     TABLE_COL_WORK_NAME,
-    TABLE_COL_SESSIONS,
 } from "../../constants";
 import { STATUS_LABELS } from "@/shared/constants";
 

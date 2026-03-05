@@ -21,8 +21,10 @@ vi.mock('firebase/firestore', () => ({
     onSnapshot: (...args: any[]) => mockOnSnapshot(...args),
 }))
 
-vi.mock('../../firebase/config', () => ({
-    db: { type: 'mock-firestore' },
+const mockDbInstance = { type: 'mock-firestore' }
+
+vi.mock('../../firebase/config', async () => ({
+    getDbInstance: () => Promise.resolve(mockDbInstance),
 }))
 
 // 모킹 후 import
@@ -222,7 +224,9 @@ describe('firestore 서비스', () => {
     // subscribeToUserData 테스트
     // =====================================================
     describe('subscribeToUserData', () => {
-        it('실시간 구독 시작 및 unsubscribe 함수 반환', () => {
+        const flushAsync = () => new Promise(resolve => setTimeout(resolve, 0))
+
+        it('실시간 구독 시작 및 unsubscribe 함수 반환', async () => {
             const user_id = 'test-user-123'
             const callback = vi.fn()
             const mock_unsubscribe = vi.fn()
@@ -231,11 +235,13 @@ describe('firestore 서비스', () => {
 
             const unsubscribe = subscribeToUserData(user_id, callback)
 
+            await flushAsync()
+
             expect(mockOnSnapshot).toHaveBeenCalled()
             expect(typeof unsubscribe).toBe('function')
         })
 
-        it('데이터 변경 시 콜백 호출', () => {
+        it('데이터 변경 시 콜백 호출', async () => {
             const user_id = 'test-user-123'
             const callback = vi.fn()
             const mock_data = {
@@ -243,9 +249,7 @@ describe('firestore 서비스', () => {
                 templates: [],
             }
 
-            // onSnapshot 콜백을 캡처하여 직접 호출
             mockOnSnapshot.mockImplementationOnce((_ref, snapshot_callback) => {
-                // 즉시 콜백 호출 (데이터 존재)
                 snapshot_callback({
                     exists: () => true,
                     data: () => mock_data,
@@ -255,10 +259,12 @@ describe('firestore 서비스', () => {
 
             subscribeToUserData(user_id, callback)
 
+            await flushAsync()
+
             expect(callback).toHaveBeenCalledWith(mock_data)
         })
 
-        it('데이터가 없으면 null로 콜백 호출', () => {
+        it('데이터가 없으면 null로 콜백 호출', async () => {
             const user_id = 'test-user-123'
             const callback = vi.fn()
 
@@ -271,6 +277,8 @@ describe('firestore 서비스', () => {
             })
 
             subscribeToUserData(user_id, callback)
+
+            await flushAsync()
 
             expect(callback).toHaveBeenCalledWith(null)
         })
