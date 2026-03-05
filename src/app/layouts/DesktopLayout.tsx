@@ -27,8 +27,6 @@ import {
     FEATURE_FLAGS,
 } from "../../shared/constants";
 import { CURRENT_VERSION } from "../../constants/changelog";
-import SettingsModal from "../../components/SettingsModal";
-import ChangelogModal from "../../components/ChangelogModal";
 import { DailyPage } from "../../pages/DailyPage/index";
 import {
     SlideIn,
@@ -44,6 +42,8 @@ const GuideBook = lazy(() => import("../../components/GuideBook"));
 const AdminSessionGrid = lazy(() =>
     import("../../features/admin/ui/AdminSessionGrid/AdminSessionGrid")
 );
+const SettingsModal = lazy(() => import("../../components/SettingsModal"));
+const ChangelogModal = lazy(() => import("../../components/ChangelogModal"));
 
 const ADMIN_EMAIL = "rlaxo0306@gmail.com";
 
@@ -274,18 +274,23 @@ export function DesktopLayout() {
                 </RouteTransition>
             </PageTransitionProvider>
 
-            <SettingsModal
-                open={is_settings_open}
-                onClose={handleCloseSettings}
-                onExport={handleExport}
-                onImport={handleImport}
-                isAuthenticated={isAuthenticated}
-            />
-
-            <ChangelogModal
-                open={is_changelog_open}
-                onClose={handleCloseChangelog}
-            />
+            <Suspense fallback={null}>
+                {is_settings_open && (
+                    <SettingsModal
+                        open={is_settings_open}
+                        onClose={handleCloseSettings}
+                        onExport={handleExport}
+                        onImport={handleImport}
+                        isAuthenticated={isAuthenticated}
+                    />
+                )}
+                {is_changelog_open && (
+                    <ChangelogModal
+                        open={is_changelog_open}
+                        onClose={handleCloseChangelog}
+                    />
+                )}
+            </Suspense>
 
             <input
                 ref={file_input_ref}

@@ -10,13 +10,13 @@ import { MobileBottomNav } from "../../widgets/Navigation";
 import { useWorkStore } from "../../store/useWorkStore";
 import { useSyncStatus } from "../../features/sync";
 import { useAuthHandlers, useDataImportExport } from "../../shared/hooks";
-import SettingsModal from "../../components/SettingsModal";
 import { DailyPage } from "../../pages/DailyPage/index";
 import { RouteTransition, PageTransitionProvider } from "../../shared/ui";
 import type { TransitionSpeed } from "../../shared/ui";
 
 const WeeklySchedule = lazy(() => import("../../components/WeeklySchedule"));
 const GuideBook = lazy(() => import("../../components/GuideBook"));
+const SettingsModal = lazy(() => import("../../components/SettingsModal"));
 
 /**
  * 모바일 레이아웃
@@ -106,13 +106,17 @@ export function MobileLayout() {
                 </RouteTransition>
             </PageTransitionProvider>
 
-            <SettingsModal
-                open={is_settings_open}
-                onClose={handleCloseSettings}
-                onExport={handleExport}
-                onImport={handleImport}
-                isAuthenticated={isAuthenticated}
-            />
+            <Suspense fallback={null}>
+                {is_settings_open && (
+                    <SettingsModal
+                        open={is_settings_open}
+                        onClose={handleCloseSettings}
+                        onExport={handleExport}
+                        onImport={handleImport}
+                        isAuthenticated={isAuthenticated}
+                    />
+                )}
+            </Suspense>
 
             <input
                 ref={file_input_ref}

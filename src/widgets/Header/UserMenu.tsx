@@ -79,6 +79,7 @@ export function UserMenu({
                 <Space className="cursor-pointer">
                     <Avatar
                         src={user.photoURL}
+                        alt={user.displayName || "사용자 프로필"}
                         icon={<UserOutlined />}
                         size={26}
                         style={{
