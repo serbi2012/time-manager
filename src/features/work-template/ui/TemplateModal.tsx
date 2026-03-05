@@ -13,7 +13,7 @@ import type {
 import type { HiddenAutoCompleteField } from "../../../store/types/store";
 import { TEMPLATE_COLORS } from "../../../store/useWorkStore";
 import { WorkRecordFormFields } from "../../../shared/ui/form";
-import { SUCCESS_MESSAGES } from "../../../shared/constants";
+import { PLACEHOLDERS, SUCCESS_MESSAGES } from "../../../shared/constants";
 import { PresetColorGrid } from "./PresetColorGrid";
 import {
     MODAL_TITLE_ADD,

@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.35";
+export const CURRENT_VERSION = "2.0.34";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,43 +49,6 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
-    {
-        version: "2.0.35",
-        date: "2026-03-05",
-        title: "모바일 날짜 이동 애니메이션 & 안정성 개선",
-        changes: [
-            {
-                type: "style",
-                description:
-                    "모바일에서 날짜 이동 시 슬라이드 애니메이션이 적용돼요",
-            },
-            {
-                type: "improvement",
-                description:
-                    "모바일 날짜 화살표 버튼에 눌림 효과가 추가됐어요",
-            },
-            {
-                type: "feature",
-                description:
-                    "사용설명서에 다이어그램이 추가됐어요",
-            },
-            {
-                type: "improvement",
-                description:
-                    "새 버전이 배포되면 자동으로 업데이트돼요",
-            },
-            {
-                type: "performance",
-                description:
-                    "설정, 변경내역 등 모달이 필요할 때만 불러와요",
-            },
-            {
-                type: "fix",
-                description:
-                    "주간 캘린더 좌우 여백이 부족하던 문제를 수정했어요",
-            },
-        ],
-    },
     {
         version: "2.0.34",
         date: "2026-03-05",
