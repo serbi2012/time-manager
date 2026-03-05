@@ -34,6 +34,13 @@ export const POPCONFIRM_DELETE_DESCRIPTION =
 export const POPCONFIRM_OK_TEXT = "삭제";
 export const POPCONFIRM_CANCEL_TEXT = "취소";
 
+// 모바일 롱프레스 메뉴
+export const MOBILE_TEMPLATE_MENU = {
+    START_TIMER: "바로 시작",
+    EDIT: "수정",
+    DELETE: "삭제",
+} as const;
+
 // 모달 제목
 export const MODAL_TITLE_ADD = "프리셋 만들기";
 export const MODAL_TITLE_EDIT = "프리셋 수정하기";

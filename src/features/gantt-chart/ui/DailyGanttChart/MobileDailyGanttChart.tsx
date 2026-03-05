@@ -2,17 +2,21 @@
  * Mobile daily gantt chart - Segment Bar + Card List design
  * - Top: segment bar (all sessions as colored blocks on a timeline)
  * - Bottom: grouped work cards with session chips
+ * - Long-press on cards/segments for context menus
  */
 
 import { useState, useCallback, useMemo } from "react";
 import dayjs from "dayjs";
+import { DownOutlined } from "@ant-design/icons";
 import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "../../../../store/useWorkStore";
 import { getSessionMinutes } from "../../../../shared/lib/session";
 import type { WorkRecord, WorkSession } from "../../../../shared/types";
+import { MobileActionMenu } from "../../../../shared/ui";
 
 import { useGanttData } from "../../hooks/useGanttData";
 import { useGanttTime } from "../../hooks/useGanttTime";
+import { useMobileGanttMenus } from "../../hooks/useMobileGanttMenus";
 
 import { GanttAddModal } from "../GanttAddModal";
 import { GanttEditModal } from "../GanttEditModal";
@@ -20,7 +24,6 @@ import { MobileGanttHeader } from "./MobileGanttHeader";
 import { MobileGanttSegmentBar } from "./MobileGanttSegmentBar";
 import { MobileGanttWorkCard } from "./MobileGanttWorkCard";
 import { MobileGanttEmptyState } from "./MobileGanttEmptyState";
-import { DownOutlined } from "@ant-design/icons";
 import { GANTT_MOBILE_SECTION_WORK_LIST } from "../../constants";
 
 export function MobileDailyGanttChart() {
@@ -112,6 +115,16 @@ export function MobileDailyGanttChart() {
         setEditSession(null);
     }, []);
 
+    const {
+        card_menu,
+        seg_menu,
+        handleCardLongPress,
+        handleSegmentLongPress,
+    } = useMobileGanttMenus({
+        grouped_works,
+        onEditSession: handleEditSession,
+    });
+
     const has_works = grouped_works.length > 0;
 
     return (
@@ -136,6 +149,7 @@ export function MobileDailyGanttChart() {
                             active_work_id={active_work_id}
                             getWorkColor={getWorkColor}
                             onSegmentTap={handleSegmentTap}
+                            onSegmentLongPress={handleSegmentLongPress}
                         />
 
                         {/* Work card list - collapsible */}
@@ -186,6 +200,7 @@ export function MobileDailyGanttChart() {
                                         is_running={is_running}
                                         onTap={handleCardTap}
                                         onEdit={handleEditSession}
+                                        onLongPress={handleCardLongPress}
                                     />
                                 );
                             })}
@@ -209,6 +224,22 @@ export function MobileDailyGanttChart() {
                 record={edit_record}
                 session={edit_session}
                 onClose={handleCloseEditModal}
+            />
+
+            <MobileActionMenu
+                open={card_menu.open}
+                anchor_rect={card_menu.anchor}
+                items={card_menu.items}
+                onAction={card_menu.onAction}
+                onClose={card_menu.onClose}
+            />
+
+            <MobileActionMenu
+                open={seg_menu.open}
+                anchor_rect={seg_menu.anchor}
+                items={seg_menu.items}
+                onAction={seg_menu.onAction}
+                onClose={seg_menu.onClose}
             />
         </>
     );

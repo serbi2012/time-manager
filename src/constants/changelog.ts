@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.35";
+export const CURRENT_VERSION = "2.0.36";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,48 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.36",
+        date: "2026-03-05",
+        title: "모바일 롱프레스 상호작용 대폭 확장",
+        changes: [
+            {
+                type: "feature",
+                description:
+                    "간트 차트 작업 카드를 길게 눌러 수정·타이머 시작·삭제할 수 있어요",
+            },
+            {
+                type: "feature",
+                description:
+                    "간트 차트 시간 바를 길게 눌러 세션을 수정하거나 삭제할 수 있어요",
+            },
+            {
+                type: "feature",
+                description:
+                    "프리셋 카드를 길게 눌러 바로 시작·수정·삭제할 수 있어요",
+            },
+            {
+                type: "feature",
+                description:
+                    "주간 일정에서 날짜 카드를 길게 눌러 해당 날짜를 복사하거나 일간 기록으로 이동할 수 있어요",
+            },
+            {
+                type: "feature",
+                description:
+                    "플로팅 버튼을 길게 눌러 최근 작업을 빠르게 시작할 수 있어요",
+            },
+            {
+                type: "feature",
+                description:
+                    "날짜 표시를 길게 눌러 달력에서 바로 날짜를 선택할 수 있어요",
+            },
+            {
+                type: "fix",
+                description:
+                    "모바일 컨텍스트 메뉴가 다른 요소 위에 정상적으로 표시돼요",
+            },
+        ],
+    },
     {
         version: "2.0.35",
         date: "2026-03-05",

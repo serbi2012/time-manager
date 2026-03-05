@@ -1,16 +1,19 @@
 /**
  * Mobile Daily Header — Sticky top area
  * Simple header + calendar strip + timeline bar + collapsible work list
+ * Long-press on date opens DatePicker, long-press on gantt cards/segments opens context menus
  */
 
 import { useState, useCallback, useMemo } from "react";
 import { SettingOutlined, DownOutlined } from "@ant-design/icons";
+import { DatePicker } from "antd";
 import dayjs from "dayjs";
 
 import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "../../store/useWorkStore";
 import { useAuthHandlers } from "../../shared/hooks";
 import { useSyncStatus } from "../../features/sync";
+import { MobileActionMenu } from "../../shared/ui";
 import { UserMenu } from "../../widgets/Header";
 import { MobileDateNavBar } from "../../features/work-record/ui/Mobile/MobileDateNavBar";
 import { MobileCalendarStrip } from "../../features/work-record/ui/Mobile/MobileCalendarStrip";
@@ -19,6 +22,7 @@ import { MobileGanttWorkCard } from "../../features/gantt-chart/ui/DailyGanttCha
 import { GanttEditModal } from "../../features/gantt-chart/ui/GanttEditModal";
 import { useGanttData } from "../../features/gantt-chart/hooks/useGanttData";
 import { useGanttTime } from "../../features/gantt-chart/hooks/useGanttTime";
+import { useMobileGanttMenus } from "../../features/gantt-chart/hooks/useMobileGanttMenus";
 import { GANTT_MOBILE_SECTION_WORK_LIST } from "../../features/gantt-chart/constants";
 import type { WorkRecord, WorkSession } from "../../shared/types";
 
@@ -65,6 +69,7 @@ export function MobileDailyHeader() {
     const [is_edit_modal_open, setIsEditModalOpen] = useState(false);
     const [edit_record, setEditRecord] = useState<WorkRecord | null>(null);
     const [edit_session, setEditSession] = useState<WorkSession | null>(null);
+    const [date_picker_open, setDatePickerOpen] = useState(false);
 
     const formatted_date = useMemo(
         () => dayjs(selected_date).format(HEADER_DATE_FORMAT),
@@ -81,6 +86,20 @@ export function MobileDailyHeader() {
     const handleOpenSettings = useCallback(() => {
         window.dispatchEvent(new Event("openSettings"));
     }, []);
+
+    const handleDateLongPress = useCallback(() => {
+        setDatePickerOpen(true);
+    }, []);
+
+    const handleDatePickerChange = useCallback(
+        (date: dayjs.Dayjs | null) => {
+            if (date) {
+                setSelectedDate(date.format("YYYY-MM-DD"));
+            }
+            setDatePickerOpen(false);
+        },
+        [setSelectedDate]
+    );
 
     const handleSegmentTap = useCallback((work_key: string) => {
         setActiveWorkId((prev) => (prev === work_key ? null : work_key));
@@ -104,6 +123,16 @@ export function MobileDailyHeader() {
         setEditRecord(null);
         setEditSession(null);
     }, []);
+
+    const {
+        card_menu,
+        seg_menu,
+        handleCardLongPress,
+        handleSegmentLongPress,
+    } = useMobileGanttMenus({
+        grouped_works,
+        onEditSession: handleEditSession,
+    });
 
     const has_works = grouped_works.length > 0;
 
@@ -148,6 +177,19 @@ export function MobileDailyHeader() {
                 <MobileDateNavBar
                     selected_date={selected_date}
                     onDateChange={handleDateSelect}
+                    onDateLongPress={handleDateLongPress}
+                />
+
+                {/* Hidden DatePicker triggered by long-press */}
+                <DatePicker
+                    open={date_picker_open}
+                    value={dayjs(selected_date)}
+                    onChange={handleDatePickerChange}
+                    onOpenChange={(open) => {
+                        if (!open) setDatePickerOpen(false);
+                    }}
+                    style={{ position: "absolute", visibility: "hidden", width: 0, height: 0, overflow: "hidden" }}
+                    getPopupContainer={(trigger) => trigger.parentElement || document.body}
                 />
 
                 {/* Calendar Strip */}
@@ -168,6 +210,7 @@ export function MobileDailyHeader() {
                             active_work_id={active_work_id}
                             getWorkColor={getWorkColor}
                             onSegmentTap={handleSegmentTap}
+                            onSegmentLongPress={handleSegmentLongPress}
                         />
                     </div>
                 )}
@@ -223,6 +266,7 @@ export function MobileDailyHeader() {
                                         is_running={is_running}
                                         onTap={handleCardTap}
                                         onEdit={handleEditSession}
+                                        onLongPress={handleCardLongPress}
                                     />
                                 );
                             })}
@@ -236,6 +280,22 @@ export function MobileDailyHeader() {
                 record={edit_record}
                 session={edit_session}
                 onClose={handleCloseEditModal}
+            />
+
+            <MobileActionMenu
+                open={card_menu.open}
+                anchor_rect={card_menu.anchor}
+                items={card_menu.items}
+                onAction={card_menu.onAction}
+                onClose={card_menu.onClose}
+            />
+
+            <MobileActionMenu
+                open={seg_menu.open}
+                anchor_rect={seg_menu.anchor}
+                items={seg_menu.items}
+                onAction={seg_menu.onAction}
+                onClose={seg_menu.onClose}
             />
         </>
     );

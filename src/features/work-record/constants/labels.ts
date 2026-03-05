@@ -188,6 +188,11 @@ export const MOBILE_RECORD_LABEL = {
 } as const;
 
 // ========================================
+// 모바일 FAB 최근 작업 메뉴
+// ========================================
+export const MOBILE_FAB_RECENT_TITLE = "최근 작업";
+
+// ========================================
 // 모바일 컨텍스트 메뉴 라벨
 // ========================================
 export const MOBILE_CONTEXT_MENU_LABEL = {

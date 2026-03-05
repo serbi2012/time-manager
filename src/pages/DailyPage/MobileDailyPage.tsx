@@ -28,6 +28,7 @@ import {
 import { MobileRunningSection } from "../../features/work-record/ui/Mobile/MobileRunningSection";
 import { MobileRecordList } from "../../features/work-record/ui/Mobile/MobileRecordList";
 import { MobileSpeedDialFab } from "../../features/work-record/ui/Mobile/MobileSpeedDialFab";
+import { MobileRecentWorkMenu } from "../../features/work-record/ui/Mobile/MobileRecentWorkMenu";
 import { MobilePresetDrawer } from "../../widgets/Navigation";
 
 import {
@@ -104,6 +105,9 @@ export function MobileDailyPage() {
         closeTrashModal,
     } = useRecordModals();
 
+    const [recent_menu_open, setRecentMenuOpen] = useState(false);
+    const [recent_menu_anchor, setRecentMenuAnchor] = useState<DOMRect | null>(null);
+
     const animation_key = selected_date;
 
     const running_records = useMemo(
@@ -138,6 +142,43 @@ export function MobileDailyPage() {
             openEditModal(record.id);
         },
         [openEditModal]
+    );
+
+    const recent_works = useMemo(() => {
+        const seen = new Set<string>();
+        const result: { record_id: string; work_name: string; deal_name?: string }[] = [];
+        const sorted = [...display_records]
+            .filter((r) => !r.is_deleted && !r.is_completed)
+            .sort((a, b) => {
+                const a_time = a.sessions?.[a.sessions.length - 1]?.start_time || a.start_time || "";
+                const b_time = b.sessions?.[b.sessions.length - 1]?.start_time || b.start_time || "";
+                return b_time.localeCompare(a_time);
+            });
+
+        for (const r of sorted) {
+            const key = `${r.work_name}__${r.deal_name || ""}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            result.push({
+                record_id: r.id,
+                work_name: r.work_name,
+                deal_name: r.deal_name || undefined,
+            });
+            if (result.length >= 5) break;
+        }
+        return result;
+    }, [display_records]);
+
+    const handleFabLongPress = useCallback((anchor_rect: DOMRect) => {
+        setRecentMenuAnchor(anchor_rect);
+        setRecentMenuOpen(true);
+    }, []);
+
+    const handleRecentWorkSelect = useCallback(
+        (record_id: string) => {
+            startTimer(record_id);
+        },
+        [startTimer]
     );
 
     const handleCopyToClipboard = useCallback(() => {
@@ -287,6 +328,7 @@ export function MobileDailyPage() {
                         )
                     }
                     on_open_preset={() => setIsPresetDrawerOpen(true)}
+                    on_long_press={handleFabLongPress}
                     app_theme={app_theme}
                 />
             </FadeIn>
@@ -296,6 +338,14 @@ export function MobileDailyPage() {
                 on_close={() => setIsPresetDrawerOpen(false)}
                 on_add_record_only={handleAddRecordOnly}
                 app_theme={app_theme}
+            />
+
+            <MobileRecentWorkMenu
+                open={recent_menu_open}
+                anchor_rect={recent_menu_anchor}
+                recent_works={recent_works}
+                onSelect={handleRecentWorkSelect}
+                onClose={() => setRecentMenuOpen(false)}
             />
 
             {/* Modals */}

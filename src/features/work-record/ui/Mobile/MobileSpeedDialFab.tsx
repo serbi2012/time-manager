@@ -1,30 +1,35 @@
 /**
  * Mobile Speed Dial FAB — unified floating action button
  * Tap: expand to show "새 작업" + "프리셋" mini FABs
+ * Long-press: show recent works quick menu
  * Main FAB rotates 45° when open (becomes X)
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { PlusOutlined, AppstoreOutlined } from "@ant-design/icons";
 
 import type { AppTheme } from "../../../../shared/config";
 import { APP_THEME_COLORS } from "../../../../shared/config";
 import { triggerHaptic } from "@/shared/lib/haptic";
 import { cn } from "../../../../shared/lib/cn";
+import { useLongPress } from "../../../../shared/hooks";
 import { MOBILE_RECORD_LABEL } from "../../constants";
 
 interface MobileSpeedDialFabProps {
     on_add_record: () => void;
     on_open_preset: () => void;
+    on_long_press?: (anchor_rect: DOMRect) => void;
     app_theme: AppTheme;
 }
 
 export function MobileSpeedDialFab({
     on_add_record,
     on_open_preset,
+    on_long_press,
     app_theme,
 }: MobileSpeedDialFabProps) {
     const [is_open, setIsOpen] = useState(false);
+    const fab_ref = useRef<HTMLButtonElement>(null);
 
     const handleToggle = useCallback(() => {
         setIsOpen((prev) => {
@@ -46,6 +51,18 @@ export function MobileSpeedDialFab({
     const handleOverlayClick = useCallback(() => {
         setIsOpen(false);
     }, []);
+
+    const handleLongPress = useCallback(() => {
+        if (is_open) return;
+        const rect = fab_ref.current?.getBoundingClientRect();
+        if (rect && on_long_press) {
+            on_long_press(rect);
+        }
+    }, [is_open, on_long_press]);
+
+    const { is_pressing, handlers } = useLongPress({
+        onLongPress: handleLongPress,
+    });
 
     const theme_colors = APP_THEME_COLORS[app_theme];
 
@@ -108,15 +125,21 @@ export function MobileSpeedDialFab({
 
             {/* Main FAB */}
             <button
+                ref={fab_ref}
                 className="fixed right-lg z-[99] w-14 h-14 rounded-full flex items-center justify-center border-0 cursor-pointer text-white transition-transform duration-200 outline-none select-none"
                 style={{
                     bottom: 88,
                     background: theme_colors.gradient,
                     boxShadow: `0 4px 12px ${theme_colors.primary}66`,
-                    transform: is_open ? "rotate(45deg)" : "rotate(0deg)",
+                    transform: is_open
+                        ? "rotate(45deg)"
+                        : is_pressing
+                          ? "scale(0.92)"
+                          : "rotate(0deg)",
                     WebkitTapHighlightColor: "transparent",
                 }}
                 onClick={handleToggle}
+                {...handlers}
             >
                 <PlusOutlined style={{ fontSize: 24 }} />
             </button>

@@ -163,6 +163,19 @@ export const GANTT_MOBILE_RUNNING_LABEL = "진행 중";
 /** 모바일 세션 개수 포맷 */
 export const GANTT_MOBILE_SESSION_COUNT = (count: number) => `${count}개 세션`;
 
+/** 모바일 간트 카드 컨텍스트 메뉴 */
+export const GANTT_MOBILE_CONTEXT_MENU = {
+    EDIT: "수정",
+    START_TIMER: "타이머 시작",
+    DELETE: "삭제",
+} as const;
+
+/** 모바일 간트 세그먼트 롱프레스 메뉴 */
+export const GANTT_MOBILE_SEGMENT_MENU = {
+    EDIT_SESSION: "세션 수정",
+    DELETE_SESSION: "세션 삭제",
+} as const;
+
 /** 모바일 빈 상태 힌트 */
 export const GANTT_MOBILE_EMPTY_HINT = "아직 기록이 없어요";
 

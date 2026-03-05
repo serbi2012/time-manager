@@ -24,6 +24,11 @@ export const WEEKLY_LABELS = {
 
 export const DAY_NAMES = ["일", "월", "화", "수", "목", "금", "토"] as const;
 
+export const MOBILE_WEEKLY_MENU = {
+    COPY_DAY: "이 날짜 복사",
+    GO_TO_DAILY: "일간 기록으로 이동",
+} as const;
+
 export const COPY_FORMAT_LABELS = {
     format1: "형식 1 (기본)",
     format2: "형식 2 (상세)",

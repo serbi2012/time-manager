@@ -4,7 +4,11 @@
  * - Total duration + running dot
  * - Session time chips
  * - Tap to select / edit
+ * - Long-press for context menu
  */
+
+import { useRef, useCallback } from "react";
+import { motion } from "framer-motion";
 
 import { getSessionMinutes } from "../../../../shared/lib/session";
 import { formatDuration } from "../../../../shared/lib/time";
@@ -12,6 +16,7 @@ import type { WorkRecord, WorkSession } from "../../../../shared/types";
 import type { GroupedWork } from "../../lib/slot_calculator";
 import { formatSessionRange } from "../../lib/mobile_segment_calculator";
 import { cn } from "../../../../shared/lib/cn";
+import { useLongPress } from "../../../../shared/hooks";
 import { GANTT_MOBILE_RUNNING_LABEL } from "../../constants";
 
 interface MobileGanttWorkCardProps {
@@ -21,6 +26,7 @@ interface MobileGanttWorkCardProps {
     is_running: boolean;
     onTap: (work_key: string) => void;
     onEdit: (record: WorkRecord, session: WorkSession) => void;
+    onLongPress?: (record: WorkRecord, anchor_rect: DOMRect) => void;
 }
 
 export function MobileGanttWorkCard({
@@ -30,7 +36,10 @@ export function MobileGanttWorkCard({
     is_running,
     onTap,
     onEdit,
+    onLongPress: on_long_press,
 }: MobileGanttWorkCardProps) {
+    const card_ref = useRef<HTMLDivElement>(null);
+
     const total_minutes = group.sessions.reduce(
         (sum, s) => sum + getSessionMinutes(s),
         0
@@ -39,15 +48,38 @@ export function MobileGanttWorkCard({
     const display_name = group.record.deal_name || group.record.work_name;
     const sub_name = group.record.deal_name ? group.record.work_name : null;
 
+    const handleLongPress = useCallback(() => {
+        const rect = card_ref.current?.getBoundingClientRect();
+        if (rect && on_long_press) {
+            on_long_press(group.record, rect);
+        }
+    }, [on_long_press, group.record]);
+
+    const { is_pressing, handlers } = useLongPress({
+        onLongPress: handleLongPress,
+    });
+
+    const DROPLET_SPRING = is_pressing
+        ? { type: "spring" as const, stiffness: 400, damping: 25 }
+        : { type: "spring" as const, stiffness: 300, damping: 12, mass: 0.7 };
+
     return (
-        <div
+        <motion.div
+            ref={card_ref}
             className={cn(
                 "rounded-xl p-3.5 transition-all duration-200 cursor-pointer",
                 is_active
                     ? "bg-white shadow-md border border-gray-100 scale-[1.01]"
                     : "bg-white border border-gray-100/60"
             )}
+            animate={
+                is_pressing
+                    ? { scale: 0.97, outline: "3px solid rgba(49,130,246,0.4)", outlineOffset: "1px" }
+                    : { scale: 1, outline: "0px solid transparent", outlineOffset: "0px" }
+            }
+            transition={DROPLET_SPRING}
             onClick={() => onTap(group.key)}
+            {...handlers}
         >
             <div className="flex items-start gap-md">
                 {/* Color indicator */}
@@ -105,6 +137,6 @@ export function MobileGanttWorkCard({
                     </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 }

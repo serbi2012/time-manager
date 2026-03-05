@@ -86,6 +86,13 @@ export {
     type RecordListModalProps,
 } from "./modal";
 
+// 모바일 액션 메뉴
+export {
+    MobileActionMenu,
+    type MobileActionMenuItem,
+    type MobileActionMenuProps,
+} from "./MobileActionMenu";
+
 // 레이아웃 컴포넌트
 export {
     LoadingOverlay,

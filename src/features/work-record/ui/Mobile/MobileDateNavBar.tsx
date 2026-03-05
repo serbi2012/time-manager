@@ -2,6 +2,7 @@
  * Mobile date navigation bar — "< 2월 11일 수요일 >"
  * Allows navigating day-by-day with left/right arrows
  * Slide transition on date change, press effect on arrow buttons
+ * Long-press on date text opens date picker
  */
 
 import { useState, useCallback } from "react";
@@ -11,11 +12,13 @@ import type { Variants } from "framer-motion";
 import dayjs from "dayjs";
 
 import { SPRING } from "@/shared/ui/animation/config/easing";
+import { useLongPress } from "@/shared/hooks";
 import { DATE_FORMAT } from "../../constants";
 
 interface MobileDateNavBarProps {
     selected_date: string;
     onDateChange: (date: string) => void;
+    onDateLongPress?: () => void;
 }
 
 const DATE_NAV_DISPLAY_FORMAT = "M월 D일 dddd";
@@ -39,6 +42,7 @@ const date_slide_variants: Variants = {
 export function MobileDateNavBar({
     selected_date,
     onDateChange,
+    onDateLongPress,
 }: MobileDateNavBarProps) {
     const formatted = dayjs(selected_date).format(DATE_NAV_DISPLAY_FORMAT);
     const [direction, setDirection] = useState(1);
@@ -57,6 +61,14 @@ export function MobileDateNavBar({
         onDateChange(next);
     }, [selected_date, onDateChange]);
 
+    const handleLongPress = useCallback(() => {
+        onDateLongPress?.();
+    }, [onDateLongPress]);
+
+    const { is_pressing, handlers } = useLongPress({
+        onLongPress: handleLongPress,
+    });
+
     return (
         <div className="flex items-center justify-between px-xl py-lg">
             <motion.button
@@ -74,7 +86,15 @@ export function MobileDateNavBar({
                 <LeftOutlined style={{ fontSize: 16 }} />
             </motion.button>
 
-            <div className="relative flex-1 flex items-center justify-center overflow-hidden">
+            <div
+                className="relative flex-1 flex items-center justify-center overflow-hidden cursor-pointer"
+                style={{
+                    transform: is_pressing ? "scale(0.95)" : "scale(1)",
+                    transition: "transform 0.15s ease",
+                    opacity: is_pressing ? 0.7 : 1,
+                }}
+                {...handlers}
+            >
                 <AnimatePresence
                     mode="popLayout"
                     initial={false}

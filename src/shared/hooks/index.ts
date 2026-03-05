@@ -39,6 +39,9 @@ export {
 // 디바운스
 export { useDebouncedValue } from "./useDebouncedValue";
 
+// 롱프레스 (모바일 터치 인터랙션)
+export { useLongPress } from "./useLongPress";
+
 // 커서 트래킹
 export { useSpotlight } from "./useSpotlight";
 export { useMagnetic } from "./useMagnetic";
