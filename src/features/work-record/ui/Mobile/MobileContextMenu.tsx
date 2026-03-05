@@ -169,7 +169,7 @@ export function MobileContextMenu({
                 <>
                     {/* Backdrop */}
                     <motion.div
-                        className="fixed inset-0 z-50"
+                        className="fixed inset-0 z-[1000]"
                         variants={BACKDROP_VARIANTS}
                         initial="hidden"
                         animate="visible"
@@ -181,7 +181,7 @@ export function MobileContextMenu({
                     {/* Menu */}
                     <motion.div
                         ref={menu_ref}
-                        className="fixed z-50 min-w-[140px] bg-white rounded-xl overflow-hidden"
+                        className="fixed z-[1000] min-w-[140px] bg-white rounded-xl overflow-hidden"
                         style={{
                             top: position.top,
                             right: position.right,
