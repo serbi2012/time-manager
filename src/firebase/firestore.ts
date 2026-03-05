@@ -259,8 +259,13 @@ export async function loadAllTemplates(
         // updated_at 필드 제거 (WorkTemplate 타입에 없음)
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { updated_at, ...template_data } = data;
+        if (template_data.sort_order === undefined) {
+            template_data.sort_order = templates.length;
+        }
         templates.push(template_data as WorkTemplate);
     });
+
+    templates.sort((a, b) => a.sort_order - b.sort_order);
 
     return templates;
 }

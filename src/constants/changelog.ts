@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.33";
+export const CURRENT_VERSION = "2.0.34";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,18 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.34",
+        date: "2026-03-05",
+        title: "프리셋 순서 저장 수정",
+        changes: [
+            {
+                type: "fix",
+                description:
+                    "프리셋 순서를 드래그앤드롭으로 변경한 후 새로고침하면 원래대로 돌아가는 문제를 수정했어요",
+            },
+        ],
+    },
     {
         version: "2.0.33",
         date: "2026-03-04",

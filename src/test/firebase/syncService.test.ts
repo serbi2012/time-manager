@@ -128,6 +128,7 @@ const createTestTemplate = (id: string): WorkTemplate => ({
     note: '',
     color: '#1890ff',
     created_at: '2026-01-19T00:00:00.000Z',
+    sort_order: 0,
 })
 
 // 스토어 초기화
@@ -398,6 +399,45 @@ describe('syncService', () => {
             const state = useWorkStore.getState()
             expect(state.timer.is_running).toBe(true)
             expect(state.timer.active_form_data?.work_name).toBe('진행중인 작업')
+        })
+
+        it('sort_order가 없는 템플릿에 인덱스 기반 sort_order를 부여하고 정렬한다', async () => {
+            const firebase_data = {
+                records: [],
+                templates: [
+                    { ...createTestTemplate('t1'), sort_order: undefined },
+                    { ...createTestTemplate('t2'), sort_order: undefined },
+                ] as unknown as import('../../types').WorkTemplate[],
+                settings: null,
+            }
+            vi.mocked(loadAllData).mockResolvedValueOnce(firebase_data)
+
+            await loadFromFirebase(mock_user)
+
+            const state = useWorkStore.getState()
+            expect(state.templates).toHaveLength(2)
+            expect(state.templates[0].sort_order).toBe(0)
+            expect(state.templates[1].sort_order).toBe(1)
+        })
+
+        it('sort_order가 있는 템플릿은 순서대로 정렬된다', async () => {
+            const firebase_data = {
+                records: [],
+                templates: [
+                    { ...createTestTemplate('t1'), sort_order: 2 },
+                    { ...createTestTemplate('t2'), sort_order: 0 },
+                    { ...createTestTemplate('t3'), sort_order: 1 },
+                ],
+                settings: null,
+            }
+            vi.mocked(loadAllData).mockResolvedValueOnce(firebase_data)
+
+            await loadFromFirebase(mock_user)
+
+            const state = useWorkStore.getState()
+            expect(state.templates[0].id).toBe('t2')
+            expect(state.templates[1].id).toBe('t3')
+            expect(state.templates[2].id).toBe('t1')
         })
 
         it('단축키 설정도 복원', async () => {

@@ -68,6 +68,7 @@ const createTestTemplate = (
     note: "테스트 노트",
     color: "#1890ff",
     created_at: "2026-01-19T00:00:00.000Z",
+    sort_order: 0,
     ...overrides,
 });
 

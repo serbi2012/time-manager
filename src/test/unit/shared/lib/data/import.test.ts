@@ -170,5 +170,66 @@ describe("import", () => {
             expect(result!.custom_task_options).toEqual([]);
             expect(result!.custom_category_options).toEqual([]);
         });
+
+        it("sort_order가 없는 템플릿에 인덱스 기반 sort_order를 부여한다", () => {
+            const content = JSON.stringify({
+                records: [],
+                templates: [
+                    {
+                        id: "t1",
+                        project_code: "PRJ001",
+                        work_name: "작업1",
+                        task_name: "개발",
+                        deal_name: "",
+                        category_name: "개발",
+                        note: "",
+                        color: "#1890ff",
+                        created_at: "2026-01-01T00:00:00.000Z",
+                    },
+                    {
+                        id: "t2",
+                        project_code: "PRJ001",
+                        work_name: "작업2",
+                        task_name: "개발",
+                        deal_name: "",
+                        category_name: "개발",
+                        note: "",
+                        color: "#52c41a",
+                        created_at: "2026-01-01T00:00:00.000Z",
+                    },
+                ],
+            });
+
+            const result = parseImportContent(content);
+
+            expect(result).not.toBe(null);
+            expect(result!.templates[0].sort_order).toBe(0);
+            expect(result!.templates[1].sort_order).toBe(1);
+        });
+
+        it("sort_order가 이미 있는 템플릿은 기존 값을 유지한다", () => {
+            const content = JSON.stringify({
+                records: [],
+                templates: [
+                    {
+                        id: "t1",
+                        project_code: "PRJ001",
+                        work_name: "작업1",
+                        task_name: "개발",
+                        deal_name: "",
+                        category_name: "개발",
+                        note: "",
+                        color: "#1890ff",
+                        created_at: "2026-01-01T00:00:00.000Z",
+                        sort_order: 5,
+                    },
+                ],
+            });
+
+            const result = parseImportContent(content);
+
+            expect(result).not.toBe(null);
+            expect(result!.templates[0].sort_order).toBe(5);
+        });
     });
 });

@@ -159,6 +159,7 @@ export interface CreateMockTemplateOptions {
     note?: string;
     color?: string;
     created_at?: string;
+    sort_order?: number;
 }
 
 const TEMPLATE_COLORS = [
@@ -192,6 +193,7 @@ export function createMockTemplate(
         note: overrides.note ?? "",
         color: overrides.color ?? faker.helpers.arrayElement(TEMPLATE_COLORS),
         created_at: overrides.created_at ?? faker.date.past().toISOString(),
+        sort_order: overrides.sort_order ?? 0,
     };
 }
 

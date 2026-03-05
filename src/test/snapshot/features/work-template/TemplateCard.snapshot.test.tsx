@@ -25,6 +25,7 @@ describe("TemplateCard 스냅샷", () => {
         note: "테스트 메모",
         color: "#1677ff",
         created_at: "2026-01-01T00:00:00.000Z",
+        sort_order: 0,
     };
 
     const default_props = {

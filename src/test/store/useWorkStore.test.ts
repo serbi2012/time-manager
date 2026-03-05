@@ -88,6 +88,7 @@ const createTestTemplate = (
     note: "",
     color: "#1890ff",
     created_at: "2026-01-19T00:00:00.000Z",
+    sort_order: 0,
     ...overrides,
 });
 
@@ -542,6 +543,47 @@ describe("useWorkStore", () => {
                 "t1",
                 "t2",
             ]);
+        });
+
+        it("addTemplate으로 추가 시 sort_order가 자동 부여된다", () => {
+            const first = useWorkStore.getState().addTemplate({
+                project_code: "A00_00000",
+                work_name: "작업1",
+                task_name: "개발",
+                deal_name: "거래1",
+                category_name: "개발",
+                note: "",
+                color: "#1890ff",
+            });
+            const second = useWorkStore.getState().addTemplate({
+                project_code: "A00_00000",
+                work_name: "작업2",
+                task_name: "개발",
+                deal_name: "거래2",
+                category_name: "개발",
+                note: "",
+                color: "#52c41a",
+            });
+
+            expect(first.sort_order).toBeDefined();
+            expect(second.sort_order).toBeGreaterThan(first.sort_order);
+        });
+
+        it("reorderTemplates 후 sort_order가 배열 인덱스로 갱신된다", () => {
+            const templates = [
+                createTestTemplate({ id: "t1", sort_order: 0 }),
+                createTestTemplate({ id: "t2", sort_order: 1 }),
+                createTestTemplate({ id: "t3", sort_order: 2 }),
+            ];
+            useWorkStore.setState({ templates });
+
+            useWorkStore.getState().reorderTemplates("t3", "t1");
+
+            const state = useWorkStore.getState();
+            expect(state.templates[0].sort_order).toBe(0);
+            expect(state.templates[1].sort_order).toBe(1);
+            expect(state.templates[2].sort_order).toBe(2);
+            expect(state.templates[0].id).toBe("t3");
         });
     });
 

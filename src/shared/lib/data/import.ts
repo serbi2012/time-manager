@@ -88,9 +88,14 @@ export function parseImportContent(content: string): ImportResult | null {
             return null;
         }
 
+        const templates = (data.templates || []).map((t, i) => ({
+            ...t,
+            sort_order: t.sort_order ?? i,
+        }));
+
         return {
             records: data.records || [],
-            templates: data.templates || [],
+            templates,
             custom_task_options: data.custom_task_options || [],
             custom_category_options: data.custom_category_options || [],
         };

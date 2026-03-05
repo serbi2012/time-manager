@@ -28,11 +28,18 @@ export const createTemplatesSlice: StateCreator<
     // Actions
     // ============================================
 
-    addTemplate: (template: Omit<WorkTemplate, "id" | "created_at">) => {
+    addTemplate: (template: Omit<WorkTemplate, "id" | "created_at" | "sort_order">) => {
+        const { templates } = get();
+        const max_order = templates.reduce(
+            (max, t) => Math.max(max, t.sort_order ?? 0),
+            0
+        );
+
         const new_template: WorkTemplate = {
             ...template,
             id: crypto.randomUUID(),
             created_at: dayjs().toISOString(),
+            sort_order: max_order + 1,
         };
 
         set(
@@ -85,10 +92,13 @@ export const createTemplatesSlice: StateCreator<
 
                 const [removed] = state.templates.splice(old_index, 1);
                 state.templates.splice(new_index, 0, removed);
+
+                state.templates.forEach((t, i) => {
+                    t.sort_order = i;
+                });
             })
         );
 
-        // 순서 변경된 템플릿들 Firebase에 저장
         const { templates } = get();
         templates.forEach((t) => {
             syncTemplate(t).catch(console.error);

@@ -78,7 +78,7 @@ export interface TemplatesSlice {
 
     // Actions
     addTemplate: (
-        template: Omit<WorkTemplate, "id" | "created_at">
+        template: Omit<WorkTemplate, "id" | "created_at" | "sort_order">
     ) => WorkTemplate;
     deleteTemplate: (id: string) => void;
     updateTemplate: (id: string, template: Partial<WorkTemplate>) => void;

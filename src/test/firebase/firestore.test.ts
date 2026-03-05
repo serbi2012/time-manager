@@ -318,6 +318,7 @@ describe('firestore 서비스', () => {
                         note: '',
                         color: '#1890ff',
                         created_at: '2026-01-19T00:00:00.000Z',
+                        sort_order: 0,
                     },
                 ] as WorkTemplate[],
                 custom_task_options: ['업무1', '업무2'],

@@ -60,6 +60,7 @@ export interface WorkTemplate {
     note: string;              // 비고
     color: string;             // 구분용 색상 (HEX)
     created_at: string;        // 생성 시각 (ISO string)
+    sort_order: number;        // 정렬 순서 (드래그앤드롭)
 }
 
 /**

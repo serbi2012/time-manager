@@ -18,6 +18,7 @@ describe("TemplateCard", () => {
         color: "#1890ff",
         note: "",
         created_at: new Date().toISOString(),
+        sort_order: 0,
     };
 
     const default_props = {

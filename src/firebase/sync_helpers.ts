@@ -18,9 +18,16 @@ export function applyLoadedDataToStore(
     templates: import("../types").WorkTemplate[],
     settings: UserSettings | null
 ): void {
+    const sorted_templates = templates
+        .map((t, i) => ({
+            ...t,
+            sort_order: t.sort_order ?? i,
+        }))
+        .sort((a, b) => a.sort_order - b.sort_order);
+
     useWorkStore.setState({
         records,
-        templates,
+        templates: sorted_templates,
         custom_task_options: settings?.custom_task_options || [],
         custom_category_options: settings?.custom_category_options || [],
         ...(settings?.timer && { timer: settings.timer }),
