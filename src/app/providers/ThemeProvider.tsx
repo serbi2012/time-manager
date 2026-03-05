@@ -70,6 +70,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
             <ConfigProvider
                 locale={koKR}
                 theme={{
+                    cssVar: true,
                     algorithm: theme.defaultAlgorithm,
                     token: {
                         colorPrimary: theme_colors.primary,
@@ -79,7 +80,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
                     },
                 }}
             >
-                <App component={false}>
+                <App>
                     <MessageInstanceCapture>{children}</MessageInstanceCapture>
                 </App>
             </ConfigProvider>
