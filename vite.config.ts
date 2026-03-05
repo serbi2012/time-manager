@@ -13,6 +13,7 @@ export default defineConfig({
     },
     build: {
         rollupOptions: {
+            external: ["mermaid"],
             output: {
                 manualChunks: {
                     "vendor-react": [
@@ -100,6 +101,21 @@ export default defineConfig({
                             expiration: {
                                 maxEntries: 10,
                                 maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+                            },
+                            cacheableResponse: {
+                                statuses: [0, 200],
+                            },
+                        },
+                    },
+                    {
+                        urlPattern:
+                            /^https:\/\/cdn\.jsdelivr\.net\/npm\/mermaid.*/i,
+                        handler: "CacheFirst",
+                        options: {
+                            cacheName: "mermaid-cdn-cache",
+                            expiration: {
+                                maxEntries: 5,
+                                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
                             },
                             cacheableResponse: {
                                 statuses: [0, 200],

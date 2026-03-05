@@ -1,13 +1,7 @@
 import { useEffect, useState, useRef } from "react";
-import mermaid from "mermaid";
 import { GUIDE_LABELS } from "../../constants";
 
-mermaid.initialize({
-    startOnLoad: false,
-    theme: "default",
-    securityLevel: "loose",
-    fontFamily: "inherit",
-});
+let is_initialized = false;
 
 interface MermaidDiagramProps {
     chart: string;
@@ -20,6 +14,18 @@ export function MermaidDiagram({ chart }: MermaidDiagramProps) {
     useEffect(() => {
         const render = async () => {
             try {
+                const { default: mermaid } = await import("mermaid");
+
+                if (!is_initialized) {
+                    mermaid.initialize({
+                        startOnLoad: false,
+                        theme: "default",
+                        securityLevel: "loose",
+                        fontFamily: "inherit",
+                    });
+                    is_initialized = true;
+                }
+
                 const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
                 const { svg: rendered_svg } = await mermaid.render(id, chart);
                 setSvg(rendered_svg);
