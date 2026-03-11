@@ -6,6 +6,11 @@ import {
     type ChangelogEntry,
     type ChangeItem,
 } from "../constants/changelog";
+import {
+    PRESET_LABELS,
+    MODAL_TITLES,
+    EMPTY_MESSAGES,
+} from "@/shared/constants";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -115,7 +120,7 @@ export default function ChangelogModal({ open, onClose }: ChangelogModalProps) {
 
             <div className="text-center">
                 <Text type="secondary" className="!text-xs">
-                    {APP_LABELS.footerText(CURRENT_VERSION)}
+                    현재 버전: v{CURRENT_VERSION}
                 </Text>
             </div>
         </Modal>

@@ -16,8 +16,10 @@ const MOCK_RECENT_WORKS = [
 ];
 
 describe("MobileRecentWorkMenu", () => {
-    let on_select: ReturnType<typeof vi.fn>;
-    let on_close: ReturnType<typeof vi.fn>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let on_select: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let on_close: any;
 
     beforeEach(() => {
         on_select = vi.fn();
@@ -51,9 +53,7 @@ describe("MobileRecentWorkMenu", () => {
             />
         );
 
-        expect(
-            screen.getByText(MOBILE_FAB_RECENT_TITLE)
-        ).toBeInTheDocument();
+        expect(screen.getByText(MOBILE_FAB_RECENT_TITLE)).toBeInTheDocument();
         expect(screen.getByText("UI 구현")).toBeInTheDocument();
         expect(screen.getByText("백엔드 개발")).toBeInTheDocument();
         expect(screen.getByText("PR 검토")).toBeInTheDocument();

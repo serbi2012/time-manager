@@ -30,14 +30,16 @@ describe("useMobileGanttMenus", () => {
     });
     const mock_grouped_works: GroupedWork[] = [
         {
+            key: "test-key",
             record: mock_record,
             sessions: [mock_session],
-            total_minutes: 60,
+            first_start: 540,
         },
     ];
     const mock_anchor = new DOMRect(100, 200, 200, 40);
 
-    let on_edit_session: ReturnType<typeof vi.fn>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let on_edit_session: any;
 
     beforeEach(() => {
         on_edit_session = vi.fn();
@@ -101,10 +103,7 @@ describe("useMobileGanttMenus", () => {
             result.current.card_menu.onAction("edit");
         });
 
-        expect(on_edit_session).toHaveBeenCalledWith(
-            mock_record,
-            mock_session
-        );
+        expect(on_edit_session).toHaveBeenCalledWith(mock_record, mock_session);
     });
 
     it("카드 메뉴 start_timer 액션 시 스토어의 startTimer가 호출된다", () => {
@@ -208,10 +207,7 @@ describe("useMobileGanttMenus", () => {
             result.current.seg_menu.onAction("edit_session");
         });
 
-        expect(on_edit_session).toHaveBeenCalledWith(
-            mock_record,
-            mock_session
-        );
+        expect(on_edit_session).toHaveBeenCalledWith(mock_record, mock_session);
     });
 
     it("세그먼트 메뉴 delete_session 액션 시 스토어의 deleteSession이 호출된다", () => {

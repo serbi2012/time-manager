@@ -31,8 +31,10 @@ const MOCK_ITEMS: MobileActionMenuItem[] = [
 const MOCK_ANCHOR = new DOMRect(100, 200, 200, 40);
 
 describe("MobileActionMenu", () => {
-    let on_action: ReturnType<typeof vi.fn>;
-    let on_close: ReturnType<typeof vi.fn>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let on_action: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let on_close: any;
 
     beforeEach(() => {
         on_action = vi.fn();

@@ -323,7 +323,7 @@ export function validateAndAdjustSessionTime(
         adjusted_start,
         adjusted_end,
         message: result.was_adjusted
-            ? WARNING_MESSAGES.autoAdjustedConflict
+            ? WARNING_MESSAGES.timeAdjusted
             : undefined,
     };
 }

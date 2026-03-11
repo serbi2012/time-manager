@@ -249,9 +249,7 @@ export function createUpdateTimerStartTimeAction(
         return {
             success: true,
             adjusted: was_adjusted,
-            message: was_adjusted
-                ? WARNING_MESSAGES.autoAdjustedConflict
-                : undefined,
+            message: was_adjusted ? WARNING_MESSAGES.timeAdjusted : undefined,
             adjusted_start_time: was_adjusted ? adjusted_start_time : undefined,
         };
     };

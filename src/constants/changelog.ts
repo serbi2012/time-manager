@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.36";
+export const CURRENT_VERSION = "2.0.37";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,23 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.37",
+        date: "2026-03-10",
+        title: "간트 차트 자동 조정 알림 및 개발 환경 로그 수정",
+        changes: [
+            {
+                type: "fix",
+                description:
+                    "간트 차트에서 작업 시간 자동 조정 시 알림 메시지가 정상적으로 표시돼요",
+            },
+            {
+                type: "fix",
+                description:
+                    "개발 환경에서 불필요한 시스템 로그(Workbox)가 출력되지 않도록 정리했어요",
+            },
+        ],
+    },
     {
         version: "2.0.36",
         date: "2026-03-05",
@@ -103,23 +120,19 @@ export const CHANGELOG: ChangelogEntry[] = [
             },
             {
                 type: "improvement",
-                description:
-                    "모바일 날짜 화살표 버튼에 눌림 효과가 추가됐어요",
+                description: "모바일 날짜 화살표 버튼에 눌림 효과가 추가됐어요",
             },
             {
                 type: "feature",
-                description:
-                    "사용설명서에 다이어그램이 추가됐어요",
+                description: "사용설명서에 다이어그램이 추가됐어요",
             },
             {
                 type: "improvement",
-                description:
-                    "새 버전이 배포되면 자동으로 업데이트돼요",
+                description: "새 버전이 배포되면 자동으로 업데이트돼요",
             },
             {
                 type: "performance",
-                description:
-                    "설정, 변경내역 등 모달이 필요할 때만 불러와요",
+                description: "설정, 변경내역 등 모달이 필요할 때만 불러와요",
             },
             {
                 type: "fix",
@@ -152,8 +165,7 @@ export const CHANGELOG: ChangelogEntry[] = [
             },
             {
                 type: "performance",
-                description:
-                    "타이머 실행 중 화면이 더 부드럽게 동작해요",
+                description: "타이머 실행 중 화면이 더 부드럽게 동작해요",
             },
         ],
     },
@@ -181,8 +193,7 @@ export const CHANGELOG: ChangelogEntry[] = [
             },
             {
                 type: "improvement",
-                description:
-                    "주간 일정 진입 시 카드가 순차적으로 나타나요",
+                description: "주간 일정 진입 시 카드가 순차적으로 나타나요",
             },
             {
                 type: "improvement",
@@ -198,8 +209,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         changes: [
             {
                 type: "improvement",
-                description:
-                    "길게 눌러 열린 메뉴가 스크롤하면 자동으로 닫혀요",
+                description: "길게 눌러 열린 메뉴가 스크롤하면 자동으로 닫혀요",
             },
             {
                 type: "improvement",
