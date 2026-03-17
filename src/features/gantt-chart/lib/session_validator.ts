@@ -3,7 +3,10 @@
  */
 
 import type { WorkSession } from "../../../shared/types";
-import { timeToMinutes } from "../../../shared/lib/time";
+import {
+    timeToMinutes,
+    getEffectiveEndMinutes,
+} from "../../../shared/lib/time";
 import { GANTT_VALIDATION } from "../constants";
 
 export interface ValidationResult {
@@ -39,10 +42,11 @@ export function validateTimeFormat(time_str: string): ValidationResult {
  */
 export function validateTimeOrder(
     start_time: string,
-    end_time: string
+    end_time: string,
+    is_overnight?: boolean
 ): ValidationResult {
     const start_mins = timeToMinutes(start_time);
-    const end_mins = timeToMinutes(end_time);
+    const end_mins = getEffectiveEndMinutes(end_time, is_overnight);
 
     if (start_mins >= end_mins) {
         return {
@@ -65,10 +69,11 @@ export function validateTimeOrder(
 export function validateMinDuration(
     start_time: string,
     end_time: string,
-    min_duration: number = 1
+    min_duration: number = 1,
+    is_overnight?: boolean
 ): ValidationResult {
     const start_mins = timeToMinutes(start_time);
-    const end_mins = timeToMinutes(end_time);
+    const end_mins = getEffectiveEndMinutes(end_time, is_overnight);
     const duration = end_mins - start_mins;
 
     if (duration < min_duration) {
@@ -94,10 +99,11 @@ export function validateSessionOverlap(
     start_time: string,
     end_time: string,
     existing_sessions: WorkSession[],
-    exclude_session_id?: string
+    exclude_session_id?: string,
+    is_overnight?: boolean
 ): ValidationResult {
     const start_mins = timeToMinutes(start_time);
-    const end_mins = timeToMinutes(end_time);
+    const end_mins = getEffectiveEndMinutes(end_time, is_overnight);
 
     for (const session of existing_sessions) {
         // 수정 중인 세션은 제외
@@ -111,7 +117,10 @@ export function validateSessionOverlap(
         }
 
         const session_start = timeToMinutes(session.start_time);
-        const session_end = timeToMinutes(session.end_time);
+        const session_end = getEffectiveEndMinutes(
+            session.end_time,
+            session.is_overnight
+        );
 
         // 겹침 검사
         if (start_mins < session_end && end_mins > session_start) {
@@ -143,9 +152,9 @@ export function validateSessionTime(
         existing_sessions?: WorkSession[];
         exclude_session_id?: string;
         min_duration?: number;
+        is_overnight?: boolean;
     } = {}
 ): ValidationResult {
-    // 시간 형식 검증
     const start_format_result = validateTimeFormat(start_time);
     if (!start_format_result.is_valid) {
         return start_format_result;
@@ -156,29 +165,32 @@ export function validateSessionTime(
         return end_format_result;
     }
 
-    // 시간 순서 검증
-    const order_result = validateTimeOrder(start_time, end_time);
+    const order_result = validateTimeOrder(
+        start_time,
+        end_time,
+        options.is_overnight
+    );
     if (!order_result.is_valid) {
         return order_result;
     }
 
-    // 최소 작업 시간 검증
     const duration_result = validateMinDuration(
         start_time,
         end_time,
-        options.min_duration
+        options.min_duration,
+        options.is_overnight
     );
     if (!duration_result.is_valid) {
         return duration_result;
     }
 
-    // 세션 겹침 검증
     if (options.existing_sessions) {
         const overlap_result = validateSessionOverlap(
             start_time,
             end_time,
             options.existing_sessions,
-            options.exclude_session_id
+            options.exclude_session_id,
+            options.is_overnight
         );
         if (!overlap_result.is_valid) {
             return overlap_result;

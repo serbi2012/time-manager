@@ -17,6 +17,7 @@ import {
     validateAndAdjustSessionTime,
     recalculateRecordFromSessions,
 } from "../lib";
+import { getEffectiveEndMinutes } from "@/shared/lib/time";
 
 /**
  * Find existing non-deleted record with same work_name + deal_name.
@@ -92,7 +93,11 @@ export const createRecordsSlice: StateCreator<
                             );
                             if (new_sessions.length > 0) {
                                 rec.sessions.push(...new_sessions);
-                                recalculateRecordFromSessions(rec, undefined, get().getLunchTimeMinutes());
+                                recalculateRecordFromSessions(
+                                    rec,
+                                    undefined,
+                                    get().getLunchTimeMinutes()
+                                );
                             }
                         }
                     })
@@ -176,7 +181,14 @@ export const createRecordsSlice: StateCreator<
     // Session Management
     // ============================================
 
-    updateSession: (record_id, session_id, new_start, new_end, new_date) => {
+    updateSession: (
+        record_id,
+        session_id,
+        new_start,
+        new_end,
+        new_date,
+        is_overnight
+    ) => {
         const { records, timer } = get();
 
         const validation = validateAndAdjustSessionTime(
@@ -186,7 +198,8 @@ export const createRecordsSlice: StateCreator<
             session_id,
             new_start,
             new_end,
-            new_date
+            new_date,
+            is_overnight
         );
 
         if (!validation.success) {
@@ -208,10 +221,17 @@ export const createRecordsSlice: StateCreator<
 
         const lunch_time = get().getLunchTimeMinutes();
         const final_start_mins = timeToMinutes(adjusted_start);
-        const final_end_mins = timeToMinutes(adjusted_end);
+        const final_end_mins = getEffectiveEndMinutes(
+            adjusted_end,
+            is_overnight
+        );
         const duration_minutes = Math.max(
             1,
-            calculateDurationExcludingLunch(final_start_mins, final_end_mins, lunch_time)
+            calculateDurationExcludingLunch(
+                final_start_mins,
+                final_end_mins,
+                lunch_time
+            )
         );
 
         set(
@@ -226,6 +246,7 @@ export const createRecordsSlice: StateCreator<
                         session.start_time = adjusted_start;
                         session.end_time = adjusted_end;
                         session.duration_minutes = duration_minutes;
+                        session.is_overnight = is_overnight || undefined;
                     }
                     recalculateRecordFromSessions(rec, undefined, lunch_time);
                 }
@@ -273,7 +294,11 @@ export const createRecordsSlice: StateCreator<
                     if (session_index !== -1) {
                         rec.sessions.splice(session_index, 1);
                     }
-                    recalculateRecordFromSessions(rec, undefined, get().getLunchTimeMinutes());
+                    recalculateRecordFromSessions(
+                        rec,
+                        undefined,
+                        get().getLunchTimeMinutes()
+                    );
                 }
             })
         );

@@ -61,7 +61,8 @@ export interface RecordsSlice {
         session_id: string,
         new_start: string,
         new_end: string,
-        new_date?: string
+        new_date?: string,
+        is_overnight?: boolean
     ) => { success: boolean; adjusted: boolean; message?: string };
     deleteSession: (record_id: string, session_id: string) => void;
     markAsCompleted: (id: string) => void;

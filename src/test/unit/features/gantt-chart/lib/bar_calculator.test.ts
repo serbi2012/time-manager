@@ -141,6 +141,25 @@ describe("calculateBarStyle", () => {
     });
 });
 
+describe("calculateBarStyle - 새벽 근무", () => {
+    it("is_overnight 세션의 바가 자정을 넘어 확장된다", () => {
+        const session = createSession({
+            start_time: "22:00",
+            end_time: "02:24",
+            is_overnight: true,
+        });
+        // 22:00(1320) ~ 02:24(1584): range start=1260, end=1620
+        const range: TimeRange = { start: 1260, end: 1620 };
+        const result = calculateBarStyle(session, "#3182F6", range, 1500);
+
+        const left = parseFloat(result.left);
+        const width = parseFloat(result.width);
+        expect(left).toBeGreaterThanOrEqual(0);
+        expect(width).toBeGreaterThan(0);
+        expect(left + width).toBeLessThanOrEqual(100);
+    });
+});
+
 describe("calculateTimeRange", () => {
     it("세션이 없으면 기본 9시-18시 범위를 반환한다", () => {
         const result = calculateTimeRange([], 600, null);
@@ -175,6 +194,23 @@ describe("calculateTimeRange", () => {
         expect(result.end).toBe(1260); // 21:00
     });
 
+    it("is_overnight 세션이 있으면 범위가 자정 넘어 확장된다", () => {
+        const groups = [
+            {
+                sessions: [
+                    createSession({
+                        start_time: "22:00",
+                        end_time: "02:24",
+                        is_overnight: true,
+                    }),
+                ],
+            },
+        ];
+        const result = calculateTimeRange(groups, 600, null);
+
+        expect(result.end).toBeGreaterThanOrEqual(1584); // 02:24 = 144 + 1440
+    });
+
     it("실행 중 세션은 현재 시간을 기준으로 확장한다", () => {
         const session = createSession({
             id: "active",
@@ -195,6 +231,13 @@ describe("generateTimeLabels", () => {
         const labels = generateTimeLabels({ start: 540, end: 720 }); // 09:00 ~ 12:00
 
         expect(labels).toEqual(["09:00", "10:00", "11:00", "12:00"]);
+    });
+
+    it("자정 넘는 범위에서 24시 이후 라벨이 00:00, 01:00으로 표시된다", () => {
+        // 23:00(1380) ~ 02:00(1560=120+1440)
+        const labels = generateTimeLabels({ start: 1380, end: 1560 });
+
+        expect(labels).toEqual(["23:00", "00:00", "01:00", "02:00"]);
     });
 });
 

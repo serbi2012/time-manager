@@ -3,8 +3,12 @@
  */
 
 import { useMemo } from "react";
-import { Form, Input } from "antd";
-import { timeToMinutes, formatDuration } from "../../../../shared/lib/time";
+import { Form, Input, Checkbox } from "antd";
+import {
+    timeToMinutes,
+    formatDuration,
+    getEffectiveEndMinutes,
+} from "../../../../shared/lib/time";
 import { calculateDurationExcludingLunch } from "../../../../shared/lib/lunch";
 import { useWorkStore } from "../../../../store/useWorkStore";
 import {
@@ -18,6 +22,8 @@ import {
     GANTT_FORM_VALIDATE_TIME_FORMAT,
     GANTT_MODAL_ACTIVE_SESSION_HINT,
     GANTT_MODAL_DURATION_LABEL,
+    GANTT_MODAL_OVERNIGHT_LABEL,
+    GANTT_MODAL_OVERNIGHT_HINT,
 } from "../../constants";
 
 export interface SessionTimeSectionProps {
@@ -61,19 +67,24 @@ export function SessionTimeSection({
     const getLunchTimeMinutes = useWorkStore((s) => s.getLunchTimeMinutes);
     const start_time = Form.useWatch("session_start_time");
     const end_time = Form.useWatch("session_end_time");
+    const is_overnight = Form.useWatch("is_overnight");
 
     const duration_text = useMemo(() => {
         if (!start_time || !end_time) return null;
         if (!TIME_PATTERN.test(start_time) || !TIME_PATTERN.test(end_time))
             return null;
         const start_mins = timeToMinutes(start_time);
-        const end_mins = timeToMinutes(end_time);
+        const end_mins = getEffectiveEndMinutes(end_time, is_overnight);
         if (end_mins <= start_mins) return null;
         const lunch_time = getLunchTimeMinutes();
-        const duration = calculateDurationExcludingLunch(start_mins, end_mins, lunch_time);
+        const duration = calculateDurationExcludingLunch(
+            start_mins,
+            end_mins,
+            lunch_time
+        );
         if (duration <= 0) return null;
         return formatDuration(duration);
-    }, [start_time, end_time, getLunchTimeMinutes]);
+    }, [start_time, end_time, is_overnight, getLunchTimeMinutes]);
 
     return (
         <div className="mb-lg px-xl py-xl bg-bg-grey rounded-lg">
@@ -121,6 +132,28 @@ export function SessionTimeSection({
                     </span>
                 </div>
             </div>
+
+            {!is_active_session && (
+                <div className="mt-lg flex justify-center">
+                    <Form.Item
+                        name="is_overnight"
+                        valuePropName="checked"
+                        className="!mb-0"
+                    >
+                        <Checkbox>
+                            <span className="text-sm text-text-secondary">
+                                {GANTT_MODAL_OVERNIGHT_LABEL}
+                            </span>
+                        </Checkbox>
+                    </Form.Item>
+                </div>
+            )}
+
+            {is_overnight && !is_active_session && (
+                <div className="mt-xs text-xs text-text-disabled text-center">
+                    {GANTT_MODAL_OVERNIGHT_HINT}
+                </div>
+            )}
 
             {duration_text && (
                 <div className="mt-lg flex justify-center">

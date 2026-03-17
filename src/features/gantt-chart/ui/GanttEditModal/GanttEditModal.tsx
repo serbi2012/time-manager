@@ -93,7 +93,6 @@ export function GanttEditModal({
     );
     const modal_submit_keys = modal_submit_shortcut?.keys || "F8";
 
-    // 폼 초기화
     useEffect(() => {
         if (open && record && session) {
             const is_active_session = session.id === timer.active_session_id;
@@ -110,6 +109,7 @@ export function GanttEditModal({
                 note: record.note,
                 session_start_time: session.start_time,
                 session_end_time: display_end_time,
+                is_overnight: session.is_overnight || false,
             });
         }
     }, [open, record, session, form, timer.active_session_id]);
@@ -128,16 +128,17 @@ export function GanttEditModal({
 
             const new_start = values.session_start_time;
             const new_end = values.session_end_time;
+            const new_is_overnight = values.is_overnight || false;
             const is_time_changed =
-                new_start !== original_start || new_end !== original_end;
+                new_start !== original_start ||
+                new_end !== original_end ||
+                new_is_overnight !== (session.is_overnight || false);
 
-            // 진행 중인 세션의 종료 시간 변경 시도 시 경고
             if (is_active_session && new_end !== original_end) {
                 message.warning(GANTT_MESSAGE_ACTIVE_SESSION_END_CANNOT_EDIT);
                 return;
             }
 
-            // 세션 시간 수정
             if (is_time_changed) {
                 if (is_active_session) {
                     const today = dayjs(selected_date);
@@ -162,7 +163,9 @@ export function GanttEditModal({
                         record.id,
                         session.id,
                         new_start,
-                        new_end
+                        new_end,
+                        undefined,
+                        new_is_overnight
                     );
                     if (!result.success) {
                         message.error(result.message);

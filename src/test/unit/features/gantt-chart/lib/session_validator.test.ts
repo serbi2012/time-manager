@@ -169,6 +169,114 @@ describe("session_validator", () => {
         });
     });
 
+    describe("validateTimeOrder - 새벽 근무", () => {
+        it("is_overnight가 true이면 end < start이어도 통과", () => {
+            const result = validateTimeOrder("22:00", "02:24", true);
+            expect(result.is_valid).toBe(true);
+        });
+
+        it("is_overnight가 false이면 end < start일 때 실패", () => {
+            const result = validateTimeOrder("22:00", "02:24", false);
+            expect(result.is_valid).toBe(false);
+        });
+    });
+
+    describe("validateMinDuration - 새벽 근무", () => {
+        it("새벽 근무 세션의 소요 시간이 최소 시간 이상이면 통과", () => {
+            // 22:00 ~ 02:24 = 264분
+            const result = validateMinDuration("22:00", "02:24", 30, true);
+            expect(result.is_valid).toBe(true);
+        });
+
+        it("새벽 근무 세션의 소요 시간이 최소 시간 미만이면 실패", () => {
+            // 23:50 ~ 00:05 (is_overnight) = 15분
+            const result = validateMinDuration("23:50", "00:05", 30, true);
+            expect(result.is_valid).toBe(false);
+        });
+    });
+
+    describe("validateSessionOverlap - 새벽 근무", () => {
+        it("새벽 근무 세션이 기존 세션과 겹치지 않으면 통과", () => {
+            const existing: WorkSession[] = [
+                {
+                    id: "s1",
+                    date: "2026-03-17",
+                    start_time: "09:00",
+                    end_time: "10:00",
+                    duration_minutes: 60,
+                },
+            ];
+            const result = validateSessionOverlap(
+                "22:00",
+                "02:24",
+                existing,
+                undefined,
+                true
+            );
+            expect(result.is_valid).toBe(true);
+        });
+
+        it("새벽 근무 세션이 기존 야간 세션과 겹치면 실패", () => {
+            const existing: WorkSession[] = [
+                {
+                    id: "s1",
+                    date: "2026-03-17",
+                    start_time: "21:00",
+                    end_time: "23:00",
+                    duration_minutes: 120,
+                },
+            ];
+            // 22:00 ~ 02:24 (overnight)와 21:00~23:00은 22:00~23:00 구간 겹침
+            const result = validateSessionOverlap(
+                "22:00",
+                "02:24",
+                existing,
+                undefined,
+                true
+            );
+            expect(result.is_valid).toBe(false);
+        });
+
+        it("기존 세션 중 overnight 세션이 있으면 올바르게 겹침 감지", () => {
+            const existing: WorkSession[] = [
+                {
+                    id: "s1",
+                    date: "2026-03-17",
+                    start_time: "22:00",
+                    end_time: "01:00",
+                    duration_minutes: 180,
+                    is_overnight: true,
+                },
+            ];
+            // 23:00~03:00 (overnight)와 22:00~01:00(overnight) 겹침
+            const result = validateSessionOverlap(
+                "23:00",
+                "03:00",
+                existing,
+                undefined,
+                true
+            );
+            expect(result.is_valid).toBe(false);
+        });
+    });
+
+    describe("validateSessionTime - 새벽 근무", () => {
+        it("새벽 근무 세션이 모든 검증을 통과하면 성공", () => {
+            const result = validateSessionTime("22:00", "02:24", {
+                is_overnight: true,
+            });
+            expect(result.is_valid).toBe(true);
+        });
+
+        it("새벽 근무 세션이 최소 시간 미만이면 실패", () => {
+            const result = validateSessionTime("23:55", "00:05", {
+                is_overnight: true,
+                min_duration: 30,
+            });
+            expect(result.is_valid).toBe(false);
+        });
+    });
+
     describe("validateSessionTime", () => {
         const existing_sessions: WorkSession[] = [
             {

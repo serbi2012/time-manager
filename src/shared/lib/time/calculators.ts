@@ -53,15 +53,43 @@ export function timestampToMinutes(timestamp: number): number {
 }
 
 /**
+ * 새벽 근무(자정 넘김) 고려한 실효 종료 시간(분) 계산
+ * @param end_time 종료 시간 (HH:mm)
+ * @param is_overnight 새벽 근무 여부
+ * @returns 분 단위 (is_overnight이면 +1440)
+ */
+export function getEffectiveEndMinutes(
+    end_time: string,
+    is_overnight?: boolean
+): number {
+    const end_mins = timeToMinutes(end_time);
+    return is_overnight ? end_mins + 1440 : end_mins;
+}
+
+/**
+ * 새벽 근무 고려한 소요 시간(분) 계산
+ * @param start_time 시작 시간 (HH:mm)
+ * @param end_time 종료 시간 (HH:mm)
+ * @param is_overnight 새벽 근무 여부
+ * @returns 분 단위 차이
+ */
+export function calculateOvernightDuration(
+    start_time: string,
+    end_time: string,
+    is_overnight?: boolean
+): number {
+    const start_mins = timeToMinutes(start_time);
+    const effective_end = getEffectiveEndMinutes(end_time, is_overnight);
+    return effective_end - start_mins;
+}
+
+/**
  * 오늘 날짜의 특정 시각을 timestamp로 변환
  * @param minutes 분 단위 시간
  * @param base_date 기준 날짜 (선택, 기본값: 오늘)
  * @returns Unix timestamp (milliseconds)
  */
-export function minutesToTimestamp(
-    minutes: number,
-    base_date?: Date
-): number {
+export function minutesToTimestamp(minutes: number, base_date?: Date): number {
     const date = base_date ? new Date(base_date) : new Date();
     date.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
     return date.getTime();

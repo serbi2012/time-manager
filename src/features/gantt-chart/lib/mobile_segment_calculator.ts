@@ -2,7 +2,10 @@
  * Mobile segment bar calculation utilities
  */
 
-import { timeToMinutes } from "../../../shared/lib/time";
+import {
+    timeToMinutes,
+    getEffectiveEndMinutes,
+} from "../../../shared/lib/time";
 import type { WorkRecord, WorkSession } from "../../../shared/types";
 import type { GroupedWork } from "./slot_calculator";
 import type { TimeRange } from "./bar_calculator";
@@ -35,7 +38,10 @@ export function buildSegments(
             const is_running = !session.end_time;
             const end_mins = is_running
                 ? current_time_mins
-                : timeToMinutes(session.end_time);
+                : getEffectiveEndMinutes(
+                      session.end_time,
+                      session.is_overnight
+                  );
 
             const left_pct =
                 ((start_mins - time_range.start) / total_range) * 100;
@@ -61,7 +67,7 @@ export function buildHourLabels(time_range: TimeRange): number[] {
     const start_hour = Math.floor(time_range.start / 60);
     const end_hour = Math.ceil(time_range.end / 60);
     for (let h = start_hour; h <= end_hour; h++) {
-        labels.push(h);
+        labels.push(h % 24);
     }
     return labels;
 }

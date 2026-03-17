@@ -19,6 +19,7 @@ export interface CreateMockSessionOptions {
     start_time?: string;
     end_time?: string;
     duration_minutes?: number;
+    is_overnight?: boolean;
 }
 
 export function createMockSession(
@@ -49,6 +50,7 @@ export function createMockSession(
                 "0"
             )}`,
         duration_minutes: duration,
+        ...(overrides.is_overnight ? { is_overnight: true } : {}),
     };
 }
 

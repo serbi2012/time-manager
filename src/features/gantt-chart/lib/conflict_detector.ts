@@ -2,7 +2,10 @@
  * 간트 차트 충돌 감지 관련 순수 함수
  */
 
-import { timeToMinutes } from "../../../shared/lib/time";
+import {
+    timeToMinutes,
+    getEffectiveEndMinutes,
+} from "../../../shared/lib/time";
 import type { GroupedWork } from "./slot_calculator";
 
 /**
@@ -46,9 +49,8 @@ export function detectConflicts(
     const all_sessions: SessionInfo[] = [];
     grouped_works.forEach((group) => {
         group.sessions.forEach((session) => {
-            // 진행 중인 세션(end_time === "")은 현재 시간 사용
             const end_mins = session.end_time
-                ? timeToMinutes(session.end_time)
+                ? getEffectiveEndMinutes(session.end_time, session.is_overnight)
                 : current_time_mins;
             all_sessions.push({
                 id: session.id,

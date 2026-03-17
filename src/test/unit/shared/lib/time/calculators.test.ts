@@ -8,6 +8,8 @@ import {
     minutesToTime,
     calculateMinutesDifference,
     timestampToMinutes,
+    getEffectiveEndMinutes,
+    calculateOvernightDuration,
 } from "../../../../../shared/lib/time/calculators";
 
 describe("timeToMinutes", () => {
@@ -72,5 +74,41 @@ describe("timestampToMinutes", () => {
     it("자정은 0분", () => {
         const midnight = new Date(2026, 0, 23, 0, 0, 0).getTime();
         expect(timestampToMinutes(midnight)).toBe(0);
+    });
+});
+
+describe("getEffectiveEndMinutes", () => {
+    it("is_overnight가 false/undefined이면 일반 변환", () => {
+        expect(getEffectiveEndMinutes("18:00")).toBe(1080);
+        expect(getEffectiveEndMinutes("18:00", false)).toBe(1080);
+        expect(getEffectiveEndMinutes("18:00", undefined)).toBe(1080);
+    });
+
+    it("is_overnight가 true이면 +1440 적용", () => {
+        expect(getEffectiveEndMinutes("02:24", true)).toBe(144 + 1440);
+        expect(getEffectiveEndMinutes("00:00", true)).toBe(1440);
+        expect(getEffectiveEndMinutes("03:00", true)).toBe(180 + 1440);
+    });
+
+    it("is_overnight가 true여도 늦은 시간(18:00)에 +1440 적용", () => {
+        expect(getEffectiveEndMinutes("18:00", true)).toBe(1080 + 1440);
+    });
+});
+
+describe("calculateOvernightDuration", () => {
+    it("일반 세션의 소요 시간 계산", () => {
+        expect(calculateOvernightDuration("09:00", "18:00")).toBe(540);
+        expect(calculateOvernightDuration("09:00", "18:00", false)).toBe(540);
+    });
+
+    it("새벽 근무 세션의 소요 시간 계산 (자정 넘김)", () => {
+        expect(calculateOvernightDuration("22:00", "02:24", true)).toBe(264);
+        expect(calculateOvernightDuration("23:00", "01:00", true)).toBe(120);
+        expect(calculateOvernightDuration("20:00", "03:00", true)).toBe(420);
+    });
+
+    it("새벽 근무가 아니면 음수 결과 가능 (검증 책임은 호출자)", () => {
+        const result = calculateOvernightDuration("22:00", "02:24", false);
+        expect(result).toBe(-1176);
     });
 });

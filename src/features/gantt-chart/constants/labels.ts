@@ -151,6 +151,9 @@ export const GANTT_MODAL_SESSION_TIME_HEADER = "세션 시간";
 export const GANTT_MODAL_ACTIVE_SESSION_HINT =
     "💡 진행 중인 세션은 시작 시간만 수정할 수 있습니다";
 export const GANTT_MODAL_DURATION_LABEL = "소요";
+export const GANTT_MODAL_OVERNIGHT_LABEL = "새벽 근무";
+export const GANTT_MODAL_OVERNIGHT_HINT =
+    "자정을 넘겨 다음 날 새벽까지 근무한 경우 체크해요";
 
 // ---------- 모바일 전용 ----------
 
@@ -200,8 +203,6 @@ export const GANTT_VALIDATION = {
         `다른 세션과 시간이 겹칩니다. (${start} ~ ${end})`,
     overlapSimple: "다른 세션과 시간이 겹칩니다.",
     endBeforeStart: "종료 시간이 시작 시간보다 이전입니다.",
-    minDragDuration: (min: number) =>
-        `최소 ${min}분 이상 선택해야 합니다.`,
-    minDragRequired: (min: number) =>
-        `최소 ${min}분 이상이어야 합니다.`,
+    minDragDuration: (min: number) => `최소 ${min}분 이상 선택해야 합니다.`,
+    minDragRequired: (min: number) => `최소 ${min}분 이상이어야 합니다.`,
 } as const;

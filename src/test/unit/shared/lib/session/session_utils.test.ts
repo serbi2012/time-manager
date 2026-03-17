@@ -61,14 +61,58 @@ describe("getSessionMinutes", () => {
 describe("calculateTotalMinutes", () => {
     it("세션 목록의 총 시간 계산 (커스텀 점심 전달)", () => {
         const sessions: SessionLike[] = [
-            { id: "s1", start_time: "09:00", end_time: "10:00", duration_minutes: 60 },
-            { id: "s2", start_time: "14:00", end_time: "15:00", duration_minutes: 60 },
+            {
+                id: "s1",
+                start_time: "09:00",
+                end_time: "10:00",
+                duration_minutes: 60,
+            },
+            {
+                id: "s2",
+                start_time: "14:00",
+                end_time: "15:00",
+                duration_minutes: 60,
+            },
         ];
         expect(calculateTotalMinutes(sessions, CUSTOM_LUNCH)).toBe(120);
     });
 
     it("빈 배열은 0 반환", () => {
         expect(calculateTotalMinutes([], CUSTOM_LUNCH)).toBe(0);
+    });
+});
+
+describe("getSessionMinutes - 새벽 근무 (is_overnight)", () => {
+    it("is_overnight 세션의 duration_minutes가 있으면 그 값 반환", () => {
+        const session: SessionLike = {
+            id: "s1",
+            start_time: "22:00",
+            end_time: "02:24",
+            duration_minutes: 264,
+            is_overnight: true,
+        };
+        expect(getSessionMinutes(session)).toBe(264);
+    });
+
+    it("is_overnight 세션의 duration_minutes가 없으면 자정 넘김으로 계산", () => {
+        const session: SessionLike = {
+            id: "s1",
+            start_time: "22:00",
+            end_time: "02:24",
+            is_overnight: true,
+        };
+        // 22:00(1320) ~ 02:24(144+1440=1584) = 264분
+        expect(getSessionMinutes(session)).toBe(264);
+    });
+
+    it("is_overnight가 false이고 end < start이면 0 반환", () => {
+        const session: SessionLike = {
+            id: "s1",
+            start_time: "22:00",
+            end_time: "02:24",
+            is_overnight: false,
+        };
+        expect(getSessionMinutes(session)).toBe(0);
     });
 });
 

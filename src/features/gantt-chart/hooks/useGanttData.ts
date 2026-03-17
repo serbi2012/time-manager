@@ -21,7 +21,10 @@ import {
     calculateWorkColor,
     type TimeRange,
 } from "../lib/bar_calculator";
-import { timeToMinutes } from "../../../shared/lib/time";
+import {
+    timeToMinutes,
+    getEffectiveEndMinutes,
+} from "../../../shared/lib/time";
 import type { WorkRecord } from "../../../shared/types";
 
 export interface UseGanttDataReturn {
@@ -98,7 +101,10 @@ export function useGanttData(gantt_tick: number = 0): UseGanttDataReturn {
         grouped_works.forEach((group) => {
             group.sessions.forEach((session) => {
                 const end_mins = session.end_time
-                    ? timeToMinutes(session.end_time)
+                    ? getEffectiveEndMinutes(
+                          session.end_time,
+                          session.is_overnight
+                      )
                     : current_time_mins;
                 slots.push({
                     start: timeToMinutes(session.start_time),

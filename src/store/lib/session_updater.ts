@@ -7,7 +7,11 @@
 
 import dayjs from "dayjs";
 import type { WorkRecord, WorkSession } from "../types";
-import { timeToMinutes, minutesToTime } from "@/shared/lib/time";
+import {
+    timeToMinutes,
+    minutesToTime,
+    getEffectiveEndMinutes,
+} from "@/shared/lib/time";
 import {
     ERROR_MESSAGES,
     WARNING_MESSAGES,
@@ -74,7 +78,10 @@ export function collectSameDaySessions(
                     record_id: r.id,
                     session: s,
                     start_mins: timeToMinutes(s.start_time),
-                    end_mins: timeToMinutes(s.end_time),
+                    end_mins: getEffectiveEndMinutes(
+                        s.end_time,
+                        s.is_overnight
+                    ),
                     work_name: r.work_name,
                     deal_name: r.deal_name,
                 });
@@ -234,7 +241,8 @@ export function validateAndAdjustSessionTime(
     session_id: string,
     new_start: string,
     new_end: string,
-    new_date?: string
+    new_date?: string,
+    is_overnight?: boolean
 ): SessionUpdateResult {
     const record = records.find((r) => r.id === record_id);
     if (!record) {
@@ -259,7 +267,7 @@ export function validateAndAdjustSessionTime(
         new_date && new_date !== (session.date || record.date);
 
     const new_start_mins = timeToMinutes(new_start);
-    const new_end_mins = timeToMinutes(new_end);
+    const new_end_mins = getEffectiveEndMinutes(new_end, is_overnight);
 
     if (new_end_mins <= new_start_mins) {
         return {
@@ -278,6 +286,23 @@ export function validateAndAdjustSessionTime(
     );
 
     if (is_date_changed) {
+        const conflict = checkDateChangeConflicts(
+            same_day_sessions,
+            new_start_mins,
+            new_end_mins,
+            target_date
+        );
+        if (conflict) return conflict;
+
+        return {
+            success: true,
+            adjusted: false,
+            adjusted_start: new_start,
+            adjusted_end: new_end,
+        };
+    }
+
+    if (is_overnight) {
         const conflict = checkDateChangeConflicts(
             same_day_sessions,
             new_start_mins,

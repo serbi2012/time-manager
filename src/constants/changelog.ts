@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.37";
+export const CURRENT_VERSION = "2.0.38";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,28 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.38",
+        date: "2026-03-17",
+        title: "새벽 근무 지원",
+        changes: [
+            {
+                type: "feature",
+                description:
+                    "간트 차트에서 자정을 넘기는 새벽 근무 시간을 기록할 수 있어요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "새벽 근무 세션이 시작한 날짜의 간트 차트에서 자정 넘어 표시돼요",
+            },
+            {
+                type: "fix",
+                description:
+                    "기존 새벽 근무 세션이 있을 때 시간 충돌 감지가 정확해졌어요",
+            },
+        ],
+    },
     {
         version: "2.0.37",
         date: "2026-03-10",

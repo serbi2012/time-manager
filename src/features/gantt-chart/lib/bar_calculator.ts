@@ -7,7 +7,11 @@ import type {
     WorkRecord,
     WorkTemplate,
 } from "../../../shared/types";
-import { timeToMinutes, minutesToTime } from "../../../shared/lib/time";
+import {
+    timeToMinutes,
+    minutesToTime,
+    getEffectiveEndMinutes,
+} from "../../../shared/lib/time";
 
 /**
  * 시간 범위 계산 결과
@@ -62,11 +66,13 @@ export function calculateTimeRange(
         grouped_works.forEach((group) => {
             group.sessions.forEach((session) => {
                 const start = timeToMinutes(session.start_time);
-                // 진행 중인 세션은 현재 시간 사용
                 const is_running = session.id === active_session_id;
                 const end = is_running
                     ? current_time_mins
-                    : timeToMinutes(session.end_time);
+                    : getEffectiveEndMinutes(
+                          session.end_time,
+                          session.is_overnight
+                      );
                 min_start = Math.min(min_start, start);
                 max_end = Math.max(max_end, end);
             });
@@ -85,11 +91,8 @@ export function calculateTimeRange(
 export function generateTimeLabels(time_range: TimeRange): string[] {
     const labels: string[] = [];
     for (let m = time_range.start; m <= time_range.end; m += 60) {
-        labels.push(
-            `${Math.floor(m / 60)
-                .toString()
-                .padStart(2, "0")}:00`
-        );
+        const hour = Math.floor(m / 60) % 24;
+        labels.push(`${hour.toString().padStart(2, "0")}:00`);
     }
     return labels;
 }
@@ -108,7 +111,7 @@ export function calculateBarStyle(
     const start = timeToMinutes(session.start_time);
     const end = is_running
         ? current_time_mins
-        : timeToMinutes(session.end_time);
+        : getEffectiveEndMinutes(session.end_time, session.is_overnight);
 
     let left = ((start - time_range.start) / total_minutes) * 100;
     left = Math.max(0, Math.min(left, 100));
