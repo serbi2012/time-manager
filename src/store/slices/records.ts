@@ -246,7 +246,9 @@ export const createRecordsSlice: StateCreator<
                         session.start_time = adjusted_start;
                         session.end_time = adjusted_end;
                         session.duration_minutes = duration_minutes;
-                        session.is_overnight = is_overnight || undefined;
+                        if (is_overnight !== undefined) {
+                            session.is_overnight = is_overnight || undefined;
+                        }
                     }
                     recalculateRecordFromSessions(rec, undefined, lunch_time);
                 }

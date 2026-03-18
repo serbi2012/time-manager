@@ -17,9 +17,26 @@ async function fs() {
 }
 
 function removeUndefined<T extends object>(obj: T): T {
-    return Object.fromEntries(
-        Object.entries(obj).filter(([, v]) => v !== undefined)
-    ) as T;
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+        if (value === undefined) continue;
+        if (Array.isArray(value)) {
+            result[key] = value.map((item) =>
+                item && typeof item === "object" && !(item instanceof Date)
+                    ? removeUndefined(item as Record<string, unknown>)
+                    : item
+            );
+        } else if (
+            value &&
+            typeof value === "object" &&
+            !(value instanceof Date)
+        ) {
+            result[key] = removeUndefined(value as Record<string, unknown>);
+        } else {
+            result[key] = value;
+        }
+    }
+    return result as T;
 }
 
 export type { HiddenAutoCompleteOptions };

@@ -19,17 +19,22 @@ let _googleProvider: InstanceType<
 let _initPromise: Promise<void> | null = null;
 
 async function _init(): Promise<void> {
-    const [{ initializeApp }, { getAuth, GoogleAuthProvider }, { getFirestore }] =
-        await Promise.all([
-            import("firebase/app"),
-            import("firebase/auth"),
-            import("firebase/firestore"),
-        ]);
+    const [
+        { initializeApp },
+        { getAuth, GoogleAuthProvider },
+        { initializeFirestore },
+    ] = await Promise.all([
+        import("firebase/app"),
+        import("firebase/auth"),
+        import("firebase/firestore"),
+    ]);
 
     const app = initializeApp(firebaseConfig);
     _auth = getAuth(app);
     _googleProvider = new GoogleAuthProvider();
-    _db = getFirestore(app);
+    _db = initializeFirestore(app, {
+        ignoreUndefinedProperties: true,
+    });
 }
 
 function ensureInit(): Promise<void> {

@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.38";
+export const CURRENT_VERSION = "2.0.39";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,18 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.0.39",
+        date: "2026-03-18",
+        title: "간트 차트 시간 변경 저장 안 되는 문제 수정",
+        changes: [
+            {
+                type: "fix",
+                description:
+                    "간트 차트에서 작업 시간을 조절한 뒤 새로고침하면 변경 내용이 사라지던 문제를 수정했어요",
+            },
+        ],
+    },
     {
         version: "2.0.38",
         date: "2026-03-17",

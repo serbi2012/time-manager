@@ -1616,6 +1616,60 @@ describe("useWorkStore", () => {
             expect(record.sessions[0].duration_minutes).toBe(60);
         });
 
+        it("updateSession 시 is_overnight 미전달 시 기존 세션 필드가 변경되지 않는다", () => {
+            const record = createTestRecord({
+                sessions: [
+                    {
+                        id: "s1",
+                        start_time: "09:00",
+                        end_time: "10:00",
+                        duration_minutes: 60,
+                        date: "2026-01-19",
+                    },
+                ],
+            });
+            useWorkStore.setState({ records: [record] });
+
+            const store = useWorkStore.getState();
+            store.updateSession(record.id, "s1", "09:00", "11:00");
+
+            const updated = useWorkStore.getState().records[0];
+            const session = updated.sessions[0];
+            expect(session.end_time).toBe("11:00");
+            expect("is_overnight" in session).toBe(false);
+        });
+
+        it("updateSession 시 is_overnight를 명시적으로 전달하면 반영된다", () => {
+            const record = createTestRecord({
+                sessions: [
+                    {
+                        id: "s1",
+                        start_time: "22:00",
+                        end_time: "02:24",
+                        duration_minutes: 264,
+                        date: "2026-01-19",
+                        is_overnight: true,
+                    },
+                ],
+            });
+            useWorkStore.setState({ records: [record] });
+
+            const store = useWorkStore.getState();
+            store.updateSession(
+                record.id,
+                "s1",
+                "22:00",
+                "03:00",
+                undefined,
+                true
+            );
+
+            const updated = useWorkStore.getState().records[0];
+            const session = updated.sessions[0];
+            expect(session.end_time).toBe("03:00");
+            expect(session.is_overnight).toBe(true);
+        });
+
         it("updateSession 시 점심시간이 duration_minutes에 반영된다", () => {
             const record = createTestRecord({
                 sessions: [
