@@ -19,16 +19,18 @@ alwaysApply: false
 
 ## 자동 실행 순서
 
-### 1단계: 기존 테스트 실행 (필수)
+### 1단계: 기존 테스트 + 커버리지 실행 (필수)
 
 ```bash
-pnpm test:run
+pnpm test:coverage
 ```
 
 -   **모든 테스트 통과 필수**
+-   **커버리지 임계값 충족 필수** (Statements ≥65%, Branches ≥50%, Functions ≥60%, Lines ≥65%)
 -   실패 시:
     -   기능 변경으로 인한 실패 → 테스트 케이스 수정
     -   버그로 인한 실패 → 코드 수정
+    -   커버리지 미달 → 테스트 케이스 보강
 -   수정 후 테스트 재실행하여 통과 확인
 -   **통과 전까지 다음 단계 진행 금지**
 
@@ -215,8 +217,8 @@ export const CHANGELOG: ChangelogEntry[] = [
 ### 7단계: 최종 확인
 
 ```bash
-# 테스트 재실행
-pnpm test:run
+# 테스트 + 커버리지 재실행
+pnpm test:coverage
 
 # 린트 재확인
 pnpm lint
@@ -246,6 +248,7 @@ pnpm lint
 🎨 데모 동기화: 완료/불필요 (사유)
 
 ✅ 최종 테스트: 통과 (N개)
+📊 커버리지: Stmts XX% | Branch XX% | Funcs XX% | Lines XX%
 ✅ 린트: 통과
 ✅ 빌드: 성공
 ```
@@ -254,13 +257,13 @@ pnpm lint
 
 ## 체크리스트 요약 (모든 항목 필수)
 
--   [ ] 1단계: `pnpm test:run` 통과
+-   [ ] 1단계: `pnpm test:coverage` 통과 (테스트 + 커버리지 임계값)
 -   [ ] 2단계: `pnpm lint` 통과, `pnpm build` 성공
 -   [ ] 3단계: 변경된 모든 기능에 테스트 추가 (스킵 시 사유 명시)
 -   [ ] 4단계: 버전 타입 결정 (MAJOR/MINOR/PATCH)
 -   [ ] 5단계: `package.json`, `changelog.ts` 업데이트
 -   [ ] 6단계: 관련 문서 업데이트 (스킵 시 사유 명시)
--   [ ] 7단계: 최종 테스트 통과
+-   [ ] 7단계: 최종 테스트 + 커버리지 통과
 
 ---
 

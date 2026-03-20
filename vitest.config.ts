@@ -26,13 +26,20 @@ export default defineConfig({
         // 커버리지 설정
         coverage: {
             provider: "v8",
-            reporter: ["text", "json", "html"],
+            reporter: ["text", "json-summary", "html"],
+            reportsDirectory: "./coverage",
             exclude: [
                 "node_modules/",
                 "src/test/",
                 "**/*.d.ts",
                 "**/*.config.{ts,js}",
             ],
+            thresholds: {
+                statements: 65,
+                branches: 50,
+                functions: 60,
+                lines: 65,
+            },
         },
 
         // 타임아웃 설정 (ms)
