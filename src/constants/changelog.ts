@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.0.39";
+export const CURRENT_VERSION = "2.11.1";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -50,7 +50,7 @@ export const CHANGE_TYPE_CONFIG: Record<
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
     {
-        version: "2.0.39",
+        version: "2.11.1",
         date: "2026-03-18",
         title: "간트 차트 시간 변경 저장 안 되는 문제 수정",
         changes: [
@@ -62,7 +62,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         ],
     },
     {
-        version: "2.0.38",
+        version: "2.11.0",
         date: "2026-03-17",
         title: "새벽 근무 지원",
         changes: [
@@ -84,9 +84,9 @@ export const CHANGELOG: ChangelogEntry[] = [
         ],
     },
     {
-        version: "2.0.37",
+        version: "2.10.1",
         date: "2026-03-10",
-        title: "간트 차트 자동 조정 알림 및 개발 환경 로그 수정",
+        title: "간트 차트 자동 조정 알림 수정",
         changes: [
             {
                 type: "fix",
@@ -101,9 +101,9 @@ export const CHANGELOG: ChangelogEntry[] = [
         ],
     },
     {
-        version: "2.0.36",
+        version: "2.10.0",
         date: "2026-03-05",
-        title: "모바일 롱프레스 상호작용 대폭 확장",
+        title: "모바일 롱프레스 대폭 확장 및 안정성 개선",
         changes: [
             {
                 type: "feature",
@@ -140,13 +140,6 @@ export const CHANGELOG: ChangelogEntry[] = [
                 description:
                     "모바일 컨텍스트 메뉴가 다른 요소 위에 정상적으로 표시돼요",
             },
-        ],
-    },
-    {
-        version: "2.0.35",
-        date: "2026-03-05",
-        title: "모바일 날짜 이동 애니메이션 & 안정성 개선",
-        changes: [
             {
                 type: "style",
                 description:
@@ -173,13 +166,6 @@ export const CHANGELOG: ChangelogEntry[] = [
                 description:
                     "주간 캘린더 좌우 여백이 부족하던 문제를 수정했어요",
             },
-        ],
-    },
-    {
-        version: "2.0.34",
-        date: "2026-03-05",
-        title: "프리셋 순서 저장 수정",
-        changes: [
             {
                 type: "fix",
                 description:
@@ -188,7 +174,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         ],
     },
     {
-        version: "2.0.33",
+        version: "2.9.1",
         date: "2026-03-04",
         title: "성능 최적화",
         changes: [
@@ -204,21 +190,9 @@ export const CHANGELOG: ChangelogEntry[] = [
         ],
     },
     {
-        version: "2.0.32",
+        version: "2.9.0",
         date: "2026-03-03",
-        title: "완료된 작업 재시작 시 자동 완료 해제",
-        changes: [
-            {
-                type: "improvement",
-                description:
-                    "완료된 작업의 녹화 버튼을 누르면 완료 상태가 자동으로 풀려요",
-            },
-        ],
-    },
-    {
-        version: "2.0.31",
-        date: "2026-03-03",
-        title: "페이지 이동 및 콘텐츠 전환 애니메이션",
+        title: "페이지 전환 애니메이션 및 사용성 개선",
         changes: [
             {
                 type: "feature",
@@ -234,13 +208,11 @@ export const CHANGELOG: ChangelogEntry[] = [
                 description:
                     "사용설명서 섹션 변경 시 부드러운 슬라이드업 전환이 적용돼요",
             },
-        ],
-    },
-    {
-        version: "2.0.30",
-        date: "2026-03-03",
-        title: "모바일 롱프레스 메뉴 사용성 개선",
-        changes: [
+            {
+                type: "improvement",
+                description:
+                    "완료된 작업의 녹화 버튼을 누르면 완료 상태가 자동으로 풀려요",
+            },
             {
                 type: "improvement",
                 description: "길게 눌러 열린 메뉴가 스크롤하면 자동으로 닫혀요",
@@ -250,13 +222,6 @@ export const CHANGELOG: ChangelogEntry[] = [
                 description:
                     "작업을 길게 누를 때 짧은 진동으로 알려줘요 (Android)",
             },
-        ],
-    },
-    {
-        version: "2.0.29",
-        date: "2026-03-03",
-        title: "간트 차트 바 조작성 개선 및 캘린더 버그 수정",
-        changes: [
             {
                 type: "fix",
                 description:
@@ -275,7 +240,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         ],
     },
     {
-        version: "2.0.28",
+        version: "2.8.4",
         date: "2026-02-27",
         title: "점심시간 설정이 전체 시간 계산에 반영",
         changes: [
@@ -297,24 +262,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         ],
     },
     {
-        version: "2.0.27",
-        date: "2026-02-25",
-        title: "작업 기록 푸터 버튼 인터랙션 개선",
-        changes: [
-            {
-                type: "style",
-                description:
-                    "완료 목록·휴지통·내역 복사 버튼이 더 직관적으로 바뀌었어요",
-            },
-            {
-                type: "improvement",
-                description:
-                    "버튼에 마우스를 올리면 애니메이션으로 클릭 가능함을 알려줘요",
-            },
-        ],
-    },
-    {
-        version: "2.0.26",
+        version: "2.8.3",
         date: "2026-02-25",
         title: "간트차트 & 작업 기록 편의성 개선",
         changes: [
@@ -333,10 +281,20 @@ export const CHANGELOG: ChangelogEntry[] = [
                 description:
                     "날짜 이동 후 '오늘' 버튼을 눌러 바로 오늘로 돌아올 수 있어요",
             },
+            {
+                type: "style",
+                description:
+                    "완료 목록·휴지통·내역 복사 버튼이 더 직관적으로 바뀌었어요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "버튼에 마우스를 올리면 애니메이션으로 클릭 가능함을 알려줘요",
+            },
         ],
     },
     {
-        version: "2.0.25",
+        version: "2.8.2",
         date: "2026-02-24",
         title: "데스크탑 헤더 리디자인 & 앱 이름 변경",
         changes: [
@@ -357,22 +315,15 @@ export const CHANGELOG: ChangelogEntry[] = [
         ],
     },
     {
-        version: "2.0.24",
+        version: "2.8.1",
         date: "2026-02-23",
-        title: "주간 일정 관리업무 필터 기본값 변경",
+        title: "주간 일정 개선",
         changes: [
             {
                 type: "improvement",
                 description:
                     "주간 일정에서 관리업무 제외가 기본값으로 설정돼요",
             },
-        ],
-    },
-    {
-        version: "2.0.23",
-        date: "2026-02-23",
-        title: "주간 일정 누적시간 수정",
-        changes: [
             {
                 type: "fix",
                 description:
@@ -381,7 +332,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         ],
     },
     {
-        version: "2.0.22",
+        version: "2.8.0",
         date: "2026-02-20",
         title: "커서 트래킹 효과 & 설정 토글",
         changes: [
@@ -398,7 +349,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         ],
     },
     {
-        version: "2.0.21",
+        version: "2.7.1",
         date: "2026-02-19",
         title: "간트 차트 동기화 수정 & 날짜 네비게이션 개선",
         changes: [
@@ -429,9 +380,9 @@ export const CHANGELOG: ChangelogEntry[] = [
         ],
     },
     {
-        version: "2.0.20",
+        version: "2.7.0",
         date: "2026-02-12",
-        title: "모바일 롱프레스 수정 & 카드 레이아웃 개선",
+        title: "모바일 롱프레스 메뉴",
         changes: [
             {
                 type: "feature",
@@ -458,42 +409,24 @@ export const CHANGELOG: ChangelogEntry[] = [
         ],
     },
     {
-        version: "2.0.19",
+        version: "2.6.0",
         date: "2026-02-11",
-        title: "모바일 UI 전체 다듬기",
+        title: "모바일 UI 전면 리디자인",
         changes: [
             {
                 type: "style",
                 description:
-                    "모바일 전체 배경색 통일 — 헤더와 콘텐츠 사이 색상 차이 제거",
+                    "모바일 일간 타임라인이 세그먼트 바 + 카드 리스트 디자인으로 전면 개선됨",
             },
             {
                 type: "feature",
                 description:
-                    "날짜 이동 바 추가 — 좌/우 화살표로 하루씩 빠르게 이동 가능",
+                    "모바일 타임라인 작업 목록 접기/펼치기 기능 추가 (설정 동기화 지원)",
             },
             {
-                type: "style",
-                description:
-                    "모바일 UI 크기 확대 — 캘린더, 타이머, 작업 목록 등 전체적으로 더 크고 읽기 쉽게 개선",
+                type: "improvement",
+                description: "모바일에서 세션 시간 칩을 탭하여 바로 수정 가능",
             },
-            {
-                type: "style",
-                description:
-                    "주간 일정 모바일 디자인 개편 — 깔끔한 헤더, 주간 네비게이션, 필터 버튼 개선",
-            },
-            {
-                type: "style",
-                description:
-                    "사용설명서 모바일 디자인 개편 — 검색 바 개선, 메뉴를 칩 스타일로 변경",
-            },
-        ],
-    },
-    {
-        version: "2.0.18",
-        date: "2026-02-11",
-        title: "모바일 작업 기록 전면 리디자인",
-        changes: [
             {
                 type: "style",
                 description:
@@ -524,31 +457,35 @@ export const CHANGELOG: ChangelogEntry[] = [
                 description:
                     "다양한 모바일 전용 애니메이션 적용 (입장 효과, 슬라이드 전환, 숫자 카운트업 등)",
             },
-        ],
-    },
-    {
-        version: "2.0.17",
-        date: "2026-02-11",
-        title: "모바일 타임라인 재설계",
-        changes: [
             {
                 type: "style",
                 description:
-                    "모바일 일간 타임라인이 세그먼트 바 + 카드 리스트 디자인으로 전면 개선됨",
+                    "모바일 전체 배경색 통일 — 헤더와 콘텐츠 사이 색상 차이 제거",
             },
             {
                 type: "feature",
                 description:
-                    "모바일 타임라인 작업 목록 접기/펼치기 기능 추가 (설정 동기화 지원)",
+                    "날짜 이동 바 추가 — 좌/우 화살표로 하루씩 빠르게 이동 가능",
             },
             {
-                type: "improvement",
-                description: "모바일에서 세션 시간 칩을 탭하여 바로 수정 가능",
+                type: "style",
+                description:
+                    "모바일 UI 크기 확대 — 캘린더, 타이머, 작업 목록 등 전체적으로 더 크고 읽기 쉽게 개선",
+            },
+            {
+                type: "style",
+                description:
+                    "주간 일정 모바일 디자인 개편 — 깔끔한 헤더, 주간 네비게이션, 필터 버튼 개선",
+            },
+            {
+                type: "style",
+                description:
+                    "사용설명서 모바일 디자인 개편 — 검색 바 개선, 메뉴를 칩 스타일로 변경",
             },
         ],
     },
     {
-        version: "2.0.16",
+        version: "2.5.0",
         date: "2026-02-10",
         title: "UI 리디자인",
         changes: [
@@ -583,7 +520,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         ],
     },
     {
-        version: "2.0.15",
+        version: "2.4.0",
         date: "2026-02-02",
         title: "페이지 트랜지션 효과",
         changes: [
@@ -600,7 +537,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         ],
     },
     {
-        version: "2.0.13",
+        version: "2.3.1",
         date: "2026-01-30",
         title: "수정 모달에서 세션 시간 수정",
         changes: [
@@ -617,21 +554,9 @@ export const CHANGELOG: ChangelogEntry[] = [
         ],
     },
     {
-        version: "2.0.12",
+        version: "2.3.0",
         date: "2026-01-29",
-        title: "간트차트 실시간 업데이트",
-        changes: [
-            {
-                type: "improvement",
-                description:
-                    "간트차트에서 레코딩 중인 작업의 바가 실시간으로 길어짐",
-            },
-        ],
-    },
-    {
-        version: "2.0.11",
-        date: "2026-01-29",
-        title: "자동완성 검색 개선",
+        title: "자동완성 검색 개선 및 간트차트 실시간 업데이트",
         changes: [
             {
                 type: "feature",
@@ -661,69 +586,17 @@ export const CHANGELOG: ChangelogEntry[] = [
                 description:
                     "자동완성 옵션 숨김 시 즉시 반영되지 않던 문제 수정",
             },
-        ],
-    },
-    {
-        version: "2.0.9",
-        date: "2026-01-28",
-        title: "모바일 UI 개선",
-        changes: [
-            {
-                type: "style",
-                description: "모바일 설정 화면이 더 보기 좋게 개선됨",
-            },
             {
                 type: "improvement",
-                description: "모바일에서 프리셋 수정/삭제 버튼이 항상 표시됨",
-            },
-            {
-                type: "improvement",
-                description: "모바일에서 날짜 선택 UI가 개선됨",
+                description:
+                    "간트차트에서 레코딩 중인 작업의 바가 실시간으로 길어짐",
             },
         ],
     },
     {
-        version: "2.0.8",
+        version: "2.2.0",
         date: "2026-01-28",
-        title: "모바일 헤더 개선",
-        changes: [
-            {
-                type: "improvement",
-                description:
-                    "헤더의 '업무 시간 관리' 클릭 시 일간 기록으로 이동",
-            },
-            {
-                type: "style",
-                description: "모바일 헤더에 현재 페이지명과 오늘 날짜가 표시됨",
-            },
-        ],
-    },
-    {
-        version: "2.0.7",
-        date: "2026-01-28",
-        title: "간트차트 드래그 개선 및 UI 개선",
-        changes: [
-            {
-                type: "improvement",
-                description:
-                    "간트차트에서 드래그 중 영역을 벗어나도 드래그 상태가 유지됨",
-            },
-            {
-                type: "feature",
-                description:
-                    "날짜 선택기 좌우에 화살표 버튼 추가로 어제/내일 빠른 이동 가능",
-            },
-            {
-                type: "style",
-                description:
-                    "작업 기록 헤더 버튼들의 디자인 개선 (Tooltip 추가, 단축키 뱃지 스타일)",
-            },
-        ],
-    },
-    {
-        version: "2.0.6",
-        date: "2026-01-28",
-        title: "세션 추가 및 점심시간 설정",
+        title: "세션 추가, 점심시간 설정 및 UI 개선",
         changes: [
             {
                 type: "feature",
@@ -743,13 +616,42 @@ export const CHANGELOG: ChangelogEntry[] = [
                 type: "style",
                 description: "설정 모달 UI가 카드 기반으로 모던하게 개선됨",
             },
-        ],
-    },
-    {
-        version: "2.0.5",
-        date: "2026-01-28",
-        title: "날짜 표시 한글화 및 UI 개선",
-        changes: [
+            {
+                type: "improvement",
+                description:
+                    "간트차트에서 드래그 중 영역을 벗어나도 드래그 상태가 유지됨",
+            },
+            {
+                type: "feature",
+                description:
+                    "날짜 선택기 좌우에 화살표 버튼 추가로 어제/내일 빠른 이동 가능",
+            },
+            {
+                type: "style",
+                description:
+                    "작업 기록 헤더 버튼들의 디자인 개선 (Tooltip 추가, 단축키 뱃지 스타일)",
+            },
+            {
+                type: "improvement",
+                description:
+                    "헤더의 '업무 시간 관리' 클릭 시 일간 기록으로 이동",
+            },
+            {
+                type: "style",
+                description: "모바일 헤더에 현재 페이지명과 오늘 날짜가 표시됨",
+            },
+            {
+                type: "style",
+                description: "모바일 설정 화면이 더 보기 좋게 개선됨",
+            },
+            {
+                type: "improvement",
+                description: "모바일에서 프리셋 수정/삭제 버튼이 항상 표시됨",
+            },
+            {
+                type: "improvement",
+                description: "모바일에서 날짜 선택 UI가 개선됨",
+            },
             {
                 type: "style",
                 description:
@@ -768,7 +670,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         ],
     },
     {
-        version: "2.0.4",
+        version: "2.1.1",
         date: "2026-01-26",
         title: "반응형 레이아웃 개선",
         changes: [
@@ -785,31 +687,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         ],
     },
     {
-        version: "2.0.3",
-        date: "2026-01-23",
-        title: "녹화 중 시간 조절 자동 조정",
-        changes: [
-            {
-                type: "fix",
-                description:
-                    "녹화 중인 세션의 시작 시간 조절 시 다른 세션과 충돌하면 자동 조정됨",
-            },
-        ],
-    },
-    {
-        version: "2.0.2",
-        date: "2026-01-23",
-        title: "작업 기록 시작 버그 수정",
-        changes: [
-            {
-                type: "fix",
-                description:
-                    "모바일에서 작업 기록 '시작' 버튼 클릭 시 빈 작업이 생성되던 버그 수정",
-            },
-        ],
-    },
-    {
-        version: "2.0.1",
+        version: "2.1.0",
         date: "2026-01-23",
         title: "모바일/데스크탑 UI 분리",
         changes: [
@@ -817,6 +695,16 @@ export const CHANGELOG: ChangelogEntry[] = [
                 type: "improvement",
                 description:
                     "모바일/데스크탑 UI 완전 분리 - 플랫폼별 최적화된 화면 제공",
+            },
+            {
+                type: "fix",
+                description:
+                    "모바일에서 작업 기록 '시작' 버튼 클릭 시 빈 작업이 생성되던 버그 수정",
+            },
+            {
+                type: "fix",
+                description:
+                    "녹화 중인 세션의 시작 시간 조절 시 다른 세션과 충돌하면 자동 조정됨",
             },
         ],
     },
