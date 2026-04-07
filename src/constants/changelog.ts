@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.11.2";
+export const CURRENT_VERSION = "2.11.3";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,23 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.11.3",
+        date: "2026-04-07",
+        title: "작업 일괄 변경 기능",
+        changes: [
+            {
+                type: "feature",
+                description:
+                    "설정에서 작업명과 프로젝트 코드를 한 번에 변경할 수 있어요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "변경 전 대상을 미리 확인할 수 있어 실수를 방지할 수 있어요",
+            },
+        ],
+    },
     {
         version: "2.11.2",
         date: "2026-03-20",

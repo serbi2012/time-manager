@@ -3,6 +3,7 @@
  */
 
 export { DataTab } from "./DataTab";
+export { BulkEditTab } from "./BulkEditTab";
 export { ThemeTab } from "./ThemeTab";
 export { ShortcutsTab } from "./ShortcutsTab";
 export { AutoCompleteTab } from "./AutoCompleteTab";

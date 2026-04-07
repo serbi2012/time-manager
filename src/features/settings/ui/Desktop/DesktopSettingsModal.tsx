@@ -12,6 +12,7 @@ import {
     BgColorsOutlined,
     ThunderboltOutlined,
     DatabaseOutlined,
+    EditOutlined,
     UnorderedListOutlined,
     KeyOutlined,
 } from "@ant-design/icons";
@@ -19,6 +20,7 @@ import {
     ThemeTab,
     AnimationTab,
     DataTab,
+    BulkEditTab,
     AutoCompleteTab,
     ShortcutsTab,
 } from "../tabs";
@@ -27,6 +29,7 @@ import {
     SETTINGS_TAB_THEME,
     SETTINGS_TAB_ANIMATION,
     SETTINGS_TAB_DATA,
+    SETTINGS_TAB_BULK_EDIT,
     SETTINGS_TAB_AUTOCOMPLETE,
     SETTINGS_TAB_SHORTCUTS,
 } from "../../constants";
@@ -48,6 +51,7 @@ export interface DesktopSettingsModalProps {
 const TAB_KEY_THEME = "theme";
 const TAB_KEY_ANIMATION = "animation";
 const TAB_KEY_DATA = "data";
+const TAB_KEY_BULK_EDIT = "bulk-edit";
 const TAB_KEY_AUTOCOMPLETE = "autocomplete";
 const TAB_KEY_SHORTCUTS = "shortcuts";
 
@@ -90,6 +94,20 @@ export function DesktopSettingsModal({
                     onImport={onImport}
                     isAuthenticated={isAuthenticated}
                     is_mobile={false}
+                />
+            ),
+        },
+        {
+            key: TAB_KEY_BULK_EDIT,
+            label: (
+                <span>
+                    <EditOutlined /> {SETTINGS_TAB_BULK_EDIT}
+                </span>
+            ),
+            children: (
+                <BulkEditTab
+                    is_mobile={false}
+                    isAuthenticated={isAuthenticated}
                 />
             ),
         },

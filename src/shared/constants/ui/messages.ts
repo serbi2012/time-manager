@@ -83,6 +83,8 @@ export const SUCCESS_MESSAGES = {
     valueRestored: (v: string) => `"${v}" 복원됨`,
     allItemsRestored: (n: number) => `${n}개 항목이 복원되었습니다`,
     lunchTimeChanged: "점심시간이 변경되었습니다",
+    bulkEditSuccess: (records: number, templates: number) =>
+        `${records}개 작업 기록, ${templates}개 프리셋이 변경되었습니다`,
 
     // 기타
     saved: "저장되었습니다",
@@ -148,8 +150,7 @@ export const ERROR_MESSAGES = {
         `${date}에 ${info} 작업과 시간이 겹칩니다. 시간을 조정하세요.`,
     conflictFullOverlap: (info: string) =>
         `${info} 작업과 시간이 완전히 겹칩니다.`,
-    conflictContained: (info: string) =>
-        `${info} 작업 안에 완전히 포함됩니다.`,
+    conflictContained: (info: string) => `${info} 작업 안에 완전히 포함됩니다.`,
 
     // 기타
     unknown: "오류가 발생했습니다",
