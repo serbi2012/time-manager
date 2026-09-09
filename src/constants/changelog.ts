@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.13.1";
+export const CURRENT_VERSION = "2.13.2";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,27 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.13.2",
+        date: "2026-09-09",
+        title: "시간관리 형식 보기 개선",
+        changes: [
+            {
+                type: "improvement",
+                description:
+                    "시간관리 형식 보기 팝업이 화면 폭에 맞춰 훨씬 넓어졌어요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "업무가 \"작업\"인 기록은 거래 칸에 작업명이, 비고 칸에 거래명이 들어가요",
+            },
+            {
+                type: "improvement",
+                description: "표에서 카테고리 코드 칸을 빼고 카테고리명만 보여줘요",
+            },
+        ],
+    },
     {
         version: "2.13.1",
         date: "2026-09-09",

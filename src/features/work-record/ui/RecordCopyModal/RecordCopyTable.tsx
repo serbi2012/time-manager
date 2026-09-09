@@ -3,7 +3,7 @@ import { RECORD_COPY_COLUMNS } from "../../constants";
 import { RecordCopyCell } from "./RecordCopyCell";
 import { EditableCodeCell } from "./EditableCodeCell";
 
-const DURATION_COLUMN_INDEX = 6;
+const DURATION_COLUMN_INDEX = 5;
 
 const HEADER_BASE_CLASS =
     "px-md py-sm text-sm font-semibold text-text-secondary border-b border-border-default whitespace-nowrap";
@@ -12,14 +12,12 @@ interface RecordCopyTableProps {
     rows: RecordCopyRow[];
     onCopyCell: (value: string) => void;
     onSaveDealCode: (deal_name: string, code: string) => void;
-    onSaveCategoryCode: (category_name: string, code: string) => void;
 }
 
 export function RecordCopyTable({
     rows,
     onCopyCell,
     onSaveDealCode,
-    onSaveCategoryCode,
 }: RecordCopyTableProps) {
     return (
         <div className="overflow-x-auto rounded-lg border border-border-default select-text">
@@ -59,12 +57,6 @@ export function RecordCopyTable({
                             <RecordCopyCell
                                 value={row.deal_name}
                                 onCopy={onCopyCell}
-                            />
-                            <EditableCodeCell
-                                map_key={row.category_name}
-                                code={row.category_code}
-                                display_text={row.category_display}
-                                onSave={onSaveCategoryCode}
                             />
                             <RecordCopyCell
                                 value={row.category_name}

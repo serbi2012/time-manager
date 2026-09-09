@@ -83,11 +83,11 @@ export {
     buildMarkdownTable,
 } from "./text_table";
 
-// 내역 보기 행
+// 시간관리 양식 행
 export {
     type RecordCopyRow,
     type BuildRecordCopyRowsOptions,
-    formatCodeWithName,
+    resolveDealAndNote,
     buildRecordCopyRows,
     getCopyRowCells,
     formatCopyRowsToMarkdown,

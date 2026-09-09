@@ -6,14 +6,12 @@ import { RECORD_COPY_MODAL } from "../../constants";
 interface EditableCodeCellProps {
     map_key: string;
     code: string;
-    display_text?: string;
     onSave: (map_key: string, code: string) => void;
 }
 
 export function EditableCodeCell({
     map_key,
     code,
-    display_text,
     onSave,
 }: EditableCodeCellProps) {
     const [is_editing, setIsEditing] = useState(false);
@@ -55,19 +53,17 @@ export function EditableCodeCell({
         );
     }
 
-    const text = display_text ?? code;
-
     return (
         <td
             className={cn(
                 "px-md py-sm border-b border-border-light align-top",
                 "text-md whitespace-pre-wrap break-words",
                 "cursor-text hover:bg-primary-light transition-colors duration-150",
-                text ? "text-text-primary" : "text-text-disabled"
+                code ? "text-text-primary" : "text-text-disabled"
             )}
             onClick={handleStartEdit}
         >
-            {text || RECORD_COPY_MODAL.CODE_PLACEHOLDER}
+            {code || RECORD_COPY_MODAL.CODE_PLACEHOLDER}
         </td>
     );
 }

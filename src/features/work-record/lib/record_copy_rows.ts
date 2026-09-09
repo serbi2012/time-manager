@@ -3,7 +3,10 @@ import type { CodeMap } from "../../../store/types";
 import { type LunchTimeRange } from "../../../shared/lib/lunch";
 import { getRecordDurationForDate } from "./duration_calculator";
 import { buildMarkdownTable } from "./text_table";
-import { RECORD_COPY_COLUMNS } from "../constants";
+import {
+    RECORD_COPY_COLUMNS,
+    COPY_ROW_GENERAL_TASK_NAME,
+} from "../constants";
 
 export interface RecordCopyRow {
     record_id: string;
@@ -11,8 +14,6 @@ export interface RecordCopyRow {
     task_name: string;
     deal_code: string;
     deal_name: string;
-    category_code: string;
-    category_display: string;
     category_name: string;
     duration_text: string;
     note: string;
@@ -20,29 +21,46 @@ export interface RecordCopyRow {
 
 export interface BuildRecordCopyRowsOptions {
     deal_codes: CodeMap;
-    category_codes: CodeMap;
     lunch_time?: LunchTimeRange;
 }
 
+interface DealAndNote {
+    deal_name: string;
+    note: string;
+}
+
 /**
- * 코드와 이름을 "코드 이름" 형태로 결합, 코드가 없으면 빈 문자열
+ * 시간관리 양식의 거래명과 비고를 결정
+ *
+ * 업무가 "작업"이면 거래명 자리에 작업명을 넣고, 원래 거래명은 비고로 옮긴다.
+ * 원래 비고가 있으면 뒤에 함께 남긴다.
  */
-export function formatCodeWithName(code: string, name: string): string {
-    if (!code) return "";
-    return `${code} ${name}`.trim();
+export function resolveDealAndNote(
+    work_name: string,
+    task_name: string,
+    deal_name: string,
+    note: string
+): DealAndNote {
+    if (task_name !== COPY_ROW_GENERAL_TASK_NAME) {
+        return { deal_name, note };
+    }
+
+    const moved_note = [deal_name, note].filter(Boolean).join(" ");
+
+    return { deal_name: work_name, note: moved_note };
 }
 
 /**
  * 표시할 레코드를 시간관리 양식 행 목록으로 변환
  *
- * 거래코드는 거래명, 카테고리 코드는 카테고리명 기준 매핑에서 조회한다.
+ * 거래코드는 거래명 기준 매핑에서 조회한다.
  */
 export function buildRecordCopyRows(
     records: WorkRecord[],
     selected_date: string,
     options: BuildRecordCopyRowsOptions
 ): RecordCopyRow[] {
-    const { deal_codes, category_codes, lunch_time } = options;
+    const { deal_codes, lunch_time } = options;
     const filtered = records.filter((r) => !r.is_deleted);
 
     const sorted = [...filtered].sort((a, b) =>
@@ -55,23 +73,24 @@ export function buildRecordCopyRows(
             selected_date,
             lunch_time
         );
-        const deal_name = record.deal_name || record.work_name;
-        const category_name = record.category_name || "";
-        const category_code = category_name
-            ? category_codes[category_name.trim()] || ""
-            : "";
+        const task_name = record.task_name || "";
+        const source_deal_name = record.deal_name || record.work_name;
+        const { deal_name, note } = resolveDealAndNote(
+            record.work_name,
+            task_name,
+            source_deal_name,
+            record.note || ""
+        );
 
         return {
             record_id: record.id,
             work_name: record.work_name,
-            task_name: record.task_name || "",
+            task_name,
             deal_code: deal_codes[deal_name.trim()] || "",
             deal_name,
-            category_code,
-            category_display: formatCodeWithName(category_code, category_name),
-            category_name,
+            category_name: record.category_name || "",
             duration_text: String(duration),
-            note: record.note || "",
+            note,
         };
     });
 }
@@ -85,7 +104,6 @@ export function getCopyRowCells(row: RecordCopyRow): string[] {
         row.task_name,
         row.deal_code,
         row.deal_name,
-        row.category_display,
         row.category_name,
         row.duration_text,
         row.note,

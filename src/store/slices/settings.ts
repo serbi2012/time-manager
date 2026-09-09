@@ -51,7 +51,6 @@ export const createSettingsSlice: StateCreator<
     cursor_tracking_enabled: DEFAULT_CURSOR_TRACKING_ENABLED,
     mobile_gantt_list_expanded: DEFAULT_MOBILE_GANTT_LIST_EXPANDED,
     deal_codes: {},
-    category_codes: {},
 
     // ============================================
     // Custom Options Actions
@@ -212,21 +211,5 @@ export const createSettingsSlice: StateCreator<
 
     getDealCode: (deal_name: string) => {
         return getCodeFromMap(get().deal_codes, deal_name);
-    },
-
-    setCategoryCode: (category_name: string, code: string) => {
-        const next_codes = updateCodeMap(
-            get().category_codes,
-            category_name,
-            code
-        );
-        if (!next_codes) return;
-
-        set({ category_codes: next_codes });
-        syncSettings({ category_codes: next_codes }).catch(console.error);
-    },
-
-    getCategoryCode: (category_name: string) => {
-        return getCodeFromMap(get().category_codes, category_name);
     },
 });

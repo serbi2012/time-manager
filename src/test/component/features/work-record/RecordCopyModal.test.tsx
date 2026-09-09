@@ -71,7 +71,6 @@ describe("RecordCopyModal", () => {
     beforeEach(() => {
         useWorkStore.setState({
             deal_codes: {},
-            category_codes: {},
             lunch_start_time: "11:40",
             lunch_end_time: "12:40",
         });
@@ -111,6 +110,17 @@ describe("RecordCopyModal", () => {
         expect(within(row).getByText("60")).toBeInTheDocument();
     });
 
+    it("카테고리 컬럼 없이 카테고리명만 헤더에 있다", () => {
+        renderModal();
+
+        const headers = screen
+            .getAllByRole("columnheader")
+            .map((th) => th.textContent);
+
+        expect(headers).not.toContain("카테고리");
+        expect(headers).toContain("카테고리명");
+    });
+
     it("레코드가 없으면 빈 상태를 표시한다", () => {
         renderModal([]);
 
@@ -148,12 +158,15 @@ describe("RecordCopyModal", () => {
         expect(cells[3]).toBe("거래A");
     });
 
-    it("저장된 카테고리 코드가 코드와 이름을 합쳐 표시된다", () => {
-        useWorkStore.setState({ category_codes: { 환경세팅: "18" } });
-
+    it("카테고리명만 표시하고 카테고리 코드 칸은 없다", () => {
         renderModal();
 
-        expect(screen.getByText("18 환경세팅")).toBeInTheDocument();
+        const cells = Array.from(
+            screen.getByText("작업A").closest("tr")!.children
+        ).map((cell) => cell.textContent);
+
+        expect(cells).toHaveLength(7);
+        expect(cells[4]).toBe("환경세팅");
     });
 
     it("거래코드 칸을 클릭해 입력하면 스토어에 저장된다", () => {
@@ -171,18 +184,21 @@ describe("RecordCopyModal", () => {
         expect(useWorkStore.getState().deal_codes["거래A"]).toBe("D-777");
     });
 
-    it("카테고리 칸을 클릭해 입력하면 카테고리 코드가 저장된다", () => {
-        renderModal();
+    it("업무가 작업이면 거래에 작업명, 비고에 거래명이 표시된다", () => {
+        renderModal([
+            createRecord({
+                work_name: "기타 문서 작성",
+                task_name: "작업",
+                deal_name: "시간관리 및 주간일정작성",
+                note: "",
+            }),
+        ]);
 
-        const row = screen.getByText("작업A").closest("tr")!;
-        fireEvent.click(row.children[4]);
+        const cells = Array.from(
+            screen.getAllByText("기타 문서 작성")[0].closest("tr")!.children
+        ).map((cell) => cell.textContent);
 
-        const input = screen.getByPlaceholderText(
-            RECORD_COPY_MODAL.CODE_PLACEHOLDER
-        );
-        fireEvent.change(input, { target: { value: "18" } });
-        fireEvent.blur(input);
-
-        expect(useWorkStore.getState().category_codes["환경세팅"]).toBe("18");
+        expect(cells[3]).toBe("기타 문서 작성");
+        expect(cells[6]).toBe("시간관리 및 주간일정작성");
     });
 });
