@@ -25,3 +25,7 @@ dist-ssr
 
 dev-dist
 coverage
+
+# 패키지 매니저는 pnpm 고정
+package-lock.json
+yarn.lock
