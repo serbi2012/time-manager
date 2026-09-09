@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.13.0";
+export const CURRENT_VERSION = "2.13.1";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,23 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.13.1",
+        date: "2026-09-09",
+        title: "모달 포커스 수정",
+        changes: [
+            {
+                type: "fix",
+                description:
+                    "모달을 열어도 첫 입력칸에 커서가 가지 않던 문제를 고쳤어요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "시간관리 형식 보기 창이 화면 너비에 맞게 더 넓게 열려요",
+            },
+        ],
+    },
     {
         version: "2.13.0",
         date: "2026-09-09",

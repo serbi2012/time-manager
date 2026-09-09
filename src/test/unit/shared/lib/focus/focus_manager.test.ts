@@ -3,7 +3,7 @@ import {
     getFocusableElements,
     findInitialFocusTarget,
     canReceiveFocus,
-    findTopmostModalBody,
+    findTopmostModalScope,
     pushFocusLayer,
     focusInto,
     getFocusStackDepth,
@@ -130,37 +130,43 @@ describe("focus 유틸", () => {
         });
     });
 
-    describe("findTopmostModalBody", () => {
-        it("보이는 모달 중 마지막 것의 본문을 찾는다", () => {
+    describe("findTopmostModalScope", () => {
+        it("보이는 모달 중 마지막 것을 찾는다", () => {
             container = mount(`
-                <div class="ant-modal-wrap">
-                    <div class="ant-modal-content" id="first"></div>
-                </div>
-                <div class="ant-modal-wrap">
-                    <div class="ant-modal-content" id="second"></div>
-                </div>
+                <div class="ant-modal-wrap" id="first"></div>
+                <div class="ant-modal-wrap" id="second"></div>
             `);
 
-            expect(findTopmostModalBody()?.id).toBe("second");
+            expect(findTopmostModalScope()?.id).toBe("second");
         });
 
         it("숨겨진 모달은 건너뛴다", () => {
             container = mount(`
-                <div class="ant-modal-wrap">
-                    <div class="ant-modal-content" id="visible"></div>
-                </div>
-                <div class="ant-modal-wrap" style="display: none">
-                    <div class="ant-modal-content" id="hidden"></div>
-                </div>
+                <div class="ant-modal-wrap" id="visible"></div>
+                <div class="ant-modal-wrap" id="hidden" style="display: none"></div>
             `);
 
-            expect(findTopmostModalBody()?.id).toBe("visible");
+            expect(findTopmostModalScope()?.id).toBe("visible");
         });
 
         it("모달이 없으면 null", () => {
             container = mount(`<div>본문</div>`);
 
-            expect(findTopmostModalBody()).toBeNull();
+            expect(findTopmostModalScope()).toBeNull();
+        });
+
+        it("antd 버전에 따라 내부 컨테이너 클래스가 달라도 찾는다", () => {
+            container = mount(`
+                <div class="ant-modal-wrap">
+                    <div class="ant-modal-container">
+                        <input id="field" />
+                    </div>
+                </div>
+            `);
+
+            const scope = findTopmostModalScope()!;
+
+            expect(findInitialFocusTarget(scope)?.id).toBe("field");
         });
     });
 
@@ -252,7 +258,7 @@ describe("focus 유틸", () => {
         it("컨테이너를 안 주면 최상단 모달에서 찾는다", () => {
             container = mount(`
                 <div class="ant-modal-wrap">
-                    <div class="ant-modal-content">
+                    <div class="ant-modal-container">
                         <input id="modal-input" />
                     </div>
                 </div>

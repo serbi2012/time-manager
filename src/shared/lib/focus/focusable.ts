@@ -1,8 +1,10 @@
-/** antd 모달 본문 셀렉터 */
-const MODAL_BODY_SELECTOR = ".ant-modal-content";
-
-/** 닫히는 중이거나 숨겨진 모달 래퍼 */
-const HIDDEN_MODAL_WRAP_SELECTOR = ".ant-modal-wrap";
+/**
+ * antd 모달 래퍼 셀렉터
+ *
+ * 내부 컨테이너 클래스는 antd 버전에 따라 바뀌므로(v5 ant-modal-content,
+ * v6 ant-modal-container) 안정적인 래퍼만 기준으로 삼는다.
+ */
+const MODAL_WRAP_SELECTOR = ".ant-modal-wrap";
 
 const FOCUSABLE_SELECTOR = [
     "input:not([type='hidden'])",
@@ -76,19 +78,14 @@ export function canReceiveFocus(element: Element | null): element is HTMLElement
 }
 
 /**
- * 현재 화면에 보이는 모달 중 가장 위에 있는 것의 본문을 찾는다
+ * 현재 화면에 보이는 모달 중 가장 위에 있는 것을 찾는다
  *
- * 컨테이너를 직접 넘기지 않은 모달의 자동 포커스 대상으로 쓴다.
+ * 컨테이너를 직접 넘기지 않은 모달의 자동 포커스 범위로 쓴다.
  */
-export function findTopmostModalBody(): HTMLElement | null {
+export function findTopmostModalScope(): HTMLElement | null {
     const wraps = Array.from(
-        document.querySelectorAll<HTMLElement>(HIDDEN_MODAL_WRAP_SELECTOR)
+        document.querySelectorAll<HTMLElement>(MODAL_WRAP_SELECTOR)
     ).filter((wrap) => wrap.style.display !== "none");
 
-    for (let i = wraps.length - 1; i >= 0; i -= 1) {
-        const body = wraps[i].querySelector<HTMLElement>(MODAL_BODY_SELECTOR);
-        if (body) return body;
-    }
-
-    return null;
+    return wraps.length > 0 ? wraps[wraps.length - 1] : null;
 }

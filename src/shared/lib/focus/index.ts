@@ -2,7 +2,7 @@ export {
     getFocusableElements,
     findInitialFocusTarget,
     canReceiveFocus,
-    findTopmostModalBody,
+    findTopmostModalScope,
 } from "./focusable";
 
 export {

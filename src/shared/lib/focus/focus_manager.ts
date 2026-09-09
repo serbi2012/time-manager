@@ -1,7 +1,7 @@
 import {
     canReceiveFocus,
     findInitialFocusTarget,
-    findTopmostModalBody,
+    findTopmostModalScope,
 } from "./focusable";
 
 export interface FocusLayerEntry {
@@ -70,7 +70,7 @@ export function focusInto(
         return preferred;
     }
 
-    const scope = container ?? findTopmostModalBody();
+    const scope = container ?? findTopmostModalScope();
     if (!scope) return null;
 
     const target = findInitialFocusTarget(scope);

@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, act } from "@testing-library/react";
+import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
 import { useState } from "react";
 import { Modal, Input, Button } from "antd";
 import { ConfigProvider } from "antd";
@@ -54,6 +54,7 @@ function ModalHarness({ onSubmit, onGlobalShortcut }: HarnessProps) {
                 footer={null}
                 getContainer={false}
             >
+                <Input placeholder="프로젝트 코드" />
                 <Input placeholder="작업명" />
             </Modal>
         </>
@@ -131,7 +132,7 @@ describe("모달 단축키 통합", () => {
 
         fireEvent.click(screen.getByText("모달 열기"));
 
-        const input = screen.getByPlaceholderText("작업명");
+        const input = screen.getByPlaceholderText("프로젝트 코드");
         input.focus();
 
         act(() => {
@@ -158,6 +159,46 @@ describe("모달 단축키 통합", () => {
         pressKey({ key: "n", altKey: true });
 
         expect(on_global).toHaveBeenCalledTimes(1);
+    });
+
+    it("모달을 열면 첫 입력란으로 포커스가 옮겨간다", async () => {
+        render(
+            <TestWrapper>
+                <ModalHarness onSubmit={vi.fn()} onGlobalShortcut={vi.fn()} />
+            </TestWrapper>
+        );
+
+        fireEvent.click(screen.getByText("모달 열기"));
+
+        await waitFor(() => {
+            expect(document.activeElement).toBe(
+                screen.getByPlaceholderText("프로젝트 코드")
+            );
+        });
+    });
+
+    it("모달을 닫으면 열기 전 위치로 포커스가 되돌아간다", async () => {
+        render(
+            <TestWrapper>
+                <ModalHarness onSubmit={vi.fn()} onGlobalShortcut={vi.fn()} />
+            </TestWrapper>
+        );
+
+        const trigger = screen.getByText("모달 열기");
+        trigger.focus();
+        fireEvent.click(trigger);
+
+        await waitFor(() => {
+            expect(document.activeElement).toBe(
+                screen.getByPlaceholderText("프로젝트 코드")
+            );
+        });
+
+        fireEvent.click(screen.getByLabelText("Close"));
+
+        await waitFor(() => {
+            expect(document.activeElement).toBe(trigger);
+        });
     });
 
     it("설정에서 제출 키를 바꾸면 새 키로 제출된다", () => {

@@ -11,9 +11,9 @@ import { buildRecordCopyRows, formatCopyRowsToMarkdown } from "../../lib";
 import { RECORD_COPY_MODAL } from "../../constants";
 import { RecordCopyTable } from "./RecordCopyTable";
 
-const MODAL_WIDTH = 1240;
-const MODAL_BODY_STYLE = { maxHeight: "70vh", overflowY: "auto" as const };
-const MODAL_STYLE = { maxWidth: "calc(100vw - 32px)" };
+const MODAL_WIDTH = "96vw";
+const MODAL_BODY_STYLE = { maxHeight: "76vh", overflowY: "auto" as const };
+const MODAL_STYLE = { top: 24, maxWidth: "calc(100vw - 32px)" };
 
 const { Text } = Typography;
 
