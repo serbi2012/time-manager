@@ -1,0 +1,335 @@
+# 트랜지션 시스템 (Page Transitions)
+
+이 문서는 페이지 진입, 라우트 전환, 콘텐츠 전환 시 UI 요소들의 트랜지션 효과 시스템을 설명합니다.
+
+---
+
+## 아키텍처 개요
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Layout (Desktop/Mobile)                 │
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │ PageTransitionProvider                                  ││
+│  │  - is_ready (initial_load_done)                        ││
+│  │  - transition_enabled (설정)                            ││
+│  │  - transition_speed (설정)                              ││
+│  │                                                         ││
+│  │  ┌───────────────────────────────────────────────────┐ ││
+│  │  │ RouteTransition (방향 슬라이드)                    │ ││
+│  │  │  - 메뉴 위치 기반 좌/우 슬라이드                  │ ││
+│  │  │  - key={location.pathname}                        │ ││
+│  │  │                                                    │ ││
+│  │  │  ┌─────────────────────────────────────────────┐  │ ││
+│  │  │  │              Pages (Daily, Weekly...)        │  │ ││
+│  │  │  │                                              │  │ ││
+│  │  │  │   SlideIn / FadeIn : 초기 로드 stagger      │  │ ││
+│  │  │  │   motion.div : 콘텐츠 전환 (탭, 섹션)       │  │ ││
+│  │  │  └─────────────────────────────────────────────┘  │ ││
+│  │  └───────────────────────────────────────────────────┘ ││
+│  └─────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 파일 구조
+
+```
+src/shared/ui/transitions/
+├── index.ts                  # Public API
+├── transition_config.ts      # 설정 상수 (속도, 딜레이, 방향, 라우트 순서)
+├── SlideIn.tsx              # 슬라이드 인 컴포넌트
+├── FadeIn.tsx               # 페이드 인 컴포넌트
+├── RouteTransition.tsx      # 라우트 전환 방향 슬라이드 컴포넌트
+├── PageTransitionContext.tsx # 상태 전달 Context
+└── usePageTransition.ts     # 헬퍼 훅
+```
+
+---
+
+## 트랜지션 유형
+
+### 1. 라우트 전환 (RouteTransition)
+
+메뉴 간 이동 시 방향 슬라이드. 메뉴 위치(좌→우)를 기반으로 방향 감지.
+
+```tsx
+import { RouteTransition } from "@/shared/ui";
+
+<PageTransitionProvider ...>
+  <RouteTransition>
+    <Routes>...</Routes>
+  </RouteTransition>
+</PageTransitionProvider>
+```
+
+- 초기 로드 시(`is_ready=false`): 애니메이션 없음 (`initial={false}`)
+- 라우트 변경 시: 방향 슬라이드 (x: ±60px, easing: [0.22, 1, 0.36, 1])
+- `transition_enabled=false`면 즉시 전환
+
+**라우트 순서 (ROUTE_ORDER):**
+```
+"/"            → 0  (일간 기록)
+"/weekly"      → 1  (주간 일정)
+"/suggestions" → 2  (건의사항)
+"/guide"       → 3  (사용 설명서)
+"/admin"       → 4  (관리자)
+```
+
+### 2. 페이지 진입 (SlideIn / FadeIn)
+
+페이지 컴포넌트 내 요소들의 순차 등장.
+
+```tsx
+import { SlideIn } from "@/shared/ui";
+
+<SlideIn
+  direction="left"    // "left" | "right" | "top" | "bottom"
+  show={is_ready}     // 트랜지션 시작 조건
+  delay={0.1}         // 딜레이 (초)
+  enabled={true}      // 활성화 여부 (false면 즉시 표시)
+  speed="normal"      // "slow" | "normal" | "fast"
+>
+  <Sidebar />
+</SlideIn>
+```
+
+### 3. 콘텐츠 전환 (motion.div + key)
+
+탭, 섹션 등 페이지 내 콘텐츠 변경 시 사용.
+
+**Slide Up (사용 설명서 섹션):**
+```tsx
+<motion.div
+  key={current_section}
+  initial={transition_enabled ? { y: CONTENT_SLIDE_UP_OFFSET, opacity: 0 } : false}
+  animate={{ y: 0, opacity: 1 }}
+  transition={{ duration, ease: TRANSITION_EASE }}
+>
+  {content}
+</motion.div>
+```
+
+**Directional Slide (관리자 탭):**
+```tsx
+<motion.div
+  key={active_tab}
+  initial={transition_enabled ? { x: direction * ROUTE_TRANSITION_OFFSET, opacity: 0 } : false}
+  animate={{ x: 0, opacity: 1 }}
+  transition={{ duration, ease: TRANSITION_EASE }}
+>
+  {tab_content}
+</motion.div>
+```
+
+### 4. Stagger (주간 일정 카드)
+
+요소들이 순차적으로 등장하는 효과.
+
+```tsx
+{day_groups.map((group, index) => (
+  <motion.div
+    key={group.date}
+    initial={transition_enabled ? { y: 16, opacity: 0 } : false}
+    animate={{ y: 0, opacity: 1 }}
+    transition={{
+      duration: 0.35 * speed_ratio,
+      ease: TRANSITION_EASE,
+      delay: (0.1 + index * 0.06) * speed_ratio,
+    }}
+  >
+    <DayCard ... />
+  </motion.div>
+))}
+```
+
+---
+
+## 설정 상수
+
+### 트랜지션 속도
+
+```typescript
+type TransitionSpeed = "slow" | "normal" | "fast";
+
+// Duration (초)
+{ slow: 0.5, normal: 0.25, fast: 0.12 }
+
+// Stagger (순차 딜레이, 초)
+{ slow: 0.1, normal: 0.05, fast: 0.025 }
+```
+
+### 공통 이징
+
+```typescript
+TRANSITION_EASE = [0.22, 1, 0.36, 1]  // cubic-bezier(0.22, 1, 0.36, 1)
+```
+
+### 페이지별 딜레이 설정
+
+```typescript
+// 데스크탑 일간 페이지
+DESKTOP_DAILY_DELAYS = {
+  header: 0, sidebar: 0.1, gantt: 0.2, table: 0.3,
+}
+
+// 모바일 일간 페이지
+MOBILE_DAILY_DELAYS = {
+  header: 0, content: 0.15,
+}
+
+// 데스크탑 주간 일정 stagger
+DESKTOP_WEEKLY_STAGGER = {
+  header_duration: 0.3, header_y_offset: -20,
+  card_duration: 0.35, card_y_offset: 16,
+  card_start_delay: 0.1, card_stagger: 0.06,
+}
+```
+
+---
+
+## 페이지별 트랜지션 적용 현황
+
+| 페이지 | 라우트 전환 | 페이지 진입 | 콘텐츠 전환 |
+|--------|-----------|-----------|-----------|
+| 일간 기록 | ✅ 방향 슬라이드 | ✅ SlideIn stagger | — |
+| 주간 일정 | ✅ 방향 슬라이드 | ✅ Stagger cards | — |
+| 사용 설명서 | ✅ 방향 슬라이드 | — | ✅ Slide up (섹션) |
+| 관리자 | ✅ 방향 슬라이드 | — | ✅ 방향 슬라이드 (탭) |
+
+---
+
+## 레이아웃 설정
+
+```tsx
+// DesktopLayout.tsx
+import { RouteTransition, PageTransitionProvider, SlideIn } from "@/shared/ui";
+
+export function DesktopLayout() {
+  const { initial_load_done } = useSyncStatus();
+  const { transition_enabled, transition_speed } = useWorkStore();
+  const is_transition_ready = initial_load_done;
+
+  return (
+    <Layout>
+      <SlideIn direction="top" show={is_transition_ready} ...>
+        <Header />
+      </SlideIn>
+
+      <PageTransitionProvider
+        is_ready={is_transition_ready}
+        transition_enabled={transition_enabled}
+        transition_speed={transition_speed}
+      >
+        <RouteTransition>
+          <Routes>...</Routes>
+        </RouteTransition>
+      </PageTransitionProvider>
+    </Layout>
+  );
+}
+```
+
+---
+
+## 사용자 설정
+
+설정 모달에서 트랜지션을 커스터마이징할 수 있습니다:
+
+- **트랜지션 활성화/비활성화**: `transition_enabled` (boolean)
+- **트랜지션 속도**: `transition_speed` ("slow" | "normal" | "fast")
+
+이 설정은 Zustand 스토어에 저장되며 Firebase와 동기화됩니다.
+
+---
+
+## 주의사항
+
+### 1. will-change 사용 금지
+
+```tsx
+// ❌ 금지 - 텍스트가 흐려짐
+style={{ willChange: "transform, opacity" }}
+
+// ✅ 권장 - Framer Motion이 자동 최적화
+style={style}  // 또는 생략
+```
+
+### 2. 로딩 오버레이는 전체 화면 덮기
+
+```tsx
+// ❌ 금지 - 헤더 영역이 비어 보임
+style={{ position: "fixed", top: 64, ... }}
+
+// ✅ 권장 - 전체 화면 덮기
+style={{ position: "fixed", top: 0, ... }}
+```
+
+### 3. 트랜지션 비활성화 시 즉시 렌더링
+
+`enabled={false}` 또는 `transition_enabled=false` 일 때는 애니메이션 없이 즉시 표시됩니다.
+
+### 4. 속도 비율(speed_ratio) 계산
+
+콘텐츠 전환/stagger에서 속도 설정을 반영할 때:
+
+```typescript
+const speed_ratio = TRANSITION_SPEED_DURATION[transition_speed] / TRANSITION_SPEED_DURATION.normal;
+// slow: 2.0, normal: 1.0, fast: 0.48
+```
+
+---
+
+## 새 페이지에 트랜지션 추가하기
+
+### 라우트 전환 (자동)
+
+`RouteTransition`이 레이아웃에 적용되어 있으므로, 새 라우트를 `ROUTE_ORDER`에 추가하면 자동으로 방향 슬라이드가 적용됩니다.
+
+```typescript
+// transition_config.ts
+export const ROUTE_ORDER: Record<string, number> = {
+  // 기존...
+  "/new-page": 5,  // 순서 추가
+};
+```
+
+### 페이지 진입 stagger
+
+```tsx
+import { motion } from "framer-motion";
+import { usePageTransitionContext, TRANSITION_SPEED_DURATION, TRANSITION_EASE } from "@/shared/ui";
+
+const { transition_enabled, transition_speed } = usePageTransitionContext();
+const speed_ratio = TRANSITION_SPEED_DURATION[transition_speed] / TRANSITION_SPEED_DURATION.normal;
+
+<motion.div
+  initial={transition_enabled ? { y: 16, opacity: 0 } : false}
+  animate={{ y: 0, opacity: 1 }}
+  transition={{ duration: 0.35 * speed_ratio, ease: TRANSITION_EASE, delay: 0.1 * speed_ratio }}
+>
+  <Section />
+</motion.div>
+```
+
+### 콘텐츠 전환 (탭/섹션)
+
+```tsx
+<motion.div
+  key={current_key}
+  initial={transition_enabled ? { y: CONTENT_SLIDE_UP_OFFSET, opacity: 0 } : false}
+  animate={{ y: 0, opacity: 1 }}
+  transition={{ duration, ease: TRANSITION_EASE }}
+>
+  {content}
+</motion.div>
+```
+
+---
+
+## 의존성
+
+- **framer-motion**: 애니메이션 라이브러리
+- **react-router-dom**: 라우트 감지 (RouteTransition)
+- **zustand**: 설정 상태 관리 (transition_enabled, transition_speed)

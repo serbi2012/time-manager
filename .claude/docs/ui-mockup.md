@@ -1,0 +1,121 @@
+# UI Mockup Preview System
+
+UI를 **새로 만들거나**, **리디자인하거나**, **레이아웃을 크게 변경**하는 요청을 받았을 때,
+**구현 전에 반드시 목업을 먼저 보여주고 유저의 승인을 받습니다.**
+
+> 단순 버그 수정(예: 색상 한 군데 변경, 텍스트 오타)은 목업 없이 바로 수정합니다.
+
+---
+
+## 목업 프리뷰 프로세스
+
+### Step 1: 목업 HTML 파일 생성
+
+1. `mockups/template.html` 파일을 **읽어서** 구조를 파악합니다.
+2. `mockups/` 폴더에 HTML 파일을 생성합니다.
+    - 네이밍: `mockups/[feature]-[component].html`
+    - 예: `mockups/settings-animation-tab.html`, `mockups/gantt-context-menu.html`
+3. 템플릿의 `MockupApp` 컴포넌트를 수정하여 목업을 작성합니다.
+4. **`mockups/index.html`의 `CATEGORIES` 배열에 새 목업을 등록합니다.**
+    - 적절한 카테고리(`gantt`, `template-card`, `mobile`, `common` 등)를 찾아서 `mockups` 배열에 추가합니다.
+    - 해당 카테고리가 없으면 **새 카테고리를 추가**합니다.
+    - 예:
+        ```javascript
+        { file: "gantt-context-menu.html", title: "컨텍스트 메뉴", description: "간트 차트 세션 우클릭 메뉴" }
+        ```
+
+### Step 2: 로컬 서버 실행
+
+1. 서버 시작: `npx serve mockups -p 3456 --no-clipboard`
+    - `block_until_ms: 5000`으로 백그라운드 실행
+2. 브라우저 이동: `http://localhost:3456/[파일명].html`
+3. 유저가 직접 브라우저에서 확인 (스크린샷 촬영 불필요)
+
+### Step 3: 피드백 & 승인
+
+1. 주요 디자인 결정 사항을 텍스트로 설명합니다.
+2. "이 방향이 맞나요?" 라고 묻습니다.
+3. 유저가 수정 요청하면 → 목업 수정 후 브라우저 새로고침을 안내합니다.
+4. 유저가 승인하면 → 실제 구현을 시작합니다.
+
+### Step 4: 정리
+
+1. 목업 HTML 파일은 **삭제하지 않습니다** (추후 참고용으로 유지).
+2. 서버 프로세스는 유저가 직접 종료하거나 자연 종료됩니다.
+
+---
+
+## 템플릿 구조 (`mockups/template.html`)
+
+템플릿에 포함된 라이브러리:
+
+| 라이브러리           | 버전               | 용도                                 |
+| -------------------- | ------------------ | ------------------------------------ |
+| **React**            | 18 (UMD)           | UI 렌더링                            |
+| **Ant Design**       | 5 (UMD, CSS-in-JS) | UI 컴포넌트 (Button, Card, Modal 등) |
+| **Ant Design Icons** | 5 (UMD)            | 아이콘                               |
+| **Tailwind CSS**     | Play CDN           | 유틸리티 클래스                      |
+| **Day.js**           | 1.x                | antd 의존성                          |
+| **Babel Standalone** | latest             | JSX → JS 변환                        |
+
+### 사용 가능한 API
+
+```javascript
+// Ant Design components
+const { Button, Card, Switch, Select, Modal, ... } = antd;
+const { Text, Title } = Typography;
+
+// Icons
+const { EditOutlined, DeleteOutlined, ... } = icons;
+
+// React hooks
+const [state, setState] = React.useState(initialValue);
+React.useEffect(() => { ... }, [deps]);
+```
+
+### Tailwind 설정
+
+템플릿에 프로젝트 spacing 토큰이 설정되어 있습니다:
+
+-   `xs: 4px`, `sm: 8px`, `md: 12px`, `lg: 16px`, `xl: 24px`, `2xl: 32px`
+
+---
+
+## 목업 작성 가이드라인
+
+### DO
+
+-   **실제 데이터와 유사한 텍스트** 사용 (한국어 UI)
+-   **Ant Design 컴포넌트** 적극 활용 (실제 앱과 동일한 룩앤필)
+-   **상호작용 가능한 상태** 구현 (`useState`로 토글, 선택 등)
+-   여러 상태를 **한 페이지에 섹션별로** 보여주기 (예: 빈 상태 + 데이터 있는 상태)
+-   **모바일/데스크탑** 양쪽 목업이 필요하면 섹션을 나눠서 표시
+
+### DON'T
+
+-   실제 API 호출이나 스토어 연동하지 않기
+-   완벽한 기능 구현하지 않기 (시각적 프리뷰 목적)
+-   목업 파일을 git에 커밋하지 않기 (`.gitignore`에 포함됨)
+-   스크린샷 촬영하지 않기 (유저가 직접 브라우저에서 확인)
+
+---
+
+## 예시: 목업 생성 흐름
+
+```
+유저: "설정 모달의 애니메이션 탭 UI를 새롭게 디자인해줘"
+
+1. mockups/settings-animation.html 생성
+2. React + Ant Design으로 새 UI 목업 작성
+3. 서버 시작 후 브라우저 URL 안내
+4. 유저에게 "이런 식으로 디자인했는데, 이 방향이 맞나요?" 질문
+5. 승인 → 실제 AnimationTab.tsx 수정
+```
+
+---
+
+## npm script
+
+```bash
+pnpm mockup       # http://localhost:3456 에서 목업 서버 시작
+```
