@@ -264,3 +264,24 @@ export const SHORTCUT_CATEGORIES = {
     navigation: "네비게이션",
     data: "데이터",
 } as const;
+
+/** 진단 리포트 관련 라벨 */
+export const DIAGNOSTIC_LABELS = {
+    SECTION_TITLE: "문제 진단",
+    SECTION_DESCRIPTION:
+        "오류가 났을 때 이 파일을 내려받아 전달하면 원인을 찾을 수 있어요",
+    DOWNLOAD_BUTTON: "진단 파일 내려받기",
+    CLEAR_BUTTON: "기록 지우기",
+    EVENT_COUNT: (count: number) => `기록된 오류 ${count}건`,
+    NO_EVENTS: "기록된 오류가 없어요",
+    CONTENT_HINT:
+        "오류 내역, 앱 버전, 브라우저 환경, 설정값, 작업 데이터가 담겨요",
+    DOWNLOADED: "진단 파일을 내려받았어요",
+    CLEARED: "오류 기록을 지웠어요",
+    BOUNDARY_TITLE: "문제가 생겼어요",
+    BOUNDARY_DESCRIPTION:
+        "화면을 그리는 중 오류가 났어요. 진단 파일을 내려받아 전달해 주세요.",
+    BOUNDARY_RETRY: "다시 시도",
+    BOUNDARY_RELOAD: "새로고침",
+    SHARE_HINT: "내려받은 파일에는 작업 내용이 함께 담겨 있어요",
+} as const;

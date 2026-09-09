@@ -75,3 +75,18 @@ export {
 
 // 마크다운 포맷터
 export { formatRecordsToMarkdown } from "./markdown_formatter";
+
+// 텍스트 테이블
+export {
+    getDisplayWidth,
+    padString,
+    buildMarkdownTable,
+} from "./text_table";
+
+// 내역 보기 행
+export {
+    type RecordCopyRow,
+    buildRecordCopyRows,
+    getCopyRowCells,
+    formatCopyRowsToMarkdown,
+} from "./record_copy_rows";

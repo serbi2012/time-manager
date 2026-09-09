@@ -49,6 +49,7 @@ export const createSettingsSlice: StateCreator<
     transition_speed: DEFAULT_TRANSITION_SPEED,
     cursor_tracking_enabled: DEFAULT_CURSOR_TRACKING_ENABLED,
     mobile_gantt_list_expanded: DEFAULT_MOBILE_GANTT_LIST_EXPANDED,
+    deal_codes: {},
 
     // ============================================
     // Custom Options Actions
@@ -197,5 +198,26 @@ export const createSettingsSlice: StateCreator<
         syncSettings({ mobile_gantt_list_expanded: expanded }).catch(
             console.error
         );
+    },
+
+    setDealCode: (deal_name: string, code: string) => {
+        const trimmed_name = deal_name.trim();
+        if (!trimmed_name) return;
+
+        const trimmed_code = code.trim();
+        const next_codes = create(get().deal_codes, (draft) => {
+            if (trimmed_code) {
+                draft[trimmed_name] = trimmed_code;
+            } else {
+                delete draft[trimmed_name];
+            }
+        });
+
+        set({ deal_codes: next_codes });
+        syncSettings({ deal_codes: next_codes }).catch(console.error);
+    },
+
+    getDealCode: (deal_name: string) => {
+        return get().deal_codes[deal_name.trim()] || "";
     },
 });

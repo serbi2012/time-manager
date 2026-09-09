@@ -324,10 +324,10 @@ describe("WeeklySchedule", () => {
     });
 
     // =====================================================
-    // 관리업무 필터 테스트
+    // 프로젝트 코드 필터 테스트
     // =====================================================
-    describe("관리업무 필터", () => {
-        it("관리업무 필터 버튼이 표시됨", () => {
+    describe("프로젝트 코드 필터", () => {
+        it("필터 버튼이 표시됨", () => {
             render(
                 <TestWrapper>
                     <WeeklySchedule />
@@ -335,7 +335,7 @@ describe("WeeklySchedule", () => {
             );
 
             expect(screen.getByText("기본 보기")).toBeInTheDocument();
-            expect(screen.getByText("관리업무 포함")).toBeInTheDocument();
+            expect(screen.getByText("전체 포함")).toBeInTheDocument();
         });
     });
 

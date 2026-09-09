@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.11.3";
+export const CURRENT_VERSION = "2.12.0";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,43 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.12.0",
+        date: "2026-09-09",
+        title: "내역 보기와 문제 진단",
+        changes: [
+            {
+                type: "feature",
+                description:
+                    "\"내역 복사\"가 \"내역 보기\"로 바뀌었어요. 표가 바로 열려서 원하는 부분만 드래그해 쓸 수 있어요",
+            },
+            {
+                type: "feature",
+                description:
+                    "내역 보기에서 셀을 더블클릭하면 그 칸의 값만 복사돼요",
+            },
+            {
+                type: "feature",
+                description:
+                    "거래명마다 거래코드를 저장해 두면 내역 보기에 자동으로 채워져요",
+            },
+            {
+                type: "feature",
+                description:
+                    "오류가 났을 때 설정에서 진단 파일을 내려받아 전달할 수 있어요",
+            },
+            {
+                type: "fix",
+                description:
+                    "날짜가 지난 뒤에도 그날 기록한 작업이 목록에서 사라지지 않아요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "주간 일정 기본 보기에서 프로젝트 코드가 없는 작업도 함께 숨겨져요",
+            },
+        ],
+    },
     {
         version: "2.11.3",
         date: "2026-04-07",

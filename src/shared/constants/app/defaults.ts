@@ -40,6 +40,9 @@ export const DEFAULT_CATEGORY_OPTIONS = [
 /** 프로젝트 코드 기본값 */
 export const DEFAULT_PROJECT_CODE = "A00_00000";
 
+/** 정규 프로젝트 코드 접두사 (이 접두사로 시작하지 않으면 실제 프로젝트가 아님) */
+export const PROJECT_CODE_PREFIX = "A";
+
 // ============================================
 // 기본 상태값
 // ============================================

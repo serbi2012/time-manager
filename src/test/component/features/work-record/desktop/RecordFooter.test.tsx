@@ -39,7 +39,7 @@ describe("RecordFooter", () => {
         expect(screen.getByText(RECORD_BUTTON.VIEW_TRASH)).toBeInTheDocument();
     });
 
-    it("내역 복사 버튼이 표시된다", () => {
+    it("내역 보기 버튼이 표시된다", () => {
         render(<RecordFooter {...default_props} />);
 
         expect(
@@ -72,7 +72,7 @@ describe("RecordFooter", () => {
         expect(on_open_trash).toHaveBeenCalledTimes(1);
     });
 
-    it("내역 복사 버튼 클릭 시 onCopyRecords가 호출된다", () => {
+    it("내역 보기 버튼 클릭 시 onCopyRecords가 호출된다", () => {
         const on_copy_records = vi.fn();
         render(
             <RecordFooter {...default_props} onCopyRecords={on_copy_records} />

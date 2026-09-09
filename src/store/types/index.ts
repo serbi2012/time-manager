@@ -16,6 +16,7 @@ export type {
     AppTheme,
     TransitionSpeed,
     HiddenAutoCompleteField,
+    DealCodeMap,
     // Re-exported Domain Types
     WorkRecord,
     WorkTemplate,

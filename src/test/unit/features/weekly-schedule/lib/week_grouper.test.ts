@@ -7,6 +7,7 @@ import {
     getTotalMinutesForWork,
     getTotalMinutesForDeal,
     buildDayGroups,
+    isHiddenProjectCode,
 } from "@/features/weekly-schedule/lib/week_grouper";
 import type { WorkRecord, WorkSession } from "@/shared/types";
 
@@ -305,5 +306,89 @@ describe("week_grouper", () => {
             expect(groups[0].works).toHaveLength(1);
             expect(groups[0].works[0].work_name).toBe("작업A");
         });
+    });
+});
+
+describe("isHiddenProjectCode", () => {
+    const MANAGEMENT_CODE = "A24_05591";
+
+    it("관리업무 코드는 숨김 대상이다", () => {
+        expect(isHiddenProjectCode(MANAGEMENT_CODE, MANAGEMENT_CODE)).toBe(true);
+    });
+
+    it("A로 시작하지 않는 코드는 숨김 대상이다", () => {
+        expect(isHiddenProjectCode("P001", MANAGEMENT_CODE)).toBe(true);
+        expect(isHiddenProjectCode("B25_00001", MANAGEMENT_CODE)).toBe(true);
+        expect(isHiddenProjectCode("", MANAGEMENT_CODE)).toBe(true);
+    });
+
+    it("A로 시작하는 일반 프로젝트 코드는 숨기지 않는다", () => {
+        expect(isHiddenProjectCode("A25_01846", MANAGEMENT_CODE)).toBe(false);
+        expect(isHiddenProjectCode("A00_00000", MANAGEMENT_CODE)).toBe(false);
+    });
+});
+
+describe("buildDayGroups 프로젝트 코드 필터", () => {
+    const MANAGEMENT_CODE = "A24_05591";
+    const DATE = "2025-02-17";
+
+    function createDayRecord(project_code: string, work_name: string) {
+        return createRecord({
+            project_code,
+            work_name,
+            date: DATE,
+            sessions: [createSession({ date: DATE, duration_minutes: 60 })],
+        });
+    }
+
+    it("숨김이 켜지면 관리업무와 A로 시작하지 않는 코드를 모두 제외한다", () => {
+        const records = [
+            createDayRecord("A25_01846", "일반작업"),
+            createDayRecord(MANAGEMENT_CODE, "관리업무"),
+            createDayRecord("P001", "비프로젝트"),
+        ];
+
+        const groups = buildDayGroups(
+            [DATE],
+            records,
+            {},
+            true,
+            MANAGEMENT_CODE
+        );
+
+        expect(groups[0].works).toHaveLength(1);
+        expect(groups[0].works[0].work_name).toBe("일반작업");
+    });
+
+    it("숨김이 꺼지면 모든 코드를 표시한다", () => {
+        const records = [
+            createDayRecord("A25_01846", "일반작업"),
+            createDayRecord(MANAGEMENT_CODE, "관리업무"),
+            createDayRecord("P001", "비프로젝트"),
+        ];
+
+        const groups = buildDayGroups(
+            [DATE],
+            records,
+            {},
+            false,
+            MANAGEMENT_CODE
+        );
+
+        expect(groups[0].works).toHaveLength(3);
+    });
+
+    it("숨김 대상만 있는 날짜는 그룹에서 빠진다", () => {
+        const records = [createDayRecord("P001", "비프로젝트")];
+
+        const groups = buildDayGroups(
+            [DATE],
+            records,
+            {},
+            true,
+            MANAGEMENT_CODE
+        );
+
+        expect(groups).toHaveLength(0);
     });
 });

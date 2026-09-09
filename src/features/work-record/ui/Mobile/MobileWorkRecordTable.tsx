@@ -10,7 +10,6 @@
  */
 
 import { useState, useCallback, useMemo } from "react";
-import { message } from "antd";
 import { CalendarOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import type { Dayjs } from "dayjs";
@@ -28,20 +27,10 @@ import {
 } from "../../hooks";
 
 import { RecordAddModal, RecordEditModal } from "../RecordModals";
+import { RecordCopyModal } from "../RecordCopyModal";
 import { CompletedModal, TrashModal } from "../CompletedRecords";
 
-import {
-    DATE_FORMAT,
-    RECORD_SUCCESS,
-    RECORD_WARNING,
-    MARKDOWN_COPY,
-    RECORD_UI_TEXT,
-    MOBILE_RECORD_LABEL,
-    CHAR_CODE_THRESHOLD,
-    HANGUL_CHAR_WIDTH,
-    ASCII_CHAR_WIDTH,
-} from "../../constants";
-import { getRecordDurationForDate } from "../../lib/duration_calculator";
+import { DATE_FORMAT, MOBILE_RECORD_LABEL } from "../../constants";
 
 import { MobileDateHeader } from "./MobileDateHeader";
 import { MobileCalendarStrip } from "./MobileCalendarStrip";
@@ -52,15 +41,13 @@ export function MobileWorkRecordTable() {
     // ============================================
     // Store
     // ============================================
-    const { selected_date, setSelectedDate, records, getLunchTimeMinutes } =
-        useWorkStore(
-            useShallow((s) => ({
-                selected_date: s.selected_date,
-                setSelectedDate: s.setSelectedDate,
-                records: s.records,
-                getLunchTimeMinutes: s.getLunchTimeMinutes,
-            }))
-        );
+    const { selected_date, setSelectedDate, records } = useWorkStore(
+        useShallow((s) => ({
+            selected_date: s.selected_date,
+            setSelectedDate: s.setSelectedDate,
+            records: s.records,
+        }))
+    );
 
     // ============================================
     // Hooks
@@ -89,6 +76,7 @@ export function MobileWorkRecordTable() {
         is_edit_open,
         is_completed_open,
         is_trash_open,
+        is_copy_open,
         editing_record_id,
         closeAddModal,
         openEditModal,
@@ -97,6 +85,8 @@ export function MobileWorkRecordTable() {
         closeCompletedModal,
         openTrashModal,
         closeTrashModal,
+        openCopyModal,
+        closeCopyModal,
     } = useRecordModals();
 
     // ============================================
@@ -204,88 +194,6 @@ export function MobileWorkRecordTable() {
         [permanentlyDeleteRecord]
     );
 
-    const handleCopyToClipboard = useCallback(() => {
-        const lunch_time = getLunchTimeMinutes();
-        const filtered = display_records.filter((r) => !r.is_deleted);
-        if (filtered.length === 0) {
-            message.warning(RECORD_WARNING.NO_RECORDS_TO_COPY);
-            return;
-        }
-
-        const sorted = [...filtered].sort((a, b) =>
-            (a.work_name || "").localeCompare(b.work_name || "", "ko")
-        );
-
-        const columns = MARKDOWN_COPY.COLUMNS;
-        const data = sorted.map((r) => {
-            const duration = getRecordDurationForDate(r, selected_date, lunch_time);
-            return [
-                r.work_name,
-                r.deal_name || r.work_name,
-                `${duration}${RECORD_UI_TEXT.MINUTE_UNIT}`,
-                r.category_name || "",
-                r.note || "",
-            ];
-        });
-
-        const getDisplayWidth = (str: string) => {
-            let width = 0;
-            for (const char of str) {
-                width +=
-                    char.charCodeAt(0) > CHAR_CODE_THRESHOLD
-                        ? HANGUL_CHAR_WIDTH
-                        : ASCII_CHAR_WIDTH;
-            }
-            return width;
-        };
-
-        const col_widths = columns.map((col, i) => {
-            const header_width = getDisplayWidth(col);
-            const max_data_width = data.reduce(
-                (max, row) => Math.max(max, getDisplayWidth(row[i])),
-                0
-            );
-            return Math.max(header_width, max_data_width);
-        });
-
-        const padString = (str: string, width: number) => {
-            const display_width = getDisplayWidth(str);
-            const padding = width - display_width;
-            return str + " ".repeat(Math.max(0, padding));
-        };
-
-        const header_row =
-            MARKDOWN_COPY.CELL_PREFIX +
-            columns
-                .map((col, i) => padString(col, col_widths[i]))
-                .join(MARKDOWN_COPY.CELL_SEPARATOR) +
-            MARKDOWN_COPY.CELL_SUFFIX;
-        const separator =
-            MARKDOWN_COPY.ROW_SEPARATOR +
-            col_widths
-                .map((w) =>
-                    MARKDOWN_COPY.HEADER_SEPARATOR.repeat(
-                        w + MARKDOWN_COPY.PADDING_WIDTH
-                    )
-                )
-                .join(MARKDOWN_COPY.ROW_SEPARATOR) +
-            MARKDOWN_COPY.ROW_SEPARATOR;
-        const data_rows = data.map(
-            (row) =>
-                MARKDOWN_COPY.CELL_PREFIX +
-                row
-                    .map((cell, i) => padString(cell, col_widths[i]))
-                    .join(MARKDOWN_COPY.CELL_SEPARATOR) +
-                MARKDOWN_COPY.CELL_SUFFIX
-        );
-
-        const text = [header_row, separator, ...data_rows].join(
-            MARKDOWN_COPY.LINE_BREAK
-        );
-        navigator.clipboard.writeText(text);
-        message.success(RECORD_SUCCESS.COPIED_TO_CLIPBOARD);
-    }, [display_records, selected_date, getLunchTimeMinutes]);
-
     // ============================================
     // Render
     // ============================================
@@ -349,7 +257,7 @@ export function MobileWorkRecordTable() {
                     onEdit={handleEditRecord}
                     onOpenCompleted={openCompletedModal}
                     onOpenTrash={openTrashModal}
-                    onCopyRecords={handleCopyToClipboard}
+                    onCopyRecords={openCopyModal}
                     onComplete={handleComplete}
                     onDelete={handleDeleteRecord}
                     animation_key={animation_key}
@@ -360,6 +268,13 @@ export function MobileWorkRecordTable() {
             <div className="h-20" />
 
             {/* Modals */}
+            <RecordCopyModal
+                open={is_copy_open}
+                records={display_records}
+                selected_date={selected_date}
+                onClose={closeCopyModal}
+            />
+
             <RecordAddModal open={is_add_open} onClose={closeAddModal} />
 
             <RecordEditModal

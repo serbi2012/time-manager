@@ -35,6 +35,7 @@ import {
 } from "../../constants";
 import { cn } from "@/shared/lib/cn";
 import { SettingItem } from "./SettingItem";
+import { DiagnosticsCard } from "./DiagnosticsCard";
 
 const { Text } = Typography;
 
@@ -217,6 +218,8 @@ export function DataTab({
                     </div>
                 </div>
             </Card>
+
+            <DiagnosticsCard is_mobile={is_mobile} />
         </div>
     );
 }

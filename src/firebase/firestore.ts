@@ -8,6 +8,7 @@ import type {
 } from "../types";
 import type { ShortcutDefinition } from "../store/useShortcutStore";
 import type { AppTheme } from "../store/useWorkStore";
+import type { DealCodeMap } from "../store/types";
 
 let _fs: typeof import("firebase/firestore") | null = null;
 
@@ -139,6 +140,7 @@ export interface UserSettings {
     transition_speed?: TransitionSpeed;
     cursor_tracking_enabled?: boolean;
     mobile_gantt_list_expanded?: boolean;
+    deal_codes?: DealCodeMap;
     updated_at: string;
     migrated?: boolean;
 }

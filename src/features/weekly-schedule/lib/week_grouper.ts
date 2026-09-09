@@ -3,6 +3,7 @@
  */
 
 import type { WorkRecord } from "@/shared/types";
+import { PROJECT_CODE_PREFIX } from "@/shared/constants";
 import { DAY_NAMES } from "../constants";
 import { WEEKLY_SCHEDULE_CONFIG } from "../constants/config";
 
@@ -142,6 +143,19 @@ export function getWorkProgressStatus(
 }
 
 /**
+ * 주간 일정에서 숨길 프로젝트 코드인지 판단
+ *
+ * 관리업무 코드이거나, 정규 프로젝트 코드 접두사로 시작하지 않으면 숨김 대상이다.
+ */
+export function isHiddenProjectCode(
+    project_code: string,
+    management_project_code: string
+): boolean {
+    if (project_code === management_project_code) return true;
+    return !project_code.startsWith(PROJECT_CODE_PREFIX);
+}
+
+/**
  * 주간 레코드와 옵션으로 날짜별 DayGroup[] 생성
  * @param all_records 전체 기간 레코드 (누적시간 계산용)
  */
@@ -216,7 +230,10 @@ export function buildDayGroups(
                 (work) => {
                     if (
                         hide_management_work &&
-                        work.project_code === management_project_code
+                        isHiddenProjectCode(
+                            work.project_code,
+                            management_project_code
+                        )
                     ) {
                         return false;
                     }

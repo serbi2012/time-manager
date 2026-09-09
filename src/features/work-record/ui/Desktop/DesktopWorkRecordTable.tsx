@@ -37,6 +37,7 @@ import {
 
 // Features - UI Components
 import { RecordAddModal, RecordEditModal } from "../RecordModals";
+import { RecordCopyModal } from "../RecordCopyModal";
 import { CompletedModal, TrashModal } from "../CompletedRecords";
 import { SessionEditTable } from "../SessionEditor";
 import { RecordHeader } from "./RecordHeader";
@@ -44,11 +45,8 @@ import { RecordEmptyState } from "./RecordEmptyState";
 import { RecordFooter } from "./RecordFooter";
 import { SpotlightCard } from "@/shared/ui/cursor-tracking";
 
-// Lib
-import { formatRecordsToMarkdown } from "../../lib/markdown_formatter";
-
 // Constants
-import { RECORD_SUCCESS, RECORD_WARNING, DATE_FORMAT } from "../../constants";
+import { RECORD_SUCCESS, DATE_FORMAT } from "../../constants";
 
 export function DesktopWorkRecordTable() {
     // ============================================
@@ -62,7 +60,6 @@ export function DesktopWorkRecordTable() {
         softDeleteRecord,
         app_theme,
         records,
-        getLunchTimeMinutes,
     } = useWorkStore(
         useShallow((s) => ({
             selected_date: s.selected_date,
@@ -72,7 +69,6 @@ export function DesktopWorkRecordTable() {
             softDeleteRecord: s.softDeleteRecord,
             app_theme: s.app_theme,
             records: s.records,
-            getLunchTimeMinutes: s.getLunchTimeMinutes,
         }))
     );
 
@@ -103,6 +99,7 @@ export function DesktopWorkRecordTable() {
         is_edit_open,
         is_completed_open,
         is_trash_open,
+        is_copy_open,
         editing_record_id,
         openAddModal,
         closeAddModal,
@@ -112,6 +109,8 @@ export function DesktopWorkRecordTable() {
         closeCompletedModal,
         openTrashModal,
         closeTrashModal,
+        openCopyModal,
+        closeCopyModal,
     } = useRecordModals();
 
     // ============================================
@@ -143,17 +142,6 @@ export function DesktopWorkRecordTable() {
         },
         [softDeleteRecord]
     );
-
-    const handleCopyToClipboard = useCallback(() => {
-        const lunch_time = getLunchTimeMinutes();
-        const text = formatRecordsToMarkdown(display_records, selected_date, lunch_time);
-        if (!text) {
-            message.warning(RECORD_WARNING.NO_RECORDS_TO_COPY);
-            return;
-        }
-        navigator.clipboard.writeText(text);
-        message.success(RECORD_SUCCESS.COPIED_TO_CLIPBOARD);
-    }, [display_records, selected_date, getLunchTimeMinutes]);
 
     const handlePrevDay = useCallback(() => {
         setSelectedDate(
@@ -278,7 +266,7 @@ export function DesktopWorkRecordTable() {
                     onAddNew={openAddModal}
                     onOpenCompleted={openCompletedModal}
                     onOpenTrash={openTrashModal}
-                    onCopyRecords={handleCopyToClipboard}
+                    onCopyRecords={openCopyModal}
                     new_work_shortcut_keys={new_work_keys}
                     disabled_copy={display_records.length === 0}
                 />
@@ -329,9 +317,16 @@ export function DesktopWorkRecordTable() {
                     record_count={display_records.length}
                     onOpenCompleted={openCompletedModal}
                     onOpenTrash={openTrashModal}
-                    onCopyRecords={handleCopyToClipboard}
+                    onCopyRecords={openCopyModal}
                 />
             </SpotlightCard>
+
+            <RecordCopyModal
+                open={is_copy_open}
+                records={display_records}
+                selected_date={selected_date}
+                onClose={closeCopyModal}
+            />
 
             <RecordAddModal open={is_add_open} onClose={closeAddModal} />
 

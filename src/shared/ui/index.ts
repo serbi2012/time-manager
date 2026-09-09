@@ -101,3 +101,6 @@ export {
     type EmptyStateProps,
     type EmptyImageType,
 } from "./layout";
+
+// 에러 경계
+export { AppErrorBoundary, AppErrorFallback } from "./error";

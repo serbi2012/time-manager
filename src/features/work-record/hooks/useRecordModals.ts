@@ -15,6 +15,8 @@ export interface ModalState {
     is_trash_open: boolean;
     /** 세션 편집 모달 열림 여부 */
     is_session_edit_open: boolean;
+    /** 내역 보기 모달 열림 여부 */
+    is_copy_open: boolean;
     /** 현재 편집 중인 레코드 ID */
     editing_record_id: string | null;
 }
@@ -40,6 +42,10 @@ export interface UseRecordModalsReturn extends ModalState {
     openSessionEditModal: (record_id: string) => void;
     /** 세션 편집 모달 닫기 */
     closeSessionEditModal: () => void;
+    /** 내역 보기 모달 열기 */
+    openCopyModal: () => void;
+    /** 내역 보기 모달 닫기 */
+    closeCopyModal: () => void;
     /** 모든 모달 닫기 */
     closeAllModals: () => void;
 }
@@ -50,6 +56,7 @@ const DEFAULT_MODAL_STATE: ModalState = {
     is_completed_open: false,
     is_trash_open: false,
     is_session_edit_open: false,
+    is_copy_open: false,
     editing_record_id: null,
 };
 
@@ -126,6 +133,14 @@ export function useRecordModals(): UseRecordModalsReturn {
         }));
     }, []);
 
+    const openCopyModal = useCallback(() => {
+        setState((prev) => ({ ...prev, is_copy_open: true }));
+    }, []);
+
+    const closeCopyModal = useCallback(() => {
+        setState((prev) => ({ ...prev, is_copy_open: false }));
+    }, []);
+
     const closeAllModals = useCallback(() => {
         setState(DEFAULT_MODAL_STATE);
     }, []);
@@ -142,6 +157,8 @@ export function useRecordModals(): UseRecordModalsReturn {
         closeTrashModal,
         openSessionEditModal,
         closeSessionEditModal,
+        openCopyModal,
+        closeCopyModal,
         closeAllModals,
     };
 }

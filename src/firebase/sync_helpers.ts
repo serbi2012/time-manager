@@ -40,6 +40,9 @@ export function applyLoadedDataToStore(
         ...(settings?.mobile_gantt_list_expanded !== undefined && {
             mobile_gantt_list_expanded: settings.mobile_gantt_list_expanded,
         }),
+        ...(settings?.deal_codes && {
+            deal_codes: settings.deal_codes,
+        }),
     });
 
     if (settings?.shortcuts && settings.shortcuts.length > 0) {

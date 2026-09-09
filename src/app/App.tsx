@@ -5,10 +5,13 @@
  * 모바일 수정이 데스크탑에 영향을 주지 않도록 설계
  */
 
+import { useEffect } from "react";
 import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "./providers";
 import { DesktopLayout, MobileLayout } from "./layouts";
 import { useResponsive } from "../hooks/useResponsive";
+import { AppErrorBoundary } from "../shared/ui/error";
+import { installDiagnosticCollector } from "../shared/lib/diagnostics";
 
 /**
  * 플랫폼별 레이아웃 선택 컴포넌트
@@ -29,12 +32,16 @@ function AppLayout() {
  * 앱 루트 컴포넌트
  */
 function App() {
+    useEffect(() => installDiagnosticCollector(), []);
+
     return (
-        <ThemeProvider>
-            <BrowserRouter>
-                <AppLayout />
-            </BrowserRouter>
-        </ThemeProvider>
+        <AppErrorBoundary>
+            <ThemeProvider>
+                <BrowserRouter>
+                    <AppLayout />
+                </BrowserRouter>
+            </ThemeProvider>
+        </AppErrorBoundary>
     );
 }
 

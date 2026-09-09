@@ -31,6 +31,9 @@ export type AppTheme =
 /** 트랜지션 속도 타입 */
 export type TransitionSpeed = "slow" | "normal" | "fast";
 
+/** 거래명 → 거래 코드 매핑 */
+export type DealCodeMap = Record<string, string>;
+
 /** 숨김 가능한 자동완성 필드 */
 export type HiddenAutoCompleteField =
     | "work_name"
@@ -128,6 +131,7 @@ export interface SettingsSlice {
     transition_speed: TransitionSpeed;
     cursor_tracking_enabled: boolean;
     mobile_gantt_list_expanded: boolean;
+    deal_codes: DealCodeMap;
 
     // Actions - Custom Options
     addCustomTaskOption: (option: string) => void;
@@ -154,6 +158,8 @@ export interface SettingsSlice {
     setTransitionSpeed: (speed: TransitionSpeed) => void;
     setCursorTrackingEnabled: (enabled: boolean) => void;
     setMobileGanttListExpanded: (expanded: boolean) => void;
+    setDealCode: (deal_name: string, code: string) => void;
+    getDealCode: (deal_name: string) => string;
 }
 
 // ============================================

@@ -7,7 +7,7 @@
 import {
     CheckCircleOutlined,
     DeleteOutlined,
-    CopyOutlined,
+    TableOutlined,
 } from "@ant-design/icons";
 import { RECORD_BUTTON } from "../../constants";
 import { FooterActionButton } from "./FooterActionButton";
@@ -61,7 +61,7 @@ export function RecordFooter({
                     onClick={onOpenTrash}
                 />
                 <FooterActionButton
-                    icon={<CopyOutlined style={{ fontSize: 13 }} />}
+                    icon={<TableOutlined style={{ fontSize: 13 }} />}
                     label={RECORD_BUTTON.COPY_RECORDS}
                     onClick={onCopyRecords}
                 />

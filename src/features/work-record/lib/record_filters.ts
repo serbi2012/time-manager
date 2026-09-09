@@ -57,20 +57,22 @@ export function filterDisplayableRecords(
     return records.filter((record) => {
         if (record.is_deleted) return false;
 
+        const has_session_on_date = record.sessions?.some(
+            (s) => (s.date || record.date) === selected_date
+        );
+
         // 완료된 작업
         if (record.is_completed) {
             // 해당 날짜에 세션이 있으면 표시
             if (record.sessions && record.sessions.length > 0) {
-                return record.sessions.some(
-                    (s) => (s.date || record.date) === selected_date
-                );
+                return Boolean(has_session_on_date);
             }
             // 레코드 날짜가 같으면 표시
             return record.date === selected_date;
         }
 
-        // 미완료 작업: 작업 날짜가 선택된 날짜 이전이면 표시
-        return record.date <= selected_date;
+        // 미완료 작업: 해당 날짜에 세션이 있거나, 작업 날짜가 선택된 날짜 이전이면 표시
+        return Boolean(has_session_on_date) || record.date <= selected_date;
     });
 }
 

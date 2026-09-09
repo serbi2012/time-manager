@@ -46,3 +46,6 @@ export { useLongPress } from "./useLongPress";
 export { useSpotlight } from "./useSpotlight";
 export { useMagnetic } from "./useMagnetic";
 export { useMousePosition } from "./useMousePosition";
+
+// 진단 리포트
+export { useDiagnostics, type UseDiagnosticsReturn } from "./useDiagnostics";
