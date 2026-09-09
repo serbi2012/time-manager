@@ -6,7 +6,8 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useShortcuts } from "../../../hooks/useShortcuts";
+import { useAppShortcuts } from "../../../shared/hooks";
+import { resetShortcutManager } from "../../../shared/lib/shortcuts";
 import { useShortcutStore, DEFAULT_SHORTCUTS } from "../../../store/useShortcutStore";
 
 // 스토어 초기화
@@ -18,6 +19,7 @@ const resetStore = () => {
 
 describe("키보드 단축키 통합 테스트", () => {
     beforeEach(() => {
+        resetShortcutManager();
         resetStore();
     });
 
@@ -25,14 +27,13 @@ describe("키보드 단축키 통합 테스트", () => {
     // F8 단축키 테스트 (모달 저장)
     // =====================================================
     describe("F8 단축키 (모달 저장)", () => {
-        it("F8 키를 누르면 modalSubmit 핸들러가 호출됨", () => {
+        it("모달이 없으면 F8은 전역에서 동작하지 않는다", () => {
             const handlers = {
                 modalSubmit: vi.fn(),
             };
 
-            renderHook(() => useShortcuts(handlers));
+            renderHook(() => useAppShortcuts(handlers));
 
-            // F8 키 이벤트 시뮬레이션
             act(() => {
                 window.dispatchEvent(
                     new KeyboardEvent("keydown", {
@@ -43,7 +44,7 @@ describe("키보드 단축키 통합 테스트", () => {
                 );
             });
 
-            expect(handlers.modalSubmit).toHaveBeenCalledTimes(1);
+            expect(handlers.modalSubmit).not.toHaveBeenCalled();
         });
 
         it("F8 단축키 비활성화 시 핸들러가 호출되지 않음", () => {
@@ -54,7 +55,7 @@ describe("키보드 단축키 통합 테스트", () => {
                 modalSubmit: vi.fn(),
             };
 
-            renderHook(() => useShortcuts(handlers));
+            renderHook(() => useAppShortcuts(handlers));
 
             act(() => {
                 window.dispatchEvent(
@@ -79,7 +80,7 @@ describe("키보드 단축키 통합 테스트", () => {
                 openNewWorkModal: vi.fn(),
             };
 
-            renderHook(() => useShortcuts(handlers));
+            renderHook(() => useAppShortcuts(handlers));
 
             act(() => {
                 window.dispatchEvent(
@@ -99,7 +100,7 @@ describe("키보드 단축키 통합 테스트", () => {
                 toggleTimer: vi.fn(),
             };
 
-            renderHook(() => useShortcuts(handlers));
+            renderHook(() => useAppShortcuts(handlers));
 
             act(() => {
                 window.dispatchEvent(
@@ -119,7 +120,7 @@ describe("키보드 단축키 통합 테스트", () => {
                 goToday: vi.fn(),
             };
 
-            renderHook(() => useShortcuts(handlers));
+            renderHook(() => useAppShortcuts(handlers));
 
             act(() => {
                 window.dispatchEvent(
@@ -139,7 +140,7 @@ describe("키보드 단축키 통합 테스트", () => {
                 openNewPresetModal: vi.fn(),
             };
 
-            renderHook(() => useShortcuts(handlers));
+            renderHook(() => useAppShortcuts(handlers));
 
             act(() => {
                 window.dispatchEvent(
@@ -159,7 +160,7 @@ describe("키보드 단축키 통합 테스트", () => {
                 openSettings: vi.fn(),
             };
 
-            renderHook(() => useShortcuts(handlers));
+            renderHook(() => useAppShortcuts(handlers));
 
             act(() => {
                 window.dispatchEvent(
@@ -184,7 +185,7 @@ describe("키보드 단축키 통합 테스트", () => {
                 goDaily: vi.fn(),
             };
 
-            renderHook(() => useShortcuts(handlers));
+            renderHook(() => useAppShortcuts(handlers));
 
             act(() => {
                 window.dispatchEvent(
@@ -204,7 +205,7 @@ describe("키보드 단축키 통합 테스트", () => {
                 goWeekly: vi.fn(),
             };
 
-            renderHook(() => useShortcuts(handlers));
+            renderHook(() => useAppShortcuts(handlers));
 
             act(() => {
                 window.dispatchEvent(
@@ -224,7 +225,7 @@ describe("키보드 단축키 통합 테스트", () => {
                 prevDay: vi.fn(),
             };
 
-            renderHook(() => useShortcuts(handlers));
+            renderHook(() => useAppShortcuts(handlers));
 
             act(() => {
                 window.dispatchEvent(
@@ -244,7 +245,7 @@ describe("키보드 단축키 통합 테스트", () => {
                 nextDay: vi.fn(),
             };
 
-            renderHook(() => useShortcuts(handlers));
+            renderHook(() => useAppShortcuts(handlers));
 
             act(() => {
                 window.dispatchEvent(
@@ -269,7 +270,7 @@ describe("키보드 단축키 통합 테스트", () => {
                 syncData: vi.fn(),
             };
 
-            renderHook(() => useShortcuts(handlers));
+            renderHook(() => useAppShortcuts(handlers));
 
             act(() => {
                 window.dispatchEvent(
@@ -295,7 +296,7 @@ describe("키보드 단축키 통합 테스트", () => {
                 exportData: vi.fn(),
             };
 
-            renderHook(() => useShortcuts(handlers));
+            renderHook(() => useAppShortcuts(handlers));
 
             act(() => {
                 window.dispatchEvent(
@@ -315,7 +316,7 @@ describe("키보드 단축키 통합 테스트", () => {
                 resetTimer: vi.fn(),
             };
 
-            renderHook(() => useShortcuts(handlers));
+            renderHook(() => useAppShortcuts(handlers));
 
             act(() => {
                 window.dispatchEvent(
@@ -344,7 +345,7 @@ describe("키보드 단축키 통합 테스트", () => {
                 openNewWorkModal: vi.fn(),
             };
 
-            renderHook(() => useShortcuts(handlers));
+            renderHook(() => useAppShortcuts(handlers));
 
             // 기존 Alt+N은 동작하지 않아야 함
             act(() => {
@@ -388,10 +389,9 @@ describe("키보드 단축키 통합 테스트", () => {
                 openNewWorkModal: vi.fn(),
                 toggleTimer: vi.fn(),
                 goToday: vi.fn(),
-                modalSubmit: vi.fn(),
             };
 
-            renderHook(() => useShortcuts(handlers));
+            renderHook(() => useAppShortcuts(handlers));
 
             // Alt+N
             act(() => {
@@ -418,14 +418,6 @@ describe("키보드 단축키 통합 테스트", () => {
                 );
             });
             expect(handlers.goToday).toHaveBeenCalledTimes(1);
-
-            // F8
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", { key: "F8", bubbles: true })
-                );
-            });
-            expect(handlers.modalSubmit).toHaveBeenCalledTimes(1);
         });
     });
 
@@ -435,29 +427,26 @@ describe("키보드 단축키 통합 테스트", () => {
     describe("훅 언마운트", () => {
         it("언마운트 후에는 핸들러가 호출되지 않음", () => {
             const handlers = {
-                modalSubmit: vi.fn(),
+                openNewWorkModal: vi.fn(),
             };
 
-            const { unmount } = renderHook(() => useShortcuts(handlers));
+            const { unmount } = renderHook(() => useAppShortcuts(handlers));
 
-            // 언마운트 전 동작 확인
             act(() => {
                 window.dispatchEvent(
-                    new KeyboardEvent("keydown", { key: "F8", bubbles: true })
+                    new KeyboardEvent("keydown", { key: "n", altKey: true, bubbles: true })
                 );
             });
-            expect(handlers.modalSubmit).toHaveBeenCalledTimes(1);
+            expect(handlers.openNewWorkModal).toHaveBeenCalledTimes(1);
 
-            // 언마운트
             unmount();
 
-            // 언마운트 후 동작하지 않아야 함
             act(() => {
                 window.dispatchEvent(
-                    new KeyboardEvent("keydown", { key: "F8", bubbles: true })
+                    new KeyboardEvent("keydown", { key: "n", altKey: true, bubbles: true })
                 );
             });
-            expect(handlers.modalSubmit).toHaveBeenCalledTimes(1); // 여전히 1
+            expect(handlers.openNewWorkModal).toHaveBeenCalledTimes(1);
         });
     });
 });

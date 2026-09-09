@@ -11,7 +11,6 @@
  *   onCancel={handleCancel}
  *   form={form}
  *   submitText="등록"
- *   submitShortcut="F8"
  * >
  *   <Form.Item name="work_name" label="작업명">
  *     <Input />
@@ -19,9 +18,11 @@
  * </FormModal>
  */
 
-import { useCallback, type ReactNode } from "react";
+import { useCallback, useRef, type ReactNode } from "react";
 import { Form, type ModalProps } from "antd";
 import type { FormInstance } from "antd";
+import { useModalKeyboard } from "@/shared/hooks";
+import { formatShortcutForPlatform } from "@/shared/lib/shortcuts";
 import { BaseModal } from "./BaseModal";
 
 export interface FormModalProps extends Omit<ModalProps, "onOk" | "footer"> {
@@ -36,14 +37,14 @@ export interface FormModalProps extends Omit<ModalProps, "onOk" | "footer"> {
     submitText?: string;
     /** 취소 버튼 텍스트 (기본값: "취소") */
     cancelText?: string;
-    /** 제출 버튼 단축키 (예: "F8") */
-    submitShortcut?: string;
     /** 로딩 상태 */
     loading?: boolean;
     /** 닫을 때 폼 리셋 여부 (기본값: true) */
     resetOnClose?: boolean;
     /** 폼 레이아웃 (기본값: "vertical") */
     formLayout?: "horizontal" | "vertical" | "inline";
+    /** 제출 단축키 뱃지 표시 여부 (기본값: true) */
+    showSubmitShortcut?: boolean;
 }
 
 /**
@@ -56,12 +57,15 @@ export function FormModal({
     onCancel,
     submitText = "확인",
     cancelText = "취소",
-    submitShortcut,
     loading = false,
     resetOnClose = true,
     formLayout = "vertical",
+    showSubmitShortcut = true,
+    open,
     ...modalProps
 }: FormModalProps) {
+    const container_ref = useRef<HTMLDivElement>(null);
+
     const handleCancel = useCallback(() => {
         if (resetOnClose) {
             form.resetFields();
@@ -79,21 +83,28 @@ export function FormModal({
             });
     }, [form, onSubmit]);
 
-    // 단축키가 있으면 버튼 텍스트에 포함
-    const okText = submitShortcut ? (
-        <>
-            {submitText}{" "}
-            <span className="ml-xs px-[6px] py-[2px] bg-black/[0.06] rounded text-[11px]">
-                {submitShortcut}
-            </span>
-        </>
-    ) : (
-        submitText
-    );
+    const { submit_keys } = useModalKeyboard({
+        open: Boolean(open),
+        onSubmit: handleOk,
+        container_ref,
+    });
+
+    const okText =
+        showSubmitShortcut && submit_keys ? (
+            <>
+                {submitText}{" "}
+                <span className="ml-xs px-[6px] py-[2px] bg-black/[0.06] rounded text-[11px]">
+                    {formatShortcutForPlatform(submit_keys)}
+                </span>
+            </>
+        ) : (
+            submitText
+        );
 
     return (
         <BaseModal
             {...modalProps}
+            open={open}
             onCancel={handleCancel}
             onOk={handleOk}
             okText={okText}
@@ -101,9 +112,11 @@ export function FormModal({
             confirmLoading={loading}
             destroyOnHidden
         >
-            <Form form={form} layout={formLayout}>
-                {children}
-            </Form>
+            <div ref={container_ref}>
+                <Form form={form} layout={formLayout}>
+                    {children}
+                </Form>
+            </div>
         </BaseModal>
     );
 }

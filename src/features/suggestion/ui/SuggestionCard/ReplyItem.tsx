@@ -1,4 +1,5 @@
-import { Button, Space, Popconfirm, Input, Typography } from "antd";
+import { ConfirmPopconfirm } from "@/shared/ui/confirm";
+import { Button, Space, Input, Typography } from "antd";
 import { ShineSweepRow } from "@/shared/ui/cursor-tracking";
 import type { SuggestionReply } from "@/types";
 import type { useReplyActions } from "../../hooks";
@@ -110,7 +111,7 @@ export function ReplyItem({
                                     </Button>
                                 )}
                                 {can_delete && (
-                                    <Popconfirm
+                                    <ConfirmPopconfirm
                                         title={
                                             SUGGESTION_LABELS.deleteReplyTitle
                                         }
@@ -140,7 +141,7 @@ export function ReplyItem({
                                         >
                                             {SUGGESTION_LABELS.deleteButton}
                                         </Button>
-                                    </Popconfirm>
+                                    </ConfirmPopconfirm>
                                 )}
                             </Space>
                         )}

@@ -2,7 +2,8 @@
  * 간트 바 우클릭 컨텍스트 메뉴 (Popover content)
  */
 
-import { Button, Space, Popconfirm } from "antd";
+import { ConfirmPopconfirm } from "@/shared/ui/confirm";
+import { Button, Space } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
     GANTT_LABEL_EDIT_WORK,
@@ -54,7 +55,7 @@ export function SessionContextMenu({
                 >
                     {GANTT_LABEL_EDIT_WORK}
                 </Button>
-                <Popconfirm
+                <ConfirmPopconfirm
                     title={GANTT_LABEL_DELETE_SESSION_TITLE}
                     description={GANTT_LABEL_DELETE_SESSION_DESC(
                         session.start_time,
@@ -74,7 +75,7 @@ export function SessionContextMenu({
                     >
                         {GANTT_LABEL_DELETE_SESSION}
                     </Button>
-                </Popconfirm>
+                </ConfirmPopconfirm>
             </Space>
         </div>
     );

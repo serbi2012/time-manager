@@ -98,6 +98,9 @@ shared/
 │   ├── session/    session_utils — getSessionMinutes, calculateTotalMinutes, createSession, sortSessionsByTime
 │   ├── record/     record_creator, deal_name_generator
 │   ├── data/       export, import (JSON 백업/복원)
+│   ├── shortcuts/  단축키 매니저 (→ keyboard-focus.md)
+│   ├── focus/      포커스 매니저 (→ keyboard-focus.md)
+│   ├── diagnostics/ 오류 수집·진단 리포트
 │   ├── cn.ts       clsx + tailwind-merge className 합성
 │   ├── message.ts  antd message 래퍼
 │   ├── haptic.ts   모바일 진동 피드백
@@ -111,11 +114,15 @@ shared/
 │   ├── layout/      EmptyState, LoadingOverlay
 │   ├── animation/   framer-motion 프리셋 — config/, primitives/, interactions/, feedback/, hooks/
 │   ├── transitions/ 페이지 전환 시스템 (→ transitions.md)
+│   ├── confirm/     ConfirmPopconfirm (Enter/ESC 보장 확인창)
+│   ├── error/       AppErrorBoundary + 진단 다운로드 화면
 │   └── cursor-tracking/ Spotlight·Tilt·Magnetic 등 커서 추종 효과
 ├── types/       domain, timer, shortcut, suggestion
 ├── hooks/       useResponsive, useAutoCompleteOptions, useRecordCreation, useDataImportExport,
 │                useAuthHandlers, useLongPress, useDebouncedValue, useMousePosition,
-│                useSpotlight, useMagnetic
+│                useSpotlight, useMagnetic, useDiagnostics,
+│                useShortcut, useShortcutLayer, useAppShortcuts,
+│                useFocusLayer, useModalKeyboard
 ├── constants/   → 3절 참조
 └── config/      constants.ts, theme.ts (레거시 호환 re-export)
 ```

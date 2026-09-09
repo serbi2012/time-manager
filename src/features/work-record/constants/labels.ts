@@ -40,7 +40,7 @@ export const RECORD_BUTTON = {
     STOP_TIMER: "정지",
     VIEW_COMPLETED: "완료",
     VIEW_TRASH: "휴지통",
-    COPY_RECORDS: "내역 보기",
+    COPY_RECORDS: "시간관리 형식 보기",
     NEW_WORK: "새 작업",
     FILTER: "필터",
     SEARCH: "검색",
@@ -219,22 +219,25 @@ export const MARKDOWN_COPY = {
 // 내역 보기 모달
 // ========================================
 export const RECORD_COPY_COLUMNS = [
-    "작업명",
+    "작업",
+    "업무",
     "거래코드",
-    "거래명",
-    "시간",
+    "거래",
     "카테고리",
+    "카테고리명",
+    "시간(분)",
     "비고",
 ] as const;
 
 export const RECORD_COPY_MODAL = {
-    TITLE: "내역 보기",
+    TITLE: "시간관리 형식 보기",
     COPY_ALL: "전체 복사",
     HINT: "표를 드래그해서 복사하거나, 셀을 더블클릭하면 그 칸만 복사돼요",
-    DEAL_CODE_PLACEHOLDER: "코드 입력",
-    DEAL_CODE_HINT: "거래코드는 거래명마다 저장되어 다음에도 그대로 나와요",
+    CODE_PLACEHOLDER: "코드 입력",
+    CODE_HINT:
+        "거래코드는 거래명마다, 카테고리 코드는 카테고리명마다 저장되어 다음에도 그대로 나와요",
     EMPTY: "복사할 작업 기록이 없어요",
     CELL_COPIED: "복사했어요",
     ALL_COPIED: "전체 내역을 복사했어요",
-    DEAL_CODE_SAVED: "거래코드를 저장했어요",
+    CODE_SAVED: "코드를 저장했어요",
 } as const;

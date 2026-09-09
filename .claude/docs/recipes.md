@@ -43,13 +43,41 @@
 
 ## 새 단축키 추가
 
-1. `src/shared/types/shortcut.ts`의 정의 확인
-2. `src/shared/constants/enums/shortcut.ts`에 키 등록
-3. `src/hooks/useShortcuts.ts`에 핸들러 추가
-4. `src/store/useShortcutStore.ts`에 활성화 토글 상태 추가
-5. `src/features/settings/ui/tabs/ShortcutsTab.tsx`에 노출
-6. `src/docs/shortcuts.md`의 단축키 표 갱신
-7. 키보드 이벤트 테스트: `src/test/integration/keyboard/`
+상세 규칙은 `.claude/docs/keyboard-focus.md` 참조.
+
+**전역 단축키**
+
+1. `src/store/useShortcutStore.ts`의 `DEFAULT_SHORTCUTS`에 항목 추가 (id, keys, category, action)
+2. `src/shared/constants/ui/labels.ts`의 `SHORTCUT_LABELS`에 이름·설명 추가
+3. `src/app/layouts/DesktopLayout.tsx`의 `shortcut_handlers`에 action 이름으로 핸들러 연결
+4. `src/docs/shortcuts.md`의 단축키 표 갱신
+5. 테스트: `src/test/integration/keyboard/shortcuts.integration.test.ts`
+
+설정 화면(`ShortcutsTab`)에는 스토어 기반이라 자동으로 나온다.
+
+**모달 안에서만 쓰는 단축키**
+
+```tsx
+const { layer_id } = useModalKeyboard({ open, onSubmit });
+
+useShortcut({
+    keys: "Alt+D",
+    scope: "layer",
+    layer_id,
+    handler: handleDuplicate,
+});
+```
+
+**하지 말 것**: `window.addEventListener("keydown")` 직접 등록, `<Form onKeyDown>`으로 단축키 처리, `"F8"` 하드코딩.
+
+---
+
+## 새 모달 추가
+
+1. `FormModal`을 쓰면 제출 단축키·포커스·레이어가 이미 처리된다
+2. antd `Modal`을 직접 쓸 때는 `useModalKeyboard({ open, onSubmit })` 한 줄을 추가한다
+3. 버튼의 키 뱃지는 `formatShortcutForPlatform(submit_keys)`로 그린다
+4. 삭제 등 확인이 필요하면 `ConfirmPopconfirm`을 쓴다 (antd `Popconfirm` 직접 사용 금지)
 
 ---
 

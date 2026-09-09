@@ -86,6 +86,8 @@ export {
 // 내역 보기 행
 export {
     type RecordCopyRow,
+    type BuildRecordCopyRowsOptions,
+    formatCodeWithName,
     buildRecordCopyRows,
     getCopyRowCells,
     formatCopyRowsToMarkdown,

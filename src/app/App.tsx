@@ -12,6 +12,7 @@ import { DesktopLayout, MobileLayout } from "./layouts";
 import { useResponsive } from "../hooks/useResponsive";
 import { AppErrorBoundary } from "../shared/ui/error";
 import { installDiagnosticCollector } from "../shared/lib/diagnostics";
+import { installShortcutListener } from "../shared/lib/shortcuts";
 
 /**
  * 플랫폼별 레이아웃 선택 컴포넌트
@@ -33,6 +34,7 @@ function AppLayout() {
  */
 function App() {
     useEffect(() => installDiagnosticCollector(), []);
+    useEffect(() => installShortcutListener(), []);
 
     return (
         <AppErrorBoundary>

@@ -31,8 +31,11 @@ export type AppTheme =
 /** 트랜지션 속도 타입 */
 export type TransitionSpeed = "slow" | "normal" | "fast";
 
+/** 이름 → 코드 매핑 */
+export type CodeMap = Record<string, string>;
+
 /** 거래명 → 거래 코드 매핑 */
-export type DealCodeMap = Record<string, string>;
+export type DealCodeMap = CodeMap;
 
 /** 숨김 가능한 자동완성 필드 */
 export type HiddenAutoCompleteField =
@@ -132,6 +135,7 @@ export interface SettingsSlice {
     cursor_tracking_enabled: boolean;
     mobile_gantt_list_expanded: boolean;
     deal_codes: DealCodeMap;
+    category_codes: CodeMap;
 
     // Actions - Custom Options
     addCustomTaskOption: (option: string) => void;
@@ -160,6 +164,8 @@ export interface SettingsSlice {
     setMobileGanttListExpanded: (expanded: boolean) => void;
     setDealCode: (deal_name: string, code: string) => void;
     getDealCode: (deal_name: string) => string;
+    setCategoryCode: (category_name: string, code: string) => void;
+    getCategoryCode: (category_name: string) => string;
 }
 
 // ============================================

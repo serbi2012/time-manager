@@ -1,5 +1,6 @@
+import { ConfirmPopconfirm } from "@/shared/ui/confirm";
 import { useState } from "react";
-import { Dropdown, Popconfirm } from "antd";
+import { Dropdown } from "antd";
 import type { MenuProps } from "antd";
 import { MoreOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { cn } from "@/shared/lib/cn";
@@ -73,22 +74,18 @@ export function TemplateCardMenu({
                 </button>
             </Dropdown>
 
-            <Popconfirm
+            <ConfirmPopconfirm
                 title={POPCONFIRM_DELETE_TITLE}
                 description={POPCONFIRM_DELETE_DESCRIPTION}
                 open={confirm_open}
-                onConfirm={() => {
-                    setConfirmOpen(false);
-                    onDelete();
-                }}
-                onCancel={() => setConfirmOpen(false)}
+                onOpenChange={setConfirmOpen}
+                onConfirm={onDelete}
                 okText={POPCONFIRM_OK_TEXT}
                 cancelText={POPCONFIRM_CANCEL_TEXT}
-                okButtonProps={{ danger: true }}
                 overlayClassName="template-card-popconfirm"
             >
                 <span />
-            </Popconfirm>
+            </ConfirmPopconfirm>
         </>
     );
 }

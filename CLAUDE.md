@@ -17,6 +17,7 @@ Feature-Sliced Design 아키텍처, 데스크탑/모바일 컴포넌트 트리 �
 | UI 신규 생성·리디자인·레이아웃 변경              | `.claude/docs/ui-mockup.md`           |
 | 모바일 UI/로직 변경                              | `.claude/docs/mobile.md`              |
 | 페이지·라우트·탭 전환 애니메이션                 | `.claude/docs/transitions.md`         |
+| 단축키·포커스·모달 키보드 처리                   | `.claude/docs/keyboard-focus.md`      |
 | 릴리즈 준비, 버전 업, CHANGELOG                  | `.claude/docs/release.md`             |
 | 기능 추가/수정 후 사용 설명서·데모 반영          | `.claude/docs/docs-sync.md`           |
 | 알려진 버그·미완료 리팩토링 확인                 | `.claude/docs/backlog.md`             |
@@ -47,7 +48,7 @@ pnpm mockup           # 목업 서버 (:3456)
 
 ## 절대 규칙 (Non-Negotiable)
 
-아래 8개는 어떤 상황에서도 타협하지 않는다. 상세 근거와 예시는 `.claude/docs/coding-standards.md`.
+아래 9개는 어떤 상황에서도 타협하지 않는다. 상세 근거와 예시는 `.claude/docs/coding-standards.md`.
 
 1. **테스트 가능성 우선** — 모든 비즈니스 로직은 `lib/`에 순수 함수로. 부수 효과는 훅/스토어에서만.
 2. **파일 300줄 초과 시 분리 검토, 500줄 초과 시 반드시 분리.** 한 파일 = 한 컴포넌트.
@@ -57,10 +58,11 @@ pnpm mockup           # 목업 서버 (:3456)
 6. **하드코딩 금지** — 색상 hex, 폰트 크기/굵기 숫자, 여백 px, 사용자에게 보이는 모든 문구(`message.*` 인자 포함). 전부 디자인 토큰 또는 `shared/constants/`의 상수로.
 7. **단방향 의존성** — `pages → widgets → features → shared`. feature 간 직접 import 금지, 순환 의존성 금지.
 8. **`any` 금지.** 불가피하면 `unknown`. 타입 단언(`as`) 최소화.
+9. **키보드 입력은 매니저로.** `window.addEventListener("keydown")`이나 `onKeyDown`으로 단축키를 처리하지 않는다. 모달은 `useModalKeyboard`, 확인창은 `ConfirmPopconfirm`, 그 외는 `useShortcut`.
 
 ### 금지 패턴
 
-God Component(500줄+) / 3단계 이상 prop drilling / 복붙 / 매직 넘버 / 순수 함수 내 전역 상태 참조 / 플랫폼 결합 / 순환 의존성 / 테스트 불가능한 구조
+God Component(500줄+) / 3단계 이상 prop drilling / 복붙 / 매직 넘버 / 순수 함수 내 전역 상태 참조 / 플랫폼 결합 / 순환 의존성 / 테스트 불가능한 구조 / 키보드 리스너 직접 등록
 
 ---
 

@@ -2,6 +2,7 @@
  * 단축키 탭 컴포넌트
  */
 
+import { ConfirmPopconfirm } from "@/shared/ui/confirm";
 import { useState } from "react";
 import {
     Table,
@@ -10,14 +11,13 @@ import {
     Typography,
     Tag,
     Space,
-    Popconfirm,
 } from "antd";
 import { EditOutlined, ReloadOutlined, KeyOutlined } from "@ant-design/icons";
 import { useShortcutStore } from "@/store/useShortcutStore";
 import type { ShortcutDefinition } from "@/store/useShortcutStore";
 import { useWorkStore } from "@/store/useWorkStore";
 import { APP_THEME_COLORS } from "@/store/constants";
-import { formatShortcutKeyForPlatform } from "@/hooks/useShortcuts";
+import { formatShortcutForPlatform } from "@/shared/lib/shortcuts";
 import { message } from "@/shared/lib/message";
 import { SUCCESS_MESSAGES } from "@/shared/constants/ui/messages";
 import {
@@ -83,7 +83,7 @@ export function ShortcutsTab({ is_mobile }: ShortcutsTabProps) {
             render: (keys: string, record: ShortcutDefinition) => (
                 <Space>
                     <Tag className="!font-mono !text-[13px] !py-xs !px-sm">
-                        {formatShortcutKeyForPlatform(keys)}
+                        {formatShortcutForPlatform(keys)}
                     </Tag>
                     <Button
                         type="text"
@@ -165,7 +165,7 @@ export function ShortcutsTab({ is_mobile }: ShortcutsTabProps) {
         <div>
             <div className="flex justify-between items-center mb-lg">
                 <Text type="secondary">{SETTINGS_SHORTCUTS_DESC}</Text>
-                <Popconfirm
+                <ConfirmPopconfirm
                     title={SETTINGS_SHORTCUTS_RESET_CONFIRM_TITLE}
                     description={SETTINGS_SHORTCUTS_RESET_CONFIRM_DESC}
                     onConfirm={handleReset}
@@ -176,7 +176,7 @@ export function ShortcutsTab({ is_mobile }: ShortcutsTabProps) {
                     <Button icon={<ReloadOutlined />} size="small">
                         {SETTINGS_SHORTCUTS_RESET}
                     </Button>
-                </Popconfirm>
+                </ConfirmPopconfirm>
             </div>
             <Table
                 dataSource={shortcuts}

@@ -1,12 +1,12 @@
 /**
- * 거래코드 매핑 스토어 액션 테스트
+ * 거래코드/카테고리 코드 매핑 스토어 액션 테스트
  */
 import { describe, it, expect, beforeEach } from "vitest";
 import { useWorkStore } from "../../store/useWorkStore";
 
 describe("거래코드 매핑", () => {
     beforeEach(() => {
-        useWorkStore.setState({ deal_codes: {} });
+        useWorkStore.setState({ deal_codes: {}, category_codes: {} });
     });
 
     it("거래명에 코드를 저장한다", () => {
@@ -58,6 +58,47 @@ describe("거래코드 매핑", () => {
         expect(useWorkStore.getState().deal_codes).toEqual({
             거래A: "D-001",
             거래B: "D-002",
+        });
+    });
+});
+
+describe("카테고리 코드 매핑", () => {
+    beforeEach(() => {
+        useWorkStore.setState({ deal_codes: {}, category_codes: {} });
+    });
+
+    it("카테고리명에 코드를 저장한다", () => {
+        useWorkStore.getState().setCategoryCode("환경세팅", "18");
+
+        expect(useWorkStore.getState().category_codes["환경세팅"]).toBe("18");
+    });
+
+    it("저장한 코드를 조회한다", () => {
+        useWorkStore.getState().setCategoryCode("환경세팅", "18");
+
+        expect(useWorkStore.getState().getCategoryCode("환경세팅")).toBe("18");
+    });
+
+    it("저장되지 않은 카테고리명은 빈 문자열을 반환한다", () => {
+        expect(useWorkStore.getState().getCategoryCode("없는카테고리")).toBe("");
+    });
+
+    it("빈 코드를 저장하면 매핑에서 제거한다", () => {
+        useWorkStore.getState().setCategoryCode("환경세팅", "18");
+        useWorkStore.getState().setCategoryCode("환경세팅", "");
+
+        expect(useWorkStore.getState().category_codes).not.toHaveProperty(
+            "환경세팅"
+        );
+    });
+
+    it("거래코드와 카테고리 코드는 서로 영향을 주지 않는다", () => {
+        useWorkStore.getState().setDealCode("거래A", "D-001");
+        useWorkStore.getState().setCategoryCode("환경세팅", "18");
+
+        expect(useWorkStore.getState().deal_codes).toEqual({ 거래A: "D-001" });
+        expect(useWorkStore.getState().category_codes).toEqual({
+            환경세팅: "18",
         });
     });
 });

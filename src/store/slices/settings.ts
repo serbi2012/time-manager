@@ -28,6 +28,7 @@ import {
     DEFAULT_MOBILE_GANTT_LIST_EXPANDED,
 } from "../constants";
 import { syncSettings } from "@/firebase/syncService";
+import { updateCodeMap, getCodeFromMap } from "../lib/code_map";
 
 export const createSettingsSlice: StateCreator<
     WorkStore,
@@ -50,6 +51,7 @@ export const createSettingsSlice: StateCreator<
     cursor_tracking_enabled: DEFAULT_CURSOR_TRACKING_ENABLED,
     mobile_gantt_list_expanded: DEFAULT_MOBILE_GANTT_LIST_EXPANDED,
     deal_codes: {},
+    category_codes: {},
 
     // ============================================
     // Custom Options Actions
@@ -201,23 +203,30 @@ export const createSettingsSlice: StateCreator<
     },
 
     setDealCode: (deal_name: string, code: string) => {
-        const trimmed_name = deal_name.trim();
-        if (!trimmed_name) return;
-
-        const trimmed_code = code.trim();
-        const next_codes = create(get().deal_codes, (draft) => {
-            if (trimmed_code) {
-                draft[trimmed_name] = trimmed_code;
-            } else {
-                delete draft[trimmed_name];
-            }
-        });
+        const next_codes = updateCodeMap(get().deal_codes, deal_name, code);
+        if (!next_codes) return;
 
         set({ deal_codes: next_codes });
         syncSettings({ deal_codes: next_codes }).catch(console.error);
     },
 
     getDealCode: (deal_name: string) => {
-        return get().deal_codes[deal_name.trim()] || "";
+        return getCodeFromMap(get().deal_codes, deal_name);
+    },
+
+    setCategoryCode: (category_name: string, code: string) => {
+        const next_codes = updateCodeMap(
+            get().category_codes,
+            category_name,
+            code
+        );
+        if (!next_codes) return;
+
+        set({ category_codes: next_codes });
+        syncSettings({ category_codes: next_codes }).catch(console.error);
+    },
+
+    getCategoryCode: (category_name: string) => {
+        return getCodeFromMap(get().category_codes, category_name);
     },
 });

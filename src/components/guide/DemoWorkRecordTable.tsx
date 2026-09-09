@@ -17,7 +17,7 @@ import {
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { useShortcutStore } from "../../store/useShortcutStore";
-import { formatShortcutKeyForPlatform } from "../../hooks/useShortcuts";
+import { formatShortcutForPlatform } from "@/shared/lib/shortcuts";
 import { formatDuration } from "../../shared/lib/time";
 import {
     BUTTON_TEXT,
@@ -237,7 +237,7 @@ export function DemoWorkRecordTable() {
                         >
                             {DEMO_UI_LABELS.newWork}{" "}
                             <span className="text-xs opacity-85 ml-xs px-xs rounded-xs bg-white/20">
-                                {formatShortcutKeyForPlatform(new_work_keys)}
+                                {formatShortcutForPlatform(new_work_keys)}
                             </span>
                         </Button>
                         <Button

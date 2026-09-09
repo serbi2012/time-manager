@@ -8,11 +8,8 @@ import { message } from "@/shared/lib/message";
 import dayjs from "dayjs";
 import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "../../../../store/useWorkStore";
-import { useShortcutStore } from "../../../../store/useShortcutStore";
-import {
-    formatShortcutKeyForPlatform,
-    matchShortcutKey,
-} from "../../../../hooks/useShortcuts";
+import { useModalKeyboard } from "@/shared/hooks";
+import { formatShortcutForPlatform } from "@/shared/lib/shortcuts";
 import { timeToMinutes } from "../../../../shared/lib/time";
 import type { WorkRecord, WorkSession } from "../../../../shared/types";
 import { WorkRecordFormFields } from "../../../../shared/ui/form";
@@ -86,12 +83,6 @@ export function GanttEditModal({
 
     // Form
     const [form] = Form.useForm();
-
-    // 모달 저장 단축키
-    const modal_submit_shortcut = useShortcutStore((state) =>
-        state.shortcuts.find((s) => s.id === "modal-submit")
-    );
-    const modal_submit_keys = modal_submit_shortcut?.keys || "F8";
 
     useEffect(() => {
         if (open && record && session) {
@@ -202,6 +193,11 @@ export function GanttEditModal({
 
     const is_active_session = session?.id === timer.active_session_id;
 
+    const { submit_keys } = useModalKeyboard({
+        open,
+        onSubmit: handleEditWork,
+    });
+
     return (
         <Modal
             title={
@@ -219,7 +215,7 @@ export function GanttEditModal({
             footer={[
                 <Button key="ok" type="primary" onClick={handleEditWork}>
                     {GANTT_MODAL_BUTTON_SAVE} (
-                    {formatShortcutKeyForPlatform(modal_submit_keys)})
+                    {formatShortcutForPlatform(submit_keys)})
                 </Button>,
                 <Button key="cancel" onClick={handleClose}>
                     {GANTT_MODAL_BUTTON_CANCEL}
@@ -229,12 +225,6 @@ export function GanttEditModal({
             <Form
                 form={form}
                 layout="vertical"
-                onKeyDown={(e) => {
-                    if (matchShortcutKey(e, modal_submit_keys)) {
-                        e.preventDefault();
-                        handleEditWork();
-                    }
-                }}
             >
                 <SessionTimeSection is_active_session={is_active_session} />
 

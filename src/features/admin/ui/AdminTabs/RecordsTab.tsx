@@ -2,12 +2,12 @@
  * 레코드 분석 탭
  */
 
+import { ConfirmPopconfirm } from "@/shared/ui/confirm";
 import {
     Space,
     Card,
     Table,
     Button,
-    Popconfirm,
     Typography,
     Tag,
     Tooltip,
@@ -262,7 +262,7 @@ export function RecordsTab({
                                     {SELECT_COPY_RECORDS} (
                                     {selected_record_keys.length})
                                 </Button>
-                                <Popconfirm
+                                <ConfirmPopconfirm
                                     title={BULK_DELETE}
                                     description={`${selected_record_keys.length}${CONFIRM_BULK_DELETE_RECORDS}`}
                                     onConfirm={() =>
@@ -274,7 +274,7 @@ export function RecordsTab({
                                     <Button icon={<DeleteOutlined />} danger>
                                         {BULK_DELETE}
                                     </Button>
-                                </Popconfirm>
+                                </ConfirmPopconfirm>
                             </>
                         )}
                     </Space>

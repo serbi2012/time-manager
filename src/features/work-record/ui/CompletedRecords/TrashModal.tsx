@@ -2,13 +2,13 @@
  * 휴지통 모달 컴포넌트
  */
 
+import { ConfirmPopconfirm } from "@/shared/ui/confirm";
 import {
     Modal,
     Table,
     Button,
     Empty,
     Typography,
-    Popconfirm,
     Space,
 } from "antd";
 import { RollbackOutlined, DeleteOutlined } from "@ant-design/icons";
@@ -86,7 +86,7 @@ export function TrashModal({
                     >
                         {RECORD_BUTTON.RESTORE}
                     </Button>
-                    <Popconfirm
+                    <ConfirmPopconfirm
                         title={RECORD_CONFIRM.PERMANENT_DELETE.TITLE}
                         description={
                             RECORD_CONFIRM.PERMANENT_DELETE.DESCRIPTION
@@ -99,7 +99,7 @@ export function TrashModal({
                         <Button type="text" danger icon={<DeleteOutlined />}>
                             {RECORD_BUTTON.DELETE}
                         </Button>
-                    </Popconfirm>
+                    </ConfirmPopconfirm>
                 </Space>
             ),
         },

@@ -2,13 +2,13 @@
  * 삭제된 데이터 관리 컴포넌트
  */
 
+import { ConfirmPopconfirm } from "@/shared/ui/confirm";
 import { useState, useMemo } from "react";
 import {
     Table,
     Button,
     Space,
     Tag,
-    Popconfirm,
     message,
     Card,
     Row,
@@ -211,7 +211,7 @@ export function TrashManager({
                     >
                         {TRASH_LABEL.restore}
                     </Button>
-                    <Popconfirm
+                    <ConfirmPopconfirm
                         title={TRASH_LABEL.permanentDelete}
                         description={TRASH_LABEL.permanentDeleteConfirm}
                         onConfirm={() => {
@@ -227,7 +227,7 @@ export function TrashManager({
                         <Button type="text" danger icon={<DeleteOutlined />}>
                             {DELETE}
                         </Button>
-                    </Popconfirm>
+                    </ConfirmPopconfirm>
                 </Space>
             ),
         },
@@ -332,7 +332,7 @@ export function TrashManager({
                 >
                     {TRASH_LABEL.restoreSelected} ({selected_ids.length})
                 </Button>
-                <Popconfirm
+                <ConfirmPopconfirm
                     title={TRASH_LABEL.permanentDeleteSelected}
                     description={TRASH_LABEL.permanentDeleteSelectedConfirm(
                         selected_ids.length
@@ -350,8 +350,8 @@ export function TrashManager({
                     >
                         {TRASH_LABEL.deleteSelectedBtn} ({selected_ids.length})
                     </Button>
-                </Popconfirm>
-                <Popconfirm
+                </ConfirmPopconfirm>
+                <ConfirmPopconfirm
                     title={TRASH_LABEL.emptyTrash}
                     description={
                         <Alert
@@ -371,7 +371,7 @@ export function TrashManager({
                     <Button danger icon={<ClearOutlined />}>
                         {TRASH_LABEL.emptyTrash}
                     </Button>
-                </Popconfirm>
+                </ConfirmPopconfirm>
             </Space>
 
             {/* 테이블 */}

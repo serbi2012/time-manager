@@ -33,12 +33,12 @@ type Story = StoryObj<typeof meta>;
 function FormModalDemo({
     title = "새 작업",
     submitText = "등록",
-    submitShortcut,
+    showSubmitShortcut = true,
     loading = false,
 }: {
     title?: string;
     submitText?: string;
-    submitShortcut?: string;
+    showSubmitShortcut?: boolean;
     loading?: boolean;
 }) {
     const [form] = Form.useForm();
@@ -61,7 +61,7 @@ function FormModalDemo({
                 onSubmit={handleSubmit}
                 onCancel={() => setOpen(false)}
                 submitText={submitText}
-                submitShortcut={submitShortcut}
+                showSubmitShortcut={showSubmitShortcut}
                 loading={loading}
             >
                 <Form.Item
@@ -102,7 +102,7 @@ export const WithShortcut: Story = {
         <FormModalDemo
             title="새 작업 등록"
             submitText="등록"
-            submitShortcut="F8"
+            showSubmitShortcut
         />
     ),
 };
@@ -147,7 +147,7 @@ export const ComplexForm: Story = {
                     }}
                     onCancel={() => setOpen(false)}
                     submitText="등록"
-                    submitShortcut="F8"
+                    showSubmitShortcut
                     width={600}
                 >
                     <Form.Item name="project_code" label="프로젝트 코드">

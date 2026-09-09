@@ -1,20 +1,25 @@
 import type { RecordCopyRow } from "../../lib";
 import { RECORD_COPY_COLUMNS } from "../../constants";
 import { RecordCopyCell } from "./RecordCopyCell";
-import { DealCodeCell } from "./DealCodeCell";
+import { EditableCodeCell } from "./EditableCodeCell";
 
-const DURATION_COLUMN_INDEX = 3;
+const DURATION_COLUMN_INDEX = 6;
+
+const HEADER_BASE_CLASS =
+    "px-md py-sm text-sm font-semibold text-text-secondary border-b border-border-default whitespace-nowrap";
 
 interface RecordCopyTableProps {
     rows: RecordCopyRow[];
     onCopyCell: (value: string) => void;
     onSaveDealCode: (deal_name: string, code: string) => void;
+    onSaveCategoryCode: (category_name: string, code: string) => void;
 }
 
 export function RecordCopyTable({
     rows,
     onCopyCell,
     onSaveDealCode,
+    onSaveCategoryCode,
 }: RecordCopyTableProps) {
     return (
         <div className="overflow-x-auto rounded-lg border border-border-default select-text">
@@ -26,8 +31,8 @@ export function RecordCopyTable({
                                 key={column}
                                 className={
                                     index === DURATION_COLUMN_INDEX
-                                        ? "px-md py-sm text-right text-sm font-semibold text-text-secondary border-b border-border-default whitespace-nowrap"
-                                        : "px-md py-sm text-left text-sm font-semibold text-text-secondary border-b border-border-default whitespace-nowrap"
+                                        ? `${HEADER_BASE_CLASS} text-right`
+                                        : `${HEADER_BASE_CLASS} text-left`
                                 }
                             >
                                 {column}
@@ -42,8 +47,12 @@ export function RecordCopyTable({
                                 value={row.work_name}
                                 onCopy={onCopyCell}
                             />
-                            <DealCodeCell
-                                deal_name={row.deal_name}
+                            <RecordCopyCell
+                                value={row.task_name}
+                                onCopy={onCopyCell}
+                            />
+                            <EditableCodeCell
+                                map_key={row.deal_name}
                                 code={row.deal_code}
                                 onSave={onSaveDealCode}
                             />
@@ -51,13 +60,19 @@ export function RecordCopyTable({
                                 value={row.deal_name}
                                 onCopy={onCopyCell}
                             />
-                            <RecordCopyCell
-                                value={row.duration_text}
-                                align_right
-                                onCopy={onCopyCell}
+                            <EditableCodeCell
+                                map_key={row.category_name}
+                                code={row.category_code}
+                                display_text={row.category_display}
+                                onSave={onSaveCategoryCode}
                             />
                             <RecordCopyCell
                                 value={row.category_name}
+                                onCopy={onCopyCell}
+                            />
+                            <RecordCopyCell
+                                value={row.duration_text}
+                                align_right
                                 onCopy={onCopyCell}
                             />
                             <RecordCopyCell

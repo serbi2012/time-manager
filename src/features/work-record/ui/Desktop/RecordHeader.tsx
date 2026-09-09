@@ -10,7 +10,7 @@ import { PlusOutlined, CalendarOutlined } from "@ant-design/icons";
 import type { Dayjs } from "dayjs";
 
 import type { WorkRecord } from "../../../../shared/types";
-import { formatShortcutKeyForPlatform } from "../../../../hooks/useShortcuts";
+import { formatShortcutForPlatform } from "@/shared/lib/shortcuts";
 import { cn } from "../../../../shared/lib/cn";
 import { RECORD_BUTTON } from "../../constants";
 import {
@@ -117,7 +117,7 @@ export function RecordHeader({
                             {RECORD_BUTTON.NEW_WORK}
                             {new_work_shortcut_keys && (
                                 <span className="text-xs opacity-70 ml-xs bg-white/20 px-xs py-px rounded-xs">
-                                    {formatShortcutKeyForPlatform(
+                                    {formatShortcutForPlatform(
                                         new_work_shortcut_keys
                                     )}
                                 </span>

@@ -55,3 +55,6 @@ export { validateAndAdjustSessionTime } from "./session_updater";
 
 // 레코드 시간 재계산
 export { recalculateRecordFromSessions } from "./record_recalculator";
+
+// 이름-코드 매핑
+export { updateCodeMap, getCodeFromMap } from "./code_map";

@@ -104,3 +104,6 @@ export {
 
 // 에러 경계
 export { AppErrorBoundary, AppErrorFallback } from "./error";
+
+// 확인 팝오버
+export { ConfirmPopconfirm, type ConfirmPopconfirmProps } from "./confirm";

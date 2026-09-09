@@ -2,7 +2,8 @@
  * Card-based autocomplete option section with icon header and badge count
  */
 
-import { Badge, Button, Card, Empty, Popconfirm } from "antd";
+import { ConfirmPopconfirm } from "@/shared/ui/confirm";
+import { Badge, Button, Card, Empty } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import { AutoCompleteChip } from "./AutoCompleteChip";
 import { AutoCompleteHiddenSection } from "./AutoCompleteHiddenSection";
@@ -101,7 +102,7 @@ export function AutoCompleteOptionList({
 
     const card_extra =
         selected.length > 0 ? (
-            <Popconfirm
+            <ConfirmPopconfirm
                 title={`${selected.length}${SETTINGS_BULK_HIDE_CONFIRM}`}
                 onConfirm={() =>
                     on_bulk_hide(field, selected, () => set_selected([]))
@@ -113,7 +114,7 @@ export function AutoCompleteOptionList({
                 <Button size="small" danger icon={<DeleteOutlined />}>
                     {SETTINGS_AUTOCOMPLETE_SELECT_HIDE} ({selected.length})
                 </Button>
-            </Popconfirm>
+            </ConfirmPopconfirm>
         ) : null;
 
     return (

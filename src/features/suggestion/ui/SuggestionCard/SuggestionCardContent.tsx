@@ -1,4 +1,5 @@
-import { Button, Space, Popconfirm, Typography, Divider, List } from "antd";
+import { ConfirmPopconfirm } from "@/shared/ui/confirm";
+import { Button, Space, Typography, Divider, List } from "antd";
 import {
     EditOutlined,
     DeleteOutlined,
@@ -52,7 +53,7 @@ export function SuggestionCardContent({
                             </Button>
                         )}
                         {can_delete && (
-                            <Popconfirm
+                            <ConfirmPopconfirm
                                 title={SUGGESTION_LABELS.deletePostTitle}
                                 description={
                                     SUGGESTION_LABELS.deletePostDescription
@@ -72,7 +73,7 @@ export function SuggestionCardContent({
                                 >
                                     {SUGGESTION_LABELS.deleteButton}
                                 </Button>
-                            </Popconfirm>
+                            </ConfirmPopconfirm>
                         )}
                     </Space>
                 </div>

@@ -11,8 +11,9 @@ import { buildRecordCopyRows, formatCopyRowsToMarkdown } from "../../lib";
 import { RECORD_COPY_MODAL } from "../../constants";
 import { RecordCopyTable } from "./RecordCopyTable";
 
-const MODAL_WIDTH = 1080;
+const MODAL_WIDTH = 1240;
 const MODAL_BODY_STYLE = { maxHeight: "70vh", overflowY: "auto" as const };
+const MODAL_STYLE = { maxWidth: "calc(100vw - 32px)" };
 
 const { Text } = Typography;
 
@@ -29,23 +30,36 @@ export function RecordCopyModal({
     selected_date,
     onClose,
 }: RecordCopyModalProps) {
-    const { deal_codes, setDealCode, getLunchTimeMinutes } = useWorkStore(
+    const {
+        deal_codes,
+        category_codes,
+        setDealCode,
+        setCategoryCode,
+        getLunchTimeMinutes,
+    } = useWorkStore(
         useShallow((s) => ({
             deal_codes: s.deal_codes,
+            category_codes: s.category_codes,
             setDealCode: s.setDealCode,
+            setCategoryCode: s.setCategoryCode,
             getLunchTimeMinutes: s.getLunchTimeMinutes,
         }))
     );
 
     const rows = useMemo(
         () =>
-            buildRecordCopyRows(
-                records,
-                selected_date,
+            buildRecordCopyRows(records, selected_date, {
                 deal_codes,
-                getLunchTimeMinutes()
-            ),
-        [records, selected_date, deal_codes, getLunchTimeMinutes]
+                category_codes,
+                lunch_time: getLunchTimeMinutes(),
+            }),
+        [
+            records,
+            selected_date,
+            deal_codes,
+            category_codes,
+            getLunchTimeMinutes,
+        ]
     );
 
     const handleCopyCell = useCallback((value: string) => {
@@ -64,9 +78,17 @@ export function RecordCopyModal({
     const handleSaveDealCode = useCallback(
         (deal_name: string, code: string) => {
             setDealCode(deal_name, code);
-            message.success(RECORD_COPY_MODAL.DEAL_CODE_SAVED);
+            message.success(RECORD_COPY_MODAL.CODE_SAVED);
         },
         [setDealCode]
+    );
+
+    const handleSaveCategoryCode = useCallback(
+        (category_name: string, code: string) => {
+            setCategoryCode(category_name, code);
+            message.success(RECORD_COPY_MODAL.CODE_SAVED);
+        },
+        [setCategoryCode]
     );
 
     return (
@@ -75,6 +97,7 @@ export function RecordCopyModal({
             open={open}
             onCancel={onClose}
             width={MODAL_WIDTH}
+            style={MODAL_STYLE}
             styles={{ body: MODAL_BODY_STYLE }}
             footer={
                 <Button
@@ -98,9 +121,10 @@ export function RecordCopyModal({
                         rows={rows}
                         onCopyCell={handleCopyCell}
                         onSaveDealCode={handleSaveDealCode}
+                        onSaveCategoryCode={handleSaveCategoryCode}
                     />
                     <Text type="secondary" className="text-xs">
-                        {RECORD_COPY_MODAL.DEAL_CODE_HINT}
+                        {RECORD_COPY_MODAL.CODE_HINT}
                     </Text>
                 </div>
             )}

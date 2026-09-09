@@ -3,13 +3,19 @@ import { Input } from "antd";
 import { cn } from "@/shared/lib/cn";
 import { RECORD_COPY_MODAL } from "../../constants";
 
-interface DealCodeCellProps {
-    deal_name: string;
+interface EditableCodeCellProps {
+    map_key: string;
     code: string;
-    onSave: (deal_name: string, code: string) => void;
+    display_text?: string;
+    onSave: (map_key: string, code: string) => void;
 }
 
-export function DealCodeCell({ deal_name, code, onSave }: DealCodeCellProps) {
+export function EditableCodeCell({
+    map_key,
+    code,
+    display_text,
+    onSave,
+}: EditableCodeCellProps) {
     const [is_editing, setIsEditing] = useState(false);
     const [draft, setDraft] = useState(code);
 
@@ -21,9 +27,9 @@ export function DealCodeCell({ deal_name, code, onSave }: DealCodeCellProps) {
     const handleCommit = useCallback(() => {
         setIsEditing(false);
         if (draft.trim() !== code) {
-            onSave(deal_name, draft);
+            onSave(map_key, draft);
         }
-    }, [draft, code, deal_name, onSave]);
+    }, [draft, code, map_key, onSave]);
 
     const handleCancel = useCallback(() => {
         setDraft(code);
@@ -37,7 +43,7 @@ export function DealCodeCell({ deal_name, code, onSave }: DealCodeCellProps) {
                     autoFocus
                     size="small"
                     value={draft}
-                    placeholder={RECORD_COPY_MODAL.DEAL_CODE_PLACEHOLDER}
+                    placeholder={RECORD_COPY_MODAL.CODE_PLACEHOLDER}
                     onChange={(e) => setDraft(e.target.value)}
                     onPressEnter={handleCommit}
                     onBlur={handleCommit}
@@ -49,17 +55,19 @@ export function DealCodeCell({ deal_name, code, onSave }: DealCodeCellProps) {
         );
     }
 
+    const text = display_text ?? code;
+
     return (
         <td
             className={cn(
                 "px-md py-sm border-b border-border-light align-top",
                 "text-md whitespace-pre-wrap break-words",
                 "cursor-text hover:bg-primary-light transition-colors duration-150",
-                code ? "text-text-primary" : "text-text-disabled"
+                text ? "text-text-primary" : "text-text-disabled"
             )}
             onClick={handleStartEdit}
         >
-            {code || RECORD_COPY_MODAL.DEAL_CODE_PLACEHOLDER}
+            {text || RECORD_COPY_MODAL.CODE_PLACEHOLDER}
         </td>
     );
 }

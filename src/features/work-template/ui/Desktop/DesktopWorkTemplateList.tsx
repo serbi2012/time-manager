@@ -13,7 +13,7 @@ import { SPRING, STAGGER } from "@/shared/ui/animation";
 import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "@/store/useWorkStore";
 import { useShortcutStore } from "@/store/useShortcutStore";
-import { formatShortcutKeyForPlatform } from "@/hooks/useShortcuts";
+import { formatShortcutForPlatform } from "@/shared/lib/shortcuts";
 import {
     TemplateModal,
     SortableTemplateCard,
@@ -84,7 +84,7 @@ export function DesktopWorkTemplateList({
                     </h3>
 
                     <Tooltip
-                        title={formatShortcutKeyForPlatform(new_preset_keys)}
+                        title={formatShortcutForPlatform(new_preset_keys)}
                     >
                         <AddPresetButton onClick={handleOpenAddModal} />
                     </Tooltip>

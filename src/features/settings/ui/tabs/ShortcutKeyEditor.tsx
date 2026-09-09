@@ -7,7 +7,7 @@ import { Modal, Button, Tag, Typography } from "antd";
 import { message } from "@/shared/lib/message";
 import { useShortcutStore } from "@/store/useShortcutStore";
 import type { ShortcutDefinition } from "@/store/useShortcutStore";
-import { formatShortcutKeyForPlatform } from "@/hooks/useShortcuts";
+import { formatShortcutForPlatform } from "@/shared/lib/shortcuts";
 import {
     SUCCESS_MESSAGES,
     ERROR_MESSAGES,
@@ -124,7 +124,7 @@ export function ShortcutKeyEditor({
                             color="blue"
                             className="!font-mono !text-base !py-sm !px-lg"
                         >
-                            {formatShortcutKeyForPlatform(pending_keys)}
+                            {formatShortcutForPlatform(pending_keys)}
                         </Tag>
                     ) : (
                         <Text type="secondary" className="!text-sm">
@@ -143,7 +143,7 @@ export function ShortcutKeyEditor({
                     <Text type="secondary" className="!text-xs">
                         {SETTINGS_SHORTCUT_EDITOR_CURRENT}{" "}
                         <Tag className="!font-mono">
-                            {formatShortcutKeyForPlatform(shortcut.keys)}
+                            {formatShortcutForPlatform(shortcut.keys)}
                         </Tag>
                     </Text>
                 </div>

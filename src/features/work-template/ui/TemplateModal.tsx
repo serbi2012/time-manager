@@ -14,6 +14,8 @@ import type { HiddenAutoCompleteField } from "../../../store/types/store";
 import { TEMPLATE_COLORS } from "../../../store/useWorkStore";
 import { WorkRecordFormFields } from "../../../shared/ui/form";
 import { SUCCESS_MESSAGES } from "../../../shared/constants";
+import { useModalKeyboard } from "@/shared/hooks";
+import { formatShortcutForPlatform } from "@/shared/lib/shortcuts";
 import { PresetColorGrid } from "./PresetColorGrid";
 import {
     MODAL_TITLE_ADD,
@@ -125,6 +127,11 @@ export function TemplateModal({
         }
     };
 
+    const { submit_keys } = useModalKeyboard({
+        open,
+        onSubmit: handleSubmit,
+    });
+
     return (
         <Modal
             title={is_edit_mode ? MODAL_TITLE_EDIT : MODAL_TITLE_ADD}
@@ -136,7 +143,7 @@ export function TemplateModal({
                 <Button key="ok" type="primary" onClick={handleSubmit}>
                     {is_edit_mode ? MODAL_SUBMIT_EDIT : MODAL_SUBMIT_ADD}
                     <span className="text-xs opacity-85 ml-xs px-xs py-px bg-white/20 rounded-[3px]">
-                        F8
+                        {formatShortcutForPlatform(submit_keys)}
                     </span>
                 </Button>,
                 <Button key="cancel" onClick={onClose}>
@@ -144,16 +151,7 @@ export function TemplateModal({
                 </Button>,
             ]}
         >
-            <Form
-                form={form}
-                layout="vertical"
-                onKeyDown={(e) => {
-                    if (e.key === "F8") {
-                        e.preventDefault();
-                        handleSubmit();
-                    }
-                }}
-            >
+            <Form form={form} layout="vertical">
                 <WorkRecordFormFields
                     form={form}
                     getAutoCompleteOptions={getAutoCompleteOptions}

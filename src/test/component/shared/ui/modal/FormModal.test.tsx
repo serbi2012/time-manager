@@ -68,13 +68,20 @@ describe("FormModal", () => {
             expect(screen.getByText("닫기")).toBeInTheDocument();
         });
 
-        it("submitShortcut이 표시된다", () => {
-            renderWithProviders(
-                <FormModalWrapper submitText="등록" submitShortcut="F8" />
-            );
+        it("제출 단축키 뱃지가 표시된다", () => {
+            renderWithProviders(<FormModalWrapper submitText="등록" />);
 
             expect(screen.getByText("등록")).toBeInTheDocument();
             expect(screen.getByText("F8")).toBeInTheDocument();
+        });
+
+        it("showSubmitShortcut이 false면 단축키 뱃지를 숨긴다", () => {
+            renderWithProviders(
+                <FormModalWrapper submitText="등록" showSubmitShortcut={false} />
+            );
+
+            expect(screen.getByText("등록")).toBeInTheDocument();
+            expect(screen.queryByText("F8")).not.toBeInTheDocument();
         });
     });
 

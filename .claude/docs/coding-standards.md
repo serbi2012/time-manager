@@ -321,6 +321,7 @@ function calculateTotal(records: WorkRecord[]) {
 6. 모바일/데스크탑 코드 결합
 7. 순환 의존성
 8. 테스트 불가능한 구조
+9. 키보드 이벤트 직접 등록 (`window.addEventListener("keydown")`, `onKeyDown`으로 단축키 처리) — `.claude/docs/keyboard-focus.md`의 매니저를 쓴다
 
 **경고**
 

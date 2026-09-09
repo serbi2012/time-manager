@@ -7,8 +7,8 @@
  * 6-2: Error shake on invalid time
  */
 
+import { ConfirmPopconfirm } from "@/shared/ui/confirm";
 import { useCallback, useState } from "react";
-import { Popconfirm } from "antd";
 import { message } from "@/shared/lib/message";
 import { DeleteOutlined, HistoryOutlined } from "@ant-design/icons";
 
@@ -327,13 +327,12 @@ function SessionCard({
 
                 {/* Delete */}
                 {!is_running && (
-                    <Popconfirm
+                    <ConfirmPopconfirm
                         title={SESSION_DELETE_TITLE}
                         description={SESSION_DELETE_DESC}
                         onConfirm={() => onDelete(session.id)}
                         okText={SESSION_DELETE_OK}
                         cancelText={SESSION_DELETE_CANCEL}
-                        okButtonProps={{ danger: true, autoFocus: true }}
                     >
                         <motion.button
                             whileHover={{ scale: 1.15 }}
@@ -342,7 +341,7 @@ function SessionCard({
                         >
                             <DeleteOutlined style={{ fontSize: 12 }} />
                         </motion.button>
-                    </Popconfirm>
+                    </ConfirmPopconfirm>
                 )}
             </div>
         </ErrorShake>

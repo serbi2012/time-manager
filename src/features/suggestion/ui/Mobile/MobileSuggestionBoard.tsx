@@ -10,6 +10,7 @@ import {
 } from "../../hooks";
 import { getAuthorId } from "../../lib";
 import { SUGGESTION_LABELS } from "../../constants";
+import { useModalKeyboard } from "@/shared/hooks";
 import { SuggestionCardHeader, SuggestionCardContent } from "../SuggestionCard";
 import { SuggestionWriteModal, SuggestionEditModal } from "../SuggestionModals";
 
@@ -61,25 +62,6 @@ export function MobileSuggestionBoard() {
         }
     }, [is_edit_modal_open, editing_post, edit_form]);
 
-    // F8 단축키: 모달에서 제출
-    useEffect(() => {
-        if (!is_write_modal_open && !is_edit_modal_open) return;
-
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === "F8") {
-                e.preventDefault();
-                if (is_write_modal_open) {
-                    handleSubmitPostWrapper();
-                } else if (is_edit_modal_open) {
-                    handleEditPostWrapper();
-                }
-            }
-        };
-
-        window.addEventListener("keydown", handleKeyDown);
-        return () => window.removeEventListener("keydown", handleKeyDown);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [is_write_modal_open, is_edit_modal_open]);
 
     const handleSubmitPostWrapper = async () => {
         setIsSubmitting(true);
@@ -128,6 +110,16 @@ export function MobileSuggestionBoard() {
                 />
             ),
         };
+    });
+
+    useModalKeyboard({
+        open: is_write_modal_open,
+        onSubmit: handleSubmitPostWrapper,
+    });
+
+    useModalKeyboard({
+        open: is_edit_modal_open,
+        onSubmit: handleEditPostWrapper,
     });
 
     return (

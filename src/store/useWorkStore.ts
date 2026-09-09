@@ -85,6 +85,7 @@ export const useWorkStore = create<WorkStore>()(
                 transition_speed: state.transition_speed,
                 cursor_tracking_enabled: state.cursor_tracking_enabled,
                 deal_codes: state.deal_codes,
+                category_codes: state.category_codes,
             }),
         }
     )

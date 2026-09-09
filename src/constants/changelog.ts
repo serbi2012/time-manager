@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.12.0";
+export const CURRENT_VERSION = "2.13.0";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,43 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.13.0",
+        date: "2026-09-09",
+        title: "시간관리 형식 보기와 키보드 개선",
+        changes: [
+            {
+                type: "feature",
+                description:
+                    "\"내역 보기\"가 \"시간관리 형식 보기\"로 바뀌고, 실제 입력 양식과 같은 순서로 표가 열려요",
+            },
+            {
+                type: "feature",
+                description:
+                    "카테고리마다 코드를 저장해 두면 \"18 환경세팅\"처럼 합쳐서 보여줘요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "표에 업무 칸이 생기고 시간은 숫자만 나와서 그대로 붙여넣을 수 있어요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "모달이 열려 있으면 전역 단축키가 멈춰서 실수로 다른 창이 열리지 않아요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "모달을 열면 첫 입력란으로 커서가 자동으로 옮겨가요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "확인창에서 Enter로 확인, ESC로 취소할 수 있어요",
+            },
+        ],
+    },
     {
         version: "2.12.0",
         date: "2026-09-09",

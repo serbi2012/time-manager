@@ -2,10 +2,10 @@
  * 세션 분석 탭 (뷰 모드, 필터, 통계 카드, 세션 테이블)
  */
 
+import { ConfirmPopconfirm } from "@/shared/ui/confirm";
 import {
     Space,
     Button,
-    Popconfirm,
     Segmented,
     DatePicker,
     TimePicker,
@@ -135,7 +135,7 @@ export function SessionsTab({
         <Space direction="vertical" size="middle" className="!w-full">
             <Space size="middle" wrap>
                 {selected_row_keys.length > 0 && (
-                    <Popconfirm
+                    <ConfirmPopconfirm
                         title={BULK_DELETE}
                         description={`${selected_row_keys.length}${CONFIRM_BULK_DELETE_SESSIONS}`}
                         onConfirm={on_bulk_delete}
@@ -146,7 +146,7 @@ export function SessionsTab({
                             {BULK_DELETE_SESSIONS_BTN} (
                             {selected_row_keys.length})
                         </Button>
-                    </Popconfirm>
+                    </ConfirmPopconfirm>
                 )}
                 <Segmented
                     value={view_mode}

@@ -4,8 +4,9 @@
  * 5-1: Press scale
  */
 
+import { ConfirmPopconfirm } from "@/shared/ui/confirm";
 import { memo } from "react";
-import { Tooltip, Popconfirm } from "antd";
+import { Tooltip } from "antd";
 import {
     CheckOutlined,
     EditOutlined,
@@ -75,13 +76,12 @@ export const ActionsColumn = memo(function ActionsColumn({
 
             {/* Delete */}
             {!is_active && (
-                <Popconfirm
+                <ConfirmPopconfirm
                     title={RECORD_CONFIRM.DELETE.TITLE}
                     description={RECORD_CONFIRM.DELETE.DESCRIPTION}
                     onConfirm={() => onDelete(record.id)}
                     okText={RECORD_CONFIRM.DELETE.OK_TEXT}
                     cancelText={RECORD_CONFIRM.DELETE.CANCEL_TEXT}
-                    okButtonProps={{ danger: true, autoFocus: true }}
                 >
                     <motion.button
                         whileHover={{ scale: 1.15 }}
@@ -90,7 +90,7 @@ export const ActionsColumn = memo(function ActionsColumn({
                     >
                         <DeleteOutlined style={{ fontSize: 14 }} />
                     </motion.button>
-                </Popconfirm>
+                </ConfirmPopconfirm>
             )}
         </div>
     );

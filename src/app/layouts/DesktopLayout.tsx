@@ -19,7 +19,7 @@ import { DesktopHeader } from "../../widgets/Header";
 import type { NavItem } from "../../widgets/Header/HeaderNavPill";
 import { useWorkStore } from "../../store/useWorkStore";
 import { useSyncStatus } from "../../features/sync";
-import { useShortcuts } from "../../hooks/useShortcuts";
+import { useAppShortcuts } from "@/shared/hooks";
 import { useAuthHandlers, useDataImportExport } from "../../shared/hooks";
 import {
     INFO_MESSAGES,
@@ -156,7 +156,7 @@ export function DesktopLayout() {
         [emitEvent, navigate, handleExport, handleManualSync]
     );
 
-    useShortcuts(shortcut_handlers);
+    useAppShortcuts(shortcut_handlers);
 
     const is_admin = user?.email === ADMIN_EMAIL;
 

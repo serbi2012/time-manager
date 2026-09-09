@@ -17,6 +17,7 @@ export type {
     TransitionSpeed,
     HiddenAutoCompleteField,
     DealCodeMap,
+    CodeMap,
     // Re-exported Domain Types
     WorkRecord,
     WorkTemplate,
