@@ -1729,9 +1729,9 @@ describe("useWorkStore", () => {
             expect(useWorkStore.getState().transition_speed).toBe("normal");
         });
 
-        it("mobile_gantt_list_expanded 기본값은 true", () => {
+        it("mobile_gantt_list_expanded 기본값은 false (타임라인 기본 접힘)", () => {
             const state = useWorkStore.getState();
-            expect(state.mobile_gantt_list_expanded).toBe(true);
+            expect(state.mobile_gantt_list_expanded).toBe(false);
         });
 
         it("setMobileGanttListExpanded로 접기/펼치기 토글", () => {

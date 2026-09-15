@@ -1,50 +1,33 @@
 /**
- * Mobile Daily Header — Sticky top area
- * Simple header + calendar strip + timeline bar + collapsible work list
- * Long-press on date opens DatePicker, long-press on gantt cards/segments opens context menus
+ * 모바일 일간 헤더 — 스크롤해도 고정되는 영역
+ * 날짜 줄과 주간 스트립만 둔다 (타임라인은 본문의 MobileDailyTimeline)
  */
 
-import { useState, useCallback, useMemo } from "react";
-import { SettingOutlined, DownOutlined } from "@ant-design/icons";
-import { DatePicker } from "antd";
-import dayjs from "dayjs";
-
+import { useState, useCallback } from "react";
+import { SettingOutlined } from "@ant-design/icons";
 import { useShallow } from "zustand/react/shallow";
+
 import { useWorkStore } from "../../store/useWorkStore";
 import { useAuthHandlers } from "../../shared/hooks";
 import { useSyncStatusContext } from "../../features/sync";
-import { MobileActionMenu } from "../../shared/ui";
+import { MobileIconButton } from "../../shared/ui";
 import { UserMenu } from "../../widgets/Header";
 import { MobileDateNavBar } from "../../features/work-record/ui/Mobile/MobileDateNavBar";
 import { MobileCalendarStrip } from "../../features/work-record/ui/Mobile/MobileCalendarStrip";
-import { MobileGanttSegmentBar } from "../../features/gantt-chart/ui/DailyGanttChart/MobileGanttSegmentBar";
-import { MobileGanttWorkCard } from "../../features/gantt-chart/ui/DailyGanttChart/MobileGanttWorkCard";
-import { GanttEditModal } from "../../features/gantt-chart/ui/GanttEditModal";
-import { useGanttData } from "../../features/gantt-chart/hooks/useGanttData";
-import { useGanttTime } from "../../features/gantt-chart/hooks/useGanttTime";
-import { useMobileGanttMenus } from "../../features/gantt-chart/hooks/useMobileGanttMenus";
-import { GANTT_MOBILE_SECTION_WORK_LIST } from "../../features/gantt-chart/constants";
-import type { WorkRecord, WorkSession } from "../../shared/types";
+import { MobileDatePickerSheet } from "../../features/work-record/ui/Mobile/MobileDatePickerSheet";
+import { MOBILE_DATE_SHEET } from "../../features/work-record/constants";
 
-const HEADER_DATE_FORMAT = "YYYY년 M월 D일 dddd";
-const HEADER_TITLE = "일간 기록";
+interface MobileDailyHeaderProps {
+    /** 선택한 날짜의 총 기록 시간 (분) */
+    total_minutes: number;
+}
 
-export function MobileDailyHeader() {
-    const {
-        selected_date,
-        setSelectedDate,
-        records,
-        timer,
-        mobile_gantt_list_expanded,
-        setMobileGanttListExpanded,
-    } = useWorkStore(
+export function MobileDailyHeader({ total_minutes }: MobileDailyHeaderProps) {
+    const { selected_date, setSelectedDate, records } = useWorkStore(
         useShallow((s) => ({
             selected_date: s.selected_date,
             setSelectedDate: s.setSelectedDate,
             records: s.records,
-            timer: s.timer,
-            mobile_gantt_list_expanded: s.mobile_gantt_list_expanded,
-            setMobileGanttListExpanded: s.setMobileGanttListExpanded,
         }))
     );
 
@@ -58,20 +41,7 @@ export function MobileDailyHeader() {
 
     const { is_syncing, handleManualSync } = useSyncStatusContext();
 
-    const { gantt_tick, lunch_time } = useGanttTime();
-    const { grouped_works, time_range, current_time_mins, getWorkColor } =
-        useGanttData(gantt_tick);
-
-    const [active_work_id, setActiveWorkId] = useState<string | null>(null);
-    const [is_edit_modal_open, setIsEditModalOpen] = useState(false);
-    const [edit_record, setEditRecord] = useState<WorkRecord | null>(null);
-    const [edit_session, setEditSession] = useState<WorkSession | null>(null);
-    const [date_picker_open, setDatePickerOpen] = useState(false);
-
-    const formatted_date = useMemo(
-        () => dayjs(selected_date).format(HEADER_DATE_FORMAT),
-        [selected_date]
-    );
+    const [is_date_sheet_open, setIsDateSheetOpen] = useState(false);
 
     const handleDateSelect = useCallback(
         (date_str: string) => {
@@ -80,80 +50,36 @@ export function MobileDailyHeader() {
         [setSelectedDate]
     );
 
+    const handleOpenDateSheet = useCallback(() => {
+        setIsDateSheetOpen(true);
+    }, []);
+
+    const handleCloseDateSheet = useCallback(() => {
+        setIsDateSheetOpen(false);
+    }, []);
+
     const handleOpenSettings = useCallback(() => {
         window.dispatchEvent(new Event("openSettings"));
     }, []);
 
-    const handleDateLongPress = useCallback(() => {
-        setDatePickerOpen(true);
-    }, []);
-
-    const handleDatePickerChange = useCallback(
-        (date: dayjs.Dayjs | null) => {
-            if (date) {
-                setSelectedDate(date.format("YYYY-MM-DD"));
-            }
-            setDatePickerOpen(false);
-        },
-        [setSelectedDate]
-    );
-
-    const handleSegmentTap = useCallback((work_key: string) => {
-        setActiveWorkId((prev) => (prev === work_key ? null : work_key));
-    }, []);
-
-    const handleCardTap = useCallback((work_key: string) => {
-        setActiveWorkId((prev) => (prev === work_key ? null : work_key));
-    }, []);
-
-    const handleEditSession = useCallback(
-        (record: WorkRecord, session: WorkSession) => {
-            setEditRecord(record);
-            setEditSession(session);
-            setIsEditModalOpen(true);
-        },
-        []
-    );
-
-    const handleCloseEditModal = useCallback(() => {
-        setIsEditModalOpen(false);
-        setEditRecord(null);
-        setEditSession(null);
-    }, []);
-
-    const {
-        card_menu,
-        seg_menu,
-        handleCardLongPress,
-        handleSegmentLongPress,
-    } = useMobileGanttMenus({
-        grouped_works,
-        onEditSession: handleEditSession,
-    });
-
-    const has_works = grouped_works.length > 0;
-
     return (
         <>
-            <div className="bg-bg-light">
-                {/* Header */}
-                <div className="px-xl pt-xl pb-md">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <div className="text-sm text-gray-400">
-                                {formatted_date}
-                            </div>
-                            <div className="text-2xl font-bold text-gray-900 mt-[2px]">
-                                {HEADER_TITLE}
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-md">
-                            <button
-                                className="w-[40px] h-[40px] rounded-full bg-gray-100 flex items-center justify-center text-gray-500 border-0 cursor-pointer"
+            <div className="mobile-safe-top bg-bg-light">
+                <MobileDateNavBar
+                    selected_date={selected_date}
+                    onDateChange={handleDateSelect}
+                    onDateTap={handleOpenDateSheet}
+                    total_minutes={total_minutes}
+                    actions={
+                        <>
+                            <MobileIconButton
+                                label={MOBILE_DATE_SHEET.SETTINGS_LABEL}
+                                variant="tinted"
                                 onClick={handleOpenSettings}
                             >
-                                <SettingOutlined style={{ fontSize: 18 }} />
-                            </button>
+                                <SettingOutlined style={{ fontSize: 17 }} />
+                            </MobileIconButton>
+
                             <UserMenu
                                 user={user}
                                 auth_loading={auth_loading}
@@ -164,135 +90,22 @@ export function MobileDailyHeader() {
                                 on_logout={handleLogout}
                                 on_manual_sync={handleManualSync}
                             />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="mx-xl border-b border-gray-100" />
-
-                {/* Date Navigation Bar */}
-                <MobileDateNavBar
-                    selected_date={selected_date}
-                    onDateChange={handleDateSelect}
-                    onDateLongPress={handleDateLongPress}
+                        </>
+                    }
                 />
 
-                {/* Hidden DatePicker triggered by long-press */}
-                <DatePicker
-                    open={date_picker_open}
-                    value={dayjs(selected_date)}
-                    onChange={handleDatePickerChange}
-                    onOpenChange={(open) => {
-                        if (!open) setDatePickerOpen(false);
-                    }}
-                    style={{ position: "absolute", visibility: "hidden", width: 0, height: 0, overflow: "hidden" }}
-                    getPopupContainer={(trigger) => trigger.parentElement || document.body}
-                />
-
-                {/* Calendar Strip */}
                 <MobileCalendarStrip
                     selected_date={selected_date}
                     onDateSelect={handleDateSelect}
                     records={records}
                 />
-
-                {/* Timeline Bar */}
-                {has_works && (
-                    <div className="pt-md pb-sm">
-                        <MobileGanttSegmentBar
-                            grouped_works={grouped_works}
-                            time_range={time_range}
-                            current_time_mins={current_time_mins}
-                            lunch_time={lunch_time}
-                            active_work_id={active_work_id}
-                            getWorkColor={getWorkColor}
-                            onSegmentTap={handleSegmentTap}
-                            onSegmentLongPress={handleSegmentLongPress}
-                        />
-                    </div>
-                )}
-
-                {/* Collapsible Work List */}
-                {has_works && (
-                    <div className="px-lg pb-md">
-                        <button
-                            className="w-full flex items-center justify-between py-[6px] px-sm border-0 bg-transparent cursor-pointer"
-                            onClick={() =>
-                                setMobileGanttListExpanded(
-                                    !mobile_gantt_list_expanded
-                                )
-                            }
-                        >
-                            <span className="text-sm text-gray-500 font-medium">
-                                {GANTT_MOBILE_SECTION_WORK_LIST}
-                            </span>
-                            <DownOutlined
-                                className="text-gray-400 transition-transform duration-200"
-                                style={{
-                                    fontSize: 11,
-                                    transform: mobile_gantt_list_expanded
-                                        ? "rotate(180deg)"
-                                        : "rotate(0deg)",
-                                }}
-                            />
-                        </button>
-
-                        <div
-                            className="space-y-[6px] transition-all duration-200 overflow-hidden"
-                            style={{
-                                maxHeight: mobile_gantt_list_expanded
-                                    ? `${grouped_works.length * 120}px`
-                                    : "0px",
-                                marginTop: mobile_gantt_list_expanded
-                                    ? "4px"
-                                    : "0px",
-                                opacity: mobile_gantt_list_expanded ? 1 : 0,
-                            }}
-                        >
-                            {grouped_works.map((group) => {
-                                const color = getWorkColor(group.record);
-                                const is_running = group.sessions.some(
-                                    (s) => s.id === timer.active_session_id
-                                );
-                                return (
-                                    <MobileGanttWorkCard
-                                        key={group.key}
-                                        group={group}
-                                        color={color}
-                                        is_active={active_work_id === group.key}
-                                        is_running={is_running}
-                                        onTap={handleCardTap}
-                                        onEdit={handleEditSession}
-                                        onLongPress={handleCardLongPress}
-                                    />
-                                );
-                            })}
-                        </div>
-                    </div>
-                )}
             </div>
 
-            <GanttEditModal
-                open={is_edit_modal_open}
-                record={edit_record}
-                session={edit_session}
-                onClose={handleCloseEditModal}
-            />
-
-            <MobileActionMenu
-                open={card_menu.open}
-                anchor_rect={card_menu.anchor}
-                items={card_menu.items}
-                onAction={card_menu.onAction}
-                onClose={card_menu.onClose}
-            />
-
-            <MobileActionMenu
-                open={seg_menu.open}
-                anchor_rect={seg_menu.anchor}
-                items={seg_menu.items}
-                onAction={seg_menu.onAction}
-                onClose={seg_menu.onClose}
+            <MobileDatePickerSheet
+                open={is_date_sheet_open}
+                selected_date={selected_date}
+                onSelect={handleDateSelect}
+                onClose={handleCloseDateSheet}
             />
         </>
     );

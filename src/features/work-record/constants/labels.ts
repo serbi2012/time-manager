@@ -244,3 +244,10 @@ export const RECORD_COPY_MODAL = {
     ALL_COPIED: "전체 내역을 복사했어요",
     CODE_SAVED: "거래코드를 저장했어요",
 } as const;
+
+/** 모바일 날짜 선택 시트 */
+export const MOBILE_DATE_SHEET = {
+    TITLE: "날짜 선택",
+    TOTAL_LABEL: "총",
+    SETTINGS_LABEL: "설정",
+} as const;

@@ -5,20 +5,25 @@
  * Long-press on date text opens date picker
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, type ReactNode } from "react";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Variants } from "framer-motion";
 import dayjs from "dayjs";
 
 import { SPRING } from "@/shared/ui/animation/config/easing";
-import { useLongPress } from "@/shared/hooks";
+import { formatDuration } from "@/shared/lib/time";
 import { DATE_FORMAT } from "../../constants";
 
 interface MobileDateNavBarProps {
     selected_date: string;
     onDateChange: (date: string) => void;
-    onDateLongPress?: () => void;
+    /** 날짜를 탭하면 달력 열기 */
+    onDateTap?: () => void;
+    /** 오늘 기록한 총 시간 (분) */
+    total_minutes?: number;
+    /** 우측 액션 (설정·계정 등) */
+    actions?: ReactNode;
 }
 
 const DATE_NAV_DISPLAY_FORMAT = "M월 D일 dddd";
@@ -42,7 +47,9 @@ const date_slide_variants: Variants = {
 export function MobileDateNavBar({
     selected_date,
     onDateChange,
-    onDateLongPress,
+    onDateTap,
+    total_minutes,
+    actions,
 }: MobileDateNavBarProps) {
     const formatted = dayjs(selected_date).format(DATE_NAV_DISPLAY_FORMAT);
     const [direction, setDirection] = useState(1);
@@ -61,16 +68,8 @@ export function MobileDateNavBar({
         onDateChange(next);
     }, [selected_date, onDateChange]);
 
-    const handleLongPress = useCallback(() => {
-        onDateLongPress?.();
-    }, [onDateLongPress]);
-
-    const { is_pressing, handlers } = useLongPress({
-        onLongPress: handleLongPress,
-    });
-
     return (
-        <div className="flex items-center justify-between px-xl py-lg">
+        <div className="flex items-center justify-between px-xl py-md gap-sm">
             <motion.button
                 className="w-[40px] h-[40px] rounded-full flex items-center justify-center border-0 bg-transparent text-gray-400 cursor-pointer"
                 onClick={handlePrev}
@@ -86,14 +85,10 @@ export function MobileDateNavBar({
                 <LeftOutlined style={{ fontSize: 16 }} />
             </motion.button>
 
-            <div
-                className="relative flex-1 flex items-center justify-center overflow-hidden cursor-pointer"
-                style={{
-                    transform: is_pressing ? "scale(0.95)" : "scale(1)",
-                    transition: "transform 0.15s ease",
-                    opacity: is_pressing ? 0.7 : 1,
-                }}
-                {...handlers}
+            <button
+                type="button"
+                className="relative flex-1 flex items-center justify-center gap-sm overflow-hidden border-0 bg-transparent cursor-pointer active:opacity-70"
+                onClick={onDateTap}
             >
                 <AnimatePresence
                     mode="popLayout"
@@ -113,7 +108,13 @@ export function MobileDateNavBar({
                         {formatted}
                     </motion.span>
                 </AnimatePresence>
-            </div>
+
+                {total_minutes !== undefined && total_minutes > 0 && (
+                    <span className="shrink-0 text-sm font-semibold text-primary bg-primary-light px-sm py-[2px] rounded-full tabular-nums">
+                        {formatDuration(total_minutes)}
+                    </span>
+                )}
+            </button>
 
             <motion.button
                 className="w-[40px] h-[40px] rounded-full flex items-center justify-center border-0 bg-transparent text-gray-400 cursor-pointer"
@@ -129,6 +130,10 @@ export function MobileDateNavBar({
             >
                 <RightOutlined style={{ fontSize: 16 }} />
             </motion.button>
+
+            {actions && (
+                <div className="flex items-center gap-xs shrink-0">{actions}</div>
+            )}
         </div>
     );
 }

@@ -46,7 +46,7 @@ describe("MobileDateNavBar", () => {
         );
 
         const buttons = screen.getAllByRole("button");
-        fireEvent.click(buttons[1]);
+        fireEvent.click(buttons[2]);
         expect(on_date_change).toHaveBeenCalledWith("2026-02-12");
     });
 
@@ -87,7 +87,7 @@ describe("MobileDateNavBar", () => {
 
         const buttons = screen.getAllByRole("button");
 
-        fireEvent.click(buttons[1]);
+        fireEvent.click(buttons[2]);
         expect(on_date_change).toHaveBeenCalledWith("2026-03-06");
 
         rerender(
@@ -101,6 +101,45 @@ describe("MobileDateNavBar", () => {
 
         fireEvent.click(buttons[0]);
         expect(on_date_change).toHaveBeenCalledWith("2026-03-05");
+    });
+
+    it("날짜를 누르면 달력 시트를 여는 콜백이 호출된다", () => {
+        const on_date_tap = vi.fn();
+        render(
+            <MobileDateNavBar
+                selected_date="2026-02-11"
+                onDateChange={vi.fn()}
+                onDateTap={on_date_tap}
+            />
+        );
+
+        fireEvent.click(screen.getByText("2월 11일 수요일"));
+
+        expect(on_date_tap).toHaveBeenCalledTimes(1);
+    });
+
+    it("총 기록 시간이 있으면 뱃지로 표시한다", () => {
+        render(
+            <MobileDateNavBar
+                selected_date="2026-02-11"
+                onDateChange={vi.fn()}
+                total_minutes={90}
+            />
+        );
+
+        expect(screen.getByText("1시간 30분")).toBeInTheDocument();
+    });
+
+    it("총 기록 시간이 0이면 뱃지를 표시하지 않는다", () => {
+        render(
+            <MobileDateNavBar
+                selected_date="2026-02-11"
+                onDateChange={vi.fn()}
+                total_minutes={0}
+            />
+        );
+
+        expect(screen.queryByText("0분")).not.toBeInTheDocument();
     });
 
     it("날짜 텍스트가 애니메이션 컨테이너 안에 렌더링된다", () => {

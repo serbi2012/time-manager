@@ -40,6 +40,7 @@ import {
 } from "../../shared/ui";
 
 import { MobileDailyHeader } from "./MobileDailyHeader";
+import { MobileDailyTimeline } from "./MobileDailyTimeline";
 
 /**
  * Mobile daily page — redesigned layout
@@ -108,6 +109,11 @@ export function MobileDailyPage() {
                 (r) => r.id === active_record_id && is_timer_running
             ),
         [display_records, active_record_id, is_timer_running]
+    );
+
+    const total_minutes = useMemo(
+        () => display_records.reduce((sum, r) => sum + r.duration_minutes, 0),
+        [display_records]
     );
 
     const other_records = useMemo(
@@ -195,7 +201,7 @@ export function MobileDailyPage() {
                     enabled={transition_enabled}
                     speed={transition_speed}
                 >
-                    <MobileDailyHeader />
+                    <MobileDailyHeader total_minutes={total_minutes} />
                 </SlideIn>
             </div>
 
@@ -208,6 +214,8 @@ export function MobileDailyPage() {
                 enabled={transition_enabled}
                 speed={transition_speed}
             >
+                <MobileDailyTimeline />
+
                 {/* Timer Card (running section) */}
                 <MobileRunningSection
                     records={running_records}

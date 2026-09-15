@@ -179,6 +179,9 @@ export const GANTT_MOBILE_SEGMENT_MENU = {
     DELETE_SESSION: "세션 삭제",
 } as const;
 
+/** 모바일 타임라인 섹션 제목 */
+export const GANTT_MOBILE_SECTION_TIMELINE = "타임라인";
+
 /** 모바일 빈 상태 힌트 */
 export const GANTT_MOBILE_EMPTY_HINT = "아직 기록이 없어요";
 

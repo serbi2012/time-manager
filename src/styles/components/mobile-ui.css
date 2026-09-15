@@ -54,6 +54,10 @@
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
     }
 
+    .mobile-safe-top {
+        padding-top: var(--safe-area-top);
+    }
+
     .mobile-touch-target {
         min-width: var(--touch-target-min);
         min-height: var(--touch-target-min);
