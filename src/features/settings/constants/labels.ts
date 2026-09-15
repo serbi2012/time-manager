@@ -128,3 +128,16 @@ export const SETTINGS_BULK_EDIT_LOGIN_REQUIRED_DESC =
     "일괄 변경 기능은 로그인 후 사용할 수 있습니다.";
 export const SETTINGS_BULK_EDIT_SEARCH_TITLE = "변경 대상 확인";
 export const SETTINGS_BULK_EDIT_SEARCH_BUTTON = "변경 대상 찾기";
+
+/** 모바일 설정 그룹 */
+export const SETTINGS_GROUP = {
+    DISPLAY: "화면",
+    INPUT: "입력",
+    DATA: "데이터",
+} as const;
+
+/** 모바일 설정 항목 */
+export const SETTINGS_ITEM = {
+    HAPTICS: "진동 피드백",
+    HAPTICS_DESCRIPTION: "누를 때 짧게 진동해요",
+} as const;

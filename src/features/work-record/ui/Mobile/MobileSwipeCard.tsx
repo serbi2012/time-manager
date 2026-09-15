@@ -4,35 +4,78 @@
  * Uses touch events for native feel, spring-back on release.
  */
 
-import { useState, useRef, useCallback } from "react";
+import {
+    useState,
+    useRef,
+    useCallback,
+    useMemo,
+    type ReactNode,
+} from "react";
 import { motion } from "framer-motion";
 import { CheckCircleOutlined, DeleteOutlined } from "@ant-design/icons";
 
-import { haptic } from "@/shared/lib/haptic";
+import { haptic, type HapticKind } from "@/shared/lib/haptic";
 import { RECORD_BUTTON } from "../../constants";
 
 const SWIPE_THRESHOLD = 50;
-const ACTION_WIDTH = 120;
+const ACTION_BUTTON_WIDTH = 60;
 const TRANSITION_MS = 300;
 const OPACITY_RAMP = 30;
 const LONG_PRESS_DELAY_MS = 500;
 const SWIPE_MOVE_THRESHOLD = 5;
 const SCROLL_MOVE_THRESHOLD = 10;
 
+export interface MobileSwipeAction {
+    key: string;
+    label: string;
+    icon: ReactNode;
+    /** 액션 버튼 배경색 */
+    background: string;
+    haptic?: HapticKind;
+    onAction: () => void;
+}
+
 interface MobileSwipeCardProps {
     children: React.ReactNode | ((is_pressing: boolean) => React.ReactNode);
-    onComplete: () => void;
-    onDelete: () => void;
+    /** 직접 정의한 스와이프 액션 (없으면 완료/삭제) */
+    actions?: MobileSwipeAction[];
+    onComplete?: () => void;
+    onDelete?: () => void;
     /** 롱프레스 완료 시 호출 — anchor_rect으로 메뉴 위치 결정 */
     onLongPress?: (anchor_rect: DOMRect) => void;
 }
 
 export function MobileSwipeCard({
     children,
+    actions,
     onComplete,
     onDelete,
     onLongPress,
 }: MobileSwipeCardProps) {
+    const resolved_actions = useMemo<MobileSwipeAction[]>(() => {
+        if (actions) return actions;
+
+        return [
+            {
+                key: "complete",
+                label: RECORD_BUTTON.COMPLETE,
+                icon: <CheckCircleOutlined style={{ fontSize: 18 }} />,
+                background: "var(--color-success)",
+                haptic: "impact",
+                onAction: () => onComplete?.(),
+            },
+            {
+                key: "delete",
+                label: RECORD_BUTTON.DELETE,
+                icon: <DeleteOutlined style={{ fontSize: 18 }} />,
+                background: "var(--color-error)",
+                haptic: "warning",
+                onAction: () => onDelete?.(),
+            },
+        ];
+    }, [actions, onComplete, onDelete]);
+
+    const action_width = resolved_actions.length * ACTION_BUTTON_WIDTH;
     const [offset_x, setOffsetX] = useState(0);
     const [show_actions, setShowActions] = useState(false);
     const [is_dragging, setIsDragging] = useState(false);
@@ -130,7 +173,7 @@ export function MobileSwipeCard({
             // Swipe offset
             const next = Math.min(
                 0,
-                Math.max(-ACTION_WIDTH, base_offset.current + dx)
+                Math.max(-action_width, base_offset.current + dx)
             );
             if (Math.abs(dx) > SWIPE_MOVE_THRESHOLD) {
                 is_swiping.current = true;
@@ -147,7 +190,7 @@ export function MobileSwipeCard({
 
             setOffsetX(next);
         },
-        [cancelLongPress]
+        [cancelLongPress, action_width]
     );
 
     const handleTouchEnd = useCallback(() => {
@@ -163,7 +206,7 @@ export function MobileSwipeCard({
 
         // Swipe snap
         gesture_axis.current = null;
-        const snap = offset_x < -SWIPE_THRESHOLD ? -ACTION_WIDTH : 0;
+        const snap = offset_x < -SWIPE_THRESHOLD ? -action_width : 0;
         setOffsetX(snap);
         start_x.current = null;
         setIsDragging(false);
@@ -173,7 +216,7 @@ export function MobileSwipeCard({
         if (snap === 0) {
             setTimeout(() => setShowActions(false), TRANSITION_MS);
         }
-    }, [offset_x, cancelLongPress]);
+    }, [offset_x, cancelLongPress, action_width]);
 
     const handleAction = useCallback((action: () => void) => {
         setOffsetX(0);
@@ -208,28 +251,20 @@ export function MobileSwipeCard({
                     className="mobile-swipe-actions"
                     style={{ opacity: action_opacity }}
                 >
-                    <button
-                        className="mobile-swipe-action-btn"
-                        style={{ background: "var(--color-success)" }}
-                        onClick={() => {
-                            haptic("impact");
-                            handleAction(onComplete);
-                        }}
-                    >
-                        <CheckCircleOutlined style={{ fontSize: 18 }} />
-                        <span>{RECORD_BUTTON.COMPLETE}</span>
-                    </button>
-                    <button
-                        className="mobile-swipe-action-btn"
-                        style={{ background: "var(--color-error)" }}
-                        onClick={() => {
-                            haptic("warning");
-                            handleAction(onDelete);
-                        }}
-                    >
-                        <DeleteOutlined style={{ fontSize: 18 }} />
-                        <span>{RECORD_BUTTON.DELETE}</span>
-                    </button>
+                    {resolved_actions.map((action) => (
+                        <button
+                            key={action.key}
+                            className="mobile-swipe-action-btn"
+                            style={{ background: action.background }}
+                            onClick={() => {
+                                if (action.haptic) haptic(action.haptic);
+                                handleAction(action.onAction);
+                            }}
+                        >
+                            {action.icon}
+                            <span>{action.label}</span>
+                        </button>
+                    ))}
                 </div>
             )}
 

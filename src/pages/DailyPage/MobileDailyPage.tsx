@@ -18,14 +18,15 @@ import {
 
 import { MobileRecordFormSheet } from "../../features/work-record/ui/Mobile/MobileRecordFormSheet";
 import { RecordCopyModal } from "../../features/work-record/ui/RecordCopyModal";
-import {
-    CompletedModal,
-    TrashModal,
-} from "../../features/work-record/ui/CompletedRecords";
+import { MobileRecordListSheet } from "../../features/work-record/ui/Mobile/MobileRecordListSheet";
 import { MobileRunningSection } from "../../features/work-record/ui/Mobile/MobileRunningSection";
 import { MobileRecordList } from "../../features/work-record/ui/Mobile/MobileRecordList";
 import { MobileSpeedDialFab } from "../../features/work-record/ui/Mobile/MobileSpeedDialFab";
 import { MobileRecentWorkMenu } from "../../features/work-record/ui/Mobile/MobileRecentWorkMenu";
+import {
+    RECORD_MODAL_TITLE,
+    RECORD_EMPTY,
+} from "../../features/work-record/constants";
 import { MobilePresetSheet } from "../../features/work-template/ui";
 
 
@@ -299,19 +300,23 @@ export function MobileDailyPage() {
                 onClose={closeEditModal}
             />
 
-            <CompletedModal
+            <MobileRecordListSheet
                 open={is_completed_open}
-                on_close={closeCompletedModal}
+                title={RECORD_MODAL_TITLE.COMPLETED}
                 records={completed_records}
-                on_restore={(r) => markAsIncomplete(r.id)}
+                empty_text={RECORD_EMPTY.NO_COMPLETED}
+                onClose={closeCompletedModal}
+                onRestore={(r) => markAsIncomplete(r.id)}
             />
 
-            <TrashModal
+            <MobileRecordListSheet
                 open={is_trash_open}
-                on_close={closeTrashModal}
+                title={RECORD_MODAL_TITLE.TRASH}
                 records={deleted_records}
-                on_restore={(r) => restoreRecord(r.id)}
-                on_permanent_delete={(r) => permanentlyDeleteRecord(r.id)}
+                empty_text={RECORD_EMPTY.NO_TRASH}
+                onClose={closeTrashModal}
+                onRestore={(r) => restoreRecord(r.id)}
+                onPermanentDelete={(r) => permanentlyDeleteRecord(r.id)}
             />
         </div>
     );

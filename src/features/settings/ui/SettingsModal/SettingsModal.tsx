@@ -8,7 +8,7 @@
 
 import { useResponsive } from "@/hooks/useResponsive";
 import { DesktopSettingsModal } from "../Desktop/DesktopSettingsModal";
-import { MobileSettingsModal } from "../Mobile/MobileSettingsModal";
+import { MobileSettingsSheet } from "../Mobile/MobileSettingsSheet";
 
 export interface SettingsModalProps {
     open: boolean;
@@ -22,7 +22,7 @@ export function SettingsModal(props: SettingsModalProps) {
     const { is_mobile } = useResponsive();
 
     if (is_mobile) {
-        return <MobileSettingsModal {...props} />;
+        return <MobileSettingsSheet {...props} />;
     }
 
     return <DesktopSettingsModal {...props} />;

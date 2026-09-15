@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>모바일 목록·설정 화면 — Phase 2</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react@18/umd/react.development.js"
+        ></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+        ></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                padding: 24px;
+                background: #f2f4f6;
+                font-family: "Pretendard Variable", Pretendard, -apple-system,
+                    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                -webkit-font-smoothing: antialiased;
+                color: #191f28;
+            }
+            #root {
+                max-width: 1320px;
+                margin: 0 auto;
+            }
+            .page-head {
+                text-align: center;
+                margin-bottom: 24px;
+            }
+            .page-head h1 {
+                font-size: 22px;
+                font-weight: 600;
+                margin: 0 0 6px;
+            }
+            .page-head p {
+                font-size: 14px;
+                color: #6b7684;
+                margin: 0;
+            }
+            .section-title {
+                font-size: 16px;
+                font-weight: 600;
+                margin: 36px 0 14px;
+                text-align: center;
+            }
+            .frames {
+                display: flex;
+                gap: 32px;
+                justify-content: center;
+                flex-wrap: wrap;
+                align-items: flex-start;
+            }
+            .frame-col {
+                width: 375px;
+            }
+            .frame-label {
+                font-size: 13px;
+                font-weight: 600;
+                margin-bottom: 10px;
+                text-align: center;
+            }
+            .frame-label span {
+                display: block;
+                font-size: 12px;
+                font-weight: 400;
+                color: #8b95a1;
+                margin-top: 2px;
+            }
+            .phone-frame {
+                width: 375px;
+                height: 680px;
+                background: #f9fafb;
+                border-radius: 32px;
+                border: 8px solid #191f28;
+                position: relative;
+                overflow: hidden;
+            }
+            .dim {
+                position: absolute;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.4);
+            }
+            .sheet {
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: #fff;
+                border-radius: 16px 16px 0 0;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+            .handle {
+                width: 36px;
+                height: 4px;
+                border-radius: 999px;
+                background: #d1d6db;
+                margin: 12px auto 8px;
+            }
+            .note {
+                margin-top: 12px;
+                font-size: 12px;
+                line-height: 1.7;
+                color: #4e5968;
+                background: #fff;
+                border-radius: 12px;
+                padding: 12px 14px;
+            }
+            .bad {
+                color: #f04452;
+                font-weight: 600;
+            }
+            .good {
+                color: #34c759;
+                font-weight: 600;
+            }
+            .row {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 14px 16px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const DONE = [
+                { name: "브랜치 최신화", time: "09:00 ~ 09:40", dur: "40분" },
+                { name: "코드 리뷰", time: "10:00 ~ 11:10", dur: "1시간 10분" },
+                { name: "기타회의", time: "13:00 ~ 14:00", dur: "1시간" },
+            ];
+
+            /* ===== 완료 목록: 현재 ===== */
+            function CurrentListModal() {
+                return (
+                    <div className="phone-frame">
+                        <div style={{ padding: 16, opacity: 0.35 }}>
+                            <div style={{ fontSize: 17, fontWeight: 600 }}>
+                                9월 15일 화요일
+                            </div>
+                        </div>
+                        <div className="dim" />
+                        <div
+                            style={{
+                                position: "absolute",
+                                left: 8,
+                                right: 8,
+                                top: 60,
+                                bottom: 60,
+                                background: "#fff",
+                                borderRadius: 12,
+                                overflow: "hidden",
+                            }}
+                        >
+                            <div
+                                style={{
+                                    padding: "14px 16px",
+                                    borderBottom: "1px solid #f2f4f6",
+                                    fontWeight: 600,
+                                }}
+                            >
+                                완료된 작업
+                            </div>
+                            <div style={{ padding: 12, overflow: "hidden" }}>
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        fontSize: 11,
+                                        color: "#8b95a1",
+                                        borderBottom: "1px solid #f2f4f6",
+                                        paddingBottom: 6,
+                                    }}
+                                >
+                                    <span style={{ width: 90 }}>거래명</span>
+                                    <span style={{ width: 70 }}>작업명</span>
+                                    <span style={{ width: 60 }}>카테고리</span>
+                                    <span style={{ width: 50 }}>시간</span>
+                                    <span>시간대</span>
+                                </div>
+                                {DONE.map((d) => (
+                                    <div
+                                        key={d.name}
+                                        style={{
+                                            display: "flex",
+                                            fontSize: 11,
+                                            padding: "10px 0",
+                                            borderBottom: "1px solid #f9fafb",
+                                            whiteSpace: "nowrap",
+                                        }}
+                                    >
+                                        <span style={{ width: 90, overflow: "hidden" }}>
+                                            {d.name}
+                                        </span>
+                                        <span style={{ width: 70, overflow: "hidden" }}>
+                                            개발
+                                        </span>
+                                        <span style={{ width: 60 }}>개발</span>
+                                        <span style={{ width: 50 }}>{d.dur}</span>
+                                        <span>{d.time}</span>
+                                    </div>
+                                ))}
+                                <div
+                                    style={{
+                                        marginTop: 10,
+                                        fontSize: 11,
+                                        color: "#f04452",
+                                        textAlign: "center",
+                                    }}
+                                >
+                                    → 표가 넘쳐서 좌우로 스크롤해야 함
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ===== 완료 목록: 개선안 ===== */
+            function ImprovedListSheet() {
+                return (
+                    <div className="phone-frame">
+                        <div style={{ padding: 16, opacity: 0.35 }}>
+                            <div style={{ fontSize: 17, fontWeight: 600 }}>
+                                9월 15일 화요일
+                            </div>
+                        </div>
+                        <div className="dim" />
+                        <div className="sheet" style={{ height: 560 }}>
+                            <div className="handle" />
+                            <div
+                                style={{
+                                    padding: "0 20px 12px",
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                }}
+                            >
+                                <span style={{ fontSize: 19, fontWeight: 600 }}>
+                                    완료된 작업
+                                </span>
+                                <span style={{ fontSize: 13, color: "#8b95a1" }}>
+                                    3개
+                                </span>
+                            </div>
+
+                            <div style={{ flex: 1, padding: "0 12px" }}>
+                                {DONE.map((d) => (
+                                    <div
+                                        key={d.name}
+                                        className="row"
+                                        style={{
+                                            background: "#fff",
+                                            borderRadius: 12,
+                                            marginBottom: 8,
+                                            boxShadow:
+                                                "0 1px 3px rgba(0,0,0,0.04)",
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                width: 34,
+                                                height: 34,
+                                                borderRadius: 999,
+                                                background:
+                                                    "rgba(52,199,89,0.12)",
+                                                color: "#34c759",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                fontSize: 15,
+                                            }}
+                                        >
+                                            ✓
+                                        </div>
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div
+                                                style={{
+                                                    fontSize: 15,
+                                                    fontWeight: 500,
+                                                }}
+                                            >
+                                                {d.name}
+                                            </div>
+                                            <div
+                                                style={{
+                                                    fontSize: 13,
+                                                    color: "#b0b8c1",
+                                                }}
+                                            >
+                                                개발 · {d.time}
+                                            </div>
+                                        </div>
+                                        <div
+                                            style={{
+                                                fontSize: 15,
+                                                fontWeight: 600,
+                                                color: "#4e5968",
+                                            }}
+                                        >
+                                            {d.dur}
+                                        </div>
+                                    </div>
+                                ))}
+                                <div
+                                    style={{
+                                        fontSize: 12,
+                                        color: "#8b95a1",
+                                        textAlign: "center",
+                                        marginTop: 8,
+                                    }}
+                                >
+                                    왼쪽으로 밀면 되돌리기
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ===== 설정: 현재 ===== */
+            function CurrentSettings() {
+                const tabs = ["테마", "애니메이션", "데이터", "일괄", "자동", "단축키"];
+                return (
+                    <div className="phone-frame">
+                        <div className="dim" />
+                        <div
+                            style={{
+                                position: "absolute",
+                                left: 12,
+                                right: 12,
+                                top: 80,
+                                bottom: 80,
+                                background: "#fff",
+                                borderRadius: 12,
+                                overflow: "hidden",
+                            }}
+                        >
+                            <div
+                                style={{
+                                    padding: "14px 16px",
+                                    borderBottom: "1px solid #f2f4f6",
+                                    fontWeight: 600,
+                                }}
+                            >
+                                설정
+                            </div>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    gap: 6,
+                                    padding: "10px 12px",
+                                    overflow: "hidden",
+                                    borderBottom: "1px solid #f2f4f6",
+                                }}
+                            >
+                                {tabs.map((t, i) => (
+                                    <span
+                                        key={t}
+                                        style={{
+                                            fontSize: 12,
+                                            padding: "6px 8px",
+                                            borderRadius: 6,
+                                            whiteSpace: "nowrap",
+                                            color: i === 0 ? "#3182f6" : "#6b7684",
+                                            background:
+                                                i === 0 ? "rgba(49,130,246,0.08)" : "transparent",
+                                        }}
+                                    >
+                                        {t}
+                                    </span>
+                                ))}
+                            </div>
+                            <div style={{ padding: 16, fontSize: 13, color: "#6b7684" }}>
+                                탭 6개가 좁은 폭에 밀려 있고, 모바일에서 쓸 일 없는
+                                단축키·일괄 수정 탭까지 들어 있어요.
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ===== 설정: 개선안 ===== */
+            function ImprovedSettings() {
+                const groups = [
+                    { title: "화면", items: ["테마 색상", "애니메이션", "다크 모드"] },
+                    { title: "입력", items: ["진동 피드백", "자동완성 관리"] },
+                    { title: "데이터", items: ["점심시간", "내보내기 · 가져오기", "일괄 수정"] },
+                ];
+                return (
+                    <div className="phone-frame">
+                        <div style={{ background: "#fff", height: "100%" }}>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    padding: "14px 16px",
+                                    borderBottom: "1px solid #f2f4f6",
+                                }}
+                            >
+                                <span style={{ width: 44, fontSize: 18, color: "#6b7684" }}>
+                                    ✕
+                                </span>
+                                <span style={{ fontSize: 17, fontWeight: 600 }}>설정</span>
+                                <span style={{ width: 44 }} />
+                            </div>
+
+                            <div style={{ padding: "8px 16px" }}>
+                                {groups.map((g) => (
+                                    <div key={g.title} style={{ marginBottom: 20 }}>
+                                        <div
+                                            style={{
+                                                fontSize: 13,
+                                                color: "#8b95a1",
+                                                margin: "12px 4px 8px",
+                                            }}
+                                        >
+                                            {g.title}
+                                        </div>
+                                        <div
+                                            style={{
+                                                background: "#f9fafb",
+                                                borderRadius: 12,
+                                                overflow: "hidden",
+                                            }}
+                                        >
+                                            {g.items.map((item, i) => (
+                                                <div
+                                                    key={item}
+                                                    style={{
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "space-between",
+                                                        padding: "14px 16px",
+                                                        borderTop:
+                                                            i === 0
+                                                                ? "none"
+                                                                : "1px solid #f2f4f6",
+                                                        fontSize: 15,
+                                                        minHeight: 52,
+                                                    }}
+                                                >
+                                                    <span>{item}</span>
+                                                    <span style={{ color: "#b0b8c1" }}>
+                                                        {item === "진동 피드백" ||
+                                                        item === "다크 모드"
+                                                            ? "◯"
+                                                            : "›"}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            function MockupApp() {
+                return (
+                    <div>
+                        <div className="page-head">
+                            <h1>완료·휴지통 목록과 설정 화면</h1>
+                            <p>Phase 2 나머지 · 데스크탑 표와 탭 모달을 모바일 형태로</p>
+                        </div>
+
+                        <div className="section-title">1. 완료된 작업 · 휴지통</div>
+                        <div className="frames">
+                            <div className="frame-col">
+                                <div className="frame-label">
+                                    현재<span>폭 800px 표 모달</span>
+                                </div>
+                                <CurrentListModal />
+                                <div className="note">
+                                    <span className="bad">문제</span>
+                                    <br />· 컬럼 5개짜리 표라 좌우 스크롤이 필요해요
+                                    <br />· 글자가 11px 안팎으로 작아요
+                                    <br />· 되돌리기 버튼이 표 안에 작게 들어가 있어요
+                                </div>
+                            </div>
+                            <div className="frame-col">
+                                <div className="frame-label">
+                                    개선안<span>바텀시트 + 카드 목록</span>
+                                </div>
+                                <ImprovedListSheet />
+                                <div className="note">
+                                    <span className="good">달라지는 점</span>
+                                    <br />· 일간 화면과 같은 카드 모양이라 눈에 익어요
+                                    <br />· 왼쪽으로 밀어 되돌리기 (휴지통은 복원/영구삭제)
+                                    <br />· 끌어내리거나 뒤로가기로 닫혀요
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="section-title">2. 설정</div>
+                        <div className="frames">
+                            <div className="frame-col">
+                                <div className="frame-label">
+                                    현재<span>가운데 모달 + 탭 6개</span>
+                                </div>
+                                <CurrentSettings />
+                                <div className="note">
+                                    <span className="bad">문제</span>
+                                    <br />· 좁은 폭에 탭 6개가 밀려 있어요
+                                    <br />· 단축키 탭은 모바일에서 의미가 없어요
+                                    <br />· 일괄 수정은 표 기반이라 폰에서 쓰기 어려워요
+                                </div>
+                            </div>
+                            <div className="frame-col">
+                                <div className="frame-label">
+                                    개선안<span>전체화면 + 그룹 목록</span>
+                                </div>
+                                <ImprovedSettings />
+                                <div className="note">
+                                    <span className="good">달라지는 점</span>
+                                    <br />· 탭 대신 주제별 그룹 목록 (한 줄 52px)
+                                    <br />· 단축키 탭 제거, 일괄 수정은 데스크탑 전용으로
+                                    <br />· 진동 피드백 켜고 끄기 추가 (Phase 1에서 준비됨)
+                                    <br />· 항목을 누르면 해당 설정만 있는 다음 화면으로
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            root.render(<MockupApp />);
+        </script>
+    </body>
+</html>

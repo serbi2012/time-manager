@@ -251,3 +251,9 @@ export const MOBILE_DATE_SHEET = {
     TOTAL_LABEL: "총",
     SETTINGS_LABEL: "설정",
 } as const;
+
+/** 모바일 완료·휴지통 목록 시트 */
+export const MOBILE_LIST_SHEET = {
+    COUNT_SUFFIX: "개",
+    SWIPE_HINT: "왼쪽으로 밀면 되돌릴 수 있어요",
+} as const;
