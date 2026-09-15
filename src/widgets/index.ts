@@ -7,11 +7,7 @@
 export { DesktopHeader, HeaderContent, UserMenu } from "./Header";
 
 // 네비게이션 위젯
-export {
-    DesktopSidebar,
-    MobileBottomNav,
-    MobilePresetDrawer,
-} from "./Navigation";
+export { DesktopSidebar, MobileBottomNav } from "./Navigation";
 
 // 동기화 상태 위젯
 export { SyncIndicator } from "./SyncStatus";

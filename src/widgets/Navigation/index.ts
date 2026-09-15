@@ -4,4 +4,3 @@
 
 export { DesktopSidebar } from "./DesktopSidebar";
 export { MobileBottomNav } from "./MobileBottomNav";
-export { MobilePresetDrawer } from "./MobilePresetDrawer";

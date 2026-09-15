@@ -17,7 +17,6 @@
 
 /* Mobile Components */
 @import "./components/mobile-ui.css";
-@import "./components/mobile-nav.css";
 @import "./components/mobile-record.css";
 @import "./components/mobile-gantt.css";
 @import "./components/mobile-weekly.css";

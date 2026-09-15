@@ -7,7 +7,7 @@ import { SPRING } from "@/shared/ui/animation";
 export interface MobileIconButtonProps {
     /** 스크린리더용 이름 — 아이콘만 있는 버튼이므로 필수 */
     label: string;
-    onClick: () => void;
+    onClick: (event: React.MouseEvent) => void;
     children: ReactNode;
     variant?: "plain" | "tinted";
     disabled?: boolean;

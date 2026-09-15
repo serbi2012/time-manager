@@ -29,7 +29,7 @@ import { MobileRunningSection } from "../../features/work-record/ui/Mobile/Mobil
 import { MobileRecordList } from "../../features/work-record/ui/Mobile/MobileRecordList";
 import { MobileSpeedDialFab } from "../../features/work-record/ui/Mobile/MobileSpeedDialFab";
 import { MobileRecentWorkMenu } from "../../features/work-record/ui/Mobile/MobileRecentWorkMenu";
-import { MobilePresetDrawer } from "../../widgets/Navigation";
+import { MobilePresetSheet } from "../../features/work-template/ui";
 
 
 import {
@@ -45,7 +45,7 @@ import { MobileDailyHeader } from "./MobileDailyHeader";
  * Mobile daily page — redesigned layout
  */
 export function MobileDailyPage() {
-    const [is_preset_drawer_open, setIsPresetDrawerOpen] = useState(false);
+    const [is_preset_sheet_open, setIsPresetSheetOpen] = useState(false);
     const app_theme = useWorkStore((state) => state.app_theme);
     const records = useWorkStore((state) => state.records);
     const selected_date = useWorkStore((state) => state.selected_date);
@@ -53,7 +53,7 @@ export function MobileDailyPage() {
 
     const handleAddRecordOnly = (template_id: string) => {
         createFromTemplate(template_id);
-        setIsPresetDrawerOpen(false);
+        setIsPresetSheetOpen(false);
     };
 
     const { is_ready, transition_enabled, transition_speed } =
@@ -176,7 +176,7 @@ export function MobileDailyPage() {
     const handleStartRecordFromTemplate = useCallback(
         (template_id: string) => {
             const new_record = createFromTemplate(template_id);
-            setIsPresetDrawerOpen(false);
+            setIsPresetSheetOpen(false);
             if (new_record) {
                 startTimer(new_record.id);
             }
@@ -248,17 +248,17 @@ export function MobileDailyPage() {
                             new Event("shortcut:openNewWorkModal")
                         )
                     }
-                    on_open_preset={() => setIsPresetDrawerOpen(true)}
+                    on_open_preset={() => setIsPresetSheetOpen(true)}
                     on_long_press={handleFabLongPress}
                     app_theme={app_theme}
                 />
             </FadeIn>
 
-            <MobilePresetDrawer
-                is_open={is_preset_drawer_open}
-                on_close={() => setIsPresetDrawerOpen(false)}
-                on_add_record_only={handleAddRecordOnly}
-                on_start_record={handleStartRecordFromTemplate}
+            <MobilePresetSheet
+                open={is_preset_sheet_open}
+                onClose={() => setIsPresetSheetOpen(false)}
+                onAddRecord={handleAddRecordOnly}
+                onStartRecord={handleStartRecordFromTemplate}
             />
 
             <MobileRecentWorkMenu

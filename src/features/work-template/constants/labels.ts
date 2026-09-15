@@ -48,3 +48,11 @@ export const MODAL_SUBMIT_ADD = "만들기";
 export const MODAL_SUBMIT_EDIT = "저장하기";
 export const MODAL_CANCEL = "취소";
 export const MODAL_COLOR_LABEL = "구분 색상";
+
+// 모바일 프리셋 시트
+export const MOBILE_PRESET_SHEET = {
+    SEARCH_PLACEHOLDER: "프리셋 검색",
+    COUNT_SUFFIX: "개",
+    START_LABEL: "바로 시작",
+    SEARCH_EMPTY: "검색 결과가 없어요",
+} as const;
