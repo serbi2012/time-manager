@@ -83,7 +83,7 @@ export function MobileBottomNav() {
                             </span>
                             <span
                                 className={cn(
-                                    "text-[10px]",
+                                    "text-xs",
                                     is_active ? "font-semibold" : "font-medium"
                                 )}
                             >

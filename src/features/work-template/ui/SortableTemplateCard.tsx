@@ -123,7 +123,7 @@ export function SortableTemplateCard({
         <div className="flex items-center mt-[3px] min-w-0">
             <span
                 ref={work_name_ref}
-                className="text-[10px] font-medium rounded-xs px-[5px] py-[1px] truncate max-w-full leading-[16px]"
+                className="text-xs font-medium rounded-xs px-[5px] py-[1px] truncate max-w-full leading-[16px]"
                 style={{
                     background: `${template.color}14`,
                     color: template.color,

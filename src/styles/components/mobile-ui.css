@@ -64,6 +64,20 @@
         padding-top: var(--safe-area-top);
     }
 
+    .mobile-skeleton {
+        animation: mobile-skeleton-pulse 1.4s ease-in-out infinite;
+    }
+
+    @keyframes mobile-skeleton-pulse {
+        0%,
+        100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+
     .mobile-touch-target {
         min-width: var(--touch-target-min);
         min-height: var(--touch-target-min);

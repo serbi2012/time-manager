@@ -290,3 +290,10 @@ export const DIAGNOSTIC_LABELS = {
 export const UNDO_LABELS = {
     undo: "되돌리기",
 } as const;
+
+/** 당겨서 새로고침 */
+export const PULL_TO_REFRESH_LABELS = {
+    pull: "당겨서 새로고침",
+    release: "놓으면 새로고침",
+    refreshing: "새로고침 중",
+} as const;

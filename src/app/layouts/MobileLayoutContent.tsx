@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
-import { Layout, Spin } from "antd";
+import { Layout } from "antd";
 import { Routes, Route } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -14,8 +14,11 @@ import { useSyncStatusContext } from "../../features/sync";
 import { useDataImportExport } from "../../shared/hooks";
 import { setHapticsEnabled } from "@/shared/lib/haptic";
 import { DailyPage } from "../../pages/DailyPage/index";
-import { RouteTransition, PageTransitionProvider } from "../../shared/ui";
-import { LOADING_LABELS } from "@/shared/constants";
+import {
+    RouteTransition,
+    PageTransitionProvider,
+    MobileListSkeleton,
+} from "../../shared/ui";
 import type { TransitionSpeed } from "../../shared/ui";
 
 const WeeklySchedule = lazy(() => import("../../components/WeeklySchedule"));
@@ -80,14 +83,9 @@ export function MobileLayoutContent({
                         initial={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="fixed inset-0 flex flex-col items-center justify-center gap-lg bg-white z-[1000]"
+                        className="fixed inset-0 bg-bg-light z-[1000] overflow-hidden"
                     >
-                        <Spin size="large" />
-                        <span className="text-text-secondary">
-                            {auth_loading
-                                ? LOADING_LABELS.checkingLogin
-                                : LOADING_LABELS.loadingData}
-                        </span>
+                        <MobileListSkeleton />
                     </motion.div>
                 )}
             </AnimatePresence>

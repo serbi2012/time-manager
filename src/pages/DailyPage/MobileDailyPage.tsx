@@ -4,9 +4,15 @@
  */
 
 import { useState, useCallback, useMemo } from "react";
+import dayjs from "dayjs";
 
 import { useWorkStore } from "../../store/useWorkStore";
-import { useRecordCreation } from "../../shared/hooks";
+import {
+    useRecordCreation,
+    useSwipeNavigation,
+    usePullToRefresh,
+} from "../../shared/hooks";
+import { useSyncStatusContext } from "../../features/sync";
 import type { WorkRecord } from "../../shared/types";
 
 import {
@@ -26,6 +32,7 @@ import { MobileRecentWorkMenu } from "../../features/work-record/ui/Mobile/Mobil
 import {
     RECORD_MODAL_TITLE,
     RECORD_EMPTY,
+    DATE_FORMAT,
 } from "../../features/work-record/constants";
 import { MobilePresetSheet } from "../../features/work-template/ui";
 
@@ -33,6 +40,7 @@ import { MobilePresetSheet } from "../../features/work-template/ui";
 import {
     SlideIn,
     FadeIn,
+    MobilePullIndicator,
     usePageTransitionContext,
     MOBILE_DAILY_DELAYS,
 } from "../../shared/ui";
@@ -48,6 +56,7 @@ export function MobileDailyPage() {
     const app_theme = useWorkStore((state) => state.app_theme);
     const records = useWorkStore((state) => state.records);
     const selected_date = useWorkStore((state) => state.selected_date);
+    const setSelectedDate = useWorkStore((state) => state.setSelectedDate);
     const { createFromTemplate } = useRecordCreation();
 
     const handleAddRecordOnly = (template_id: string) => {
@@ -57,6 +66,30 @@ export function MobileDailyPage() {
 
     const { is_ready, transition_enabled, transition_speed } =
         usePageTransitionContext();
+
+    const { handleManualSync } = useSyncStatusContext();
+
+    const handlePrevDay = useCallback(() => {
+        setSelectedDate(
+            dayjs(selected_date).subtract(1, "day").format(DATE_FORMAT)
+        );
+    }, [selected_date, setSelectedDate]);
+
+    const handleNextDay = useCallback(() => {
+        setSelectedDate(dayjs(selected_date).add(1, "day").format(DATE_FORMAT));
+    }, [selected_date, setSelectedDate]);
+
+    const { handlers: swipe_handlers } = useSwipeNavigation({
+        onSwipeLeft: handleNextDay,
+        onSwipeRight: handlePrevDay,
+    });
+
+    const {
+        pull_distance,
+        is_ready: is_pull_ready,
+        is_refreshing,
+        handlers: pull_handlers,
+    } = usePullToRefresh({ onRefresh: handleManualSync });
 
     // Record hooks
     const { display_records, completed_records, deleted_records } =
@@ -212,33 +245,54 @@ export function MobileDailyPage() {
                 enabled={transition_enabled}
                 speed={transition_speed}
             >
-                <MobileDailyTimeline />
+                <div
+                    onTouchStart={(event) => {
+                        swipe_handlers.onTouchStart(event);
+                        pull_handlers.onTouchStart(event);
+                    }}
+                    onTouchMove={(event) => {
+                        swipe_handlers.onTouchMove(event);
+                        pull_handlers.onTouchMove(event);
+                    }}
+                    onTouchEnd={() => {
+                        swipe_handlers.onTouchEnd();
+                        pull_handlers.onTouchEnd();
+                    }}
+                >
+                    <MobilePullIndicator
+                        pull_distance={pull_distance}
+                        is_ready={is_pull_ready}
+                        is_refreshing={is_refreshing}
+                    />
 
-                {/* Timer Card (running section) */}
-                <MobileRunningSection
-                    records={running_records}
-                    active_record_id={active_record_id}
-                    elapsed_seconds={elapsed_seconds}
-                    onToggle={handleToggleRecord}
-                    onEdit={handleEditRecord}
-                    onComplete={(r) => markAsCompleted(r.id)}
-                    onDelete={(r) => deleteRecord(r.id)}
-                    animation_key={animation_key}
-                />
+                    <MobileDailyTimeline />
 
-                {/* Task List */}
-                <MobileRecordList
-                    records={other_records}
-                    active_record_id={active_record_id}
-                    onToggle={handleToggleRecord}
-                    onEdit={handleEditRecord}
-                    onOpenCompleted={openCompletedModal}
-                    onOpenTrash={openTrashModal}
-                    onCopyRecords={openCopyModal}
-                    onComplete={(r) => markAsCompleted(r.id)}
-                    onDelete={(r) => deleteRecord(r.id)}
-                    animation_key={animation_key}
-                />
+                    {/* Timer Card (running section) */}
+                    <MobileRunningSection
+                        records={running_records}
+                        active_record_id={active_record_id}
+                        elapsed_seconds={elapsed_seconds}
+                        onToggle={handleToggleRecord}
+                        onEdit={handleEditRecord}
+                        onComplete={(r) => markAsCompleted(r.id)}
+                        onDelete={(r) => deleteRecord(r.id)}
+                        animation_key={animation_key}
+                    />
+
+                    {/* Task List */}
+                    <MobileRecordList
+                        records={other_records}
+                        active_record_id={active_record_id}
+                        onToggle={handleToggleRecord}
+                        onEdit={handleEditRecord}
+                        onOpenCompleted={openCompletedModal}
+                        onOpenTrash={openTrashModal}
+                        onCopyRecords={openCopyModal}
+                        onComplete={(r) => markAsCompleted(r.id)}
+                        onDelete={(r) => deleteRecord(r.id)}
+                        animation_key={animation_key}
+                    />
+                </div>
             </SlideIn>
 
             {/* FAB */}

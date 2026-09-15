@@ -48,6 +48,10 @@ export { useOverlayHistory } from "./useOverlayHistory";
 // 가상 키보드 높이
 export { useVisualViewportInset } from "./useVisualViewportInset";
 
+// 모바일 제스처
+export { useSwipeNavigation } from "./useSwipeNavigation";
+export { usePullToRefresh } from "./usePullToRefresh";
+
 // 커서 트래킹
 export { useSpotlight } from "./useSpotlight";
 export { useMagnetic } from "./useMagnetic";

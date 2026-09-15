@@ -117,7 +117,7 @@ export function MobileGanttWorkCard({
                             return (
                                 <button
                                     key={session.id || idx}
-                                    className="text-[10px] font-medium px-2 py-0.5 rounded-md tabular-nums border-0 cursor-pointer transition-colors"
+                                    className="text-xs font-medium px-2 py-1 rounded-md tabular-nums border-0 cursor-pointer transition-colors"
                                     style={{
                                         background: `${color}15`,
                                         color: color,

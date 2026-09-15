@@ -77,7 +77,7 @@ export function MobileGanttSegmentBar({
                 {hour_labels.map((h) => (
                     <span
                         key={h}
-                        className="text-[10px] text-gray-400 tabular-nums"
+                        className="text-xs text-gray-400 tabular-nums"
                     >
                         {h}
                     </span>
