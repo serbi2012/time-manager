@@ -17,6 +17,12 @@
         touch-action: none;
     }
 
+    .mobile-sheet-full {
+        top: 0;
+        border-radius: 0;
+        padding-top: var(--safe-area-top);
+    }
+
     .mobile-sheet-backdrop {
         position: fixed;
         inset: 0;

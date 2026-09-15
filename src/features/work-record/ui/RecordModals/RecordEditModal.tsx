@@ -4,17 +4,16 @@
 
 import { useEffect } from "react";
 import { Modal, Form, Button } from "antd";
-import { message } from "@/shared/lib/message";
 import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "../../../../store/useWorkStore";
 import { useModalKeyboard } from "@/shared/hooks";
 import { ShortcutKeyBadge } from "@/shared/ui";
 import type { WorkRecord } from "../../../../shared/types";
 import { WorkRecordFormFields } from "../../../../shared/ui/form";
+import { useRecordFormActions } from "../../hooks/useRecordFormActions";
 import {
     RECORD_MODAL_TITLE,
     RECORD_BUTTON,
-    RECORD_SUCCESS,
     RECORD_PLACEHOLDER,
 } from "../../constants";
 
@@ -38,9 +37,6 @@ export function RecordEditModal({
     const {
         records,
         templates,
-        timer,
-        updateRecord,
-        updateActiveFormData,
         getAutoCompleteOptions,
         getProjectCodeOptions,
         custom_task_options,
@@ -53,9 +49,6 @@ export function RecordEditModal({
         useShallow((s) => ({
             records: s.records,
             templates: s.templates,
-            timer: s.timer,
-            updateRecord: s.updateRecord,
-            updateActiveFormData: s.updateActiveFormData,
             getAutoCompleteOptions: s.getAutoCompleteOptions,
             getProjectCodeOptions: s.getProjectCodeOptions,
             custom_task_options: s.custom_task_options,
@@ -84,6 +77,8 @@ export function RecordEditModal({
         }
     }, [open, record, form]);
 
+    const { submitEdit } = useRecordFormActions();
+
     // 수정 저장
     const handleSaveEdit = async () => {
         if (!record) return;
@@ -91,35 +86,7 @@ export function RecordEditModal({
         try {
             const values = await form.validateFields();
 
-            const updated_data = {
-                project_code: values.project_code || "",
-                work_name: values.work_name,
-                task_name: values.task_name || "",
-                deal_name: values.deal_name || "",
-                category_name: values.category_name || "",
-                note: values.note || "",
-            };
-
-            // 가상 레코드인 경우 (타이머만 실행 중)
-            if (record.id === "__active__") {
-                updateActiveFormData(updated_data);
-            } else {
-                // 실제 레코드 업데이트
-                updateRecord(record.id, updated_data);
-
-                // 타이머가 실행 중이고, 현재 수정한 레코드가 타이머 추적 중인 레코드인 경우
-                const active_form = timer.active_form_data;
-                if (
-                    timer.is_running &&
-                    active_form &&
-                    record.work_name === active_form.work_name &&
-                    record.deal_name === active_form.deal_name
-                ) {
-                    updateActiveFormData(updated_data);
-                }
-            }
-
-            message.success(RECORD_SUCCESS.UPDATED);
+            submitEdit(record, values);
             handleClose();
         } catch {
             // validation failed

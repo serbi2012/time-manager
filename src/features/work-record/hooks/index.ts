@@ -8,6 +8,10 @@ export {
     useRecordActions,
     type UseRecordActionsReturn,
 } from "./useRecordActions";
+export {
+    useRecordFormActions,
+    type UseRecordFormActionsReturn,
+} from "./useRecordFormActions";
 export { useRecordStats, type UseRecordStatsReturn } from "./useRecordStats";
 export {
     useRecordFilters,

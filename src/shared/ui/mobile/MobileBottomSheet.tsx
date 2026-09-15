@@ -17,8 +17,12 @@ export interface MobileBottomSheetProps {
     title?: string;
     /** 화면 높이 대비 시트 높이 (0~1) */
     height_ratio?: number;
+    /** 상단 고정 영역 (닫기 버튼 등) */
+    header?: ReactNode;
     /** 하단 고정 영역 (액션 버튼 등) */
     footer?: ReactNode;
+    /** 전체 화면으로 띄우기 (모서리 둥글기와 핸들 없음) */
+    full_screen?: boolean;
     children: ReactNode;
     className?: string;
 }
@@ -32,7 +36,9 @@ export function MobileBottomSheet({
     onClose,
     title,
     height_ratio = DEFAULT_HEIGHT_RATIO,
+    header,
     footer,
+    full_screen = false,
     children,
     className,
 }: MobileBottomSheetProps) {
@@ -72,20 +78,32 @@ export function MobileBottomSheet({
                     />
 
                     <motion.div
-                        className={cn("mobile-sheet", className)}
-                        style={{ height: `${height_ratio * 100}dvh` }}
+                        className={cn(
+                            "mobile-sheet",
+                            full_screen && "mobile-sheet-full",
+                            className
+                        )}
+                        style={{
+                            height: full_screen
+                                ? "100dvh"
+                                : `${height_ratio * 100}dvh`,
+                        }}
                         initial={{ y: "100%" }}
                         animate={{ y: 0 }}
                         exit={{ y: "100%" }}
                         transition={SPRING.toss}
-                        drag="y"
+                        drag={full_screen ? false : "y"}
                         dragConstraints={{ top: 0, bottom: 0 }}
                         dragElastic={{ top: 0, bottom: 0.4 }}
                         onDragEnd={handleDragEnd}
                     >
-                        <div className="flex justify-center pt-md pb-sm">
-                            <span className="mobile-sheet-handle" />
-                        </div>
+                        {!full_screen && (
+                            <div className="flex justify-center pt-md pb-sm">
+                                <span className="mobile-sheet-handle" />
+                            </div>
+                        )}
+
+                        {header}
 
                         {title && (
                             <div className="px-xl pb-md">

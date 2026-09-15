@@ -16,10 +16,7 @@ import {
     useRecordModals,
 } from "../../features/work-record/hooks";
 
-import {
-    RecordAddModal,
-    RecordEditModal,
-} from "../../features/work-record/ui/RecordModals";
+import { MobileRecordFormSheet } from "../../features/work-record/ui/Mobile/MobileRecordFormSheet";
 import { RecordCopyModal } from "../../features/work-record/ui/RecordCopyModal";
 import {
     CompletedModal,
@@ -285,17 +282,21 @@ export function MobileDailyPage() {
                 onClose={closeCopyModal}
             />
 
-            <RecordAddModal open={is_add_open} onClose={closeAddModal} />
+            <MobileRecordFormSheet
+                open={is_add_open}
+                record={null}
+                onClose={closeAddModal}
+            />
 
-            <RecordEditModal
+            <MobileRecordFormSheet
                 open={is_edit_open}
-                onClose={closeEditModal}
                 record={
                     editing_record_id
                         ? records.find((r) => r.id === editing_record_id) ||
                           null
                         : null
                 }
+                onClose={closeEditModal}
             />
 
             <CompletedModal

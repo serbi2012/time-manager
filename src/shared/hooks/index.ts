@@ -45,6 +45,9 @@ export { useLongPress } from "./useLongPress";
 // 오버레이 뒤로가기 연동
 export { useOverlayHistory } from "./useOverlayHistory";
 
+// 가상 키보드 높이
+export { useVisualViewportInset } from "./useVisualViewportInset";
+
 // 커서 트래킹
 export { useSpotlight } from "./useSpotlight";
 export { useMagnetic } from "./useMagnetic";

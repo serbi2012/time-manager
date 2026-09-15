@@ -3,19 +3,16 @@
  */
 
 import { Modal, Form, Button } from "antd";
-import { message } from "@/shared/lib/message";
 import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "../../../../store/useWorkStore";
 import { useModalKeyboard } from "@/shared/hooks";
 import { ShortcutKeyBadge } from "@/shared/ui";
-import type { WorkRecord } from "../../../../shared/types";
 import { WorkRecordFormFields } from "../../../../shared/ui/form";
+import { useRecordFormActions } from "../../hooks/useRecordFormActions";
 import {
     RECORD_MODAL_TITLE,
     RECORD_BUTTON,
-    RECORD_SUCCESS,
     RECORD_PLACEHOLDER,
-    DEFAULT_PROJECT_CODE,
 } from "../../constants";
 
 export interface RecordAddModalProps {
@@ -32,8 +29,6 @@ export function RecordAddModal({ open, onClose }: RecordAddModalProps) {
     const {
         records,
         templates,
-        selected_date,
-        addRecord,
         getAutoCompleteOptions,
         getProjectCodeOptions,
         custom_task_options,
@@ -46,8 +41,6 @@ export function RecordAddModal({ open, onClose }: RecordAddModalProps) {
         useShallow((s) => ({
             records: s.records,
             templates: s.templates,
-            selected_date: s.selected_date,
-            addRecord: s.addRecord,
             getAutoCompleteOptions: s.getAutoCompleteOptions,
             getProjectCodeOptions: s.getProjectCodeOptions,
             custom_task_options: s.custom_task_options,
@@ -62,30 +55,13 @@ export function RecordAddModal({ open, onClose }: RecordAddModalProps) {
     // Form
     const [form] = Form.useForm();
 
+    const { submitAdd } = useRecordFormActions();
 
     const handleAddWork = async () => {
         try {
             const values = await form.validateFields();
 
-            const new_record: WorkRecord = {
-                id: crypto.randomUUID(),
-                project_code: values.project_code || DEFAULT_PROJECT_CODE,
-                work_name: values.work_name,
-                task_name: values.task_name || "",
-                deal_name: values.deal_name || "",
-                category_name: values.category_name || "",
-                note: values.note || "",
-                duration_minutes: 0,
-                start_time: "",
-                end_time: "",
-                date: selected_date,
-                sessions: [],
-                is_completed: false,
-                is_deleted: false,
-            };
-
-            addRecord(new_record);
-            message.success(RECORD_SUCCESS.ADDED);
+            submitAdd(values);
 
             form.resetFields();
             onClose();
