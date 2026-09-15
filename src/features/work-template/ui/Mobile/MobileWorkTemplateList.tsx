@@ -41,6 +41,7 @@ import type { WorkTemplate } from "@/shared/types";
 
 interface MobileWorkTemplateListProps {
     onAddRecordOnly?: (template_id: string) => void;
+    onStartRecordFromTemplate?: (template_id: string) => void;
 }
 
 const CARD_VARIANTS = {
@@ -55,28 +56,29 @@ const TEMPLATE_MENU_ITEMS: MobileActionMenuItem[] = [
         label: MOBILE_TEMPLATE_MENU.START_TIMER,
         icon: PlayCircleOutlined,
         color: "var(--color-success)",
-        bg: "rgba(52,199,89,0.08)",
-        haptic_ms: 10,
+        bg: "var(--color-success-tint)",
+        haptic: "impact",
     },
     {
         key: "edit",
         label: MOBILE_TEMPLATE_MENU.EDIT,
         icon: EditOutlined,
         color: "var(--color-primary)",
-        bg: "rgba(49,130,246,0.08)",
+        bg: "var(--color-primary-tint)",
     },
     {
         key: "delete",
         label: MOBILE_TEMPLATE_MENU.DELETE,
         icon: DeleteOutlined,
         color: "var(--color-error)",
-        bg: "rgba(240,68,82,0.08)",
-        haptic_ms: 15,
+        bg: "var(--color-error-tint)",
+        haptic: "warning",
     },
 ];
 
 export function MobileWorkTemplateList({
     onAddRecordOnly,
+    onStartRecordFromTemplate,
 }: MobileWorkTemplateListProps) {
     const {
         templates,
@@ -135,16 +137,22 @@ export function MobileWorkTemplateList({
         (key: string) => {
             if (!menu_template) return;
             if (key === "start_timer") {
-                if (onAddRecordOnly) {
-                    onAddRecordOnly(menu_template.id);
-                }
+                const startRecord =
+                    onStartRecordFromTemplate ?? onAddRecordOnly;
+                startRecord?.(menu_template.id);
             } else if (key === "edit") {
                 handleOpenEditModal(menu_template);
             } else if (key === "delete") {
                 handleDelete(menu_template.id);
             }
         },
-        [menu_template, onAddRecordOnly, handleOpenEditModal, handleDelete]
+        [
+            menu_template,
+            onAddRecordOnly,
+            onStartRecordFromTemplate,
+            handleOpenEditModal,
+            handleDelete,
+        ]
     );
 
     return (

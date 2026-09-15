@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>모바일 일간 헤더 다이어트 — Phase 2</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react@18/umd/react.development.js"
+        ></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+        ></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                padding: 24px;
+                background: #f2f4f6;
+                font-family: "Pretendard Variable", Pretendard, -apple-system,
+                    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                -webkit-font-smoothing: antialiased;
+                color: #191f28;
+            }
+            #root {
+                max-width: 1320px;
+                margin: 0 auto;
+            }
+            .page-head {
+                text-align: center;
+                margin-bottom: 28px;
+            }
+            .page-head h1 {
+                font-size: 22px;
+                font-weight: 600;
+                margin: 0 0 6px;
+            }
+            .page-head p {
+                font-size: 14px;
+                color: #6b7684;
+                margin: 0;
+            }
+            .frames {
+                display: flex;
+                gap: 28px;
+                justify-content: center;
+                flex-wrap: wrap;
+                align-items: flex-start;
+            }
+            .frame-col {
+                width: 375px;
+            }
+            .frame-label {
+                font-size: 13px;
+                font-weight: 600;
+                margin-bottom: 10px;
+                text-align: center;
+            }
+            .frame-label span {
+                display: block;
+                font-size: 12px;
+                font-weight: 400;
+                color: #8b95a1;
+                margin-top: 2px;
+            }
+            .phone-frame {
+                width: 375px;
+                height: 720px;
+                background: #f9fafb;
+                border-radius: 32px;
+                border: 8px solid #191f28;
+                position: relative;
+                overflow: hidden;
+            }
+            .sticky-mark {
+                position: absolute;
+                right: 6px;
+                width: 4px;
+                border-radius: 999px;
+                background: rgba(240, 68, 82, 0.5);
+            }
+            .sticky-mark.ok {
+                background: rgba(52, 199, 89, 0.6);
+            }
+            .note {
+                margin-top: 12px;
+                font-size: 12px;
+                line-height: 1.7;
+                color: #4e5968;
+                background: #fff;
+                border-radius: 12px;
+                padding: 12px 14px;
+            }
+            .note b {
+                color: #191f28;
+            }
+            .bad {
+                color: #f04452;
+            }
+            .good {
+                color: #34c759;
+            }
+            .bottom-nav {
+                position: absolute;
+                left: 16px;
+                right: 16px;
+                bottom: 16px;
+                height: 56px;
+                border-radius: 20px;
+                background: rgba(255, 255, 255, 0.9);
+                box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+                display: flex;
+                align-items: center;
+                justify-content: space-around;
+                font-size: 11px;
+                color: #b0b8c1;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const WEEK = [
+                ["월", 14],
+                ["화", 15],
+                ["수", 16],
+                ["목", 17],
+                ["금", 18],
+                ["토", 19],
+                ["일", 20],
+            ];
+
+            function WeekStrip({ compact }) {
+                return (
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            padding: compact ? "6px 20px" : "12px 24px",
+                        }}
+                    >
+                        {WEEK.map(([d, n]) => {
+                            const active = n === 15;
+                            return (
+                                <div key={n} style={{ textAlign: "center" }}>
+                                    <div style={{ fontSize: 11, color: "#b0b8c1" }}>{d}</div>
+                                    <div
+                                        style={{
+                                            width: compact ? 32 : 40,
+                                            height: compact ? 32 : 40,
+                                            marginTop: 4,
+                                            borderRadius: 12,
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            fontSize: 15,
+                                            background: active ? "#3182f6" : "transparent",
+                                            color: active ? "#fff" : "#4e5968",
+                                        }}
+                                    >
+                                        {n}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                );
+            }
+
+            function TimelineBar() {
+                return (
+                    <div style={{ padding: "8px 20px 12px" }}>
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                fontSize: 10,
+                                color: "#b0b8c1",
+                                marginBottom: 6,
+                            }}
+                        >
+                            {["9", "11", "13", "15", "17"].map((h) => (
+                                <span key={h}>{h}</span>
+                            ))}
+                        </div>
+                        <div
+                            style={{
+                                height: 40,
+                                borderRadius: 8,
+                                background: "#f2f4f6",
+                                position: "relative",
+                                overflow: "hidden",
+                            }}
+                        >
+                            <div
+                                style={{
+                                    position: "absolute",
+                                    left: "4%",
+                                    width: "18%",
+                                    top: 4,
+                                    bottom: 4,
+                                    background: "#34c759",
+                                    borderRadius: 2,
+                                }}
+                            />
+                            <div
+                                style={{
+                                    position: "absolute",
+                                    left: "30%",
+                                    width: "26%",
+                                    top: 4,
+                                    bottom: 4,
+                                    background: "#3182f6",
+                                    borderRadius: 2,
+                                }}
+                            />
+                        </div>
+                    </div>
+                );
+            }
+
+            function WorkCard({ name, time }) {
+                return (
+                    <div
+                        style={{
+                            background: "#fff",
+                            borderRadius: 12,
+                            border: "1px solid rgba(229,232,235,0.6)",
+                            padding: 14,
+                            marginBottom: 6,
+                        }}
+                    >
+                        <div style={{ fontSize: 13, fontWeight: 600 }}>{name}</div>
+                        <div style={{ fontSize: 11, color: "#8b95a1", marginTop: 2 }}>
+                            개발 · {time}
+                        </div>
+                    </div>
+                );
+            }
+
+            function RecordRow({ name, dur }) {
+                return (
+                    <div
+                        style={{
+                            background: "#fff",
+                            borderRadius: 12,
+                            padding: 16,
+                            marginBottom: 8,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 12,
+                            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                        }}
+                    >
+                        <div
+                            style={{
+                                width: 34,
+                                height: 34,
+                                borderRadius: 8,
+                                background: "#f9fafb",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: "#b0b8c1",
+                            }}
+                        >
+                            ▶
+                        </div>
+                        <div style={{ width: 3, height: 34, borderRadius: 999, background: "#34c759" }} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 15, fontWeight: 500 }}>{name}</div>
+                            <div style={{ fontSize: 13, color: "#b0b8c1" }}>
+                                개발 · 09:00 ~ 진행 중
+                            </div>
+                        </div>
+                        <div style={{ fontSize: 17, fontWeight: 600, color: "#4e5968" }}>
+                            {dur}
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ---------- 현재 ---------- */
+            function CurrentHeader() {
+                return (
+                    <div className="phone-frame">
+                        <div style={{ background: "#f9fafb" }}>
+                            <div style={{ padding: "24px 24px 12px" }}>
+                                <div style={{ fontSize: 13, color: "#b0b8c1" }}>
+                                    2026년 9월 15일 화요일
+                                </div>
+                                <div style={{ fontSize: 22, fontWeight: 700, marginTop: 2 }}>
+                                    일간 기록
+                                </div>
+                            </div>
+                            <div style={{ borderBottom: "1px solid #f2f4f6", margin: "0 24px" }} />
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    padding: "16px 24px",
+                                }}
+                            >
+                                <span style={{ color: "#b0b8c1" }}>‹</span>
+                                <span style={{ fontSize: 17, fontWeight: 600 }}>
+                                    9월 15일 화요일
+                                </span>
+                                <span style={{ color: "#b0b8c1" }}>›</span>
+                            </div>
+                            <WeekStrip />
+                            <TimelineBar />
+                            <div style={{ padding: "0 16px 12px" }}>
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        fontSize: 13,
+                                        color: "#8b95a1",
+                                        padding: "6px 8px",
+                                    }}
+                                >
+                                    <span>작업 목록</span>
+                                    <span>⌄</span>
+                                </div>
+                                <WorkCard name="[5.6] Static P - 이카운트 메타" time="09:00 ~ 10:30" />
+                                <WorkCard name="common_rac 도메인 단위" time="10:30 ~ 12:00" />
+                            </div>
+                        </div>
+
+                        <div style={{ padding: "0 16px" }}>
+                            <RecordRow name="[5.6] Static P" dur="0분" />
+                        </div>
+
+                        <div className="sticky-mark" style={{ top: 0, height: 560 }} />
+                        <div className="bottom-nav">
+                            <span>일간</span>
+                            <span>주간</span>
+                            <span>설명서</span>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ---------- 개선안 ---------- */
+            function ImprovedHeader() {
+                return (
+                    <div className="phone-frame">
+                        <div style={{ background: "#f9fafb" }}>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    padding: "14px 20px 8px",
+                                }}
+                            >
+                                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                    <span style={{ color: "#b0b8c1" }}>‹</span>
+                                    <span style={{ fontSize: 17, fontWeight: 600 }}>
+                                        9월 15일 화
+                                    </span>
+                                    <span style={{ color: "#b0b8c1" }}>›</span>
+                                </div>
+                                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                    <span
+                                        style={{
+                                            fontSize: 13,
+                                            fontWeight: 600,
+                                            color: "#3182f6",
+                                            background: "rgba(49,130,246,0.08)",
+                                            padding: "4px 10px",
+                                            borderRadius: 999,
+                                        }}
+                                    >
+                                        3시간 20분
+                                    </span>
+                                    <span style={{ color: "#8b95a1" }}>⚙</span>
+                                </div>
+                            </div>
+                            <WeekStrip compact />
+                        </div>
+
+                        <div style={{ padding: "12px 16px 0" }}>
+                            <div
+                                style={{
+                                    background: "#fff",
+                                    borderRadius: 12,
+                                    padding: "10px 14px",
+                                    marginBottom: 12,
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        fontSize: 13,
+                                        color: "#8b95a1",
+                                        marginBottom: 6,
+                                    }}
+                                >
+                                    <span>타임라인</span>
+                                    <span>⌄</span>
+                                </div>
+                                <div
+                                    style={{
+                                        height: 28,
+                                        borderRadius: 8,
+                                        background: "#f2f4f6",
+                                        position: "relative",
+                                        overflow: "hidden",
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            position: "absolute",
+                                            left: "4%",
+                                            width: "18%",
+                                            top: 3,
+                                            bottom: 3,
+                                            background: "#34c759",
+                                            borderRadius: 2,
+                                        }}
+                                    />
+                                    <div
+                                        style={{
+                                            position: "absolute",
+                                            left: "30%",
+                                            width: "26%",
+                                            top: 3,
+                                            bottom: 3,
+                                            background: "#3182f6",
+                                            borderRadius: 2,
+                                        }}
+                                    />
+                                </div>
+                            </div>
+
+                            <RecordRow name="[5.6] Static P - 이카운트" dur="1시간" />
+                            <RecordRow name="common_rac 도메인 단위" dur="1시간 30분" />
+                            <RecordRow name="기타 문서 작성" dur="50분" />
+                            <RecordRow name="기타회의" dur="30분" />
+                        </div>
+
+                        <div className="sticky-mark ok" style={{ top: 0, height: 150 }} />
+                        <div className="bottom-nav">
+                            <span style={{ color: "#3182f6", fontWeight: 600 }}>일간</span>
+                            <span>주간</span>
+                            <span>설명서</span>
+                        </div>
+                    </div>
+                );
+            }
+
+            function MockupApp() {
+                return (
+                    <div>
+                        <div className="page-head">
+                            <h1>일간 화면 상단 영역 다이어트</h1>
+                            <p>
+                                Phase 2 · 오른쪽 빨간/초록 막대가 스크롤해도 고정되는
+                                영역의 높이입니다
+                            </p>
+                        </div>
+
+                        <div className="frames">
+                            <div className="frame-col">
+                                <div className="frame-label">
+                                    현재
+                                    <span>고정 영역 약 390~690px</span>
+                                </div>
+                                <CurrentHeader />
+                                <div className="note">
+                                    <b className="bad">문제</b>
+                                    <br />· 제목·날짜·주간·타임라인·작업목록이 모두 고정
+                                    <br />· 작업 목록은 기본 펼침 — 작업이 늘수록 더 커진다
+                                    <br />· 기록 카드가 보일 자리가 거의 없다
+                                    <br />· 날짜 선택은 글자를 길게 눌러야만 열린다
+                                </div>
+                            </div>
+
+                            <div className="frame-col">
+                                <div className="frame-label">
+                                    개선안
+                                    <span>고정 영역 약 150px</span>
+                                </div>
+                                <ImprovedHeader />
+                                <div className="note">
+                                    <b className="good">달라지는 점</b>
+                                    <br />· 고정은 날짜 줄 + 주간 스트립만
+                                    <br />· 페이지 제목 제거 (하단 네비가 위치를 알려줌)
+                                    <br />· 총 시간을 날짜 줄로 올려 한눈에
+                                    <br />· 타임라인은 본문으로 내리고 접을 수 있게 (기본 접힘)
+                                    <br />· 작업 목록 카드가 첫 화면에 4개 보인다
+                                    <br />· 날짜 줄을 탭하면 달력 시트 (길게 누르기 불필요)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            root.render(<MockupApp />);
+        </script>
+    </body>
+</html>

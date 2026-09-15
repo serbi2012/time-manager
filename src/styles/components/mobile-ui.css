@@ -1,0 +1,61 @@
+/* 모바일 공용 UI — 바텀시트, 되돌리기 토스트, 터치 영역 */
+
+@layer components {
+    .mobile-sheet {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: var(--z-modal);
+        display: flex;
+        flex-direction: column;
+        background: var(--color-bg-default);
+        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12);
+        padding-bottom: var(--safe-area-bottom);
+        overflow: hidden;
+        touch-action: none;
+    }
+
+    .mobile-sheet-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: var(--z-modal-backdrop);
+        background: rgba(0, 0, 0, 0.4);
+    }
+
+    .mobile-sheet-handle {
+        width: 36px;
+        height: 4px;
+        border-radius: var(--radius-full);
+        background: var(--color-border-dark);
+    }
+
+    .mobile-sheet-body {
+        flex: 1;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        touch-action: pan-y;
+    }
+
+    .mobile-undo-toast {
+        position: fixed;
+        left: var(--spacing-lg);
+        right: var(--spacing-lg);
+        bottom: calc(var(--safe-area-bottom) + 96px);
+        z-index: var(--z-toast);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--spacing-md);
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: var(--radius-lg);
+        background: var(--gray-900);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
+    }
+
+    .mobile-touch-target {
+        min-width: var(--touch-target-min);
+        min-height: var(--touch-target-min);
+    }
+}

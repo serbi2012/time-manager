@@ -13,9 +13,11 @@ import {
 import type { WorkRecord } from "../../../../shared/types";
 import { MOBILE_RECORD_LABEL, RECORD_EMPTY } from "../../constants";
 
+import { MobileActionMenu } from "@/shared/ui";
+
 import { MobileSwipeCard } from "./MobileSwipeCard";
 import { MobileRecordRow } from "./MobileRecordRow";
-import { MobileContextMenu } from "./MobileContextMenu";
+import { RECORD_MENU_ITEMS, RECORD_MENU_KEY } from "./record_menu_items";
 
 interface MobileRecordListProps {
     records: WorkRecord[];
@@ -56,6 +58,21 @@ export function MobileRecordList({
         setMenuRecord(null);
         setMenuAnchor(null);
     }, []);
+
+    const handleMenuAction = useCallback(
+        (key: string) => {
+            if (!menu_record) return;
+
+            if (key === RECORD_MENU_KEY.EDIT) {
+                onEdit(menu_record);
+            } else if (key === RECORD_MENU_KEY.COMPLETE) {
+                onComplete(menu_record);
+            } else if (key === RECORD_MENU_KEY.DELETE) {
+                onDelete(menu_record);
+            }
+        },
+        [menu_record, onEdit, onComplete, onDelete]
+    );
 
     return (
         <div className="px-xl pb-md">
@@ -144,18 +161,11 @@ export function MobileRecordList({
             </div>
 
             {/* Shared context menu — one instance for the entire list */}
-            <MobileContextMenu
+            <MobileActionMenu
                 open={menu_record !== null}
                 anchor_rect={menu_anchor}
-                onEdit={() => {
-                    if (menu_record) onEdit(menu_record);
-                }}
-                onComplete={() => {
-                    if (menu_record) onComplete(menu_record);
-                }}
-                onDelete={() => {
-                    if (menu_record) onDelete(menu_record);
-                }}
+                items={RECORD_MENU_ITEMS}
+                onAction={handleMenuAction}
                 onClose={handleCloseMenu}
             />
         </div>

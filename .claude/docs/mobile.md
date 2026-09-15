@@ -5,6 +5,28 @@
 
 ---
 
+## 0. 모바일 화면 구성 (어떤 파일이 실제로 뜨는가)
+
+데스크탑 진입점(`components/WorkRecordTable.tsx`, `DailyGanttChart/index.tsx`)에는 모바일 분기가 없다.
+모바일은 아래 트리만 렌더된다. 여기에 없는 `Mobile*` 파일을 고쳐도 화면은 바뀌지 않는다.
+
+```
+App (is_mobile)
+└─ MobileLayout → SyncStatusProvider → MobileLayoutContent
+   ├─ "/"        DailyPage → MobileDailyPage
+   │             ├─ MobileDailyHeader (날짜 바 + 캘린더 스트립 + 타임라인 + 작업 목록)
+   │             ├─ MobileRunningSection / MobileRecordList → MobileSwipeCard → MobileRecordRow
+   │             ├─ MobileSpeedDialFab / MobileRecentWorkMenu
+   │             └─ MobilePresetDrawer → WorkTemplateList → MobileWorkTemplateList
+   ├─ "/weekly"  WeeklySchedule → MobileWeeklySchedule
+   ├─ "/guide"   GuideBook → MobileGuideBook
+   └─ MobileBottomNav
+```
+
+`/suggestions`는 모바일 라우트에 없다. `MobileSuggestionBoard`는 라우트를 추가하기 전까지 화면에 뜨지 않는다.
+
+---
+
 ## 1. 절대 원칙 (Absolute Rules)
 
 ### 1-1. 데스크탑 무영향 보장
@@ -155,10 +177,8 @@ interface WorkRecord {
 
 ```
 src/styles/components/
-├── mobile-header.css        # 모바일 헤더
-├── mobile-nav.css           # 모바일 네비게이션
-├── mobile-record.css        # 모바일 레코드
-├── mobile-record-card.css   # 모바일 레코드 카드
+├── mobile-nav.css           # 프리셋 드로어
+├── mobile-record.css        # 캘린더 팝 + 스와이프 카드
 ├── mobile-gantt.css         # 모바일 간트차트
 ├── mobile-weekly.css        # 모바일 주간 일정
 ├── mobile-settings.css      # 모바일 설정
@@ -168,7 +188,7 @@ src/styles/components/
 **규칙:**
 
 -   모바일 CSS는 반드시 `mobile-` 접두사로 파일명 작성
--   새 CSS 파일 추가 시 `global.css`에 import 추가
+-   새 CSS 파일 추가 시 `styles/app.css`에 import 추가
 -   기존 공유 CSS(`layout.css`, `antd.css` 등)의 `@media (max-width: 480px)` 블록 수정은 **YELLOW**
 
 ### 3-2. 스타일 작성 우선순위
@@ -198,8 +218,8 @@ src/styles/components/
 
 ```
 ✅ MobileDailyPage.tsx 레이아웃 전면 변경
-✅ MobileWorkRecordTable.tsx 카드 UI 변경
-✅ MobileDailyGanttChart.tsx 터치 인터랙션 추가
+✅ MobileRecordList.tsx 카드 UI 변경
+✅ MobileGanttSegmentBar.tsx 터치 인터랙션 추가
 ```
 
 ### 4-2. 신규 모바일 컴포넌트 생성 (GREEN)
@@ -208,9 +228,8 @@ src/styles/components/
 
 ```
 features/work-record/ui/Mobile/
-├── MobileWorkRecordTable.tsx      # 기존 진입점
-├── MobileRecordCard.tsx           # 기존 카드
-├── MobileRecordSwipeAction.tsx    # 신규: 스와이프 액션 ✅
+├── MobileRecordList.tsx           # 기존 목록
+├── MobileRecordRow.tsx            # 기존 카드 내용
 ├── MobileRecordQuickAdd.tsx       # 신규: 빠른 추가 ✅
 └── MobileRecordStats.tsx          # 신규: 통계 대시보드 ✅
 ```
@@ -317,24 +336,25 @@ function DesktopSettingItem({ label, children }: Props) {
 
 ### 자주 수정하는 파일과 안전 등급
 
-| 파일                        | 등급      | 비고               |
-| --------------------------- | --------- | ------------------ |
-| `MobileLayout.tsx`          | 🟢 GREEN  | 자유 수정          |
-| `MobileDailyPage.tsx`       | 🟢 GREEN  | 자유 수정          |
-| `MobileHeader.tsx`          | 🟢 GREEN  | 자유 수정          |
-| `MobileBottomNav.tsx`       | 🟢 GREEN  | 자유 수정          |
-| `MobileWorkRecordTable.tsx` | 🟢 GREEN  | 자유 수정          |
-| `MobileDailyGanttChart.tsx` | 🟢 GREEN  | 자유 수정          |
-| `MobileWeeklySchedule.tsx`  | 🟢 GREEN  | 자유 수정          |
-| `MobileSettingsModal.tsx`   | 🟢 GREEN  | 자유 수정          |
-| `mobile-*.css`              | 🟢 GREEN  | 자유 수정          |
-| `useGanttData.ts`           | 🟡 YELLOW | 인터페이스 유지    |
-| `useRecordData.ts`          | 🟡 YELLOW | 인터페이스 유지    |
-| `useWorkStore`              | 🟡 YELLOW | 필드 추가만 허용   |
-| `shared/types/domain.ts`    | 🟡 YELLOW | 선택적 필드 추가만 |
-| `layout.css` @media 블록    | 🟡 YELLOW | 모바일 블록만 수정 |
-| `Desktop*.tsx`              | 🔴 RED    | 수정 금지          |
-| `DesktopLayout.tsx`         | 🔴 RED    | 수정 금지          |
+| 파일                                          | 등급      | 비고               |
+| --------------------------------------------- | --------- | ------------------ |
+| `MobileLayout.tsx` / `MobileLayoutContent.tsx` | 🟢 GREEN  | 자유 수정          |
+| `MobileDailyPage.tsx` / `MobileDailyHeader.tsx`| 🟢 GREEN  | 자유 수정          |
+| `MobileBottomNav.tsx` / `MobilePresetDrawer.tsx` | 🟢 GREEN | 자유 수정         |
+| `Mobile/MobileRecordList.tsx` 등 레코드 카드  | 🟢 GREEN  | 자유 수정          |
+| `MobileGanttSegmentBar.tsx` / `MobileGanttWorkCard.tsx` | 🟢 GREEN | 자유 수정 |
+| `MobileWeeklySchedule.tsx`                    | 🟢 GREEN  | 자유 수정          |
+| `MobileSettingsModal.tsx`                     | 🟢 GREEN  | 자유 수정          |
+| `mobile-*.css`                                | 🟢 GREEN  | 자유 수정          |
+| `shared/ui/MobileActionMenu.tsx`              | 🟡 YELLOW | 모바일 전용이지만 공용 위치 |
+| `useSyncStatus.ts`                            | 🟡 YELLOW | 인터페이스 유지    |
+| `useGanttData.ts`                             | 🟡 YELLOW | 인터페이스 유지    |
+| `useRecordData.ts`                            | 🟡 YELLOW | 인터페이스 유지    |
+| `useWorkStore`                                | 🟡 YELLOW | 필드 추가만 허용   |
+| `shared/types/domain.ts`                      | 🟡 YELLOW | 선택적 필드 추가만 |
+| `layout.css` @media 블록                      | 🟡 YELLOW | 모바일 블록만 수정 |
+| `Desktop*.tsx`                                | 🔴 RED    | 수정 금지          |
+| `DesktopLayout.tsx`                           | 🔴 RED    | 수정 금지          |
 
 ### 브레이크포인트
 

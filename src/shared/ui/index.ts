@@ -105,5 +105,29 @@ export {
 // 에러 경계
 export { AppErrorBoundary, AppErrorFallback } from "./error";
 
+// 모바일 공용 컴포넌트
+export {
+    MobileBottomSheet,
+    MobileIconButton,
+    MobilePageHeader,
+    UndoToast,
+    useUndoToast,
+    type MobileBottomSheetProps,
+    type MobileIconButtonProps,
+    type MobilePageHeaderProps,
+    type UndoToastProps,
+    type UndoToastRequest,
+} from "./mobile";
+
+// 키보드 입력 환경
+export {
+    InputCapabilityProvider,
+    useInputCapability,
+    ShortcutKeyBadge,
+    DEFAULT_INPUT_CAPABILITY,
+    type InputCapability,
+    type ShortcutKeyBadgeProps,
+} from "./keyboard";
+
 // 확인 팝오버
 export { ConfirmPopconfirm, type ConfirmPopconfirmProps } from "./confirm";

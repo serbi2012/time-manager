@@ -16,7 +16,7 @@ import { PlusOutlined } from "@ant-design/icons";
 import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "../../../../store/useWorkStore";
 import { useModalKeyboard } from "@/shared/hooks";
-import { formatShortcutForPlatform } from "@/shared/lib/shortcuts";
+import { ShortcutKeyBadge } from "@/shared/ui";
 import { timeToMinutes } from "../../../../shared/lib/time";
 import type { WorkRecord, WorkSession } from "../../../../shared/types";
 import { WorkRecordFormFields } from "../../../../shared/ui/form";
@@ -301,8 +301,8 @@ export function GanttAddModal({
                         add_mode === "existing" && !selected_existing_record_id
                     }
                 >
-                    {GANTT_MODAL_BUTTON_ADD} (
-                    {formatShortcutForPlatform(submit_keys)})
+                    {GANTT_MODAL_BUTTON_ADD}
+                    <ShortcutKeyBadge keys={submit_keys} />
                 </Button>,
                 <Button key="cancel" onClick={handleClose}>
                     {GANTT_MODAL_BUTTON_CANCEL}

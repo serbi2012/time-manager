@@ -22,6 +22,15 @@
     --font-size-h2: 26px;
     --font-size-h1: 28px;
 
+    /* === Safe Area (index.html의 viewport-fit=cover 필요) === */
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-left: env(safe-area-inset-left, 0px);
+    --safe-area-right: env(safe-area-inset-right, 0px);
+
+    /* === Touch === */
+    --touch-target-min: 44px;
+
     /* === Border Radius (larger, softer) === */
     --radius-xs: 4px;
     --radius-sm: 6px;

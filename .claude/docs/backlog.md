@@ -3,6 +3,8 @@
 사용자가 남긴 개선 항목과, 코드베이스에서 확인된 미해결 부채. 작업을 시작하기 전 관련 항목이 있는지 확인한다.
 해결한 항목은 이 문서에서 지운다.
 
+> 모바일 UX 개선은 `docs/MOBILE_UX_IMPROVEMENT.md`의 Phase 계획을 따른다 (2026-09-15 갱신).
+
 ---
 
 ## 1. 알려진 버그 / 개선 요청
@@ -36,7 +38,6 @@
 | `features/weekly-schedule/ui/WeeklySchedule/{WeeklySchedule,WeeklyHeader}.tsx` | 플랫폼별 분리 |
 | `features/suggestion/ui/SuggestionBoard/SuggestionBoard.tsx` | 플랫폼별 분리 |
 | `features/guide/ui/GuideBook/GuideBook.tsx` | 플랫폼별 분리 |
-| `features/gantt-chart/ui/DailyGanttChart/index.tsx` | 진입점이면 정상 — 확인 후 판단 |
 
 `pages/DailyPage/index.tsx`, `components/WorkRecordTable.tsx`, `components/WorkTemplateList.tsx`, `app/App.tsx`는 **플랫폼 진입점**이므로 `is_mobile` 사용이 정상이다.
 
@@ -53,16 +54,16 @@
 | `features/admin/ui/AdminSessionGrid/AdminSessionGrid.tsx` | 435 |
 | `features/admin/ui/AdminTabs/SessionsTab.tsx` | 434 |
 | `features/admin/ui/TrashManagement/TrashManager.tsx` | 396 |
-| `features/work-record/ui/Mobile/MobileWorkRecordTable.tsx` | 392 |
-| `pages/DailyPage/MobileDailyPage.tsx` | 383 |
 | `firebase/firestore.ts` | 380 |
 | `features/gantt-chart/ui/GanttAddModal/GanttAddModal.tsx` | 374 |
+| `pages/DailyPage/MobileDailyPage.tsx` | 311 |
+| `features/work-template/ui/Mobile/MobileWorkTemplateList.tsx` | 308 |
+| `features/guide/ui/Mobile/MobileGuideBook.tsx` | 305 |
 
 `src/constants/changelog.ts`(1210줄)와 `features/admin/constants/labels.ts`(490줄)는 데이터/상수 파일이라 예외다.
 
 ### 남은 정리 항목
 
-- `src/components/WorkRecordTable.tsx.backup` (3119줄) — 분리 전 원본. 참고할 일이 없으면 삭제 대상.
 - 스타일 코드 관리 체계 — Tailwind 마이그레이션이 진행 중이고 `CSSProperties` 상수가 일부 feature에 남아 있다. `docs/STYLE_ARCHITECTURE.md` 참조.
 - 다크 모드 — `docs/DARK_MODE_PLAN.md`에 계획만 있고 미구현.
 

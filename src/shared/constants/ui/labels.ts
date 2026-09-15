@@ -285,3 +285,8 @@ export const DIAGNOSTIC_LABELS = {
     BOUNDARY_RELOAD: "새로고침",
     SHARE_HINT: "내려받은 파일에는 작업 내용이 함께 담겨 있어요",
 } as const;
+
+/** 되돌리기 토스트 */
+export const UNDO_LABELS = {
+    undo: "되돌리기",
+} as const;

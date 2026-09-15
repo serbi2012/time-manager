@@ -86,3 +86,6 @@ export const DEFAULT_USE_POSTFIX_ON_PRESET_ADD = false;
 
 /** 모바일 간트 작업 목록 기본 펼침 상태 */
 export const DEFAULT_MOBILE_GANTT_LIST_EXPANDED = true;
+
+/** 햅틱 피드백 기본 사용 여부 */
+export const DEFAULT_HAPTICS_ENABLED = true;

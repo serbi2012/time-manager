@@ -8,7 +8,7 @@ import { useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { CheckCircleOutlined, DeleteOutlined } from "@ant-design/icons";
 
-import { triggerHaptic } from "@/shared/lib/haptic";
+import { haptic } from "@/shared/lib/haptic";
 import { RECORD_BUTTON } from "../../constants";
 
 const SWIPE_THRESHOLD = 50;
@@ -43,6 +43,7 @@ export function MobileSwipeCard({
     const start_y = useRef(0);
     const base_offset = useRef(0);
     const is_swiping = useRef(false);
+    const gesture_axis = useRef<"x" | "y" | null>(null);
 
     /* ── Swipe threshold haptic ref ── */
     const threshold_haptic_fired = useRef(false);
@@ -71,6 +72,7 @@ export function MobileSwipeCard({
             start_y.current = cy;
             base_offset.current = offset_x;
             is_swiping.current = false;
+            gesture_axis.current = null;
             threshold_haptic_fired.current = false;
             setIsDragging(true);
             if (offset_x < 0) setShowActions(true);
@@ -82,7 +84,7 @@ export function MobileSwipeCard({
                 lp_timer.current = setTimeout(() => {
                     lp_fired.current = true;
                     setIsPressing(false);
-                    triggerHaptic();
+                    haptic("selection");
                     const rect = wrapper_ref.current?.getBoundingClientRect();
                     if (rect) onLongPress(rect);
                 }, LONG_PRESS_DELAY_MS);
@@ -113,6 +115,18 @@ export function MobileSwipeCard({
             // Don't process swipe if long-press already fired
             if (lp_fired.current) return;
 
+            if (gesture_axis.current === null) {
+                if (
+                    Math.abs(dx) > SWIPE_MOVE_THRESHOLD ||
+                    Math.abs(dy) > SWIPE_MOVE_THRESHOLD
+                ) {
+                    gesture_axis.current =
+                        Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+                }
+            }
+
+            if (gesture_axis.current !== "x") return;
+
             // Swipe offset
             const next = Math.min(
                 0,
@@ -128,7 +142,7 @@ export function MobileSwipeCard({
                 Math.abs(next) >= SWIPE_THRESHOLD
             ) {
                 threshold_haptic_fired.current = true;
-                triggerHaptic(8);
+                haptic("selection");
             }
 
             setOffsetX(next);
@@ -148,6 +162,7 @@ export function MobileSwipeCard({
         }
 
         // Swipe snap
+        gesture_axis.current = null;
         const snap = offset_x < -SWIPE_THRESHOLD ? -ACTION_WIDTH : 0;
         setOffsetX(snap);
         start_x.current = null;
@@ -197,7 +212,7 @@ export function MobileSwipeCard({
                         className="mobile-swipe-action-btn"
                         style={{ background: "var(--color-success)" }}
                         onClick={() => {
-                            triggerHaptic(10);
+                            haptic("impact");
                             handleAction(onComplete);
                         }}
                     >
@@ -208,7 +223,7 @@ export function MobileSwipeCard({
                         className="mobile-swipe-action-btn"
                         style={{ background: "var(--color-error)" }}
                         onClick={() => {
-                            triggerHaptic(15);
+                            haptic("warning");
                             handleAction(onDelete);
                         }}
                     >

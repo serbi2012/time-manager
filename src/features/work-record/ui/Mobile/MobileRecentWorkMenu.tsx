@@ -7,8 +7,12 @@ import { useMemo, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PlayCircleOutlined } from "@ant-design/icons";
 
-import { triggerHaptic } from "@/shared/lib/haptic";
-import { MOBILE_FAB_RECENT_TITLE } from "../../constants";
+import { haptic } from "@/shared/lib/haptic";
+import { SPRING } from "@/shared/ui/animation";
+import {
+    MOBILE_FAB_RECENT_TITLE,
+    MOBILE_FAB_RECENT_EMPTY,
+} from "../../constants";
 
 interface RecentWork {
     record_id: string;
@@ -32,20 +36,13 @@ const BACKDROP_VARIANTS = {
     exit: { opacity: 0 },
 };
 
-const MENU_SPRING = {
-    type: "spring" as const,
-    stiffness: 450,
-    damping: 15,
-    mass: 0.5,
-};
-
 const MENU_VARIANTS = {
     hidden: { opacity: 0, scale: 0.4, y: 10 },
     visible: {
         opacity: 1,
         scale: 1,
         y: 0,
-        transition: { ...MENU_SPRING, staggerChildren: 0.04 },
+        transition: { ...SPRING.droplet_pop, staggerChildren: 0.04 },
     },
     exit: {
         opacity: 0,
@@ -95,7 +92,7 @@ export function MobileRecentWorkMenu({
 
     const handleSelect = useCallback(
         (record_id: string) => {
-            triggerHaptic(10);
+            haptic("impact");
             onClose();
             requestAnimationFrame(() => onSelect(record_id));
         },
@@ -137,7 +134,7 @@ export function MobileRecentWorkMenu({
 
                         {visible_works.length === 0 ? (
                             <div className="px-lg py-md text-sm text-gray-400">
-                                최근 작업이 없어요
+                                {MOBILE_FAB_RECENT_EMPTY}
                             </div>
                         ) : (
                             visible_works.map((work) => (
@@ -146,7 +143,11 @@ export function MobileRecentWorkMenu({
                                     className="flex items-center gap-md w-full px-lg py-[10px] border-0 cursor-pointer bg-transparent transition-colors"
                                     style={{ WebkitTapHighlightColor: "transparent" }}
                                     variants={ITEM_VARIANTS}
-                                    whileTap={{ scale: 0.96, backgroundColor: "rgba(52,199,89,0.08)" }}
+                                    whileTap={{
+                                        scale: 0.96,
+                                        backgroundColor:
+                                            "var(--color-success-tint)",
+                                    }}
                                     onClick={() => handleSelect(work.record_id)}
                                 >
                                     <span className="flex items-center justify-center w-[28px] h-[28px] rounded-lg bg-success/10 text-success flex-shrink-0">

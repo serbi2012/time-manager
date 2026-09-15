@@ -22,7 +22,7 @@ import { useCallback, useRef, type ReactNode } from "react";
 import { Form, type ModalProps } from "antd";
 import type { FormInstance } from "antd";
 import { useModalKeyboard } from "@/shared/hooks";
-import { formatShortcutForPlatform } from "@/shared/lib/shortcuts";
+import { ShortcutKeyBadge } from "../keyboard";
 import { BaseModal } from "./BaseModal";
 
 export interface FormModalProps extends Omit<ModalProps, "onOk" | "footer"> {
@@ -89,17 +89,18 @@ export function FormModal({
         container_ref,
     });
 
-    const okText =
-        showSubmitShortcut && submit_keys ? (
-            <>
-                {submitText}{" "}
-                <span className="ml-xs px-[6px] py-[2px] bg-black/[0.06] rounded text-[11px]">
-                    {formatShortcutForPlatform(submit_keys)}
-                </span>
-            </>
-        ) : (
-            submitText
-        );
+    const okText = showSubmitShortcut ? (
+        <>
+            {submitText}
+            <ShortcutKeyBadge
+                keys={submit_keys}
+                variant="chip"
+                className="ml-xs px-sm py-px bg-black/[0.06] rounded-xs text-xs"
+            />
+        </>
+    ) : (
+        submitText
+    );
 
     return (
         <BaseModal

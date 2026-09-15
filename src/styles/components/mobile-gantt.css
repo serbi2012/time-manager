@@ -19,23 +19,6 @@
     .mobile-gantt-pulse-dot {
         animation: mobile-gantt-pulse 1.5s ease-in-out infinite;
     }
-
-    /* Date slide animations */
-    .mobile-gantt-date-slide-left {
-        animation: mobile-gantt-slide-from-left 0.25s
-            cubic-bezier(0.4, 0, 0.2, 1) both;
-    }
-
-    .mobile-gantt-date-slide-right {
-        animation: mobile-gantt-slide-from-right 0.25s
-            cubic-bezier(0.4, 0, 0.2, 1) both;
-    }
-
-    /* Number slide-up on change */
-    .mobile-gantt-number-slide {
-        display: inline-block;
-        animation: mobile-gantt-slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
-    }
 }
 
 /* Keyframes */
@@ -56,38 +39,5 @@
     }
     50% {
         opacity: 0.4;
-    }
-}
-
-@keyframes mobile-gantt-slide-from-left {
-    from {
-        opacity: 0;
-        transform: translateX(-12px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes mobile-gantt-slide-from-right {
-    from {
-        opacity: 0;
-        transform: translateX(12px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes mobile-gantt-slide-up {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
     }
 }

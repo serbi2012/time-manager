@@ -8,15 +8,22 @@ import { MobileWorkTemplateList } from "@/features/work-template/ui/Mobile/Mobil
 
 interface WorkTemplateListProps {
     onAddRecordOnly?: (template_id: string) => void;
+    onStartRecordFromTemplate?: (template_id: string) => void;
 }
 
 export default function WorkTemplateList({
     onAddRecordOnly,
+    onStartRecordFromTemplate,
 }: WorkTemplateListProps) {
     const { is_mobile } = useResponsive();
 
     if (is_mobile) {
-        return <MobileWorkTemplateList onAddRecordOnly={onAddRecordOnly} />;
+        return (
+            <MobileWorkTemplateList
+                onAddRecordOnly={onAddRecordOnly}
+                onStartRecordFromTemplate={onStartRecordFromTemplate}
+            />
+        );
     }
 
     return <DesktopWorkTemplateList onAddRecordOnly={onAddRecordOnly} />;

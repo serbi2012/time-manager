@@ -173,6 +173,17 @@ export function MobileDailyPage() {
         [startTimer]
     );
 
+    const handleStartRecordFromTemplate = useCallback(
+        (template_id: string) => {
+            const new_record = createFromTemplate(template_id);
+            setIsPresetDrawerOpen(false);
+            if (new_record) {
+                startTimer(new_record.id);
+            }
+        },
+        [createFromTemplate, startTimer]
+    );
+
     return (
         <div className="flex flex-col min-h-screen bg-bg-light">
             {/* Sticky Top Area */}
@@ -247,7 +258,7 @@ export function MobileDailyPage() {
                 is_open={is_preset_drawer_open}
                 on_close={() => setIsPresetDrawerOpen(false)}
                 on_add_record_only={handleAddRecordOnly}
-                app_theme={app_theme}
+                on_start_record={handleStartRecordFromTemplate}
             />
 
             <MobileRecentWorkMenu

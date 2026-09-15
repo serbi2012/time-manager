@@ -24,7 +24,7 @@ const MOCK_ITEMS: MobileActionMenuItem[] = [
         icon: DeleteOutlined,
         color: "var(--color-error)",
         bg: "rgba(240,68,82,0.08)",
-        haptic_ms: 15,
+        haptic: "warning",
     },
 ];
 

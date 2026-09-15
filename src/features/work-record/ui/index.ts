@@ -11,9 +11,6 @@ export { RecordActions, RecordTableHeader } from "./RecordTable";
 // 완료/휴지통
 export { CompletedModal, TrashModal } from "./CompletedRecords";
 
-// 모바일
-export { MobileRecordCard } from "./MobileRecordCard";
-
 // 모달
 export {
     RecordAddModal,

@@ -7,7 +7,7 @@ import { message } from "@/shared/lib/message";
 import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "../../../../store/useWorkStore";
 import { useModalKeyboard } from "@/shared/hooks";
-import { formatShortcutForPlatform } from "@/shared/lib/shortcuts";
+import { ShortcutKeyBadge } from "@/shared/ui";
 import type { WorkRecord } from "../../../../shared/types";
 import { WorkRecordFormFields } from "../../../../shared/ui/form";
 import {
@@ -111,8 +111,8 @@ export function RecordAddModal({ open, onClose }: RecordAddModalProps) {
             onCancel={handleClose}
             footer={[
                 <Button key="ok" type="primary" onClick={handleAddWork}>
-                    {RECORD_BUTTON.ADD} (
-                    {formatShortcutForPlatform(submit_keys)})
+                    {RECORD_BUTTON.ADD}
+                    <ShortcutKeyBadge keys={submit_keys} />
                 </Button>,
                 <Button key="cancel" onClick={handleClose}>
                     {RECORD_BUTTON.CANCEL}

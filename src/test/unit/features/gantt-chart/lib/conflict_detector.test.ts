@@ -6,6 +6,7 @@ import {
     calculateOverlapRange,
 } from "@/features/gantt-chart/lib/conflict_detector";
 import type { GroupedWork } from "@/features/gantt-chart/lib/slot_calculator";
+import { timeToMinutes } from "@/shared/lib/time";
 import {
     createMockSession,
     createMockRecord,
@@ -17,9 +18,10 @@ function createGroupedWork(
 ): GroupedWork {
     const record = createMockRecord({ sessions, ...record_overrides });
     return {
+        key: record.id,
         record,
         sessions,
-        color: "#3182F6",
+        first_start: timeToMinutes(sessions[0]?.start_time ?? "00:00"),
     };
 }
 

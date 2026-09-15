@@ -93,6 +93,29 @@ export const SPRING = {
         damping: 15,
         mass: 1,
     },
+
+    /** 물방울 눌림 - 누르고 있는 동안 */
+    droplet_press: {
+        type: "spring" as const,
+        stiffness: 400,
+        damping: 25,
+    },
+
+    /** 물방울 복귀 - 손을 뗄 때 통통 튀며 복귀 */
+    droplet_release: {
+        type: "spring" as const,
+        stiffness: 300,
+        damping: 12,
+        mass: 0.7,
+    },
+
+    /** 물방울 팝 - 롱프레스 메뉴 등장 */
+    droplet_pop: {
+        type: "spring" as const,
+        stiffness: 450,
+        damping: 15,
+        mass: 0.5,
+    },
 } as const;
 
 export type EasingType = keyof typeof EASING;

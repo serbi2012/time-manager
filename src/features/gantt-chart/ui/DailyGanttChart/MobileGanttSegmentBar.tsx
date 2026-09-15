@@ -18,7 +18,7 @@ import {
     buildHourLabels,
     type SegmentData,
 } from "../../lib/mobile_segment_calculator";
-import { triggerHaptic } from "@/shared/lib/haptic";
+import { haptic } from "@/shared/lib/haptic";
 
 const LONG_PRESS_DELAY_MS = 500;
 const MOVE_THRESHOLD = 10;
@@ -142,6 +142,7 @@ function SegmentBlock({ seg, is_active, onTap, onLongPress }: SegmentBlockProps)
     const el_ref = useRef<HTMLDivElement>(null);
     const lp_timer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const lp_fired = useRef(false);
+    const has_moved = useRef(false);
     const start_pos = useRef({ x: 0, y: 0 });
 
     const cancelLp = useCallback(() => {
@@ -154,6 +155,7 @@ function SegmentBlock({ seg, is_active, onTap, onLongPress }: SegmentBlockProps)
     const handleTouchStart = useCallback(
         (e: React.TouchEvent) => {
             lp_fired.current = false;
+            has_moved.current = false;
             start_pos.current = {
                 x: e.touches[0].clientX,
                 y: e.touches[0].clientY,
@@ -161,7 +163,7 @@ function SegmentBlock({ seg, is_active, onTap, onLongPress }: SegmentBlockProps)
             if (onLongPress) {
                 lp_timer.current = setTimeout(() => {
                     lp_fired.current = true;
-                    triggerHaptic();
+                    haptic("selection");
                     const rect = el_ref.current?.getBoundingClientRect();
                     if (rect) onLongPress(seg.record, seg.session, rect);
                 }, LONG_PRESS_DELAY_MS);
@@ -175,6 +177,7 @@ function SegmentBlock({ seg, is_active, onTap, onLongPress }: SegmentBlockProps)
             const dx = e.touches[0].clientX - start_pos.current.x;
             const dy = e.touches[0].clientY - start_pos.current.y;
             if (Math.abs(dx) > MOVE_THRESHOLD || Math.abs(dy) > MOVE_THRESHOLD) {
+                has_moved.current = true;
                 cancelLp();
             }
         },
@@ -185,6 +188,10 @@ function SegmentBlock({ seg, is_active, onTap, onLongPress }: SegmentBlockProps)
         cancelLp();
         if (lp_fired.current) {
             lp_fired.current = false;
+            return;
+        }
+        if (has_moved.current) {
+            has_moved.current = false;
             return;
         }
         onTap();

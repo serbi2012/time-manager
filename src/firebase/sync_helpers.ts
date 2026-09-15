@@ -40,6 +40,9 @@ export function applyLoadedDataToStore(
         ...(settings?.mobile_gantt_list_expanded !== undefined && {
             mobile_gantt_list_expanded: settings.mobile_gantt_list_expanded,
         }),
+        ...(settings?.haptics_enabled !== undefined && {
+            haptics_enabled: settings.haptics_enabled,
+        }),
         ...(settings?.deal_codes && {
             deal_codes: settings.deal_codes,
         }),

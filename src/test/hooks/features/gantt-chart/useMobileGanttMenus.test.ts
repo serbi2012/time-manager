@@ -18,6 +18,15 @@ vi.mock("@ant-design/icons", () => ({
     DeleteOutlined: () => null,
 }));
 
+vi.mock("@/shared/lib/message", () => ({
+    message: {
+        success: vi.fn(),
+        error: vi.fn(),
+        warning: vi.fn(),
+        info: vi.fn(),
+    },
+}));
+
 describe("useMobileGanttMenus", () => {
     const mock_record = createMockRecord({
         id: "test-record-1",
@@ -130,10 +139,10 @@ describe("useMobileGanttMenus", () => {
         expect(start_timer_spy).toHaveBeenCalledWith(mock_record.id);
     });
 
-    it("카드 메뉴 delete 액션 시 스토어의 deleteRecord가 호출된다", () => {
+    it("카드 메뉴 delete 액션 시 휴지통으로 이동한다", () => {
         const delete_record_spy = vi.fn();
         vi.spyOn(useWorkStore, "getState").mockReturnValue({
-            deleteRecord: delete_record_spy,
+            softDeleteRecord: delete_record_spy,
         } as unknown as ReturnType<typeof useWorkStore.getState>);
 
         const { result } = renderHook(() =>
@@ -210,9 +219,52 @@ describe("useMobileGanttMenus", () => {
         expect(on_edit_session).toHaveBeenCalledWith(mock_record, mock_session);
     });
 
-    it("세그먼트 메뉴 delete_session 액션 시 스토어의 deleteSession이 호출된다", () => {
+    it("세션이 여러 개면 delete_session 액션 시 해당 세션만 삭제한다", () => {
         const delete_session_spy = vi.fn();
         vi.spyOn(useWorkStore, "getState").mockReturnValue({
+            deleteSession: delete_session_spy,
+        } as unknown as ReturnType<typeof useWorkStore.getState>);
+
+        const second_session = createMockSession({
+            id: "test-session-2",
+            start_time: "11:00",
+            end_time: "12:00",
+        });
+        const multi_session_record = createMockRecord({
+            id: "multi-session-record",
+            sessions: [mock_session, second_session],
+        });
+
+        const { result } = renderHook(() =>
+            useMobileGanttMenus({
+                grouped_works: mock_grouped_works,
+                onEditSession: on_edit_session,
+            })
+        );
+
+        act(() => {
+            result.current.handleSegmentLongPress(
+                multi_session_record,
+                mock_session,
+                mock_anchor
+            );
+        });
+
+        act(() => {
+            result.current.seg_menu.onAction("delete_session");
+        });
+
+        expect(delete_session_spy).toHaveBeenCalledWith(
+            multi_session_record.id,
+            mock_session.id
+        );
+    });
+
+    it("마지막 세션을 지우면 작업 전체가 휴지통으로 이동한다", () => {
+        const soft_delete_spy = vi.fn();
+        const delete_session_spy = vi.fn();
+        vi.spyOn(useWorkStore, "getState").mockReturnValue({
+            softDeleteRecord: soft_delete_spy,
             deleteSession: delete_session_spy,
         } as unknown as ReturnType<typeof useWorkStore.getState>);
 
@@ -235,10 +287,8 @@ describe("useMobileGanttMenus", () => {
             result.current.seg_menu.onAction("delete_session");
         });
 
-        expect(delete_session_spy).toHaveBeenCalledWith(
-            mock_record.id,
-            mock_session.id
-        );
+        expect(soft_delete_spy).toHaveBeenCalledWith(mock_record.id);
+        expect(delete_session_spy).not.toHaveBeenCalled();
     });
 
     it("카드 메뉴 onClose 호출 시 메뉴가 닫힌다", () => {

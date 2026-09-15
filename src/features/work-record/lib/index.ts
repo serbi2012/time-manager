@@ -11,7 +11,6 @@ export type {
     RecordTableHeaderProps,
     CompletedModalProps,
     TrashModalProps,
-    MobileRecordCardProps,
     AutoCompleteField,
 } from "./types";
 

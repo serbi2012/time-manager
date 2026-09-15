@@ -5,17 +5,14 @@
  * 5-3: Ripple on primary button
  */
 
-import { useState, useCallback } from "react";
-import { PlusOutlined, CalendarOutlined } from "@ant-design/icons";
+import { PlusOutlined } from "@ant-design/icons";
 import type { Dayjs } from "dayjs";
 
 import type { WorkRecord } from "../../../../shared/types";
 import { formatShortcutForPlatform } from "@/shared/lib/shortcuts";
-import { cn } from "../../../../shared/lib/cn";
 import { RECORD_BUTTON } from "../../constants";
 import {
     motion,
-    AnimatePresence,
     SLIDE,
     SPRING,
     RippleEffect,
@@ -24,8 +21,6 @@ import {
 import { DateNavigation } from "./DateNavigation";
 import { WeeklyCalendarStrip } from "./WeeklyCalendarStrip";
 import { MoreActionsMenu } from "./MoreActionsMenu";
-
-const WEEKLY_TOGGLE_LABEL = "주간";
 
 interface RecordHeaderProps {
     selected_date: string;
@@ -56,12 +51,6 @@ export function RecordHeader({
     new_work_shortcut_keys,
     disabled_copy,
 }: RecordHeaderProps) {
-    const [is_calendar_open, setIsCalendarOpen] = useState(true);
-
-    const handleToggleCalendar = useCallback(() => {
-        setIsCalendarOpen((prev) => !prev);
-    }, []);
-
     return (
         <div className="p-xl pb-xl">
             <div className="flex items-center justify-between flex-wrap gap-sm">
@@ -72,40 +61,19 @@ export function RecordHeader({
                     onNextDay={onNextDay}
                 />
 
-                {/* Weekly calendar (collapsible, inline center) */}
-                <AnimatePresence>
-                    {is_calendar_open && (
-                        <motion.div
-                            initial={SLIDE.up.initial}
-                            animate={SLIDE.up.animate}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={SPRING.toss}
-                        >
-                            <WeeklyCalendarStrip
-                                selected_date={selected_date}
-                                onDateSelect={onDateSelect}
-                                records={records}
-                            />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                <motion.div
+                    initial={SLIDE.up.initial}
+                    animate={SLIDE.up.animate}
+                    transition={SPRING.toss}
+                >
+                    <WeeklyCalendarStrip
+                        selected_date={selected_date}
+                        onDateSelect={onDateSelect}
+                        records={records}
+                    />
+                </motion.div>
 
                 <div className="flex items-center gap-sm">
-                    {/* 5-1: Press scale on toggle */}
-                    <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        onClick={handleToggleCalendar}
-                        className={cn(
-                            "h-8 px-md rounded-md text-xs font-medium flex items-center gap-xs transition-colors border cursor-pointer",
-                            is_calendar_open
-                                ? "bg-primary-light text-primary border-primary/20"
-                                : "bg-transparent text-text-secondary hover:bg-bg-grey border-border-default"
-                        )}
-                    >
-                        <CalendarOutlined style={{ fontSize: 12 }} />
-                        {WEEKLY_TOGGLE_LABEL}
-                    </motion.button>
-
                     {/* 5-3: Ripple on primary button */}
                     <RippleEffect
                         color="rgba(255, 255, 255, 0.3)"

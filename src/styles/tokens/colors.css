@@ -44,4 +44,17 @@
     --color-primary-dark: #1b64da;
     --color-primary-light: #ecf2fe;
     --color-primary-gradient: linear-gradient(135deg, #3182f6 0%, #1b64da 100%);
+
+    /* === Tints (테마 색상을 따라간다) === */
+    --color-primary-tint: color-mix(
+        in srgb,
+        var(--color-primary) 8%,
+        transparent
+    );
+    --color-success-tint: color-mix(
+        in srgb,
+        var(--color-success) 8%,
+        transparent
+    );
+    --color-error-tint: color-mix(in srgb, var(--color-error) 8%, transparent);
 }

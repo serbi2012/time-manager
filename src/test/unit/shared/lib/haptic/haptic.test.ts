@@ -1,48 +1,65 @@
-/**
- * triggerHaptic 유틸리티 테스트
- */
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import {
+    haptic,
+    setHapticsEnabled,
+    isHapticsEnabled,
+    HAPTIC_PATTERNS,
+} from "@/shared/lib/haptic";
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { triggerHaptic } from "../../../../../shared/lib/haptic";
+describe("haptic", () => {
+    let vibrate_spy: ReturnType<typeof vi.fn>;
 
-describe("triggerHaptic", () => {
     beforeEach(() => {
-        vi.restoreAllMocks();
-    });
-
-    it("navigator.vibrate가 있으면 기본 10ms로 호출한다", () => {
-        const vibrate_mock = vi.fn();
+        vibrate_spy = vi.fn();
         Object.defineProperty(navigator, "vibrate", {
-            value: vibrate_mock,
-            writable: true,
+            value: vibrate_spy,
             configurable: true,
+            writable: true,
         });
-
-        triggerHaptic();
-
-        expect(vibrate_mock).toHaveBeenCalledWith(10);
+        setHapticsEnabled(true);
     });
 
-    it("커스텀 duration_ms를 전달할 수 있다", () => {
-        const vibrate_mock = vi.fn();
-        Object.defineProperty(navigator, "vibrate", {
-            value: vibrate_mock,
-            writable: true,
-            configurable: true,
-        });
-
-        triggerHaptic(50);
-
-        expect(vibrate_mock).toHaveBeenCalledWith(50);
+    afterEach(() => {
+        setHapticsEnabled(true);
     });
 
-    it("navigator.vibrate가 없으면 에러 없이 무시된다", () => {
+    it("기본값은 selection 패턴이다", () => {
+        haptic();
+
+        expect(vibrate_spy).toHaveBeenCalledWith(HAPTIC_PATTERNS.selection);
+    });
+
+    it("종류별로 다른 패턴을 사용한다", () => {
+        haptic("success");
+        expect(vibrate_spy).toHaveBeenCalledWith(HAPTIC_PATTERNS.success);
+
+        haptic("warning");
+        expect(vibrate_spy).toHaveBeenCalledWith(HAPTIC_PATTERNS.warning);
+    });
+
+    it("모든 패턴은 15ms 이상이다", () => {
+        for (const pattern of Object.values(HAPTIC_PATTERNS)) {
+            const durations = Array.isArray(pattern) ? pattern : [pattern];
+            expect(Math.max(...durations)).toBeGreaterThanOrEqual(15);
+        }
+    });
+
+    it("비활성화하면 호출하지 않는다", () => {
+        setHapticsEnabled(false);
+
+        haptic("impact");
+
+        expect(vibrate_spy).not.toHaveBeenCalled();
+        expect(isHapticsEnabled()).toBe(false);
+    });
+
+    it("Vibration API가 없는 환경에서도 예외가 나지 않는다", () => {
         Object.defineProperty(navigator, "vibrate", {
             value: undefined,
-            writable: true,
             configurable: true,
+            writable: true,
         });
 
-        expect(() => triggerHaptic()).not.toThrow();
+        expect(() => haptic("selection")).not.toThrow();
     });
 });

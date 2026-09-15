@@ -1,17 +1,11 @@
 /**
- * 일간 간트 차트 - 플랫폼 스위칭
+ * 일간 간트 차트 (데스크탑 진입점)
+ *
+ * 모바일은 MobileDailyHeader가 세그먼트 바와 작업 카드를 직접 구성한다.
  */
 
-import { useResponsive } from "../../../../hooks/useResponsive";
 import { DesktopDailyGanttChart } from "./DesktopDailyGanttChart";
-import { MobileDailyGanttChart } from "./MobileDailyGanttChart";
 
 export function DailyGanttChart() {
-    const { is_mobile } = useResponsive();
-
-    if (is_mobile) {
-        return <MobileDailyGanttChart />;
-    }
-
     return <DesktopDailyGanttChart />;
 }

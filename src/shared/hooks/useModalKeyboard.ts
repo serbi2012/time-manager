@@ -1,6 +1,7 @@
 import { type RefObject } from "react";
 import { useShortcutStore } from "@/store/useShortcutStore";
 import { DEFAULT_MODAL_SUBMIT_KEYS, MODAL_SUBMIT_SHORTCUT_ID } from "@/shared/constants";
+import { useInputCapability } from "@/shared/ui/keyboard/useInputCapability";
 import { useShortcutLayer } from "./useShortcutLayer";
 import { useShortcut } from "./useShortcut";
 import { useFocusLayer } from "./useFocusLayer";
@@ -11,7 +12,7 @@ export interface UseModalKeyboardOptions {
     onSubmit?: () => void;
     container_ref?: RefObject<HTMLElement | null>;
     initial_ref?: RefObject<HTMLElement | null>;
-    /** 자동 포커스 이동 여부 (기본 true) */
+    /** 자동 포커스 이동 여부 (기본: 키보드가 있는 환경에서만 true) */
     auto_focus?: boolean;
     /** 닫을 때 포커스 복원 여부 (기본 true) */
     restore_focus?: boolean;
@@ -36,10 +37,12 @@ export function useModalKeyboard({
     onSubmit,
     container_ref,
     initial_ref,
-    auto_focus = true,
+    auto_focus,
     restore_focus = true,
 }: UseModalKeyboardOptions): UseModalKeyboardReturn {
     const layer_id = useShortcutLayer(open);
+    const { has_keyboard } = useInputCapability();
+    const should_auto_focus = auto_focus ?? has_keyboard;
 
     const submit_keys = useShortcutStore(
         (state) =>
@@ -60,7 +63,7 @@ export function useModalKeyboard({
         open,
         container_ref,
         initial_ref,
-        auto_focus,
+        auto_focus: should_auto_focus,
         restore: restore_focus,
     });
 

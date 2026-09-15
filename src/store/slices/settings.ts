@@ -26,6 +26,7 @@ import {
     DEFAULT_CURSOR_TRACKING_ENABLED,
     DEFAULT_USE_POSTFIX_ON_PRESET_ADD,
     DEFAULT_MOBILE_GANTT_LIST_EXPANDED,
+    DEFAULT_HAPTICS_ENABLED,
 } from "../constants";
 import { syncSettings } from "@/firebase/syncService";
 import { updateCodeMap, getCodeFromMap } from "../lib/code_map";
@@ -50,6 +51,7 @@ export const createSettingsSlice: StateCreator<
     transition_speed: DEFAULT_TRANSITION_SPEED,
     cursor_tracking_enabled: DEFAULT_CURSOR_TRACKING_ENABLED,
     mobile_gantt_list_expanded: DEFAULT_MOBILE_GANTT_LIST_EXPANDED,
+    haptics_enabled: DEFAULT_HAPTICS_ENABLED,
     deal_codes: {},
 
     // ============================================
@@ -199,6 +201,11 @@ export const createSettingsSlice: StateCreator<
         syncSettings({ mobile_gantt_list_expanded: expanded }).catch(
             console.error
         );
+    },
+
+    setHapticsEnabled: (enabled: boolean) => {
+        set({ haptics_enabled: enabled });
+        syncSettings({ haptics_enabled: enabled }).catch(console.error);
     },
 
     setDealCode: (deal_name: string, code: string) => {

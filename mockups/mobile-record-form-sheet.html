@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>모바일 작업 추가·수정 시트 — Phase 2</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react@18/umd/react.development.js"
+        ></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+        ></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                padding: 24px;
+                background: #f2f4f6;
+                font-family: "Pretendard Variable", Pretendard, -apple-system,
+                    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                -webkit-font-smoothing: antialiased;
+                color: #191f28;
+            }
+            #root {
+                max-width: 1280px;
+                margin: 0 auto;
+            }
+            .page-head {
+                text-align: center;
+                margin-bottom: 28px;
+            }
+            .page-head h1 {
+                font-size: 22px;
+                font-weight: 600;
+                margin: 0 0 6px;
+            }
+            .page-head p {
+                font-size: 14px;
+                color: #6b7684;
+                margin: 0;
+            }
+            .frames {
+                display: flex;
+                gap: 32px;
+                justify-content: center;
+                flex-wrap: wrap;
+                align-items: flex-start;
+            }
+            .frame-col {
+                width: 375px;
+            }
+            .frame-label {
+                font-size: 13px;
+                font-weight: 600;
+                margin-bottom: 10px;
+                text-align: center;
+            }
+            .frame-label span {
+                display: block;
+                font-size: 12px;
+                font-weight: 400;
+                color: #8b95a1;
+                margin-top: 2px;
+            }
+            .phone-frame {
+                width: 375px;
+                height: 720px;
+                background: #f9fafb;
+                border-radius: 32px;
+                border: 8px solid #191f28;
+                position: relative;
+                overflow: hidden;
+            }
+            .keyboard {
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                height: 280px;
+                background: #d1d6db;
+                border-top: 1px solid #b0b8c1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #6b7684;
+                font-size: 13px;
+            }
+            .note {
+                margin-top: 12px;
+                font-size: 12px;
+                line-height: 1.7;
+                color: #4e5968;
+                background: #fff;
+                border-radius: 12px;
+                padding: 12px 14px;
+            }
+            .note b {
+                color: #191f28;
+            }
+            .bad {
+                color: #f04452;
+            }
+            .good {
+                color: #34c759;
+            }
+            .field {
+                margin-bottom: 14px;
+            }
+            .field-label {
+                font-size: 13px;
+                color: #6b7684;
+                margin-bottom: 6px;
+            }
+            .field-input {
+                height: 48px;
+                border-radius: 12px;
+                background: #f2f4f6;
+                display: flex;
+                align-items: center;
+                padding: 0 14px;
+                font-size: 16px;
+                color: #191f28;
+            }
+            .field-input.placeholder {
+                color: #b0b8c1;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <script type="text/babel">
+            /* ---------- 현재 ---------- */
+            function CurrentModal() {
+                return (
+                    <div className="phone-frame">
+                        <div style={{ padding: 16, opacity: 0.4 }}>
+                            <div style={{ fontSize: 22, fontWeight: 600 }}>일간 기록</div>
+                        </div>
+                        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)" }} />
+
+                        <div
+                            style={{
+                                position: "absolute",
+                                left: 16,
+                                right: 16,
+                                top: 40,
+                                background: "#fff",
+                                borderRadius: 12,
+                                overflow: "hidden",
+                            }}
+                        >
+                            <div
+                                style={{
+                                    padding: "16px 20px",
+                                    borderBottom: "1px solid #f2f4f6",
+                                    fontSize: 16,
+                                    fontWeight: 600,
+                                }}
+                            >
+                                작업 추가
+                            </div>
+                            <div style={{ padding: 20 }}>
+                                {["거래명", "작업명", "할일", "카테고리"].map((l) => (
+                                    <div className="field" key={l}>
+                                        <div className="field-label">{l}</div>
+                                        <div
+                                            className="field-input placeholder"
+                                            style={{ height: 40, fontSize: 14, background: "#fff", border: "1px solid #d1d6db" }}
+                                        >
+                                            입력하세요
+                                        </div>
+                                    </div>
+                                ))}
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        gap: 8,
+                                        justifyContent: "flex-end",
+                                        marginTop: 8,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            height: 36,
+                                            padding: "0 16px",
+                                            borderRadius: 8,
+                                            background: "#3182f6",
+                                            color: "#fff",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            fontSize: 14,
+                                        }}
+                                    >
+                                        추가 (F8)
+                                    </div>
+                                    <div
+                                        style={{
+                                            height: 36,
+                                            padding: "0 16px",
+                                            borderRadius: 8,
+                                            border: "1px solid #d1d6db",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            fontSize: 14,
+                                        }}
+                                    >
+                                        취소
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="keyboard">키보드 — 버튼과 입력 일부를 가림</div>
+                    </div>
+                );
+            }
+
+            /* ---------- 개선안 ---------- */
+            function ImprovedSheet() {
+                return (
+                    <div className="phone-frame">
+                        <div
+                            style={{
+                                position: "absolute",
+                                inset: 0,
+                                background: "#fff",
+                                display: "flex",
+                                flexDirection: "column",
+                            }}
+                        >
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    padding: "14px 16px",
+                                    borderBottom: "1px solid #f2f4f6",
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        width: 44,
+                                        height: 44,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        color: "#6b7684",
+                                        fontSize: 18,
+                                    }}
+                                >
+                                    ✕
+                                </div>
+                                <div style={{ fontSize: 17, fontWeight: 600 }}>작업 추가</div>
+                                <div style={{ width: 44 }} />
+                            </div>
+
+                            <div style={{ flex: 1, padding: "16px 20px", overflow: "hidden" }}>
+                                <div className="field">
+                                    <div className="field-label">거래명</div>
+                                    <div className="field-input">이카운트 메타 등록</div>
+                                </div>
+                                <div className="field">
+                                    <div className="field-label">작업명</div>
+                                    <div className="field-input placeholder">입력하세요</div>
+                                </div>
+                                <div className="field">
+                                    <div className="field-label">시간</div>
+                                    <div style={{ display: "flex", gap: 10 }}>
+                                        <div className="field-input" style={{ flex: 1, justifyContent: "center" }}>
+                                            09:00
+                                        </div>
+                                        <div
+                                            style={{
+                                                alignSelf: "center",
+                                                color: "#b0b8c1",
+                                            }}
+                                        >
+                                            ~
+                                        </div>
+                                        <div className="field-input" style={{ flex: 1, justifyContent: "center" }}>
+                                            10:30
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="field">
+                                    <div className="field-label">카테고리</div>
+                                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                                        {["개발", "회의", "문서작업", "기타"].map((c) => (
+                                            <div
+                                                key={c}
+                                                style={{
+                                                    height: 44,
+                                                    padding: "0 16px",
+                                                    borderRadius: 999,
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    fontSize: 15,
+                                                    background:
+                                                        c === "개발"
+                                                            ? "rgba(52,199,89,0.12)"
+                                                            : "#f2f4f6",
+                                                    color: c === "개발" ? "#34c759" : "#6b7684",
+                                                }}
+                                            >
+                                                {c}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div
+                                style={{
+                                    position: "absolute",
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 280,
+                                    padding: "12px 20px",
+                                    background: "#fff",
+                                    borderTop: "1px solid #f2f4f6",
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        height: 52,
+                                        borderRadius: 12,
+                                        background: "#3182f6",
+                                        color: "#fff",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        fontSize: 16,
+                                        fontWeight: 600,
+                                    }}
+                                >
+                                    추가
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="keyboard">키보드 — 버튼이 항상 그 위에</div>
+                    </div>
+                );
+            }
+
+            function MockupApp() {
+                return (
+                    <div>
+                        <div className="page-head">
+                            <h1>작업 추가·수정 화면</h1>
+                            <p>Phase 2 · 키보드가 올라와도 저장 버튼이 보이는 구조</p>
+                        </div>
+
+                        <div className="frames">
+                            <div className="frame-col">
+                                <div className="frame-label">
+                                    현재
+                                    <span>가운데 뜨는 데스크탑 모달</span>
+                                </div>
+                                <CurrentModal />
+                                <div className="note">
+                                    <b className="bad">문제</b>
+                                    <br />· 키보드가 올라오면 버튼과 아래 입력칸이 가려진다
+                                    <br />· 모바일인데 "(F8)"이 붙어 있다 (Phase 1에서 제거됨)
+                                    <br />· 입력칸 높이 40px, 글자 14px — 터치·가독성 모두 빠듯
+                                    <br />· 카테고리는 드롭다운이라 한 번 더 눌러야 한다
+                                </div>
+                            </div>
+
+                            <div className="frame-col">
+                                <div className="frame-label">
+                                    개선안
+                                    <span>전체화면 시트</span>
+                                </div>
+                                <ImprovedSheet />
+                                <div className="note">
+                                    <b className="good">달라지는 점</b>
+                                    <br />· 저장 버튼이 키보드 바로 위에 고정 (52px)
+                                    <br />· 입력칸 48px, 글자 16px — iOS 자동 확대도 막힌다
+                                    <br />· 자주 쓰는 카테고리는 칩으로 한 번에 선택
+                                    <br />· 시간은 좌우로 나눠 크게
+                                    <br />· 닫기는 좌상단 ✕ 또는 뒤로가기
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            root.render(<MockupApp />);
+        </script>
+    </body>
+</html>

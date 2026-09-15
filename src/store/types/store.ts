@@ -134,6 +134,7 @@ export interface SettingsSlice {
     transition_speed: TransitionSpeed;
     cursor_tracking_enabled: boolean;
     mobile_gantt_list_expanded: boolean;
+    haptics_enabled: boolean;
     deal_codes: DealCodeMap;
 
     // Actions - Custom Options
@@ -161,6 +162,7 @@ export interface SettingsSlice {
     setTransitionSpeed: (speed: TransitionSpeed) => void;
     setCursorTrackingEnabled: (enabled: boolean) => void;
     setMobileGanttListExpanded: (expanded: boolean) => void;
+    setHapticsEnabled: (enabled: boolean) => void;
     setDealCode: (deal_name: string, code: string) => void;
     getDealCode: (deal_name: string) => string;
 }

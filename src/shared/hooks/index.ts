@@ -42,6 +42,9 @@ export { useDebouncedValue } from "./useDebouncedValue";
 // 롱프레스 (모바일 터치 인터랙션)
 export { useLongPress } from "./useLongPress";
 
+// 오버레이 뒤로가기 연동
+export { useOverlayHistory } from "./useOverlayHistory";
+
 // 커서 트래킹
 export { useSpotlight } from "./useSpotlight";
 export { useMagnetic } from "./useMagnetic";

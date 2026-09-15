@@ -63,7 +63,7 @@ describe("useLongPress", () => {
             vi.advanceTimersByTime(500);
         });
 
-        expect(vibrate_mock).toHaveBeenCalledWith(10);
+        expect(vibrate_mock).toHaveBeenCalledWith(15);
         expect(onLongPress).toHaveBeenCalled();
     });
 });

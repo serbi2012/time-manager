@@ -9,7 +9,7 @@ import dayjs from "dayjs";
 import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "../../../../store/useWorkStore";
 import { useModalKeyboard } from "@/shared/hooks";
-import { formatShortcutForPlatform } from "@/shared/lib/shortcuts";
+import { ShortcutKeyBadge } from "@/shared/ui";
 import { timeToMinutes } from "../../../../shared/lib/time";
 import type { WorkRecord, WorkSession } from "../../../../shared/types";
 import { WorkRecordFormFields } from "../../../../shared/ui/form";
@@ -214,8 +214,8 @@ export function GanttEditModal({
             onCancel={handleClose}
             footer={[
                 <Button key="ok" type="primary" onClick={handleEditWork}>
-                    {GANTT_MODAL_BUTTON_SAVE} (
-                    {formatShortcutForPlatform(submit_keys)})
+                    {GANTT_MODAL_BUTTON_SAVE}
+                    <ShortcutKeyBadge keys={submit_keys} />
                 </Button>,
                 <Button key="cancel" onClick={handleClose}>
                     {GANTT_MODAL_BUTTON_CANCEL}

@@ -7,7 +7,9 @@ import { useMemo, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { AntdIconProps } from "@ant-design/icons/lib/components/AntdIcon";
 
-import { triggerHaptic } from "@/shared/lib/haptic";
+import { haptic, type HapticKind } from "@/shared/lib/haptic";
+import { calcAnchoredMenuPosition } from "@/shared/lib/mobile/menu_position";
+import { SPRING } from "./animation";
 
 export interface MobileActionMenuItem {
     key: string;
@@ -15,7 +17,7 @@ export interface MobileActionMenuItem {
     icon: React.ComponentType<AntdIconProps>;
     color: string;
     bg: string;
-    haptic_ms?: number;
+    haptic?: HapticKind;
 }
 
 export interface MobileActionMenuProps {
@@ -26,33 +28,15 @@ export interface MobileActionMenuProps {
     onClose: () => void;
 }
 
-interface MenuPosition {
-    top: number;
-    right: number;
-}
-
 const MENU_MARGIN = 8;
-
-function calcPosition(anchor_rect: DOMRect | null): MenuPosition {
-    if (!anchor_rect) return { top: 0, right: 24 };
-
-    const top = anchor_rect.bottom + MENU_MARGIN;
-    const right = window.innerWidth - anchor_rect.right + 16;
-
-    return { top, right };
-}
+const MENU_WIDTH = 140;
+const MENU_ITEM_HEIGHT = 52;
+const BOTTOM_NAV_RESERVED = 90;
 
 const BACKDROP_VARIANTS = {
     hidden: { opacity: 0 },
     visible: { opacity: 1 },
     exit: { opacity: 0 },
-};
-
-const DROPLET_MENU_SPRING = {
-    type: "spring" as const,
-    stiffness: 450,
-    damping: 15,
-    mass: 0.5,
 };
 
 const MENU_VARIANTS = {
@@ -62,7 +46,7 @@ const MENU_VARIANTS = {
         scale: 1,
         y: 0,
         transition: {
-            ...DROPLET_MENU_SPRING,
+            ...SPRING.droplet_pop,
             staggerChildren: 0.05,
         },
     },
@@ -104,7 +88,19 @@ export function MobileActionMenu({
 }: MobileActionMenuProps) {
     const menu_ref = useRef<HTMLDivElement>(null);
 
-    const position = useMemo(() => calcPosition(anchor_rect), [anchor_rect]);
+    const position = useMemo(
+        () =>
+            calcAnchoredMenuPosition({
+                anchor: anchor_rect,
+                viewport_width: window.innerWidth,
+                viewport_height: window.innerHeight,
+                menu_width: MENU_WIDTH,
+                menu_height: items.length * MENU_ITEM_HEIGHT,
+                margin: MENU_MARGIN,
+                bottom_reserved: BOTTOM_NAV_RESERVED,
+            }),
+        [anchor_rect, items.length]
+    );
 
     useEffect(() => {
         if (!open) return;
@@ -119,7 +115,7 @@ export function MobileActionMenu({
 
     const handleAction = useCallback(
         (item: MobileActionMenuItem) => {
-            if (item.haptic_ms) triggerHaptic(item.haptic_ms);
+            if (item.haptic) haptic(item.haptic);
             onClose();
             requestAnimationFrame(() => onAction(item.key));
         },

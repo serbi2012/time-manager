@@ -181,7 +181,6 @@ export const MOBILE_RECORD_LABEL = {
     RUNNING_TIMER_LABEL: "타이머 진행 중",
     RECORD_LIST_SECTION: "작업 목록",
     IN_PROGRESS: "진행 중",
-    WEEKLY_TOGGLE: "주간",
     SPEED_DIAL_NEW_RECORD: "새 작업",
     SPEED_DIAL_PRESET: "프리셋",
     RECORD_COUNT_SUFFIX: "개",
@@ -191,6 +190,9 @@ export const MOBILE_RECORD_LABEL = {
 // 모바일 FAB 최근 작업 메뉴
 // ========================================
 export const MOBILE_FAB_RECENT_TITLE = "최근 작업";
+
+/** 모바일 FAB 최근 작업이 없을 때 */
+export const MOBILE_FAB_RECENT_EMPTY = "최근 작업이 없어요";
 
 // ========================================
 // 모바일 컨텍스트 메뉴 라벨

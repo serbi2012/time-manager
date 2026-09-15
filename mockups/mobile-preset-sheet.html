@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>모바일 프리셋 시트 — Phase 2</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react@18/umd/react.development.js"
+        ></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+        ></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                padding: 24px;
+                background: #f2f4f6;
+                font-family: "Pretendard Variable", Pretendard, -apple-system,
+                    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                -webkit-font-smoothing: antialiased;
+                color: #191f28;
+            }
+            #root {
+                max-width: 1280px;
+                margin: 0 auto;
+            }
+            .page-head {
+                text-align: center;
+                margin-bottom: 28px;
+            }
+            .page-head h1 {
+                font-size: 22px;
+                font-weight: 600;
+                margin: 0 0 6px;
+            }
+            .page-head p {
+                font-size: 14px;
+                color: #6b7684;
+                margin: 0;
+            }
+            .frames {
+                display: flex;
+                gap: 32px;
+                justify-content: center;
+                flex-wrap: wrap;
+                align-items: flex-start;
+            }
+            .frame-col {
+                width: 375px;
+            }
+            .frame-label {
+                font-size: 13px;
+                font-weight: 600;
+                margin-bottom: 10px;
+                text-align: center;
+            }
+            .frame-label span {
+                display: block;
+                font-size: 12px;
+                font-weight: 400;
+                color: #8b95a1;
+                margin-top: 2px;
+            }
+            .phone-frame {
+                width: 375px;
+                height: 720px;
+                background: #f9fafb;
+                border-radius: 32px;
+                border: 8px solid #191f28;
+                position: relative;
+                overflow: hidden;
+            }
+            .dim {
+                position: absolute;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.4);
+            }
+            .sheet {
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: #fff;
+                border-radius: 16px 16px 0 0;
+                box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12);
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+            .handle {
+                width: 36px;
+                height: 4px;
+                border-radius: 999px;
+                background: #d1d6db;
+                margin: 12px auto 8px;
+            }
+            .note {
+                margin-top: 12px;
+                font-size: 12px;
+                line-height: 1.7;
+                color: #4e5968;
+                background: #fff;
+                border-radius: 12px;
+                padding: 12px 14px;
+            }
+            .note b {
+                color: #191f28;
+            }
+            .bad {
+                color: #f04452;
+            }
+            .good {
+                color: #34c759;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const PRESETS = [
+                { name: "브랜치 최신화", sub: "작업 · 환경세팅", color: "#8b95a1" },
+                { name: "임시저장 적용 후 부가세", sub: "개발 · 개발", color: "#34c759" },
+                { name: "5.6 ViewAction 개선", sub: "개발 · 개발", color: "#f04452" },
+                { name: "common_rac 도메인", sub: "개발 · 개발", color: "#3182f6" },
+                { name: "UrlService를 PageMeta", sub: "개발 · 개발", color: "#13c2c2" },
+                { name: "기타 문서 작성", sub: "작업 · 문서작업", color: "#ff9500" },
+                { name: "기타회의", sub: "작업 · 회의", color: "#722ed1" },
+            ];
+
+            function AppBg() {
+                return (
+                    <div className="p-lg" style={{ padding: 16 }}>
+                        <div style={{ fontSize: 13, color: "#b0b8c1" }}>
+                            2026년 9월 15일 화요일
+                        </div>
+                        <div style={{ fontSize: 22, fontWeight: 600, marginTop: 2 }}>
+                            일간 기록
+                        </div>
+                        <div
+                            style={{
+                                marginTop: 16,
+                                height: 64,
+                                borderRadius: 12,
+                                background: "#fff",
+                            }}
+                        />
+                        <div
+                            style={{
+                                marginTop: 8,
+                                height: 64,
+                                borderRadius: 12,
+                                background: "#fff",
+                            }}
+                        />
+                    </div>
+                );
+            }
+
+            /* ---------- 현재 ---------- */
+            function CurrentSheet() {
+                return (
+                    <div className="phone-frame">
+                        <AppBg />
+                        <div className="dim" />
+                        <div className="sheet" style={{ height: 378 }}>
+                            <div
+                                style={{
+                                    padding: "16px 16px 12px",
+                                    borderBottom: "1px solid #f2f4f6",
+                                    fontSize: 16,
+                                    fontWeight: 600,
+                                }}
+                            >
+                                작업 프리셋
+                            </div>
+                            <div style={{ padding: 12, overflow: "hidden" }}>
+                                <div style={{ fontSize: 17, fontWeight: 600 }}>
+                                    작업 프리셋
+                                </div>
+                                <div
+                                    style={{
+                                        marginTop: 12,
+                                        height: 44,
+                                        borderRadius: 12,
+                                        border: "1.5px dashed #d1d6db",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        fontSize: 13,
+                                        color: "#6b7684",
+                                    }}
+                                >
+                                    + 새 프리셋 추가
+                                </div>
+                                {PRESETS.slice(0, 2).map((p) => (
+                                    <div
+                                        key={p.name}
+                                        style={{
+                                            marginTop: 8,
+                                            height: 76,
+                                            borderRadius: 12,
+                                            border: "1px solid #e5e8eb",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 10,
+                                            padding: "0 12px",
+                                            background: "#fff",
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                width: 3,
+                                                height: 36,
+                                                borderRadius: 999,
+                                                background: p.color,
+                                            }}
+                                        />
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div style={{ fontSize: 13, fontWeight: 600 }}>
+                                                {p.name}
+                                            </div>
+                                            <div style={{ fontSize: 11, color: "#b0b8c1" }}>
+                                                {p.sub}
+                                            </div>
+                                        </div>
+                                        <div
+                                            style={{
+                                                width: 34,
+                                                height: 34,
+                                                borderRadius: 999,
+                                                background: "rgba(49,130,246,0.06)",
+                                                color: "#3182f6",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                fontSize: 16,
+                                            }}
+                                        >
+                                            +
+                                        </div>
+                                    </div>
+                                ))}
+                                <div
+                                    style={{
+                                        marginTop: 6,
+                                        fontSize: 11,
+                                        color: "#f04452",
+                                        textAlign: "center",
+                                    }}
+                                >
+                                    ↓ 나머지 5개는 스크롤해야 보임
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            /* ---------- 개선안 A ---------- */
+            function ImprovedSheet() {
+                return (
+                    <div className="phone-frame">
+                        <AppBg />
+                        <div className="dim" />
+                        <div className="sheet" style={{ height: 648 }}>
+                            <div className="handle" />
+                            <div
+                                style={{
+                                    padding: "0 20px 12px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                }}
+                            >
+                                <div style={{ fontSize: 19, fontWeight: 600 }}>
+                                    작업 프리셋
+                                </div>
+                                <div style={{ fontSize: 13, color: "#8b95a1" }}>7개</div>
+                            </div>
+
+                            <div style={{ padding: "0 20px 12px" }}>
+                                <div
+                                    style={{
+                                        height: 44,
+                                        borderRadius: 12,
+                                        background: "#f2f4f6",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        padding: "0 14px",
+                                        fontSize: 15,
+                                        color: "#b0b8c1",
+                                        gap: 8,
+                                    }}
+                                >
+                                    <span>🔍</span> 프리셋 검색
+                                </div>
+                            </div>
+
+                            <div style={{ flex: 1, overflow: "hidden", padding: "0 12px" }}>
+                                {PRESETS.map((p) => (
+                                    <div
+                                        key={p.name}
+                                        style={{
+                                            height: 60,
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 12,
+                                            padding: "0 8px",
+                                            borderRadius: 12,
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                width: 4,
+                                                height: 32,
+                                                borderRadius: 999,
+                                                background: p.color,
+                                            }}
+                                        />
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div
+                                                style={{
+                                                    fontSize: 15,
+                                                    fontWeight: 500,
+                                                    whiteSpace: "nowrap",
+                                                    overflow: "hidden",
+                                                    textOverflow: "ellipsis",
+                                                }}
+                                            >
+                                                {p.name}
+                                            </div>
+                                            <div style={{ fontSize: 13, color: "#b0b8c1" }}>
+                                                {p.sub}
+                                            </div>
+                                        </div>
+                                        <div
+                                            style={{
+                                                width: 44,
+                                                height: 44,
+                                                borderRadius: 999,
+                                                background: "rgba(52,199,89,0.10)",
+                                                color: "#34c759",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                fontSize: 15,
+                                            }}
+                                        >
+                                            ▶
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div
+                                style={{
+                                    padding: "12px 20px 20px",
+                                    borderTop: "1px solid #f2f4f6",
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        height: 48,
+                                        borderRadius: 12,
+                                        background: "#3182f6",
+                                        color: "#fff",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        fontSize: 15,
+                                        fontWeight: 600,
+                                    }}
+                                >
+                                    + 새 프리셋 추가
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            function MockupApp() {
+                return (
+                    <div>
+                        <div className="page-head">
+                            <h1>모바일 프리셋 시트</h1>
+                            <p>
+                                Phase 2 · 프리셋 창이 화면의 절반도 안 되는 문제를
+                                해결하는 안
+                            </p>
+                        </div>
+
+                        <div className="frames">
+                            <div className="frame-col">
+                                <div className="frame-label">
+                                    현재
+                                    <span>antd Drawer 기본 높이 378px</span>
+                                </div>
+                                <CurrentSheet />
+                                <div className="note">
+                                    <b className="bad">문제</b>
+                                    <br />· 제목 "작업 프리셋"이 두 번 나온다
+                                    <br />· 목록에 남는 높이가 약 190px — 카드 2개
+                                    <br />· 카드를 눌러도 반응 없음, 34px + 버튼만 동작
+                                    <br />· 타이머 시작은 길게 눌러야만 가능 (숨어 있음)
+                                    <br />· 드래그로 닫기·늘리기 불가
+                                </div>
+                            </div>
+
+                            <div className="frame-col">
+                                <div className="frame-label">
+                                    개선안
+                                    <span>화면 높이의 90% 시트</span>
+                                </div>
+                                <ImprovedSheet />
+                                <div className="note">
+                                    <b className="good">달라지는 점</b>
+                                    <br />· 한 번에 7개가 보인다 (스크롤 거의 없음)
+                                    <br />· 제목 한 번, 개수 표시
+                                    <br />· 행 전체를 탭 = 작업 추가
+                                    <br />· 오른쪽 ▶ 버튼 = 추가하면서 타이머 시작 (44px)
+                                    <br />· 핸들을 끌어내려 닫기, 뒤로가기로도 닫힘
+                                    <br />· 프리셋이 많아지면 검색으로 바로 찾기
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            root.render(<MockupApp />);
+        </script>
+    </body>
+</html>

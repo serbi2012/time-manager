@@ -9,10 +9,13 @@ import { motion } from "framer-motion";
 
 import type { WorkRecord } from "../../../../shared/types";
 import { formatTimer } from "../../../../shared/lib/time";
-import { triggerHaptic } from "@/shared/lib/haptic";
+import { haptic } from "@/shared/lib/haptic";
 import { MOBILE_RECORD_LABEL } from "../../constants";
+import { MobileActionMenu } from "@/shared/ui";
+import { SPRING } from "@/shared/ui/animation";
+
 import { useLongPress } from "../../hooks/useLongPress";
-import { MobileContextMenu } from "./MobileContextMenu";
+import { RECORD_MENU_ITEMS, RECORD_MENU_KEY } from "./record_menu_items";
 
 interface MobileRunningSectionProps {
     records: WorkRecord[];
@@ -64,6 +67,21 @@ export function MobileRunningSection({
         setMenuOpen(false);
     }, []);
 
+    const handleMenuAction = useCallback(
+        (key: string) => {
+            if (!record) return;
+
+            if (key === RECORD_MENU_KEY.EDIT) {
+                onEdit?.(record);
+            } else if (key === RECORD_MENU_KEY.COMPLETE) {
+                onComplete?.(record);
+            } else if (key === RECORD_MENU_KEY.DELETE) {
+                onDelete?.(record);
+            }
+        },
+        [record, onEdit, onComplete, onDelete]
+    );
+
     if (records.length === 0) return null;
 
     const display_name = record.deal_name || record.work_name;
@@ -75,8 +93,8 @@ export function MobileRunningSection({
 
     /** 물방울 스프링: 눌림 시 부드럽게, 놓으면 통통 튀며 복귀 */
     const DROPLET_SPRING = is_pressing
-        ? { type: "spring" as const, stiffness: 400, damping: 25 }
-        : { type: "spring" as const, stiffness: 300, damping: 12, mass: 0.7 };
+        ? SPRING.droplet_press
+        : SPRING.droplet_release;
 
     return (
         <>
@@ -130,7 +148,7 @@ export function MobileRunningSection({
                                     className="w-[48px] h-[48px] rounded-full bg-error/90 border-0 flex items-center justify-center cursor-pointer"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        triggerHaptic(15);
+                                        haptic("warning");
                                         onToggle(record);
                                     }}
                                 >
@@ -143,12 +161,11 @@ export function MobileRunningSection({
             </div>
 
             {/* Floating context menu */}
-            <MobileContextMenu
+            <MobileActionMenu
                 open={menu_open}
                 anchor_rect={menu_anchor}
-                onEdit={() => onEdit?.(record)}
-                onComplete={() => onComplete?.(record)}
-                onDelete={() => onDelete?.(record)}
+                items={RECORD_MENU_ITEMS}
+                onAction={handleMenuAction}
                 onClose={handleCloseMenu}
             />
         </>

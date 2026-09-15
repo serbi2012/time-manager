@@ -6,7 +6,7 @@
 
 import { useRef, useCallback, useState, useEffect } from "react";
 
-import { triggerHaptic } from "@/shared/lib/haptic";
+import { haptic } from "@/shared/lib/haptic";
 
 const DEFAULT_DELAY_MS = 500;
 
@@ -91,7 +91,7 @@ export function useLongPress({
             timer_ref.current = setTimeout(() => {
                 fired_ref.current = true;
                 cleanup();
-                triggerHaptic();
+                haptic("selection");
                 onLongPress();
             }, delay_ms);
         },

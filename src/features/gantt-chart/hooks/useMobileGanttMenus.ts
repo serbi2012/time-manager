@@ -13,6 +13,8 @@ import type { MobileActionMenuItem } from "@/shared/ui";
 import type { WorkRecord, WorkSession } from "@/shared/types";
 import type { GroupedWork } from "../lib/slot_calculator";
 import { useWorkStore } from "@/store/useWorkStore";
+import { message } from "@/shared/lib/message";
+import { SUCCESS_MESSAGES } from "@/shared/constants";
 import {
     GANTT_MOBILE_CONTEXT_MENU,
     GANTT_MOBILE_SEGMENT_MENU,
@@ -58,7 +60,8 @@ export function useMobileGanttMenus({
             } else if (key === "start_timer") {
                 useWorkStore.getState().startTimer(card_menu_record.id);
             } else if (key === "delete") {
-                useWorkStore.getState().deleteRecord(card_menu_record.id);
+                useWorkStore.getState().softDeleteRecord(card_menu_record.id);
+                message.success(SUCCESS_MESSAGES.recordTrashed);
             }
         },
         [card_menu_record, grouped_works, onEditSession]
@@ -80,6 +83,15 @@ export function useMobileGanttMenus({
             if (key === "edit_session") {
                 onEditSession(seg_menu_record, seg_menu_session);
             } else if (key === "delete_session") {
+                const is_last_session =
+                    (seg_menu_record.sessions?.length ?? 0) <= 1;
+
+                if (is_last_session) {
+                    useWorkStore.getState().softDeleteRecord(seg_menu_record.id);
+                    message.success(SUCCESS_MESSAGES.recordTrashed);
+                    return;
+                }
+
                 useWorkStore
                     .getState()
                     .deleteSession(seg_menu_record.id, seg_menu_session.id);
@@ -95,23 +107,23 @@ export function useMobileGanttMenus({
                 label: GANTT_MOBILE_CONTEXT_MENU.EDIT,
                 icon: EditOutlined,
                 color: "var(--color-primary)",
-                bg: "rgba(49,130,246,0.08)",
+                bg: "var(--color-primary-tint)",
             },
             {
                 key: "start_timer",
                 label: GANTT_MOBILE_CONTEXT_MENU.START_TIMER,
                 icon: PlayCircleOutlined,
                 color: "var(--color-success)",
-                bg: "rgba(52,199,89,0.08)",
-                haptic_ms: 10,
+                bg: "var(--color-success-tint)",
+                haptic: "impact",
             },
             {
                 key: "delete",
                 label: GANTT_MOBILE_CONTEXT_MENU.DELETE,
                 icon: DeleteOutlined,
                 color: "var(--color-error)",
-                bg: "rgba(240,68,82,0.08)",
-                haptic_ms: 15,
+                bg: "var(--color-error-tint)",
+                haptic: "warning",
             },
         ],
         []
@@ -124,15 +136,15 @@ export function useMobileGanttMenus({
                 label: GANTT_MOBILE_SEGMENT_MENU.EDIT_SESSION,
                 icon: EditOutlined,
                 color: "var(--color-primary)",
-                bg: "rgba(49,130,246,0.08)",
+                bg: "var(--color-primary-tint)",
             },
             {
                 key: "delete_session",
                 label: GANTT_MOBILE_SEGMENT_MENU.DELETE_SESSION,
                 icon: DeleteOutlined,
                 color: "var(--color-error)",
-                bg: "rgba(240,68,82,0.08)",
-                haptic_ms: 15,
+                bg: "var(--color-error-tint)",
+                haptic: "warning",
             },
         ],
         []

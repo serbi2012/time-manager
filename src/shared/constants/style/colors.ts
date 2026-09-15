@@ -128,6 +128,28 @@ export function getCategoryColor(category: string): string {
     return CATEGORY_COLORS[category] || "default";
 }
 
+/** 카테고리별 실제 색상 값 (CSS 배경/보더용) */
+export const CATEGORY_HEX_COLORS: Record<string, string> = {
+    개발: "#34C759",
+    문서작업: "#FF9500",
+    회의: "#722ED1",
+    환경세팅: "#13C2C2",
+    코드리뷰: "#EB2F96",
+    테스트: "#3182F6",
+    기타: "#8B95A1",
+};
+
+/** 매핑되지 않은 카테고리의 색상 */
+export const DEFAULT_CATEGORY_HEX_COLOR = "#8B95A1";
+
+/**
+ * 카테고리 색상 값 가져오기
+ * getCategoryColor는 Ant Design Tag용 이름을 반환하므로 CSS에는 이 함수를 쓴다
+ */
+export function getCategoryHexColor(category: string): string {
+    return CATEGORY_HEX_COLORS[category] || DEFAULT_CATEGORY_HEX_COLOR;
+}
+
 // ============================================
 // 테마 색상
 // ============================================

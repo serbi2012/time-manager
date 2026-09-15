@@ -15,7 +15,7 @@ import { TEMPLATE_COLORS } from "../../../store/useWorkStore";
 import { WorkRecordFormFields } from "../../../shared/ui/form";
 import { SUCCESS_MESSAGES } from "../../../shared/constants";
 import { useModalKeyboard } from "@/shared/hooks";
-import { formatShortcutForPlatform } from "@/shared/lib/shortcuts";
+import { ShortcutKeyBadge } from "@/shared/ui";
 import { PresetColorGrid } from "./PresetColorGrid";
 import {
     MODAL_TITLE_ADD,
@@ -142,9 +142,11 @@ export function TemplateModal({
             footer={[
                 <Button key="ok" type="primary" onClick={handleSubmit}>
                     {is_edit_mode ? MODAL_SUBMIT_EDIT : MODAL_SUBMIT_ADD}
-                    <span className="text-xs opacity-85 ml-xs px-xs py-px bg-white/20 rounded-[3px]">
-                        {formatShortcutForPlatform(submit_keys)}
-                    </span>
+                    <ShortcutKeyBadge
+                        keys={submit_keys}
+                        variant="chip"
+                        className="text-xs opacity-85 ml-xs px-xs py-px bg-white/20 rounded-xs"
+                    />
                 </Button>,
                 <Button key="cancel" onClick={onClose}>
                     {MODAL_CANCEL}

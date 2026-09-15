@@ -86,22 +86,6 @@ export interface TrashModalProps {
 }
 
 /**
- * 모바일 카드 Props
- */
-export interface MobileRecordCardProps {
-    record: WorkRecord;
-    is_running: boolean;
-    is_expanded: boolean;
-    on_toggle_expand: () => void;
-    on_start: () => void;
-    on_stop: () => void;
-    on_edit: () => void;
-    on_delete: () => void;
-    on_complete: () => void;
-    elapsed_seconds?: number;
-}
-
-/**
  * 자동완성 필드 타입
  */
 export type AutoCompleteField = 

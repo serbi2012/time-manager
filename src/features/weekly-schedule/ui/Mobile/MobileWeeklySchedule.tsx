@@ -37,15 +37,15 @@ const DAY_MENU_ITEMS: MobileActionMenuItem[] = [
         label: MOBILE_WEEKLY_MENU.COPY_DAY,
         icon: CopyOutlined,
         color: "var(--color-primary)",
-        bg: "rgba(49,130,246,0.08)",
+        bg: "var(--color-primary-tint)",
     },
     {
         key: "go_to_daily",
         label: MOBILE_WEEKLY_MENU.GO_TO_DAILY,
         icon: CalendarOutlined,
         color: "var(--color-success)",
-        bg: "rgba(52,199,89,0.08)",
-        haptic_ms: 10,
+        bg: "var(--color-success-tint)",
+        haptic: "success",
     },
 ];
 

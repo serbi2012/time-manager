@@ -20,7 +20,10 @@ export {
 export {
     TEMPLATE_COLORS,
     CATEGORY_COLORS,
+    CATEGORY_HEX_COLORS,
+    DEFAULT_CATEGORY_HEX_COLOR,
     getCategoryColor,
+    getCategoryHexColor,
 } from "@/shared/constants/style";
 
 // ============================================

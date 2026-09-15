@@ -12,8 +12,9 @@ import { CaretRightFilled, CheckOutlined } from "@ant-design/icons";
 import type { WorkRecord } from "../../../../shared/types";
 import { formatDuration } from "../../../../shared/lib/time";
 import { STATUS_LABELS } from "@/shared/constants";
-import { triggerHaptic } from "@/shared/lib/haptic";
-import { getCategoryColor } from "../../../../shared/config";
+import { haptic } from "@/shared/lib/haptic";
+import { getCategoryHexColor } from "../../../../shared/config";
+import { SPRING } from "@/shared/ui/animation";
 import { cn } from "../../../../shared/lib/cn";
 
 interface MobileRecordRowProps {
@@ -30,7 +31,7 @@ export const MobileRecordRow = memo(function MobileRecordRow({
 }: MobileRecordRowProps) {
     const display_name = record.deal_name || record.work_name;
     const category = record.category_name || "";
-    const color = getCategoryColor(category);
+    const color = getCategoryHexColor(category);
     const is_done = record.is_completed;
     const sessions_text = record.start_time
         ? `${record.start_time} ~ ${record.end_time || STATUS_LABELS.inProgress}`
@@ -39,8 +40,8 @@ export const MobileRecordRow = memo(function MobileRecordRow({
 
     /** 물방울 스프링: 눌림 시 색상 틴트, 놓으면 부드럽게 복귀 (scale은 SwipeCard에서 처리) */
     const DROPLET_SPRING = is_pressing
-        ? { type: "spring" as const, stiffness: 400, damping: 25 }
-        : { type: "spring" as const, stiffness: 300, damping: 12, mass: 0.7 };
+        ? SPRING.droplet_press
+        : SPRING.droplet_release;
 
     return (
         <motion.div
@@ -73,7 +74,7 @@ export const MobileRecordRow = memo(function MobileRecordRow({
                     className="w-[34px] h-[34px] rounded-lg bg-gray-50 border-0 flex items-center justify-center text-gray-400 cursor-pointer shrink-0"
                     onClick={(e) => {
                         e.stopPropagation();
-                        triggerHaptic(15);
+                        haptic("warning");
                         onToggle();
                     }}
                 >

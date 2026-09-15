@@ -3,9 +3,7 @@
  */
 
 import { Drawer } from "antd";
-import { AppstoreOutlined } from "@ant-design/icons";
 import WorkTemplateList from "../../components/WorkTemplateList";
-import { APP_THEME_COLORS, type AppTheme } from "../../shared/config";
 import { PRESET_LABELS } from "@/shared/constants";
 
 const DRAWER_BODY_STYLE = { padding: 12 };
@@ -15,34 +13,7 @@ interface MobilePresetDrawerProps {
     is_open: boolean;
     on_close: () => void;
     on_add_record_only: (template_id: string) => void;
-    app_theme: AppTheme;
-}
-
-/**
- * 모바일 프리셋 FAB 버튼
- */
-export function MobilePresetFab({
-    on_open,
-    app_theme,
-}: {
-    on_open: () => void;
-    app_theme: AppTheme;
-}) {
-    const fab_style: React.CSSProperties = {
-        background: APP_THEME_COLORS[app_theme].gradient,
-        boxShadow: `0 4px 12px ${APP_THEME_COLORS[app_theme].primary}66`,
-    };
-
-    return (
-        <button
-            className="mobile-preset-fab"
-            onClick={on_open}
-            aria-label={PRESET_LABELS.openPreset}
-            style={fab_style}
-        >
-            <AppstoreOutlined />
-        </button>
-    );
+    on_start_record: (template_id: string) => void;
 }
 
 /**
@@ -52,6 +23,7 @@ export function MobilePresetDrawer({
     is_open,
     on_close,
     on_add_record_only,
+    on_start_record,
 }: MobilePresetDrawerProps) {
     return (
         <Drawer
@@ -65,7 +37,10 @@ export function MobilePresetDrawer({
                 wrapper: DRAWER_WRAPPER_STYLE,
             }}
         >
-            <WorkTemplateList onAddRecordOnly={on_add_record_only} />
+            <WorkTemplateList
+                onAddRecordOnly={on_add_record_only}
+                onStartRecordFromTemplate={on_start_record}
+            />
         </Drawer>
     );
 }

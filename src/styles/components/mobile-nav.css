@@ -1,37 +1,6 @@
-/* Mobile Preset FAB + Drawer */
-
-.mobile-preset-fab {
-    display: none;
-}
+/* Mobile Preset Drawer */
 
 @media (max-width: 480px) {
-    .mobile-preset-fab {
-        display: flex;
-        position: fixed;
-        bottom: 72px;
-        right: 16px;
-        width: 56px;
-        height: 56px;
-        border-radius: 28px;
-        background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
-        color: white;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
-        z-index: 99;
-        cursor: pointer;
-        border: none;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .mobile-preset-fab:active {
-        transform: scale(0.95);
-    }
-
-    .mobile-preset-fab .anticon {
-        font-size: 24px;
-    }
-
     .mobile-preset-drawer .ant-drawer-content-wrapper {
         max-height: 70vh !important;
     }

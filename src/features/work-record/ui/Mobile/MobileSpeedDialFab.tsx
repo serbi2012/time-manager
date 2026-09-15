@@ -10,7 +10,7 @@ import { PlusOutlined, AppstoreOutlined } from "@ant-design/icons";
 
 import type { AppTheme } from "../../../../shared/config";
 import { APP_THEME_COLORS } from "../../../../shared/config";
-import { triggerHaptic } from "@/shared/lib/haptic";
+import { haptic } from "@/shared/lib/haptic";
 import { cn } from "../../../../shared/lib/cn";
 import { useLongPress } from "../../../../shared/hooks";
 import { MOBILE_RECORD_LABEL } from "../../constants";
@@ -33,7 +33,7 @@ export function MobileSpeedDialFab({
 
     const handleToggle = useCallback(() => {
         setIsOpen((prev) => {
-            if (!prev) triggerHaptic(8);
+            if (!prev) haptic("selection");
             return !prev;
         });
     }, []);

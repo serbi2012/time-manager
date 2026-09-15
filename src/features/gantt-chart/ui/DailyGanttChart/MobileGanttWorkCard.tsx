@@ -17,6 +17,7 @@ import type { GroupedWork } from "../../lib/slot_calculator";
 import { formatSessionRange } from "../../lib/mobile_segment_calculator";
 import { cn } from "../../../../shared/lib/cn";
 import { useLongPress } from "../../../../shared/hooks";
+import { SPRING } from "@/shared/ui/animation";
 import { GANTT_MOBILE_RUNNING_LABEL } from "../../constants";
 
 interface MobileGanttWorkCardProps {
@@ -60,8 +61,8 @@ export function MobileGanttWorkCard({
     });
 
     const DROPLET_SPRING = is_pressing
-        ? { type: "spring" as const, stiffness: 400, damping: 25 }
-        : { type: "spring" as const, stiffness: 300, damping: 12, mass: 0.7 };
+        ? SPRING.droplet_press
+        : SPRING.droplet_release;
 
     return (
         <motion.div

@@ -12,7 +12,7 @@ import dayjs from "dayjs";
 import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "../../store/useWorkStore";
 import { useAuthHandlers } from "../../shared/hooks";
-import { useSyncStatus } from "../../features/sync";
+import { useSyncStatusContext } from "../../features/sync";
 import { MobileActionMenu } from "../../shared/ui";
 import { UserMenu } from "../../widgets/Header";
 import { MobileDateNavBar } from "../../features/work-record/ui/Mobile/MobileDateNavBar";
@@ -56,10 +56,7 @@ export function MobileDailyHeader() {
         handleLogout,
     } = useAuthHandlers();
 
-    const { is_syncing, handleManualSync } = useSyncStatus({
-        user,
-        is_authenticated: isAuthenticated,
-    });
+    const { is_syncing, handleManualSync } = useSyncStatusContext();
 
     const { gantt_tick, lunch_time } = useGanttTime();
     const { grouped_works, time_range, current_time_mins, getWorkColor } =
