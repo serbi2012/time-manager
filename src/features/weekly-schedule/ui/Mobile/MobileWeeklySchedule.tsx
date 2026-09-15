@@ -14,7 +14,8 @@ import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import { useNavigate } from "react-router-dom";
 
-import { SUCCESS_MESSAGES } from "@/shared/constants";
+import { SUCCESS_MESSAGES, SHARE_LABELS } from "@/shared/constants";
+import { shareOrCopyText } from "@/shared/lib/share";
 import { useWorkStore } from "@/store/useWorkStore";
 import {
     MobileActionMenu,
@@ -82,11 +83,16 @@ export function MobileWeeklySchedule() {
         setSelectedWeekStart(dayjs().startOf("isoWeek"));
     };
 
-    const handleCopy = () => {
+    const handleCopy = async () => {
         const text = generateWeeklyCopyText(day_groups, copy_format);
-        navigator.clipboard.writeText(text).then(() => {
-            message.success(SUCCESS_MESSAGES.clipboardCopied);
+        const result = await shareOrCopyText({
+            title: SHARE_LABELS.weeklyTitle,
+            text,
         });
+
+        if (result === "copied") {
+            message.success(SUCCESS_MESSAGES.clipboardCopied);
+        }
     };
 
     const handleDayLongPress = useCallback(
@@ -102,9 +108,17 @@ export function MobileWeeklySchedule() {
         (key: string) => {
             if (!menu_day_group) return;
             if (key === "copy_day") {
-                const text = generateWeeklyCopyText([menu_day_group], copy_format);
-                navigator.clipboard.writeText(text).then(() => {
-                    message.success(SUCCESS_MESSAGES.clipboardCopied);
+                const text = generateWeeklyCopyText(
+                    [menu_day_group],
+                    copy_format
+                );
+                shareOrCopyText({
+                    title: SHARE_LABELS.weeklyTitle,
+                    text,
+                }).then((result) => {
+                    if (result === "copied") {
+                        message.success(SUCCESS_MESSAGES.clipboardCopied);
+                    }
                 });
             } else if (key === "go_to_daily") {
                 setSelectedDate(menu_day_group.date);

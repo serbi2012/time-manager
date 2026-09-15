@@ -5,13 +5,21 @@ import "./index.css";
 import "./styles/app.css";
 import App from "./app/App";
 import { initScrollbarAutoHide } from "./shared/lib/scrollbar";
+import {
+    setPwaUpdateHandler,
+    notifyPwaNeedRefresh,
+} from "./shared/lib/pwa";
 
 if (import.meta.env.PROD) {
     const SW_UPDATE_INTERVAL_MS = 60 * 60 * 1000;
 
     import("virtual:pwa-register").then(({ registerSW }) => {
-        registerSW({
+        const updateServiceWorker = registerSW({
             immediate: true,
+            onNeedRefresh() {
+                setPwaUpdateHandler(() => updateServiceWorker(true));
+                notifyPwaNeedRefresh();
+            },
             onRegisteredSW(_swUrl, registration) {
                 if (registration) {
                     setInterval(() => {

@@ -11,6 +11,7 @@ import { ThemeProvider } from "./providers";
 import { DesktopLayout, MobileLayout } from "./layouts";
 import { useResponsive } from "../hooks/useResponsive";
 import { AppErrorBoundary } from "../shared/ui/error";
+import { PwaUpdatePrompt } from "./PwaUpdatePrompt";
 import { installDiagnosticCollector } from "../shared/lib/diagnostics";
 import { installShortcutListener } from "../shared/lib/shortcuts";
 
@@ -41,6 +42,7 @@ function App() {
             <ThemeProvider>
                 <BrowserRouter>
                     <AppLayout />
+                    <PwaUpdatePrompt />
                 </BrowserRouter>
             </ThemeProvider>
         </AppErrorBoundary>

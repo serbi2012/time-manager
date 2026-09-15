@@ -45,22 +45,35 @@ export default defineConfig({
         tailwindcss(),
         react(),
         VitePWA({
-            registerType: "autoUpdate",
+            registerType: "prompt",
             includeAssets: [
                 "favicon.ico",
                 "apple-touch-icon.png",
                 "mask-icon.svg",
             ],
             manifest: {
+                id: "/",
                 name: "업무 관리",
                 short_name: "업무 관리",
                 description: "실시간 타이머 기반 업무 시간 측정 및 관리",
-                theme_color: "#1890ff",
-                background_color: "#f5f7fa",
+                theme_color: "#3182F6",
+                background_color: "#F9FAFB",
                 display: "standalone",
                 orientation: "portrait",
                 scope: "/",
                 start_url: "/",
+                shortcuts: [
+                    {
+                        name: "새 작업",
+                        short_name: "새 작업",
+                        url: "/?action=new-work",
+                    },
+                    {
+                        name: "주간 일정",
+                        short_name: "주간",
+                        url: "/weekly",
+                    },
+                ],
                 icons: [
                     {
                         src: "pwa-192x192.png",
@@ -76,13 +89,12 @@ export default defineConfig({
                         src: "pwa-512x512.png",
                         sizes: "512x512",
                         type: "image/png",
-                        purpose: "any maskable",
+                        purpose: "maskable",
                     },
                 ],
             },
             workbox: {
                 disableDevLogs: true,
-                skipWaiting: true,
                 clientsClaim: true,
                 globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
                 navigateFallback: "index.html",

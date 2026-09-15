@@ -297,3 +297,20 @@ export const PULL_TO_REFRESH_LABELS = {
     release: "놓으면 새로고침",
     refreshing: "새로고침 중",
 } as const;
+
+/** 새 버전 안내 */
+export const PWA_UPDATE_LABELS = {
+    title: "새 버전이 준비됐어요",
+    action: "새로고침",
+} as const;
+
+/** 연결 상태 */
+export const CONNECTION_LABELS = {
+    offline: "오프라인",
+    syncing: "동기화 중",
+} as const;
+
+/** 공유 */
+export const SHARE_LABELS = {
+    weeklyTitle: "주간 업무 보고",
+} as const;

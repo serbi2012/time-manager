@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.13.2";
+export const CURRENT_VERSION = "2.14.0";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,89 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.14.0",
+        date: "2026-09-15",
+        title: "모바일 화면 전면 개선",
+        changes: [
+            {
+                type: "style",
+                description:
+                    "프리셋이 화면을 거의 채우는 시트로 열려서 스크롤 없이 한눈에 보여요",
+            },
+            {
+                type: "feature",
+                description:
+                    "프리셋 오른쪽 버튼을 누르면 작업 추가와 동시에 타이머가 시작돼요",
+            },
+            {
+                type: "style",
+                description:
+                    "일간 화면의 고정 영역을 줄여 기록 목록이 훨씬 많이 보여요",
+            },
+            {
+                type: "feature",
+                description: "날짜를 누르면 달력이 바로 열려요",
+            },
+            {
+                type: "feature",
+                description: "목록을 좌우로 밀어 이전·다음 날짜로 이동해요",
+            },
+            {
+                type: "feature",
+                description: "맨 위에서 아래로 당기면 새로고침돼요",
+            },
+            {
+                type: "style",
+                description:
+                    "작업 추가·수정이 전체 화면으로 열리고 저장 버튼이 키보드 위에 항상 보여요",
+            },
+            {
+                type: "style",
+                description:
+                    "완료된 작업과 휴지통이 카드 목록으로 열리고, 밀어서 되돌릴 수 있어요",
+            },
+            {
+                type: "style",
+                description: "모바일 설정이 전체 화면 목록으로 바뀌었어요",
+            },
+            {
+                type: "feature",
+                description: "진동 피드백을 설정에서 끄고 켤 수 있어요",
+            },
+            {
+                type: "feature",
+                description: "주간 보고를 공유 시트로 바로 보낼 수 있어요",
+            },
+            {
+                type: "fix",
+                description:
+                    "타임라인에서 지운 작업이 바로 사라지지 않고 휴지통으로 가요",
+            },
+            {
+                type: "fix",
+                description:
+                    "세로로 스크롤할 때 카드가 옆으로 밀리던 문제를 고쳤어요",
+            },
+            {
+                type: "fix",
+                description:
+                    "길게 눌러 여는 메뉴가 화면 밖으로 잘리지 않아요",
+            },
+            {
+                type: "improvement",
+                description: "모바일에서 의미 없던 단축키 안내를 감췄어요",
+            },
+            {
+                type: "improvement",
+                description: "새 버전이 준비되면 알려주고, 누를 때 새로고침해요",
+            },
+            {
+                type: "improvement",
+                description: "오프라인이거나 동기화 중이면 화면 위에 표시해요",
+            },
+        ],
+    },
     {
         version: "2.13.2",
         date: "2026-09-09",

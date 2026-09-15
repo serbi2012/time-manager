@@ -48,6 +48,9 @@ export { useOverlayHistory } from "./useOverlayHistory";
 // 가상 키보드 높이
 export { useVisualViewportInset } from "./useVisualViewportInset";
 
+// 연결 상태
+export { useOnlineStatus } from "./useOnlineStatus";
+
 // 모바일 제스처
 export { useSwipeNavigation } from "./useSwipeNavigation";
 export { usePullToRefresh } from "./usePullToRefresh";

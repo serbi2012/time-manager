@@ -8,7 +8,7 @@ import { SettingOutlined } from "@ant-design/icons";
 import { useShallow } from "zustand/react/shallow";
 
 import { useWorkStore } from "../../store/useWorkStore";
-import { useAuthHandlers } from "../../shared/hooks";
+import { useAuthHandlers, useOnlineStatus } from "../../shared/hooks";
 import { useSyncStatusContext } from "../../features/sync";
 import { MobileIconButton } from "../../shared/ui";
 import { UserMenu } from "../../widgets/Header";
@@ -16,6 +16,7 @@ import { MobileDateNavBar } from "../../features/work-record/ui/Mobile/MobileDat
 import { MobileCalendarStrip } from "../../features/work-record/ui/Mobile/MobileCalendarStrip";
 import { MobileDatePickerSheet } from "../../features/work-record/ui/Mobile/MobileDatePickerSheet";
 import { MOBILE_DATE_SHEET } from "../../features/work-record/constants";
+import { CONNECTION_LABELS } from "@/shared/constants";
 
 interface MobileDailyHeaderProps {
     /** 선택한 날짜의 총 기록 시간 (분) */
@@ -40,6 +41,7 @@ export function MobileDailyHeader({ total_minutes }: MobileDailyHeaderProps) {
     } = useAuthHandlers();
 
     const { is_syncing, handleManualSync } = useSyncStatusContext();
+    const is_online = useOnlineStatus();
 
     const [is_date_sheet_open, setIsDateSheetOpen] = useState(false);
 
@@ -72,6 +74,14 @@ export function MobileDailyHeader({ total_minutes }: MobileDailyHeaderProps) {
                     total_minutes={total_minutes}
                     actions={
                         <>
+                            {(!is_online || is_syncing) && (
+                                <span className="shrink-0 text-xs font-medium px-sm py-[2px] rounded-full bg-bg-grey text-text-secondary">
+                                    {is_online
+                                        ? CONNECTION_LABELS.syncing
+                                        : CONNECTION_LABELS.offline}
+                                </span>
+                            )}
+
                             <MobileIconButton
                                 label={MOBILE_DATE_SHEET.SETTINGS_LABEL}
                                 variant="tinted"
