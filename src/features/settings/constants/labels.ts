@@ -24,6 +24,10 @@ export const SETTINGS_DATA_PRESET_TITLE = "프리셋 설정";
 export const SETTINGS_DATA_POSTFIX_TITLE = "고유 식별자 자동 추가";
 export const SETTINGS_DATA_POSTFIX_DESC =
     "프리셋으로 작업 추가 시 거래명에 타임스탬프를 붙입니다";
+export const SETTINGS_DATA_COPY_TITLE = "시간관리 형식 보기";
+export const SETTINGS_DATA_COPY_CODE_TITLE = "더블클릭으로 거래코드 복사";
+export const SETTINGS_DATA_COPY_CODE_DESC =
+    "거래코드가 있는 작업·거래를 더블클릭하면 코드가 복사돼요. 이름은 Ctrl+더블클릭으로 복사해요";
 export const SETTINGS_DATA_MANAGEMENT_TITLE = "데이터 관리";
 export const SETTINGS_DATA_EXPORT = "내보내기";
 export const SETTINGS_DATA_IMPORT = "가져오기";

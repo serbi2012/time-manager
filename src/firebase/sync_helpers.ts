@@ -43,6 +43,10 @@ export function applyLoadedDataToStore(
         ...(settings?.haptics_enabled !== undefined && {
             haptics_enabled: settings.haptics_enabled,
         }),
+        ...(settings?.copy_deal_code_on_double_click !== undefined && {
+            copy_deal_code_on_double_click:
+                settings.copy_deal_code_on_double_click,
+        }),
         ...(settings?.deal_codes && {
             deal_codes: settings.deal_codes,
         }),

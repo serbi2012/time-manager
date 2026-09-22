@@ -11,6 +11,7 @@ import {
     UploadOutlined,
     CheckCircleFilled,
     CloudOutlined,
+    CopyOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useWorkStore } from "@/store/useWorkStore";
@@ -24,6 +25,9 @@ import {
     SETTINGS_DATA_PRESET_TITLE,
     SETTINGS_DATA_POSTFIX_TITLE,
     SETTINGS_DATA_POSTFIX_DESC,
+    SETTINGS_DATA_COPY_TITLE,
+    SETTINGS_DATA_COPY_CODE_TITLE,
+    SETTINGS_DATA_COPY_CODE_DESC,
     SETTINGS_DATA_MANAGEMENT_TITLE,
     SETTINGS_DATA_EXPORT,
     SETTINGS_DATA_IMPORT,
@@ -69,6 +73,12 @@ export function DataTab({
     const lunch_start_time = useWorkStore((state) => state.lunch_start_time);
     const lunch_end_time = useWorkStore((state) => state.lunch_end_time);
     const setLunchTime = useWorkStore((state) => state.setLunchTime);
+    const copy_deal_code = useWorkStore(
+        (state) => state.copy_deal_code_on_double_click
+    );
+    const setCopyDealCode = useWorkStore(
+        (state) => state.setCopyDealCodeOnDoubleClick
+    );
     const app_theme = useWorkStore((state) => state.app_theme);
     const theme_color = APP_THEME_COLORS[app_theme].primary;
 
@@ -138,6 +148,31 @@ export function DataTab({
                         <Switch
                             checked={use_postfix}
                             onChange={setUsePostfix}
+                        />
+                    }
+                />
+            </Card>
+
+            <Card
+                size="small"
+                title={
+                    <Space>
+                        <CopyOutlined style={{ color: theme_color }} />
+                        <span>{SETTINGS_DATA_COPY_TITLE}</span>
+                    </Space>
+                }
+                styles={{
+                    body: is_mobile ? CARD_BODY_MOBILE : CARD_BODY_DESKTOP,
+                }}
+            >
+                <SettingItem
+                    title={SETTINGS_DATA_COPY_CODE_TITLE}
+                    description={SETTINGS_DATA_COPY_CODE_DESC}
+                    is_mobile={is_mobile}
+                    action={
+                        <Switch
+                            checked={copy_deal_code}
+                            onChange={setCopyDealCode}
                         />
                     }
                 />

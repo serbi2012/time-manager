@@ -73,6 +73,7 @@ describe("RecordCopyModal", () => {
             deal_codes: {},
             lunch_start_time: "11:40",
             lunch_end_time: "12:40",
+            copy_deal_code_on_double_click: true,
         });
         write_text.mockClear();
     });
@@ -128,6 +129,56 @@ describe("RecordCopyModal", () => {
     });
 
     it("셀을 더블클릭하면 그 값이 클립보드에 복사된다", () => {
+        renderModal();
+
+        fireEvent.doubleClick(screen.getByText("작업A"));
+
+        expect(write_text).toHaveBeenCalledWith("작업A");
+    });
+
+    it("거래코드가 있으면 작업을 더블클릭할 때 거래코드가 복사된다", () => {
+        useWorkStore.setState({ deal_codes: { 거래A: "D-001" } });
+        renderModal();
+
+        fireEvent.doubleClick(screen.getByText("작업A"));
+
+        expect(write_text).toHaveBeenCalledWith("D-001");
+    });
+
+    it("거래코드가 있으면 거래를 더블클릭할 때 거래코드가 복사된다", () => {
+        useWorkStore.setState({ deal_codes: { 거래A: "D-001" } });
+        renderModal();
+
+        fireEvent.doubleClick(screen.getByText("거래A"));
+
+        expect(write_text).toHaveBeenCalledWith("D-001");
+    });
+
+    it("Ctrl+더블클릭하면 거래코드 대신 이름이 복사된다", () => {
+        useWorkStore.setState({ deal_codes: { 거래A: "D-001" } });
+        renderModal();
+
+        fireEvent.doubleClick(screen.getByText("작업A"), { ctrlKey: true });
+        fireEvent.doubleClick(screen.getByText("거래A"), { ctrlKey: true });
+
+        expect(write_text).toHaveBeenNthCalledWith(1, "작업A");
+        expect(write_text).toHaveBeenNthCalledWith(2, "거래A");
+    });
+
+    it("다른 칸은 거래코드가 있어도 그 칸의 값이 복사된다", () => {
+        useWorkStore.setState({ deal_codes: { 거래A: "D-001" } });
+        renderModal();
+
+        fireEvent.doubleClick(screen.getByText("비고A"));
+
+        expect(write_text).toHaveBeenCalledWith("비고A");
+    });
+
+    it("설정을 끄면 거래코드가 있어도 이름이 복사된다", () => {
+        useWorkStore.setState({
+            deal_codes: { 거래A: "D-001" },
+            copy_deal_code_on_double_click: false,
+        });
         renderModal();
 
         fireEvent.doubleClick(screen.getByText("작업A"));

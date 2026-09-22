@@ -141,6 +141,7 @@ export interface UserSettings {
     cursor_tracking_enabled?: boolean;
     mobile_gantt_list_expanded?: boolean;
     haptics_enabled?: boolean;
+    copy_deal_code_on_double_click?: boolean;
     deal_codes?: DealCodeMap;
     updated_at: string;
     migrated?: boolean;

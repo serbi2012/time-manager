@@ -27,6 +27,7 @@ import {
     DEFAULT_USE_POSTFIX_ON_PRESET_ADD,
     DEFAULT_MOBILE_GANTT_LIST_EXPANDED,
     DEFAULT_HAPTICS_ENABLED,
+    DEFAULT_COPY_DEAL_CODE_ON_DOUBLE_CLICK,
 } from "../constants";
 import { syncSettings } from "@/firebase/syncService";
 import { updateCodeMap, getCodeFromMap } from "../lib/code_map";
@@ -52,6 +53,7 @@ export const createSettingsSlice: StateCreator<
     cursor_tracking_enabled: DEFAULT_CURSOR_TRACKING_ENABLED,
     mobile_gantt_list_expanded: DEFAULT_MOBILE_GANTT_LIST_EXPANDED,
     haptics_enabled: DEFAULT_HAPTICS_ENABLED,
+    copy_deal_code_on_double_click: DEFAULT_COPY_DEAL_CODE_ON_DOUBLE_CLICK,
     deal_codes: {},
 
     // ============================================
@@ -206,6 +208,13 @@ export const createSettingsSlice: StateCreator<
     setHapticsEnabled: (enabled: boolean) => {
         set({ haptics_enabled: enabled });
         syncSettings({ haptics_enabled: enabled }).catch(console.error);
+    },
+
+    setCopyDealCodeOnDoubleClick: (enabled: boolean) => {
+        set({ copy_deal_code_on_double_click: enabled });
+        syncSettings({ copy_deal_code_on_double_click: enabled }).catch(
+            console.error
+        );
     },
 
     setDealCode: (deal_name: string, code: string) => {

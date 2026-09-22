@@ -82,6 +82,12 @@ export {
     buildMarkdownTable,
 } from "./text_table";
 
+// 셀 복사 값
+export {
+    type ResolveCopyCellValueOptions,
+    resolveCopyCellValue,
+} from "./copy_cell_value";
+
 // 시간관리 양식 행
 export {
     type RecordCopyRow,

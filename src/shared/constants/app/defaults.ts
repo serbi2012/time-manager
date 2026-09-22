@@ -89,3 +89,6 @@ export const DEFAULT_MOBILE_GANTT_LIST_EXPANDED = false;
 
 /** 햅틱 피드백 기본 사용 여부 */
 export const DEFAULT_HAPTICS_ENABLED = true;
+
+/** 시간관리 형식 보기에서 더블클릭 시 거래코드 우선 복사 */
+export const DEFAULT_COPY_DEAL_CODE_ON_DOUBLE_CLICK = true;

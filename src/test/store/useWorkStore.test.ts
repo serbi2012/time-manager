@@ -1734,6 +1734,23 @@ describe("useWorkStore", () => {
             expect(state.mobile_gantt_list_expanded).toBe(false);
         });
 
+        it("copy_deal_code_on_double_click 기본값은 true", () => {
+            const state = useWorkStore.getState();
+            expect(state.copy_deal_code_on_double_click).toBe(true);
+        });
+
+        it("setCopyDealCodeOnDoubleClick으로 설정을 바꾼다", () => {
+            useWorkStore.getState().setCopyDealCodeOnDoubleClick(false);
+            expect(useWorkStore.getState().copy_deal_code_on_double_click).toBe(
+                false
+            );
+
+            useWorkStore.getState().setCopyDealCodeOnDoubleClick(true);
+            expect(useWorkStore.getState().copy_deal_code_on_double_click).toBe(
+                true
+            );
+        });
+
         it("setMobileGanttListExpanded로 접기/펼치기 토글", () => {
             const store = useWorkStore.getState();
 

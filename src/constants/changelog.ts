@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.14.0";
+export const CURRENT_VERSION = "2.14.1";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,28 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.14.1",
+        date: "2026-09-22",
+        title: "시간관리 형식 보기 거래코드 복사",
+        changes: [
+            {
+                type: "improvement",
+                description:
+                    "시간관리 형식 보기에서 거래코드가 있는 작업·거래를 더블클릭하면 거래코드가 복사돼요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "작업명·거래명은 Ctrl+더블클릭(맥은 ⌘+더블클릭)으로 복사해요",
+            },
+            {
+                type: "feature",
+                description:
+                    "설정 > 데이터에서 더블클릭 거래코드 복사를 끄고 켤 수 있어요",
+            },
+        ],
+    },
     {
         version: "2.14.0",
         date: "2026-09-15",

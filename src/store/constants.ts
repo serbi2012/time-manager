@@ -18,6 +18,7 @@ export {
     DEFAULT_USE_POSTFIX_ON_PRESET_ADD,
     DEFAULT_MOBILE_GANTT_LIST_EXPANDED,
     DEFAULT_HAPTICS_ENABLED,
+    DEFAULT_COPY_DEAL_CODE_ON_DOUBLE_CLICK,
 } from "@/shared/constants/app";
 
 // ============================================

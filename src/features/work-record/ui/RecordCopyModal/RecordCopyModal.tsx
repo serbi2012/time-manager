@@ -7,9 +7,14 @@ import { EmptyState } from "@/shared/ui/layout";
 import { message } from "@/shared/lib/message";
 import { useWorkStore } from "@/store/useWorkStore";
 import type { WorkRecord } from "@/shared/types";
-import { buildRecordCopyRows, formatCopyRowsToMarkdown } from "../../lib";
+import {
+    buildRecordCopyRows,
+    formatCopyRowsToMarkdown,
+    resolveCopyCellValue,
+} from "../../lib";
 import { RECORD_COPY_MODAL } from "../../constants";
 import { RecordCopyTable } from "./RecordCopyTable";
+import type { RecordCopyCellCopyOptions } from "./RecordCopyCell";
 
 const MODAL_WIDTH = "96vw";
 const MODAL_BODY_STYLE = { maxHeight: "76vh", overflowY: "auto" as const };
@@ -30,9 +35,15 @@ export function RecordCopyModal({
     selected_date,
     onClose,
 }: RecordCopyModalProps) {
-    const { deal_codes, setDealCode, getLunchTimeMinutes } = useWorkStore(
+    const {
+        deal_codes,
+        setDealCode,
+        getLunchTimeMinutes,
+        copy_deal_code_on_double_click,
+    } = useWorkStore(
         useShallow((s) => ({
             deal_codes: s.deal_codes,
+            copy_deal_code_on_double_click: s.copy_deal_code_on_double_click,
             setDealCode: s.setDealCode,
             getLunchTimeMinutes: s.getLunchTimeMinutes,
         }))
@@ -47,11 +58,25 @@ export function RecordCopyModal({
         [records, selected_date, deal_codes, getLunchTimeMinutes]
     );
 
-    const handleCopyCell = useCallback((value: string) => {
-        if (!value) return;
-        navigator.clipboard.writeText(value);
-        message.success(RECORD_COPY_MODAL.CELL_COPIED);
-    }, []);
+    const handleCopyCell = useCallback(
+        (value: string, options: RecordCopyCellCopyOptions) => {
+            const copy_value = resolveCopyCellValue({
+                value,
+                code: options.code,
+                with_modifier: options.with_modifier,
+                prefer_code: copy_deal_code_on_double_click,
+            });
+            if (!copy_value) return;
+
+            navigator.clipboard.writeText(copy_value);
+            message.success(
+                copy_value === value
+                    ? RECORD_COPY_MODAL.CELL_COPIED
+                    : RECORD_COPY_MODAL.CODE_COPIED
+            );
+        },
+        [copy_deal_code_on_double_click]
+    );
 
     const handleCopyAll = useCallback(() => {
         const text = formatCopyRowsToMarkdown(rows);
@@ -92,7 +117,9 @@ export function RecordCopyModal({
             ) : (
                 <div className="flex flex-col gap-md">
                     <Text type="secondary" className="text-sm">
-                        {RECORD_COPY_MODAL.HINT}
+                        {copy_deal_code_on_double_click
+                            ? RECORD_COPY_MODAL.HINT_WITH_CODE
+                            : RECORD_COPY_MODAL.HINT}
                     </Text>
                     <RecordCopyTable
                         rows={rows}
