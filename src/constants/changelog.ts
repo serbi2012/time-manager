@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.14.2";
+export const CURRENT_VERSION = "2.14.3";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,23 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.14.3",
+        date: "2026-10-12",
+        title: "로그인 실패 안내",
+        changes: [
+            {
+                type: "fix",
+                description:
+                    "로그인에 실패해도 아무 안내 없이 화면만 다시 그려지던 문제를 고쳤어요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "로그인에 실패하면 팝업 차단, 네트워크 문제 등 이유와 해결 방법을 알려줘요",
+            },
+        ],
+    },
     {
         version: "2.14.2",
         date: "2026-10-12",

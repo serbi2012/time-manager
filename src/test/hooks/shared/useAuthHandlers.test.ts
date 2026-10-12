@@ -40,6 +40,7 @@ vi.mock("antd", async () => {
 });
 
 import { useAuthHandlers } from "../../../shared/hooks/useAuthHandlers";
+import { ERROR_MESSAGES } from "../../../shared/constants";
 
 describe("useAuthHandlers", () => {
     beforeEach(() => {
@@ -71,6 +72,36 @@ describe("useAuthHandlers", () => {
             expect(mockMessageError).toHaveBeenCalledWith(
                 "로그인에 실패했습니다"
             );
+        });
+
+        it("팝업이 차단되면 팝업 허용 안내를 표시한다", async () => {
+            mockSignInWithGoogle.mockRejectedValue({
+                code: "auth/popup-blocked",
+            });
+
+            const { result } = renderHook(() => useAuthHandlers());
+
+            await act(async () => {
+                await result.current.handleLogin();
+            });
+
+            expect(mockMessageError).toHaveBeenCalledWith(
+                ERROR_MESSAGES.loginPopupBlocked
+            );
+        });
+
+        it("이전 로그인 창이 취소된 경우는 메시지를 띄우지 않는다", async () => {
+            mockSignInWithGoogle.mockRejectedValue({
+                code: "auth/cancelled-popup-request",
+            });
+
+            const { result } = renderHook(() => useAuthHandlers());
+
+            await act(async () => {
+                await result.current.handleLogin();
+            });
+
+            expect(mockMessageError).not.toHaveBeenCalled();
         });
     });
 

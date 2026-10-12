@@ -7,6 +7,7 @@
 
 import { useCallback } from "react";
 import { message } from "@/shared/lib/message";
+import { getLoginErrorMessage } from "@/shared/lib/login_error";
 import { useAuth } from "../../firebase/useAuth";
 import { SUCCESS_MESSAGES, ERROR_MESSAGES } from "../constants";
 import type { User } from "firebase/auth";
@@ -59,8 +60,9 @@ export function useAuthHandlers(): UseAuthHandlersReturn {
     const handleLogin = useCallback(async () => {
         try {
             await signInWithGoogle();
-        } catch {
-            message.error(ERROR_MESSAGES.loginFailed);
+        } catch (error) {
+            const error_message = getLoginErrorMessage(error);
+            if (error_message) message.error(error_message);
         }
     }, [signInWithGoogle]);
 

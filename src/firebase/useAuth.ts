@@ -47,6 +47,7 @@ export function useAuth() {
                 loading: false,
                 error: (error as Error).message,
             }));
+            throw error;
         }
     }, []);
 

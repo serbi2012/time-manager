@@ -130,6 +130,12 @@ export const ERROR_MESSAGES = {
     fileReadFailed: "파일을 읽는 중 오류가 발생했습니다",
     invalidImportFormat: "유효하지 않은 데이터 형식입니다",
     loginFailed: "로그인에 실패했습니다",
+    loginPopupBlocked:
+        "로그인 창이 차단됐어요. 브라우저에서 이 사이트의 팝업을 허용해 주세요",
+    loginPopupClosed:
+        "로그인 창이 닫혀서 로그인하지 못했어요. 계정을 고른 뒤에도 이러면 브라우저의 타사 쿠키 차단 설정을 확인해 주세요",
+    loginUnauthorizedDomain: "이 주소에서는 로그인할 수 없어요",
+    loginNetworkFailed: "네트워크 연결을 확인한 뒤 다시 시도해 주세요",
     logoutFailed: "로그아웃에 실패했습니다",
     refreshFailed: "새로고침 실패",
     dataLoadFailed: "데이터 로드에 실패했습니다",
