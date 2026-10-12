@@ -137,6 +137,7 @@ export interface SettingsSlice {
     haptics_enabled: boolean;
     copy_deal_code_on_double_click: boolean;
     deal_codes: DealCodeMap;
+    work_codes: CodeMap;
 
     // Actions - Custom Options
     addCustomTaskOption: (option: string) => void;
@@ -165,7 +166,11 @@ export interface SettingsSlice {
     setMobileGanttListExpanded: (expanded: boolean) => void;
     setHapticsEnabled: (enabled: boolean) => void;
     setCopyDealCodeOnDoubleClick: (enabled: boolean) => void;
-    setDealCode: (deal_name: string, code: string) => void;
+    setDealCode: (
+        deal_name: string,
+        code: string,
+        work_name?: string
+    ) => void;
     getDealCode: (deal_name: string) => string;
 }
 

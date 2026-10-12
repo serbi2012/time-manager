@@ -37,12 +37,14 @@ export function RecordCopyModal({
 }: RecordCopyModalProps) {
     const {
         deal_codes,
+        work_codes,
         setDealCode,
         getLunchTimeMinutes,
         copy_deal_code_on_double_click,
     } = useWorkStore(
         useShallow((s) => ({
             deal_codes: s.deal_codes,
+            work_codes: s.work_codes,
             copy_deal_code_on_double_click: s.copy_deal_code_on_double_click,
             setDealCode: s.setDealCode,
             getLunchTimeMinutes: s.getLunchTimeMinutes,
@@ -53,9 +55,10 @@ export function RecordCopyModal({
         () =>
             buildRecordCopyRows(records, selected_date, {
                 deal_codes,
+                work_codes,
                 lunch_time: getLunchTimeMinutes(),
             }),
-        [records, selected_date, deal_codes, getLunchTimeMinutes]
+        [records, selected_date, deal_codes, work_codes, getLunchTimeMinutes]
     );
 
     const handleCopyCell = useCallback(
@@ -86,8 +89,8 @@ export function RecordCopyModal({
     }, [rows]);
 
     const handleSaveDealCode = useCallback(
-        (deal_name: string, code: string) => {
-            setDealCode(deal_name, code);
+        (deal_name: string, code: string, work_name: string) => {
+            setDealCode(deal_name, code, work_name);
             message.success(RECORD_COPY_MODAL.CODE_SAVED);
         },
         [setDealCode]

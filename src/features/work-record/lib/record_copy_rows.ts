@@ -21,7 +21,17 @@ export interface RecordCopyRow {
 
 export interface BuildRecordCopyRowsOptions {
     deal_codes: CodeMap;
+    work_codes?: CodeMap;
     lunch_time?: LunchTimeRange;
+}
+
+export function resolveRecordCode(
+    deal_name: string,
+    work_name: string,
+    deal_codes: CodeMap,
+    work_codes: CodeMap
+): string {
+    return deal_codes[deal_name.trim()] || work_codes[work_name.trim()] || "";
 }
 
 interface DealAndNote {
@@ -53,14 +63,14 @@ export function resolveDealAndNote(
 /**
  * 표시할 레코드를 시간관리 양식 행 목록으로 변환
  *
- * 거래코드는 거래명 기준 매핑에서 조회한다.
+ * 거래코드는 거래명 기준으로 조회하고, 없으면 작업명 기준으로 조회한다.
  */
 export function buildRecordCopyRows(
     records: WorkRecord[],
     selected_date: string,
     options: BuildRecordCopyRowsOptions
 ): RecordCopyRow[] {
-    const { deal_codes, lunch_time } = options;
+    const { deal_codes, work_codes = {}, lunch_time } = options;
     const filtered = records.filter((r) => !r.is_deleted);
 
     const sorted = [...filtered].sort((a, b) =>
@@ -86,7 +96,12 @@ export function buildRecordCopyRows(
             record_id: record.id,
             work_name: record.work_name,
             task_name,
-            deal_code: deal_codes[deal_name.trim()] || "",
+            deal_code: resolveRecordCode(
+                deal_name,
+                record.work_name,
+                deal_codes,
+                work_codes
+            ),
             deal_name,
             category_name: record.category_name || "",
             duration_text: String(duration),

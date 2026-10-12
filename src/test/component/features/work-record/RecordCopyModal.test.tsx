@@ -71,6 +71,7 @@ describe("RecordCopyModal", () => {
     beforeEach(() => {
         useWorkStore.setState({
             deal_codes: {},
+            work_codes: {},
             lunch_start_time: "11:40",
             lunch_end_time: "12:40",
             copy_deal_code_on_double_click: true,
@@ -233,6 +234,35 @@ describe("RecordCopyModal", () => {
         fireEvent.blur(input);
 
         expect(useWorkStore.getState().deal_codes["거래A"]).toBe("D-777");
+    });
+
+    it("거래코드를 입력하면 그 작업에도 코드가 저장된다", () => {
+        renderModal();
+
+        const row = screen.getByText("작업A").closest("tr")!;
+        fireEvent.click(row.children[2]);
+
+        const input = screen.getByPlaceholderText(
+            RECORD_COPY_MODAL.CODE_PLACEHOLDER
+        );
+        fireEvent.change(input, { target: { value: "D-777" } });
+        fireEvent.blur(input);
+
+        expect(useWorkStore.getState().work_codes["작업A"]).toBe("D-777");
+    });
+
+    it("거래명이 달라도 같은 작업이면 저장된 코드가 표시된다", () => {
+        useWorkStore.setState({ work_codes: { 작업A: "W-001" } });
+        renderModal([
+            createRecord({ id: "r1", deal_name: "거래A" }),
+            createRecord({ id: "r2", deal_name: "거래B" }),
+        ]);
+
+        const codes = screen
+            .getAllByText("작업A")
+            .map((cell) => cell.closest("tr")!.children[2].textContent);
+
+        expect(codes).toEqual(["W-001", "W-001"]);
     });
 
     it("업무가 작업이면 거래에 작업명, 비고에 거래명이 표시된다", () => {

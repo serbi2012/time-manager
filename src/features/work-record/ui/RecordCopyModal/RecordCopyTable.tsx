@@ -14,7 +14,11 @@ const HEADER_BASE_CLASS =
 interface RecordCopyTableProps {
     rows: RecordCopyRow[];
     onCopyCell: (value: string, options: RecordCopyCellCopyOptions) => void;
-    onSaveDealCode: (deal_name: string, code: string) => void;
+    onSaveDealCode: (
+        deal_name: string,
+        code: string,
+        work_name: string
+    ) => void;
 }
 
 export function RecordCopyTable({
@@ -56,7 +60,13 @@ export function RecordCopyTable({
                             <EditableCodeCell
                                 map_key={row.deal_name}
                                 code={row.deal_code}
-                                onSave={onSaveDealCode}
+                                onSave={(deal_name, code) =>
+                                    onSaveDealCode(
+                                        deal_name,
+                                        code,
+                                        row.work_name
+                                    )
+                                }
                             />
                             <RecordCopyCell
                                 value={row.deal_name}

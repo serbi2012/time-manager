@@ -240,7 +240,8 @@ export const RECORD_COPY_MODAL = {
     HINT_WITH_CODE:
         "셀을 더블클릭하면 그 칸만 복사돼요. 거래코드가 있는 작업·거래는 코드가 복사되고, 이름은 Ctrl+더블클릭으로 복사해요",
     CODE_PLACEHOLDER: "코드 입력",
-    CODE_HINT: "거래코드는 거래명마다 저장되어 다음에도 그대로 나와요",
+    CODE_HINT:
+        "거래코드는 거래명과 작업명에 함께 저장돼요. 같은 작업의 다른 거래에도 자동으로 채워져요",
     EMPTY: "복사할 작업 기록이 없어요",
     CELL_COPIED: "복사했어요",
     CODE_COPIED: "거래코드를 복사했어요",

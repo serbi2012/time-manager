@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.14.1";
+export const CURRENT_VERSION = "2.14.2";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,23 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.14.2",
+        date: "2026-10-12",
+        title: "거래코드를 작업 단위로 기억",
+        changes: [
+            {
+                type: "improvement",
+                description:
+                    "거래코드를 한 번 입력하면 거래명과 작업명 양쪽에 저장돼요. 거래명이 달라도 같은 작업이면 코드가 자동으로 채워져요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "특정 거래만 다른 코드를 쓰고 싶으면 그 행에 직접 입력하세요. 거래명에 저장한 코드가 작업명 코드보다 우선해요",
+            },
+        ],
+    },
     {
         version: "2.14.1",
         date: "2026-09-22",

@@ -50,6 +50,9 @@ export function applyLoadedDataToStore(
         ...(settings?.deal_codes && {
             deal_codes: settings.deal_codes,
         }),
+        ...(settings?.work_codes && {
+            work_codes: settings.work_codes,
+        }),
     });
 
     if (settings?.shortcuts && settings.shortcuts.length > 0) {

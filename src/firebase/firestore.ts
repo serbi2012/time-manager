@@ -8,7 +8,7 @@ import type {
 } from "../types";
 import type { ShortcutDefinition } from "../store/useShortcutStore";
 import type { AppTheme } from "../store/useWorkStore";
-import type { DealCodeMap } from "../store/types";
+import type { CodeMap, DealCodeMap } from "../store/types";
 
 let _fs: typeof import("firebase/firestore") | null = null;
 
@@ -143,6 +143,7 @@ export interface UserSettings {
     haptics_enabled?: boolean;
     copy_deal_code_on_double_click?: boolean;
     deal_codes?: DealCodeMap;
+    work_codes?: CodeMap;
     updated_at: string;
     migrated?: boolean;
 }

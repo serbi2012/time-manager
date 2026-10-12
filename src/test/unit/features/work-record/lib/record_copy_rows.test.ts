@@ -4,6 +4,7 @@ import {
     getCopyRowCells,
     formatCopyRowsToMarkdown,
     resolveDealAndNote,
+    resolveRecordCode,
 } from "../../../../../features/work-record/lib/record_copy_rows";
 import type { WorkRecord } from "../../../../../shared/types";
 
@@ -308,5 +309,91 @@ describe("formatCopyRowsToMarkdown", () => {
 
         expect(lines).toHaveLength(3);
         expect(lines[1].startsWith("|---")).toBe(true);
+    });
+});
+
+describe("resolveRecordCode", () => {
+    it("거래명 코드가 있으면 그 코드를 쓴다", () => {
+        expect(
+            resolveRecordCode("거래A", "작업A", { 거래A: "D-001" }, {})
+        ).toBe("D-001");
+    });
+
+    it("거래명 코드가 없으면 작업명 코드를 쓴다", () => {
+        expect(
+            resolveRecordCode("거래A", "작업A", {}, { 작업A: "W-001" })
+        ).toBe("W-001");
+    });
+
+    it("거래명 코드가 작업명 코드보다 우선한다", () => {
+        expect(
+            resolveRecordCode(
+                "거래A",
+                "작업A",
+                { 거래A: "D-001" },
+                { 작업A: "W-001" }
+            )
+        ).toBe("D-001");
+    });
+
+    it("양쪽 다 없으면 빈 문자열을 반환한다", () => {
+        expect(resolveRecordCode("거래A", "작업A", {}, {})).toBe("");
+    });
+
+    it("앞뒤 공백을 무시하고 조회한다", () => {
+        expect(
+            resolveRecordCode("  거래A  ", "  작업A  ", {}, { 작업A: "W-001" })
+        ).toBe("W-001");
+    });
+});
+
+describe("buildRecordCopyRows - 작업명 거래코드", () => {
+    it("거래명이 달라도 같은 작업이면 작업명 코드가 채워진다", () => {
+        const rows = buildRecordCopyRows(
+            [
+                createTestRecord({
+                    id: "r1",
+                    work_name: "공통작업",
+                    task_name: "개발",
+                    deal_name: "공통작업 - 테스트",
+                }),
+                createTestRecord({
+                    id: "r2",
+                    work_name: "공통작업",
+                    task_name: "개발",
+                    deal_name: "공통작업 - 개발",
+                }),
+            ],
+            SELECTED_DATE,
+            { deal_codes: {}, work_codes: { 공통작업: "W-001" } }
+        );
+
+        expect(rows.map((row) => row.deal_code)).toEqual(["W-001", "W-001"]);
+    });
+
+    it("거래명 코드가 따로 있으면 그 행만 거래명 코드를 쓴다", () => {
+        const rows = buildRecordCopyRows(
+            [
+                createTestRecord({
+                    id: "r1",
+                    work_name: "공통작업",
+                    task_name: "개발",
+                    deal_name: "공통작업 - 테스트",
+                }),
+                createTestRecord({
+                    id: "r2",
+                    work_name: "공통작업",
+                    task_name: "개발",
+                    deal_name: "공통작업 - 개발",
+                }),
+            ],
+            SELECTED_DATE,
+            {
+                deal_codes: { "공통작업 - 개발": "D-777" },
+                work_codes: { 공통작업: "W-001" },
+            }
+        );
+
+        expect(rows.map((row) => row.deal_code)).toEqual(["W-001", "D-777"]);
     });
 });

@@ -55,6 +55,7 @@ export const createSettingsSlice: StateCreator<
     haptics_enabled: DEFAULT_HAPTICS_ENABLED,
     copy_deal_code_on_double_click: DEFAULT_COPY_DEAL_CODE_ON_DOUBLE_CLICK,
     deal_codes: {},
+    work_codes: {},
 
     // ============================================
     // Custom Options Actions
@@ -217,12 +218,24 @@ export const createSettingsSlice: StateCreator<
         );
     },
 
-    setDealCode: (deal_name: string, code: string) => {
-        const next_codes = updateCodeMap(get().deal_codes, deal_name, code);
-        if (!next_codes) return;
+    setDealCode: (deal_name: string, code: string, work_name?: string) => {
+        const next_deal_codes = updateCodeMap(
+            get().deal_codes,
+            deal_name,
+            code
+        );
+        if (!next_deal_codes) return;
 
-        set({ deal_codes: next_codes });
-        syncSettings({ deal_codes: next_codes }).catch(console.error);
+        const next_work_codes = work_name
+            ? updateCodeMap(get().work_codes, work_name, code)
+            : null;
+
+        const changes = next_work_codes
+            ? { deal_codes: next_deal_codes, work_codes: next_work_codes }
+            : { deal_codes: next_deal_codes };
+
+        set(changes);
+        syncSettings(changes).catch(console.error);
     },
 
     getDealCode: (deal_name: string) => {

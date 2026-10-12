@@ -93,6 +93,7 @@ export {
     type RecordCopyRow,
     type BuildRecordCopyRowsOptions,
     resolveDealAndNote,
+    resolveRecordCode,
     buildRecordCopyRows,
     getCopyRowCells,
     formatCopyRowsToMarkdown,
