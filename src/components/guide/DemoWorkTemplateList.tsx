@@ -22,6 +22,10 @@ export function DemoWorkTemplateList() {
                     <Text strong className="text-md">
                         {PRESET_LABELS.title}
                     </Text>
+                    <Text type="secondary" className="text-sm">
+                        {DEMO_TEMPLATES.length}
+                        {DEMO_TEMPLATE_LABELS.countSuffix}
+                    </Text>
                 </div>
 
                 <Button

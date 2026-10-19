@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.14.3";
+export const CURRENT_VERSION = "2.15.0";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,38 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.15.0",
+        date: "2026-10-19",
+        title: "프리셋 사이드바 개선",
+        changes: [
+            {
+                type: "feature",
+                description:
+                    "사이드바 오른쪽 경계선을 끌어서 너비를 조절할 수 있어요. 더블클릭하면 원래 너비로 돌아가요",
+            },
+            {
+                type: "feature",
+                description:
+                    "프리셋이 5개 이상이면 검색창이 생겨요. 거래명·작업명·업무명·카테고리·프로젝트 코드로 찾을 수 있어요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "프리셋 카드에 잠시 마우스를 올리면 잘린 제목과 프로젝트 코드·비고까지 모든 정보를 볼 수 있어요",
+            },
+            {
+                type: "improvement",
+                description:
+                    "긴 프리셋 제목이 두 줄까지 보이고, 제목 옆에 전체 프리셋 개수가 표시돼요",
+            },
+            {
+                type: "fix",
+                description:
+                    "프리셋을 끌어서 옮길 때 카드가 늘어나거나 찌그러져 보이던 문제를 고쳤어요",
+            },
+        ],
+    },
     {
         version: "2.14.3",
         date: "2026-10-12",

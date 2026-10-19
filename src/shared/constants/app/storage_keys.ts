@@ -9,6 +9,7 @@ export const STORAGE_KEYS = {
     SHORTCUT: "shortcut-storage",
     /** 동기화 대기 데이터 */
     PENDING_SYNC: "time_manager_pending_sync",
+    SIDEBAR_WIDTH: "sidebar-width",
 } as const;
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];

@@ -108,6 +108,10 @@ export const NAV_LABELS = {
     guideShort: "설명서",
 } as const;
 
+export const SIDEBAR_LABELS = {
+    resizeHandle: "드래그해서 너비 조절 · 더블클릭하면 기본 너비",
+} as const;
+
 // ============================================
 // 헤더/앱 레이블
 // ============================================

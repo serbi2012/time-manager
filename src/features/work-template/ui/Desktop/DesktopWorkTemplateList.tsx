@@ -2,7 +2,7 @@
  * Desktop Work Template List (Toss-style with animations)
  */
 
-import { Tooltip } from "antd";
+import { useMemo, useState } from "react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import {
     SortableContext,
@@ -22,9 +22,13 @@ import {
     useTemplateActions,
     useTemplateDnd,
 } from "@/features/work-template/hooks";
-import { TEMPLATE_CARD_TITLE } from "@/features/work-template/constants";
+import {
+    DESKTOP_PRESET_LIST,
+    PRESET_SEARCH,
+} from "@/features/work-template/constants";
+import { filterTemplates } from "../../lib/template_filter";
 import { EmptyPresetState } from "../EmptyPresetState";
-import { AddPresetButton } from "../AddPresetButton";
+import { DesktopPresetListHeader } from "./DesktopPresetListHeader";
 
 interface DesktopWorkTemplateListProps {
     onAddRecordOnly?: (template_id: string) => void;
@@ -74,21 +78,30 @@ export function DesktopWorkTemplateList({
 
     const { sensors, handleDragEnd } = useTemplateDnd();
 
+    const [search_query, setSearchQuery] = useState("");
+    const show_search =
+        templates.length >= DESKTOP_PRESET_LIST.SEARCH_VISIBLE_MIN_COUNT;
+    const active_query = show_search ? search_query.trim() : "";
+    const is_filtering = active_query !== "";
+
+    const visible_templates = useMemo(
+        () => filterTemplates(templates, active_query),
+        [templates, active_query]
+    );
+
     return (
         <>
             <div className="flex flex-col h-full">
-                {/* Header */}
-                <div className="flex flex-col gap-md px-lg pt-lg pb-sm">
-                    <h3 className="text-lg font-semibold text-text-primary m-0">
-                        {TEMPLATE_CARD_TITLE}
-                    </h3>
-
-                    <Tooltip
-                        title={formatShortcutForPlatform(new_preset_keys)}
-                    >
-                        <AddPresetButton onClick={handleOpenAddModal} />
-                    </Tooltip>
-                </div>
+                <DesktopPresetListHeader
+                    template_count={templates.length}
+                    add_shortcut_label={formatShortcutForPlatform(
+                        new_preset_keys
+                    )}
+                    show_search={show_search}
+                    search_query={search_query}
+                    onAdd={handleOpenAddModal}
+                    onSearchChange={setSearchQuery}
+                />
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto px-lg pt-[2px] pb-lg">
@@ -102,6 +115,17 @@ export function DesktopWorkTemplateList({
                                 transition={SPRING.gentle}
                             >
                                 <EmptyPresetState onAdd={handleOpenAddModal} />
+                            </motion.div>
+                        ) : visible_templates.length === 0 ? (
+                            <motion.div
+                                key="search-empty"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.15 }}
+                                className="py-xl text-center text-sm text-text-disabled"
+                            >
+                                {PRESET_SEARCH.EMPTY}
                             </motion.div>
                         ) : (
                             <motion.div
@@ -117,12 +141,14 @@ export function DesktopWorkTemplateList({
                                     onDragEnd={handleDragEnd}
                                 >
                                     <SortableContext
-                                        items={templates.map((t) => t.id)}
+                                        items={visible_templates.map(
+                                            (t) => t.id
+                                        )}
                                         strategy={verticalListSortingStrategy}
                                     >
                                         <div className="flex flex-col gap-sm">
                                             <AnimatePresence mode="popLayout">
-                                                {templates.map(
+                                                {visible_templates.map(
                                                     (template, index) => (
                                                         <motion.div
                                                             key={template.id}
@@ -152,6 +178,12 @@ export function DesktopWorkTemplateList({
                                                                 }
                                                                 onAddRecordOnly={
                                                                     onAddRecordOnly
+                                                                }
+                                                                search_query={
+                                                                    active_query
+                                                                }
+                                                                drag_disabled={
+                                                                    is_filtering
                                                                 }
                                                             />
                                                         </motion.div>

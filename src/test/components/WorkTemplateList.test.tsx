@@ -319,6 +319,69 @@ describe("WorkTemplateList", () => {
         });
     });
 
+    describe("프리셋 검색", () => {
+        const createSearchTemplates = (count: number) =>
+            Array.from({ length: count }, (_, index) =>
+                createTestTemplate({
+                    id: `t${index}`,
+                    work_name: `작업${index}`,
+                    deal_name: `거래${index}`,
+                    task_name: "",
+                    category_name: "",
+                })
+            );
+
+        const renderList = () =>
+            render(
+                <TestWrapper>
+                    <WorkTemplateList />
+                </TestWrapper>
+            );
+
+        it("프리셋 개수를 표시한다", () => {
+            useWorkStore.setState({ templates: createSearchTemplates(3) });
+            renderList();
+
+            expect(screen.getByText("3개")).toBeInTheDocument();
+        });
+
+        it("프리셋이 5개 미만이면 검색창을 숨긴다", () => {
+            useWorkStore.setState({ templates: createSearchTemplates(4) });
+            renderList();
+
+            expect(
+                screen.queryByPlaceholderText("프리셋 검색")
+            ).not.toBeInTheDocument();
+        });
+
+        it("검색어로 프리셋을 거른다", async () => {
+            useWorkStore.setState({ templates: createSearchTemplates(5) });
+            renderList();
+
+            fireEvent.change(screen.getByPlaceholderText("프리셋 검색"), {
+                target: { value: "거래3" },
+            });
+
+            await waitFor(() => {
+                expect(screen.queryByText("거래1")).not.toBeInTheDocument();
+            });
+            expect(screen.getByText("거래3")).toBeInTheDocument();
+        });
+
+        it("검색 결과가 없으면 안내 문구를 표시한다", async () => {
+            useWorkStore.setState({ templates: createSearchTemplates(5) });
+            renderList();
+
+            fireEvent.change(screen.getByPlaceholderText("프리셋 검색"), {
+                target: { value: "없는 프리셋" },
+            });
+
+            expect(
+                await screen.findByText("검색 결과가 없어요")
+            ).toBeInTheDocument();
+        });
+    });
+
     // =====================================================
     // 스토어 직접 테스트 (컴포넌트 우회)
     // =====================================================

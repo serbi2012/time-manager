@@ -51,6 +51,13 @@ export { useVisualViewportInset } from "./useVisualViewportInset";
 // 연결 상태
 export { useOnlineStatus } from "./useOnlineStatus";
 
+export { useHoverIntent } from "./useHoverIntent";
+
+export {
+    useResizableWidth,
+    type ResizeHandleProps,
+} from "./useResizableWidth";
+
 // 모바일 제스처
 export { useSwipeNavigation } from "./useSwipeNavigation";
 export { usePullToRefresh } from "./usePullToRefresh";
