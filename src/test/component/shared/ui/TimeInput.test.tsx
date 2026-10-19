@@ -2,10 +2,10 @@
  * TimeInput 컴포넌트 테스트
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { TimeInput } from "../../../../shared/ui/TimeInput";
+import { TimeInput } from "@/shared/ui/TimeInput";
 
 describe("TimeInput", () => {
     const defaultProps = {
@@ -13,9 +13,6 @@ describe("TimeInput", () => {
         onSave: vi.fn(),
     };
 
-    beforeEach(() => {
-        vi.clearAllMocks();
-    });
 
     // =====================================================
     // 기본 렌더링 테스트
@@ -53,7 +50,7 @@ describe("TimeInput", () => {
     // =====================================================
     describe("입력 상호작용", () => {
         it("포커스 시 편집 모드로 전환", async () => {
-            const user = userEvent.setup();
+            const user = userEvent.setup({ delay: null });
             render(<TimeInput {...defaultProps} />);
 
             const input = screen.getByRole("textbox");
@@ -65,7 +62,7 @@ describe("TimeInput", () => {
 
         it("유효한 시간 형식으로 변경 후 blur 시 onSave 호출", async () => {
             const on_save = vi.fn();
-            const user = userEvent.setup();
+            const user = userEvent.setup({ delay: null });
             render(<TimeInput {...defaultProps} onSave={on_save} />);
 
             const input = screen.getByRole("textbox");
@@ -78,7 +75,7 @@ describe("TimeInput", () => {
 
         it("같은 값으로 변경 시 onSave가 호출되지 않음", async () => {
             const on_save = vi.fn();
-            const user = userEvent.setup();
+            const user = userEvent.setup({ delay: null });
             render(<TimeInput {...defaultProps} onSave={on_save} />);
 
             const input = screen.getByRole("textbox");
@@ -90,7 +87,7 @@ describe("TimeInput", () => {
 
         it("유효하지 않은 시간 형식은 onSave를 호출하지 않음", async () => {
             const on_save = vi.fn();
-            const user = userEvent.setup();
+            const user = userEvent.setup({ delay: null });
             render(<TimeInput {...defaultProps} onSave={on_save} />);
 
             const input = screen.getByRole("textbox");
@@ -108,7 +105,7 @@ describe("TimeInput", () => {
     describe("키보드 이벤트", () => {
         it("Enter 키를 누르면 blur되고 저장됨", async () => {
             const on_save = vi.fn();
-            const user = userEvent.setup();
+            const user = userEvent.setup({ delay: null });
             render(<TimeInput {...defaultProps} onSave={on_save} />);
 
             const input = screen.getByRole("textbox");
@@ -120,7 +117,7 @@ describe("TimeInput", () => {
 
         it("Escape 키를 누르면 편집 취소", async () => {
             const on_save = vi.fn();
-            const user = userEvent.setup();
+            const user = userEvent.setup({ delay: null });
             render(<TimeInput {...defaultProps} onSave={on_save} />);
 
             const input = screen.getByRole("textbox");
@@ -147,15 +144,27 @@ describe("TimeInput", () => {
         });
 
         it("disabled=true일 때 포커스해도 편집 모드로 전환되지 않음", () => {
-            const on_save = vi.fn();
-            render(
-                <TimeInput {...defaultProps} disabled={true} onSave={on_save} />
+            const { rerender } = render(
+                <TimeInput {...defaultProps} disabled={true} />
             );
 
             const input = screen.getByRole("textbox");
+            fireEvent.focus(input);
+            rerender(
+                <TimeInput {...defaultProps} disabled={true} value="10:00" />
+            );
 
-            // disabled 상태에서는 클릭해도 편집 모드로 전환되지 않음
-            expect(input).toBeDisabled();
+            expect(input).toHaveValue("10:00");
+        });
+
+        it("활성 상태에서는 포커스 중 바깥 값이 바뀌어도 편집 값을 유지한다", () => {
+            const { rerender } = render(<TimeInput {...defaultProps} />);
+
+            const input = screen.getByRole("textbox");
+            fireEvent.focus(input);
+            rerender(<TimeInput {...defaultProps} value="10:00" />);
+
+            expect(input).toHaveValue("09:30");
         });
     });
 
@@ -163,43 +172,20 @@ describe("TimeInput", () => {
     // 시간 형식 검증 테스트
     // =====================================================
     describe("시간 형식 검증", () => {
-        it("HH:mm 형식이 유효함", async () => {
-            const on_save = vi.fn();
-            const user = userEvent.setup();
-            render(<TimeInput {...defaultProps} onSave={on_save} />);
+        it.each(["14:30", "00:00", "23:59"])(
+            "%s 형식이 유효함",
+            async (time) => {
+                const on_save = vi.fn();
+                const user = userEvent.setup({ delay: null });
+                render(<TimeInput {...defaultProps} onSave={on_save} />);
 
-            const input = screen.getByRole("textbox");
-            await user.clear(input);
-            await user.type(input, "14:30");
-            fireEvent.blur(input);
+                const input = screen.getByRole("textbox");
+                await user.clear(input);
+                await user.type(input, time);
+                fireEvent.blur(input);
 
-            expect(on_save).toHaveBeenCalledWith("14:30");
-        });
-
-        it("00:00 형식이 유효함", async () => {
-            const on_save = vi.fn();
-            const user = userEvent.setup();
-            render(<TimeInput {...defaultProps} onSave={on_save} />);
-
-            const input = screen.getByRole("textbox");
-            await user.clear(input);
-            await user.type(input, "00:00");
-            fireEvent.blur(input);
-
-            expect(on_save).toHaveBeenCalledWith("00:00");
-        });
-
-        it("23:59 형식이 유효함", async () => {
-            const on_save = vi.fn();
-            const user = userEvent.setup();
-            render(<TimeInput {...defaultProps} onSave={on_save} />);
-
-            const input = screen.getByRole("textbox");
-            await user.clear(input);
-            await user.type(input, "23:59");
-            fireEvent.blur(input);
-
-            expect(on_save).toHaveBeenCalledWith("23:59");
-        });
+                expect(on_save).toHaveBeenCalledWith(time);
+            }
+        );
     });
 });

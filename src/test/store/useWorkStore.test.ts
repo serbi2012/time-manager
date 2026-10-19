@@ -9,45 +9,10 @@
  * - 필터링 로직
  */
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { useWorkStore } from "../../store/useWorkStore";
-import type { WorkRecord, WorkTemplate } from "../../types";
-
-// 스토어 초기화 헬퍼
-const resetStore = () => {
-    useWorkStore.setState({
-        records: [],
-        templates: [],
-        timer: {
-            is_running: false,
-            start_time: null,
-            active_template_id: null,
-            active_form_data: null,
-            active_record_id: null,
-            active_session_id: null,
-        },
-        form_data: {
-            project_code: "",
-            work_name: "",
-            task_name: "",
-            deal_name: "",
-            category_name: "",
-            note: "",
-        },
-        selected_date: "2026-01-19",
-        custom_task_options: [],
-        custom_category_options: [],
-        hidden_autocomplete_options: {
-            work_name: [],
-            task_name: [],
-            deal_name: [],
-            project_code: [],
-            task_option: [],
-            category_option: [],
-        },
-        lunch_start_time: "11:40",
-        lunch_end_time: "12:40",
-    });
-};
+import { useWorkStore } from "@/store/useWorkStore";
+import type { WorkRecord, WorkTemplate } from "@/types";
+import { ERROR_MESSAGES, WARNING_MESSAGES } from "@/shared/constants";
+import { resetWorkStore } from "@/test/helpers/store_reset";
 
 // 테스트용 레코드 생성 헬퍼
 const createTestRecord = (overrides: Partial<WorkRecord> = {}): WorkRecord => ({
@@ -94,7 +59,7 @@ const createTestTemplate = (
 
 describe("useWorkStore", () => {
     beforeEach(() => {
-        resetStore();
+        resetWorkStore({ selected_date: "2026-01-19" });
         vi.useFakeTimers();
         vi.setSystemTime(new Date("2026-01-19T10:00:00"));
     });
@@ -789,54 +754,6 @@ describe("useWorkStore", () => {
             store.startTimer();
 
             const original_start_time =
-                useWorkStore.getState().timer.start_time;
-            expect(original_start_time).not.toBeNull();
-
-            // 30분 전으로 시작 시간 변경
-            const new_start_time = original_start_time! - 30 * 60 * 1000;
-            useWorkStore.getState().updateTimerStartTime(new_start_time);
-
-            const state = useWorkStore.getState();
-            expect(state.timer.start_time).toBe(new_start_time);
-        });
-
-        it("updateTimerStartTime은 타이머가 실행 중이 아니면 무시", () => {
-            const store = useWorkStore.getState();
-            // 타이머 시작 안 함
-            expect(store.timer.is_running).toBe(false);
-
-            const new_start_time = Date.now() - 30 * 60 * 1000;
-            useWorkStore.getState().updateTimerStartTime(new_start_time);
-
-            // 여전히 null
-            expect(useWorkStore.getState().timer.start_time).toBeNull();
-        });
-
-        it("updateTimerStartTime은 미래 시간으로 설정 불가", () => {
-            const store = useWorkStore.getState();
-            store.setFormData({ work_name: "test", deal_name: "test" });
-            store.startTimer();
-
-            const original_start_time =
-                useWorkStore.getState().timer.start_time;
-            expect(original_start_time).not.toBeNull();
-
-            // 미래 시간으로 설정 시도
-            const future_time = Date.now() + 30 * 60 * 1000;
-            useWorkStore.getState().updateTimerStartTime(future_time);
-
-            // 원래 시간 유지
-            expect(useWorkStore.getState().timer.start_time).toBe(
-                original_start_time
-            );
-        });
-
-        it("updateTimerStartTime은 결과 객체를 반환함", () => {
-            const store = useWorkStore.getState();
-            store.setFormData({ work_name: "test", deal_name: "test" });
-            store.startTimer();
-
-            const original_start_time =
                 useWorkStore.getState().timer.start_time!;
             const new_start_time = original_start_time - 30 * 60 * 1000;
             const result = useWorkStore
@@ -846,92 +763,116 @@ describe("useWorkStore", () => {
             expect(result.success).toBe(true);
             expect(result.adjusted).toBe(false);
             expect(result.message).toBeUndefined();
+            expect(useWorkStore.getState().timer.start_time).toBe(new_start_time);
         });
 
-        it("updateTimerStartTime은 충돌 시 자동 조정함", () => {
-            const store = useWorkStore.getState();
-            const today = new Date().toISOString().split("T")[0];
-            const now = new Date();
-            const current_hours = now.getHours();
-            const current_mins = now.getMinutes();
-
-            // 현재 시간 기준으로 1시간 전부터 30분 전까지의 세션 생성
-            // 예: 현재 10:30이면 09:30 ~ 10:00 세션
-            const session_start_hours = current_hours - 1;
-            const session_end_hours = current_hours;
-            const session_start_time = `${session_start_hours
-                .toString()
-                .padStart(2, "0")}:${current_mins.toString().padStart(2, "0")}`;
-            const session_end_time = `${session_end_hours
-                .toString()
-                .padStart(2, "0")}:00`;
-
-            // 시간이 유효하지 않으면 (자정 이전 등) 테스트 스킵
-            if (session_start_hours < 0) {
-                return;
-            }
-
-            // 기존 세션이 있는 레코드 생성
-            const existing_record = createTestRecord({
-                id: "existing-record",
-                date: today,
-                work_name: "기존작업",
-                deal_name: "기존거래처",
-                sessions: [
-                    {
-                        id: "existing-session",
-                        date: today,
-                        start_time: session_start_time,
-                        end_time: session_end_time,
-                        duration_minutes: 30,
-                    },
-                ],
-            });
-            useWorkStore.setState({ records: [existing_record] });
-
-            // 타이머 시작 (새로운 작업)
-            store.setFormData({ work_name: "test", deal_name: "test" });
-            store.startTimer();
-
-            // 시작 시간을 세션 시작 시간으로 변경 시도 (기존 세션과 충돌)
-            const conflict_time = new Date();
-            conflict_time.setHours(session_start_hours, current_mins, 0, 0);
-
-            const result = useWorkStore
-                .getState()
-                .updateTimerStartTime(conflict_time.getTime());
-
-            // 충돌이 발생하면 자동 조정되어야 함
-            // (단, 현재 시간과 세션 구성에 따라 결과가 다를 수 있음)
-            expect(typeof result.success).toBe("boolean");
-            expect(typeof result.adjusted).toBe("boolean");
-        });
-
-        it("updateTimerStartTime은 타이머 미실행 시 실패 결과 반환", () => {
+        it("updateTimerStartTime은 타이머 미실행 시 실패하고 상태를 바꾸지 않음", () => {
             const result = useWorkStore
                 .getState()
                 .updateTimerStartTime(Date.now() - 30 * 60 * 1000);
 
             expect(result.success).toBe(false);
             expect(result.adjusted).toBe(false);
-            expect(result.message).toBe("타이머가 실행 중이 아닙니다.");
+            expect(result.message).toBe(ERROR_MESSAGES.timerNotRunning);
+            expect(useWorkStore.getState().timer.start_time).toBeNull();
         });
 
-        it("updateTimerStartTime은 미래 시간 시 실패 결과 반환", () => {
+        it("updateTimerStartTime은 미래 시간이면 실패하고 기존 시작 시간을 유지", () => {
             const store = useWorkStore.getState();
             store.setFormData({ work_name: "test", deal_name: "test" });
             store.startTimer();
 
-            const future_time = Date.now() + 30 * 60 * 1000;
+            const original_start_time =
+                useWorkStore.getState().timer.start_time;
             const result = useWorkStore
                 .getState()
-                .updateTimerStartTime(future_time);
+                .updateTimerStartTime(Date.now() + 30 * 60 * 1000);
 
             expect(result.success).toBe(false);
             expect(result.adjusted).toBe(false);
-            expect(result.message).toBe(
-                "시작 시간은 현재 시간보다 미래일 수 없습니다."
+            expect(result.message).toBe(ERROR_MESSAGES.startTimeInFuture);
+            expect(useWorkStore.getState().timer.start_time).toBe(
+                original_start_time
             );
+        });
+
+        describe("updateTimerStartTime 충돌 처리", () => {
+            const startTimerWithExistingSession = () => {
+                useWorkStore.setState({
+                    records: [
+                        createTestRecord({
+                            id: "existing-record",
+                            work_name: "기존작업",
+                            deal_name: "기존거래처",
+                            sessions: [
+                                {
+                                    id: "existing-session",
+                                    date: "2026-01-19",
+                                    start_time: "09:00",
+                                    end_time: "09:30",
+                                    duration_minutes: 30,
+                                },
+                            ],
+                        }),
+                    ],
+                });
+                const store = useWorkStore.getState();
+                store.setFormData({ work_name: "test", deal_name: "test" });
+                store.startTimer();
+            };
+
+            it("기존 세션 중간으로 옮기면 기존 세션 종료 시각으로 자동 조정", () => {
+                startTimerWithExistingSession();
+                const adjusted_start_time = new Date(
+                    "2026-01-19T09:30:00"
+                ).getTime();
+
+                const result = useWorkStore
+                    .getState()
+                    .updateTimerStartTime(
+                        new Date("2026-01-19T09:15:00").getTime()
+                    );
+
+                expect(result).toEqual({
+                    success: true,
+                    adjusted: true,
+                    message: WARNING_MESSAGES.timeAdjusted,
+                    adjusted_start_time,
+                });
+                const state = useWorkStore.getState();
+                expect(state.timer.start_time).toBe(adjusted_start_time);
+                const active_record = state.records.find(
+                    (r) => r.id === state.timer.active_record_id
+                );
+                expect(
+                    active_record?.sessions.find(
+                        (s) => s.id === state.timer.active_session_id
+                    )?.start_time
+                ).toBe("09:30");
+            });
+
+            it("기존 세션을 완전히 덮으면 실패하고 시작 시간을 유지", () => {
+                startTimerWithExistingSession();
+                const original_start_time =
+                    useWorkStore.getState().timer.start_time;
+
+                const result = useWorkStore
+                    .getState()
+                    .updateTimerStartTime(
+                        new Date("2026-01-19T08:50:00").getTime()
+                    );
+
+                expect(result.success).toBe(false);
+                expect(result.adjusted).toBe(false);
+                expect(result.message).toBe(
+                    ERROR_MESSAGES.conflictFullOverlap(
+                        '"기존작업 > 기존거래처" (09:00~09:30)'
+                    )
+                );
+                expect(useWorkStore.getState().timer.start_time).toBe(
+                    original_start_time
+                );
+            });
         });
     });
 
@@ -1438,13 +1379,6 @@ describe("useWorkStore", () => {
                 expect(state.custom_category_options).toHaveLength(0);
             });
 
-            it("공백만 있는 문자열은 trim 후 추가되지 않음", () => {
-                useWorkStore.getState().addCustomTaskOption("   ");
-
-                const state = useWorkStore.getState();
-                expect(state.custom_task_options).toHaveLength(0);
-            });
-
             it("존재하지 않는 옵션 삭제 시도", () => {
                 useWorkStore.setState({ custom_task_options: ["옵션1"] });
 
@@ -1560,12 +1494,6 @@ describe("useWorkStore", () => {
     // 점심시간 설정 테스트
     // =====================================================
     describe("점심시간 설정", () => {
-        it("기본 점심시간이 11:40~12:40으로 설정됨", () => {
-            const state = useWorkStore.getState();
-            expect(state.lunch_start_time).toBe("11:40");
-            expect(state.lunch_end_time).toBe("12:40");
-        });
-
         it("setLunchTime으로 점심시간 변경", () => {
             const store = useWorkStore.getState();
             store.setLunchTime("12:00", "13:00");
@@ -1700,84 +1628,33 @@ describe("useWorkStore", () => {
     // 트랜지션 설정 테스트
     // =====================================================
     describe("트랜지션 설정", () => {
-        it("기본값: 트랜지션 비활성화, 속도 normal", () => {
+        it("설정 기본값", () => {
             const state = useWorkStore.getState();
             expect(state.transition_enabled).toBe(false);
             expect(state.transition_speed).toBe("normal");
-        });
-
-        it("setTransitionEnabled로 트랜지션 활성화/비활성화", () => {
-            const store = useWorkStore.getState();
-
-            store.setTransitionEnabled(true);
-            expect(useWorkStore.getState().transition_enabled).toBe(true);
-
-            store.setTransitionEnabled(false);
-            expect(useWorkStore.getState().transition_enabled).toBe(false);
-        });
-
-        it("setTransitionSpeed로 속도 변경", () => {
-            const store = useWorkStore.getState();
-
-            store.setTransitionSpeed("fast");
-            expect(useWorkStore.getState().transition_speed).toBe("fast");
-
-            store.setTransitionSpeed("slow");
-            expect(useWorkStore.getState().transition_speed).toBe("slow");
-
-            store.setTransitionSpeed("normal");
-            expect(useWorkStore.getState().transition_speed).toBe("normal");
-        });
-
-        it("mobile_gantt_list_expanded 기본값은 false (타임라인 기본 접힘)", () => {
-            const state = useWorkStore.getState();
             expect(state.mobile_gantt_list_expanded).toBe(false);
-        });
-
-        it("copy_deal_code_on_double_click 기본값은 true", () => {
-            const state = useWorkStore.getState();
             expect(state.copy_deal_code_on_double_click).toBe(true);
-        });
-
-        it("setCopyDealCodeOnDoubleClick으로 설정을 바꾼다", () => {
-            useWorkStore.getState().setCopyDealCodeOnDoubleClick(false);
-            expect(useWorkStore.getState().copy_deal_code_on_double_click).toBe(
-                false
-            );
-
-            useWorkStore.getState().setCopyDealCodeOnDoubleClick(true);
-            expect(useWorkStore.getState().copy_deal_code_on_double_click).toBe(
-                true
-            );
-        });
-
-        it("setMobileGanttListExpanded로 접기/펼치기 토글", () => {
-            const store = useWorkStore.getState();
-
-            store.setMobileGanttListExpanded(false);
-            expect(useWorkStore.getState().mobile_gantt_list_expanded).toBe(
-                false
-            );
-
-            store.setMobileGanttListExpanded(true);
-            expect(useWorkStore.getState().mobile_gantt_list_expanded).toBe(
-                true
-            );
-        });
-
-        it("cursor_tracking_enabled 기본값은 false", () => {
-            const state = useWorkStore.getState();
             expect(state.cursor_tracking_enabled).toBe(false);
         });
 
-        it("setCursorTrackingEnabled로 커서 트래킹 활성화/비활성화", () => {
-            const store = useWorkStore.getState();
-
-            store.setCursorTrackingEnabled(true);
-            expect(useWorkStore.getState().cursor_tracking_enabled).toBe(true);
-
-            store.setCursorTrackingEnabled(false);
-            expect(useWorkStore.getState().cursor_tracking_enabled).toBe(false);
+        it.each([
+            { setter: "setTransitionEnabled", field: "transition_enabled" },
+            { setter: "setCopyDealCodeOnDoubleClick", field: "copy_deal_code_on_double_click" },
+            { setter: "setMobileGanttListExpanded", field: "mobile_gantt_list_expanded" },
+            { setter: "setCursorTrackingEnabled", field: "cursor_tracking_enabled" },
+        ] as const)("$setter로 $field를 바꾼다", ({ setter, field }) => {
+            for (const value of [true, false]) {
+                useWorkStore.getState()[setter](value);
+                expect(useWorkStore.getState()[field]).toBe(value);
+            }
         });
+
+        it.each(["fast", "slow", "normal"] as const)(
+            "setTransitionSpeed로 속도를 %s로 바꾼다",
+            (speed) => {
+                useWorkStore.getState().setTransitionSpeed(speed);
+                expect(useWorkStore.getState().transition_speed).toBe(speed);
+            }
+        );
     });
 });

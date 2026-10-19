@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useDebouncedValue } from "../../hooks/useDebouncedValue";
+import { useDebouncedValue } from "@/shared/hooks/useDebouncedValue";
 
 describe("useDebouncedValue", () => {
     beforeEach(() => {
@@ -125,15 +125,10 @@ describe("useDebouncedValue", () => {
         );
 
         rerender({ value: "updated" });
+        expect(vi.getTimerCount()).toBe(1);
 
-        // 언마운트
         unmount();
 
-        // 타이머 경과해도 에러 없음 (타이머가 정리됨)
-        expect(() => {
-            act(() => {
-                vi.advanceTimersByTime(200);
-            });
-        }).not.toThrow();
+        expect(vi.getTimerCount()).toBe(0);
     });
 });

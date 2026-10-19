@@ -107,7 +107,7 @@ src/
 ├── constants/    changelog.ts (버전 히스토리 — 릴리즈 시 갱신)
 ├── components/   features/로 가는 얇은 진입점 래퍼 + /guide 데모. 실제 구현은 features에 있다
 │                 예외: ChangelogModal.tsx만 여기가 실제 구현
-└── test/         unit/ component/ hooks/ store/ integration/ snapshot/ e2e/ helpers/
+└── test/         unit/ component/ hooks/ store/ firebase/ integration/ e2e/ helpers/
 ```
 
 라우트: `/`(일간) `/weekly` `/guide`는 양쪽, `/suggestions` `/admin`은 **데스크탑에만** 등록되어 있다.

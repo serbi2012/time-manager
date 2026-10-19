@@ -24,7 +24,6 @@ vi.mock("@/shared/lib/message", () => ({
 
 describe("BulkEditTab", () => {
     beforeEach(() => {
-        vi.clearAllMocks();
         useWorkStore.setState({
             records: [],
             templates: [],

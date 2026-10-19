@@ -66,7 +66,8 @@ export default defineConfig({
         testTimeout: 10000,
 
         // 모의 객체 초기화
-        mockReset: true,
+        clearMocks: true,
+        restoreMocks: true,
 
         deps: {
             optimizer: {
@@ -75,9 +76,7 @@ export default defineConfig({
                     include: [
                         "antd",
                         "framer-motion",
-                        "@tanstack/react-table",
                         "lodash-es",
-                        "@faker-js/faker/locale/ko",
                     ],
                 },
             },

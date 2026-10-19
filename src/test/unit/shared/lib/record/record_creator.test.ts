@@ -2,17 +2,12 @@
  * record_creator 테스트
  */
 
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import {
     createRecordFromTemplate,
     createEmptyRecord,
-} from "../../../../../shared/lib/record/record_creator";
-import { createMockTemplate } from "../../../../helpers/mock_factory";
-
-// crypto.randomUUID 모킹
-vi.stubGlobal("crypto", {
-    randomUUID: vi.fn(() => "test-uuid-1234"),
-});
+} from "@/shared/lib/record/record_creator";
+import { createMockTemplate } from "@/test/helpers/mock_factory";
 
 describe("record_creator", () => {
     describe("createRecordFromTemplate", () => {
@@ -32,7 +27,7 @@ describe("record_creator", () => {
             });
 
             expect(result).toEqual({
-                id: "test-uuid-1234",
+                id: "test-uuid-1",
                 project_code: "A25_01234",
                 work_name: "테스트 작업",
                 task_name: "개발",
@@ -62,43 +57,6 @@ describe("record_creator", () => {
 
             expect(result.project_code).toBe("A00_00000");
         });
-
-        it("고유한 ID를 생성한다", () => {
-            const template = createMockTemplate();
-
-            const result = createRecordFromTemplate({
-                template,
-                deal_name: "작업",
-                date: "2026-02-03",
-            });
-
-            expect(result.id).toBe("test-uuid-1234");
-        });
-
-        it("sessions는 빈 배열로 초기화된다", () => {
-            const template = createMockTemplate();
-
-            const result = createRecordFromTemplate({
-                template,
-                deal_name: "작업",
-                date: "2026-02-03",
-            });
-
-            expect(result.sessions).toEqual([]);
-        });
-
-        it("is_completed, is_deleted는 false로 초기화된다", () => {
-            const template = createMockTemplate();
-
-            const result = createRecordFromTemplate({
-                template,
-                deal_name: "작업",
-                date: "2026-02-03",
-            });
-
-            expect(result.is_completed).toBe(false);
-            expect(result.is_deleted).toBe(false);
-        });
     });
 
     describe("createEmptyRecord", () => {
@@ -108,7 +66,7 @@ describe("record_creator", () => {
             });
 
             expect(result).toEqual({
-                id: "test-uuid-1234",
+                id: "test-uuid-1",
                 project_code: "",
                 work_name: "",
                 task_name: "",
@@ -137,14 +95,6 @@ describe("record_creator", () => {
             expect(result.work_name).toBe("기본 작업");
             expect(result.project_code).toBe("P001");
             expect(result.date).toBe("2026-02-03");
-        });
-
-        it("고유한 ID를 생성한다", () => {
-            const result = createEmptyRecord({
-                date: "2026-02-03",
-            });
-
-            expect(result.id).toBe("test-uuid-1234");
         });
     });
 });

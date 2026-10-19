@@ -4,13 +4,13 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useMobileGanttMenus } from "../../../../features/gantt-chart/hooks/useMobileGanttMenus";
-import { useWorkStore } from "../../../../store/useWorkStore";
+import { useMobileGanttMenus } from "@/features/gantt-chart/hooks/useMobileGanttMenus";
+import { useWorkStore } from "@/store/useWorkStore";
 import {
     createMockRecord,
     createMockSession,
-} from "../../../helpers/mock_factory";
-import type { GroupedWork } from "../../../../features/gantt-chart/lib/slot_calculator";
+} from "@/test/helpers/mock_factory";
+import type { GroupedWork } from "@/features/gantt-chart/lib/slot_calculator";
 
 vi.mock("@ant-design/icons", () => ({
     EditOutlined: () => null,
@@ -53,6 +53,7 @@ describe("useMobileGanttMenus", () => {
     beforeEach(() => {
         on_edit_session = vi.fn();
     });
+
 
     it("초기 상태에서 카드 메뉴와 세그먼트 메뉴가 닫혀있다", () => {
         const { result } = renderHook(() =>

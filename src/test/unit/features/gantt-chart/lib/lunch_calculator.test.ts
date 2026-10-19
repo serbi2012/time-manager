@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import {
     calculateDurationExcludingLunch,
     isOverlappingWithLunch,
-    calculateLunchOverlap,
     type LunchTimeRange,
 } from "@/features/gantt-chart/lib/lunch_calculator";
 
@@ -119,37 +118,6 @@ describe("lunch_calculator", () => {
         it("점심시간 내에 완전히 포함되면 true", () => {
             const result = isOverlappingWithLunch(735, 765, LUNCH_TIME);
             expect(result).toBe(true);
-        });
-    });
-
-    describe("calculateLunchOverlap", () => {
-        it("겹치지 않으면 null 반환", () => {
-            const result = calculateLunchOverlap(540, 660, LUNCH_TIME);
-            expect(result).toBeNull();
-        });
-
-        it("점심시간 시작 전부터 점심시간 중간까지 겹침", () => {
-            // 11:00 - 12:30 => 12:00 - 12:30 겹침
-            const result = calculateLunchOverlap(660, 750, LUNCH_TIME);
-            expect(result).toEqual({ start: 720, end: 750 });
-        });
-
-        it("점심시간 중간부터 점심시간 종료 후까지 겹침", () => {
-            // 12:30 - 14:00 => 12:30 - 13:00 겹침
-            const result = calculateLunchOverlap(750, 840, LUNCH_TIME);
-            expect(result).toEqual({ start: 750, end: 780 });
-        });
-
-        it("점심시간을 완전히 포함하면 점심시간 전체 반환", () => {
-            // 10:00 - 15:00 => 12:00 - 13:00 겹침
-            const result = calculateLunchOverlap(600, 900, LUNCH_TIME);
-            expect(result).toEqual({ start: 720, end: 780 });
-        });
-
-        it("점심시간 내에 완전히 포함되면 해당 구간 반환", () => {
-            // 12:15 - 12:45 => 12:15 - 12:45 겹침
-            const result = calculateLunchOverlap(735, 765, LUNCH_TIME);
-            expect(result).toEqual({ start: 735, end: 765 });
         });
     });
 });

@@ -4,21 +4,19 @@
  * 주간 일정 조회 및 복사 기능 테스트
  * 특히 일별 누적시간 계산 로직을 검증합니다.
  */
-import { describe, it, expect, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { ConfigProvider } from "antd";
-import koKR from "antd/locale/ko_KR";
-import { BrowserRouter } from "react-router-dom";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { screen, fireEvent } from "@testing-library/react";
+import { renderWithAntd, resetWorkStore } from "@/test/helpers";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
-import WeeklySchedule from "../../components/WeeklySchedule";
-import { useWorkStore } from "../../store/useWorkStore";
-import type { WorkRecord, WorkSession } from "../../types";
+import { DesktopWeeklySchedule } from "@/features/weekly-schedule/ui/Desktop/DesktopWeeklySchedule";
+import { useWorkStore } from "@/store/useWorkStore";
+import type { WorkRecord, WorkSession } from "@/types";
 
 dayjs.extend(isoWeek);
 
-// 현재 주의 날짜들
-const week_start = dayjs().startOf("isoWeek");
+const FIXED_NOW = new Date("2026-01-21T10:00:00");
+const week_start = dayjs(FIXED_NOW).startOf("isoWeek");
 const THIS_WEEK_START = week_start.format("YYYY-MM-DD");
 const THIS_WEEK_TUESDAY = week_start.add(1, "day").format("YYYY-MM-DD");
 const THIS_WEEK_WEDNESDAY = week_start.add(2, "day").format("YYYY-MM-DD");
@@ -33,48 +31,6 @@ const formatDayLabel = (date: string) => {
 const MONDAY_LABEL = formatDayLabel(THIS_WEEK_START);
 const TUESDAY_LABEL = formatDayLabel(THIS_WEEK_TUESDAY);
 const WEDNESDAY_LABEL = formatDayLabel(THIS_WEEK_WEDNESDAY);
-
-// 스토어 초기화
-const resetStore = () => {
-    useWorkStore.setState({
-        records: [],
-        templates: [],
-        timer: {
-            is_running: false,
-            start_time: null,
-            active_template_id: null,
-            active_form_data: null,
-            active_record_id: null,
-            active_session_id: null,
-        },
-        form_data: {
-            project_code: "",
-            work_name: "",
-            task_name: "",
-            deal_name: "",
-            category_name: "",
-            note: "",
-        },
-        selected_date: THIS_WEEK_START,
-        custom_task_options: [],
-        custom_category_options: [],
-        hidden_autocomplete_options: {
-            work_name: [],
-            task_name: [],
-            deal_name: [],
-            project_code: [],
-            task_option: [],
-            category_option: [],
-        },
-    });
-};
-
-// 테스트용 래퍼 컴포넌트
-const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-    <BrowserRouter>
-        <ConfigProvider locale={koKR}>{children}</ConfigProvider>
-    </BrowserRouter>
-);
 
 // 테스트용 세션 생성
 const createTestSession = (
@@ -106,9 +62,21 @@ const createTestRecord = (overrides: Partial<WorkRecord> = {}): WorkRecord => ({
     ...overrides,
 });
 
-describe("WeeklySchedule", () => {
+const getPreviewDaySections = () => {
+    const preview_text =
+        document.querySelector(".copy-preview")?.textContent ?? "";
+    return preview_text.split("■ ").slice(1);
+};
+
+describe("DesktopWeeklySchedule", () => {
     beforeEach(() => {
-        resetStore();
+        vi.useFakeTimers({ toFake: ["Date"] });
+        vi.setSystemTime(FIXED_NOW);
+        resetWorkStore({ selected_date: THIS_WEEK_START });
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
     });
 
     // =====================================================
@@ -116,21 +84,13 @@ describe("WeeklySchedule", () => {
     // =====================================================
     describe("기본 렌더링", () => {
         it("컴포넌트가 렌더링됨", () => {
-            render(
-                <TestWrapper>
-                    <WeeklySchedule />
-                </TestWrapper>
-            );
+            renderWithAntd(<DesktopWeeklySchedule />);
 
             expect(screen.getByText("주간 일정")).toBeInTheDocument();
         });
 
         it("레코드가 없으면 빈 상태 표시", () => {
-            render(
-                <TestWrapper>
-                    <WeeklySchedule />
-                </TestWrapper>
-            );
+            renderWithAntd(<DesktopWeeklySchedule />);
 
             expect(
                 screen.getByText("해당 주에 작업 기록이 없습니다")
@@ -167,15 +127,15 @@ describe("WeeklySchedule", () => {
 
             useWorkStore.setState({ records: [record] });
 
-            render(
-                <TestWrapper>
-                    <WeeklySchedule />
-                </TestWrapper>
-            );
+            renderWithAntd(<DesktopWeeklySchedule />);
 
-            // 복사 미리보기에서 누적시간 확인
-            const preview_element = screen.getByText(/복사 미리보기/);
-            expect(preview_element).toBeInTheDocument();
+            const [monday_section, tuesday_section] = getPreviewDaySections();
+
+            expect(monday_section).toContain(MONDAY_LABEL);
+            expect(monday_section).toContain("누적시간: 01:00");
+            expect(monday_section).not.toContain("누적시간: 03:00");
+            expect(tuesday_section).toContain(TUESDAY_LABEL);
+            expect(tuesday_section).toContain("누적시간: 03:00");
         });
 
         it("여러 날짜에 걸친 작업의 일별 누적시간이 정확함", () => {
@@ -211,11 +171,7 @@ describe("WeeklySchedule", () => {
 
             useWorkStore.setState({ records: [record] });
 
-            render(
-                <TestWrapper>
-                    <WeeklySchedule />
-                </TestWrapper>
-            );
+            renderWithAntd(<DesktopWeeklySchedule />);
 
             // 복사 미리보기에서 일별 누적시간이 올바른지 확인
             const preview_text =
@@ -267,11 +223,7 @@ describe("WeeklySchedule", () => {
 
             useWorkStore.setState({ records: [record1, record2] });
 
-            render(
-                <TestWrapper>
-                    <WeeklySchedule />
-                </TestWrapper>
-            );
+            renderWithAntd(<DesktopWeeklySchedule />);
 
             // 두 거래 모두 표시되는지 확인
             expect(screen.getByText("거래1")).toBeInTheDocument();
@@ -311,11 +263,7 @@ describe("WeeklySchedule", () => {
 
             useWorkStore.setState({ records: [active_record, deleted_record] });
 
-            render(
-                <TestWrapper>
-                    <WeeklySchedule />
-                </TestWrapper>
-            );
+            renderWithAntd(<DesktopWeeklySchedule />);
 
             // 활성 작업만 표시됨
             expect(screen.getByText("활성 작업")).toBeInTheDocument();
@@ -328,11 +276,7 @@ describe("WeeklySchedule", () => {
     // =====================================================
     describe("프로젝트 코드 필터", () => {
         it("필터 버튼이 표시됨", () => {
-            render(
-                <TestWrapper>
-                    <WeeklySchedule />
-                </TestWrapper>
-            );
+            renderWithAntd(<DesktopWeeklySchedule />);
 
             expect(screen.getByText("기본 보기")).toBeInTheDocument();
             expect(screen.getByText("전체 포함")).toBeInTheDocument();
@@ -344,11 +288,7 @@ describe("WeeklySchedule", () => {
     // =====================================================
     describe("복사 기능", () => {
         it("복사 버튼이 표시됨", () => {
-            render(
-                <TestWrapper>
-                    <WeeklySchedule />
-                </TestWrapper>
-            );
+            renderWithAntd(<DesktopWeeklySchedule />);
 
             expect(
                 screen.getByRole("button", { name: /복사/ })
@@ -356,11 +296,7 @@ describe("WeeklySchedule", () => {
         });
 
         it("레코드가 없으면 복사 버튼이 비활성화됨", () => {
-            render(
-                <TestWrapper>
-                    <WeeklySchedule />
-                </TestWrapper>
-            );
+            renderWithAntd(<DesktopWeeklySchedule />);
 
             const copy_button = screen.getByRole("button", { name: /복사/ });
             expect(copy_button).toBeDisabled();
@@ -370,11 +306,7 @@ describe("WeeklySchedule", () => {
             const record = createTestRecord();
             useWorkStore.setState({ records: [record] });
 
-            render(
-                <TestWrapper>
-                    <WeeklySchedule />
-                </TestWrapper>
-            );
+            renderWithAntd(<DesktopWeeklySchedule />);
 
             const copy_button = screen.getByRole("button", { name: /복사/ });
             expect(copy_button).not.toBeDisabled();
@@ -384,11 +316,7 @@ describe("WeeklySchedule", () => {
             const record = createTestRecord();
             useWorkStore.setState({ records: [record] });
 
-            render(
-                <TestWrapper>
-                    <WeeklySchedule />
-                </TestWrapper>
-            );
+            renderWithAntd(<DesktopWeeklySchedule />);
 
             expect(
                 screen.getByRole("radio", { name: "형식 1" })
@@ -402,11 +330,7 @@ describe("WeeklySchedule", () => {
             const record = createTestRecord();
             useWorkStore.setState({ records: [record] });
 
-            render(
-                <TestWrapper>
-                    <WeeklySchedule />
-                </TestWrapper>
-            );
+            renderWithAntd(<DesktopWeeklySchedule />);
 
             const format2_button = screen.getByRole("radio", {
                 name: "형식 2",
@@ -422,11 +346,7 @@ describe("WeeklySchedule", () => {
             });
             useWorkStore.setState({ records: [record] });
 
-            render(
-                <TestWrapper>
-                    <WeeklySchedule />
-                </TestWrapper>
-            );
+            renderWithAntd(<DesktopWeeklySchedule />);
 
             // 형식 1 선택 (Radio.Button의 label 요소 클릭)
             const format1_button = screen.getByText("형식 1");
@@ -449,11 +369,7 @@ describe("WeeklySchedule", () => {
             });
             useWorkStore.setState({ records: [record] });
 
-            render(
-                <TestWrapper>
-                    <WeeklySchedule />
-                </TestWrapper>
-            );
+            renderWithAntd(<DesktopWeeklySchedule />);
 
             // 형식 2는 기본값
             const preview_text =

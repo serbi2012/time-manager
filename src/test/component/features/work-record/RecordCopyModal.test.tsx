@@ -3,16 +3,15 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, within } from "@testing-library/react";
-import { ConfigProvider } from "antd";
-import koKR from "antd/locale/ko_KR";
-import { RecordCopyModal } from "../../../../features/work-record/ui/RecordCopyModal";
+import { screen, fireEvent, within } from "@testing-library/react";
+import { renderWithAntd } from "@/test/helpers/test_utils";
+import { RecordCopyModal } from "@/features/work-record/ui/RecordCopyModal";
 import {
     RECORD_COPY_MODAL,
     RECORD_COPY_COLUMNS,
-} from "../../../../features/work-record/constants";
-import { useWorkStore } from "../../../../store/useWorkStore";
-import type { WorkRecord } from "../../../../shared/types";
+} from "@/features/work-record/constants";
+import { useWorkStore } from "@/store/useWorkStore";
+import type { WorkRecord } from "@/shared/types";
 
 const SELECTED_DATE = "2026-09-08";
 
@@ -22,10 +21,6 @@ Object.defineProperty(navigator, "clipboard", {
     value: { writeText: write_text },
     configurable: true,
 });
-
-const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-    <ConfigProvider locale={koKR}>{children}</ConfigProvider>
-);
 
 function createRecord(overrides: Partial<WorkRecord> = {}): WorkRecord {
     return {
@@ -55,15 +50,13 @@ function createRecord(overrides: Partial<WorkRecord> = {}): WorkRecord {
 }
 
 function renderModal(records: WorkRecord[] = [createRecord()]) {
-    return render(
-        <TestWrapper>
-            <RecordCopyModal
-                open
-                records={records}
-                selected_date={SELECTED_DATE}
-                onClose={vi.fn()}
-            />
-        </TestWrapper>
+    return renderWithAntd(
+        <RecordCopyModal
+            open
+            records={records}
+            selected_date={SELECTED_DATE}
+            onClose={vi.fn()}
+        />
     );
 }
 
@@ -110,17 +103,6 @@ describe("RecordCopyModal", () => {
         const row = screen.getByText("작업A").closest("tr")!;
 
         expect(within(row).getByText("60")).toBeInTheDocument();
-    });
-
-    it("카테고리 컬럼 없이 카테고리명만 헤더에 있다", () => {
-        renderModal();
-
-        const headers = screen
-            .getAllByRole("columnheader")
-            .map((th) => th.textContent);
-
-        expect(headers).not.toContain("카테고리");
-        expect(headers).toContain("카테고리명");
     });
 
     it("레코드가 없으면 빈 상태를 표시한다", () => {

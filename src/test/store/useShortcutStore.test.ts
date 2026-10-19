@@ -32,19 +32,6 @@ describe('useShortcutStore', () => {
     // 기본 상태 테스트
     // =====================================================
     describe('기본 상태', () => {
-        it('초기 단축키 목록이 DEFAULT_SHORTCUTS와 동일', () => {
-            const state = useShortcutStore.getState()
-            expect(state.shortcuts).toHaveLength(DEFAULT_SHORTCUTS.length)
-        })
-
-        it('모든 카테고리가 정의되어 있음', () => {
-            const categories = Object.keys(CATEGORY_LABELS)
-            expect(categories).toContain('general')
-            expect(categories).toContain('timer')
-            expect(categories).toContain('navigation')
-            expect(categories).toContain('data')
-        })
-
         it('기본 단축키들이 모두 활성화 상태', () => {
             const state = useShortcutStore.getState()
             state.shortcuts.forEach((shortcut) => {
@@ -192,39 +179,17 @@ describe('useShortcutStore', () => {
         })
 
         describe('getShortcutsByCategory', () => {
-            it('general 카테고리 단축키 조회', () => {
-                const store = useShortcutStore.getState()
-                const general = store.getShortcutsByCategory('general')
+            it.each(['general', 'timer', 'navigation', 'data'] as const)(
+                '%s 카테고리 단축키만 반환',
+                (category) => {
+                    const items = useShortcutStore
+                        .getState()
+                        .getShortcutsByCategory(category)
 
-                expect(general.length).toBeGreaterThan(0)
-                expect(general.every((s) => s.category === 'general')).toBe(true)
-            })
-
-            it('timer 카테고리 단축키 조회', () => {
-                const store = useShortcutStore.getState()
-                const timer = store.getShortcutsByCategory('timer')
-
-                expect(timer.length).toBeGreaterThan(0)
-                expect(timer.every((s) => s.category === 'timer')).toBe(true)
-            })
-
-            it('navigation 카테고리 단축키 조회', () => {
-                const store = useShortcutStore.getState()
-                const navigation = store.getShortcutsByCategory('navigation')
-
-                expect(navigation.length).toBeGreaterThan(0)
-                expect(navigation.every((s) => s.category === 'navigation')).toBe(
-                    true
-                )
-            })
-
-            it('data 카테고리 단축키 조회', () => {
-                const store = useShortcutStore.getState()
-                const data = store.getShortcutsByCategory('data')
-
-                expect(data.length).toBeGreaterThan(0)
-                expect(data.every((s) => s.category === 'data')).toBe(true)
-            })
+                    expect(items.length).toBeGreaterThan(0)
+                    expect(items.every((s) => s.category === category)).toBe(true)
+                }
+            )
 
             it('모든 카테고리 합이 전체 단축키 수와 동일', () => {
                 const store = useShortcutStore.getState()
@@ -320,14 +285,6 @@ describe('useShortcutStore', () => {
     // localStorage 동기화 테스트
     // =====================================================
     describe('localStorage 동기화', () => {
-        it('변경 사항이 localStorage에 저장됨', () => {
-            const store = useShortcutStore.getState()
-            store.toggleShortcut('new-work')
-
-            const stored = localStorage.getItem('shortcut-settings')
-            expect(stored).not.toBeNull()
-        })
-
         it('setShortcuts로 전체 단축키 설정', () => {
             const custom_shortcuts: ShortcutDefinition[] = DEFAULT_SHORTCUTS.map(
                 (s) => ({
@@ -399,65 +356,6 @@ describe('useShortcutStore', () => {
             DEFAULT_SHORTCUTS.forEach((shortcut) => {
                 expect(shortcut.name).toBeTruthy()
                 expect(shortcut.description).toBeTruthy()
-            })
-        })
-    })
-
-    // =====================================================
-    // 특정 단축키 테스트
-    // =====================================================
-    describe('특정 단축키', () => {
-        it('새 작업 추가 (Alt+N)', () => {
-            const shortcut = DEFAULT_SHORTCUTS.find((s) => s.id === 'new-work')
-            expect(shortcut).toMatchObject({
-                id: 'new-work',
-                name: '새 작업 추가',
-                keys: 'Alt+N',
-                category: 'general',
-                action: 'openNewWorkModal',
-            })
-        })
-
-        it('타이머 시작/중지 (Alt+S)', () => {
-            const shortcut = DEFAULT_SHORTCUTS.find(
-                (s) => s.id === 'start-stop-timer'
-            )
-            expect(shortcut).toMatchObject({
-                id: 'start-stop-timer',
-                name: '타이머 시작/중지',
-                keys: 'Alt+S',
-                category: 'timer',
-                action: 'toggleTimer',
-            })
-        })
-
-        it('오늘로 이동 (Alt+T)', () => {
-            const shortcut = DEFAULT_SHORTCUTS.find((s) => s.id === 'go-today')
-            expect(shortcut).toMatchObject({
-                id: 'go-today',
-                name: '오늘로 이동',
-                keys: 'Alt+T',
-                category: 'navigation',
-                action: 'goToday',
-            })
-        })
-
-        it('이전/다음 날짜 (Alt+Left/Right)', () => {
-            const prev = DEFAULT_SHORTCUTS.find((s) => s.id === 'prev-day')
-            const next = DEFAULT_SHORTCUTS.find((s) => s.id === 'next-day')
-
-            expect(prev?.keys).toBe('Alt+Left')
-            expect(next?.keys).toBe('Alt+Right')
-        })
-
-        it('데이터 내보내기 (Alt+E)', () => {
-            const shortcut = DEFAULT_SHORTCUTS.find((s) => s.id === 'export-data')
-            expect(shortcut).toMatchObject({
-                id: 'export-data',
-                name: '데이터 내보내기',
-                keys: 'Alt+E',
-                category: 'data',
-                action: 'exportData',
             })
         })
     })

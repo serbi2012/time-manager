@@ -113,39 +113,3 @@ export function getTimeRangeForDate(
         end_time: sorted[sorted.length - 1].end_time || "",
     };
 }
-
-/**
- * 레코드의 세션들을 재계산하여 총 시간 업데이트
- */
-export function recalculateRecordDuration(
-    record: WorkRecord,
-    lunch_time?: LunchTimeRange
-): WorkRecord {
-    if (!record.sessions || record.sessions.length === 0) {
-        return record;
-    }
-    
-    const total = record.sessions.reduce(
-        (sum, s) => sum + getSessionMinutes(s, lunch_time),
-        0
-    );
-    
-    // 세션 정렬
-    const sorted_sessions = [...record.sessions].sort((a, b) => {
-        const date_a = a.date || record.date;
-        const date_b = b.date || record.date;
-        if (date_a !== date_b) return date_a.localeCompare(date_b);
-        return (a.start_time || "").localeCompare(b.start_time || "");
-    });
-    
-    const first = sorted_sessions[0];
-    const last = sorted_sessions[sorted_sessions.length - 1];
-    
-    return {
-        ...record,
-        sessions: sorted_sessions,
-        duration_minutes: Math.max(1, total),
-        start_time: first?.start_time || record.start_time,
-        end_time: last?.end_time || record.end_time,
-    };
-}

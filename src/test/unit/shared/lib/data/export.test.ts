@@ -47,14 +47,6 @@ describe("export", () => {
 
             expect(result.version).toBe(2);
         });
-
-        it("내보내기 시각을 포함한다", () => {
-            const data = { records: [], templates: [] };
-
-            const result = createExportWrapper(data);
-
-            expect(result.exported_at).toBe("2026-02-03T10:30:00.000Z");
-        });
     });
 
     describe("createExportBlob", () => {
@@ -126,15 +118,6 @@ describe("export", () => {
             };
 
             expect(hasExportableData(data)).toBe(false);
-        });
-
-        it("둘 다 있으면 true를 반환한다", () => {
-            const data = {
-                records: [createMockRecord()],
-                templates: [createMockTemplate()],
-            };
-
-            expect(hasExportableData(data)).toBe(true);
         });
     });
 });

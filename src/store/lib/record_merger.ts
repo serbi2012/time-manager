@@ -49,28 +49,6 @@ export function findExistingRecord(
 }
 
 /**
- * 중복 미완료 레코드 찾기
- *
- * @param records 레코드 배열
- * @param work_name 작업명
- * @param deal_name 거래명
- * @returns 중복 레코드 배열 (2개 이상일 때만 의미 있음)
- */
-export function findDuplicateIncompleteRecords(
-    records: WorkRecord[],
-    work_name: string,
-    deal_name: string
-): WorkRecord[] {
-    return records.filter(
-        (r) =>
-            !r.is_deleted &&
-            !r.is_completed &&
-            r.work_name === work_name &&
-            r.deal_name === deal_name
-    );
-}
-
-/**
  * 여러 레코드를 하나로 병합
  *
  * @param records_to_merge 병합할 레코드 배열 (2개 이상)
@@ -142,49 +120,5 @@ export function mergeRecords(records_to_merge: WorkRecord[]): {
             date: first?.date || base.date,
         },
         deleted_ids: others.map((r) => r.id),
-    };
-}
-
-/**
- * 레코드에서 특정 세션을 제거하고 시간 재계산
- *
- * @param record 레코드
- * @param session_id 제거할 세션 ID
- * @returns 세션이 제거된 새 레코드 또는 null (세션이 모두 제거된 경우)
- */
-export function removeSessionFromRecord(
-    record: WorkRecord,
-    session_id: string
-): WorkRecord | null {
-    const remaining_sessions = record.sessions.filter(
-        (s) => s.id !== session_id
-    );
-
-    if (remaining_sessions.length === 0) {
-        return null;
-    }
-
-    // 시간 재계산
-    const total_minutes = remaining_sessions.reduce(
-        (sum, s) => sum + getSessionMinutes(s),
-        0
-    );
-
-    // 시간순 정렬
-    const sorted_sessions = [...remaining_sessions].sort((a, b) => {
-        const date_a = a.date || record.date;
-        const date_b = b.date || record.date;
-        if (date_a !== date_b) return date_a.localeCompare(date_b);
-        return (a.start_time || "").localeCompare(b.start_time || "");
-    });
-
-    return {
-        ...record,
-        sessions: remaining_sessions,
-        duration_minutes: Math.max(1, total_minutes),
-        start_time: sorted_sessions[0]?.start_time || record.start_time,
-        end_time:
-            sorted_sessions[sorted_sessions.length - 1]?.end_time ||
-            record.end_time,
     };
 }

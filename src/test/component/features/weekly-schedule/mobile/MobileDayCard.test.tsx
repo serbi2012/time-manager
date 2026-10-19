@@ -4,8 +4,8 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, fireEvent, act } from "@testing-library/react";
-import { MobileDayCard } from "../../../../../features/weekly-schedule/ui/Mobile/MobileDayCard";
-import type { DayGroup } from "../../../../../features/weekly-schedule/lib/week_grouper";
+import { MobileDayCard } from "@/features/weekly-schedule/ui/Mobile/MobileDayCard";
+import type { DayGroup } from "@/features/weekly-schedule/lib/week_grouper";
 
 const MOCK_DAY_GROUP: DayGroup = {
     date: "2026-03-05",
@@ -32,7 +32,6 @@ describe("MobileDayCard", () => {
 
     afterEach(() => {
         vi.useRealTimers();
-        vi.restoreAllMocks();
     });
 
     it("DayCard가 정상적으로 렌더링된다", () => {
@@ -46,7 +45,7 @@ describe("MobileDayCard", () => {
         expect(container.firstChild).toBeInTheDocument();
     });
 
-    it("래퍼 div가 touch 이벤트 핸들러를 가진다", () => {
+    it("누르는 동안 카드가 줄어들고 손을 떼면 원래 크기로 돌아온다", () => {
         const { container } = render(
             <MobileDayCard
                 day_group={MOCK_DAY_GROUP}
@@ -56,7 +55,19 @@ describe("MobileDayCard", () => {
         );
 
         const wrapper = container.firstChild as HTMLElement;
-        expect(wrapper.tagName).toBe("DIV");
+        expect(wrapper.style.transform).toBe("scale(1)");
+
+        act(() => {
+            fireEvent.touchStart(wrapper, {
+                touches: [{ clientX: 150, clientY: 200 }],
+            });
+        });
+        expect(wrapper.style.transform).toBe("scale(0.98)");
+
+        act(() => {
+            fireEvent.touchEnd(wrapper);
+        });
+        expect(wrapper.style.transform).toBe("scale(1)");
     });
 
     it("롱프레스 시 onLongPress가 DayGroup과 DOMRect와 함께 호출된다", () => {
@@ -87,7 +98,7 @@ describe("MobileDayCard", () => {
         expect(on_long_press).toHaveBeenCalledWith(MOCK_DAY_GROUP, mock_rect);
     });
 
-    it("onLongPress가 없어도 에러 없이 렌더링된다", () => {
+    it("onLongPress가 없어도 롱프레스 시 에러가 나지 않는다", () => {
         const { container } = render(
             <MobileDayCard
                 day_group={MOCK_DAY_GROUP}
@@ -95,6 +106,17 @@ describe("MobileDayCard", () => {
             />
         );
 
-        expect(container.firstChild).toBeInTheDocument();
+        const wrapper = container.firstChild as HTMLElement;
+
+        expect(() => {
+            act(() => {
+                fireEvent.touchStart(wrapper, {
+                    touches: [{ clientX: 150, clientY: 200 }],
+                });
+            });
+            act(() => {
+                vi.advanceTimersByTime(500);
+            });
+        }).not.toThrow();
     });
 });

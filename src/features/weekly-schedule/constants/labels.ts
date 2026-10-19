@@ -33,10 +33,4 @@ export const COPY_FORMAT_LABELS = {
     format1: "형식 1 (기본)",
     format2: "형식 2 (상세)",
     format3: "형식 3 (간단)",
-    totalPrefix: "총: ",
-    totalBoldPrefix: "총 ",
-    dealPrefix: "거래: ",
-    categoryPrefix: "카테고리: ",
-    timePrefix: "시간: ",
-    notePrefix: "비고: ",
 } as const;

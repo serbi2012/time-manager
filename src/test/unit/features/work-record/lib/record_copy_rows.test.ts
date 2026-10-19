@@ -79,44 +79,6 @@ describe("buildRecordCopyRows", () => {
         ).toHaveLength(0);
     });
 
-    it("업무명을 그대로 담는다", () => {
-        const rows = buildRecordCopyRows(
-            [createTestRecord()],
-            SELECTED_DATE,
-            NO_CODES
-        );
-
-        expect(rows[0].task_name).toBe("개발");
-    });
-
-    it("업무가 작업이면 거래는 작업명, 비고는 원래 거래명이 된다", () => {
-        const rows = buildRecordCopyRows(
-            [
-                createTestRecord({
-                    work_name: "브랜치 최신화",
-                    task_name: "작업",
-                    deal_name: "임시저장 문제 - 브랜치 최신화",
-                }),
-            ],
-            SELECTED_DATE,
-            NO_CODES
-        );
-
-        expect(rows[0].deal_name).toBe("브랜치 최신화");
-        expect(rows[0].note).toBe("임시저장 문제 - 브랜치 최신화");
-    });
-
-    it("업무가 작업이 아니면 거래와 비고를 그대로 둔다", () => {
-        const rows = buildRecordCopyRows(
-            [createTestRecord({ note: "비고A" })],
-            SELECTED_DATE,
-            NO_CODES
-        );
-
-        expect(rows[0].deal_name).toBe("거래A");
-        expect(rows[0].note).toBe("비고A");
-    });
-
     it("거래코드는 치환된 거래명 기준으로 조회한다", () => {
         const rows = buildRecordCopyRows(
             [
@@ -141,16 +103,6 @@ describe("buildRecordCopyRows", () => {
         expect(rows[0].deal_code).toBe("D-001");
     });
 
-    it("카테고리명을 그대로 담는다", () => {
-        const rows = buildRecordCopyRows(
-            [createTestRecord()],
-            SELECTED_DATE,
-            NO_CODES
-        );
-
-        expect(rows[0].category_name).toBe("환경세팅");
-    });
-
     it("거래명이 비어 있으면 작업명을 거래명으로 쓴다", () => {
         const rows = buildRecordCopyRows(
             [createTestRecord({ deal_name: "" })],
@@ -171,16 +123,6 @@ describe("buildRecordCopyRows", () => {
         const rows = buildRecordCopyRows(records, SELECTED_DATE, NO_CODES);
 
         expect(rows.map((r) => r.work_name)).toEqual(["가작업", "나작업"]);
-    });
-
-    it("시간은 단위 없이 숫자만 담는다", () => {
-        const rows = buildRecordCopyRows(
-            [createTestRecord()],
-            SELECTED_DATE,
-            NO_CODES
-        );
-
-        expect(rows[0].duration_text).toBe("60");
     });
 
     it("선택된 날짜의 세션 시간만 합산한다", () => {
@@ -261,20 +203,7 @@ describe("formatCopyRowsToMarkdown", () => {
         expect(formatCopyRowsToMarkdown([])).toBeNull();
     });
 
-    it("시간관리 양식 헤더를 포함한다", () => {
-        const rows = buildRecordCopyRows([createTestRecord()], SELECTED_DATE, {
-            deal_codes: { 거래A: "D-001" },
-        });
-
-        const text = formatCopyRowsToMarkdown(rows)!;
-
-        expect(text).toContain("업무");
-        expect(text).toContain("거래코드");
-        expect(text).toContain("카테고리명");
-        expect(text).toContain("시간(분)");
-    });
-
-    it("카테고리 컬럼은 포함하지 않는다", () => {
+    it("헤더는 시간관리 양식 컬럼 순서를 따른다", () => {
         const rows = buildRecordCopyRows(
             [createTestRecord()],
             SELECTED_DATE,

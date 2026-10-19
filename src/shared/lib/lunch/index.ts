@@ -2,7 +2,7 @@
  * 점심시간 관련 유틸리티 함수 모음
  * 
  * @example
- * import { calculateDurationExcludingLunch, isInLunchTime } from '@/shared/lib/lunch';
+ * import { calculateDurationExcludingLunch } from '@/shared/lib/lunch';
  */
 
 export {
@@ -14,8 +14,4 @@ export {
     LUNCH_DURATION_MINUTES,
     // 함수
     calculateDurationExcludingLunch,
-    isInLunchTime,
-    overlapsWithLunchTime,
-    getLunchOverlapMinutes,
-    adjustForLunchTime,
 } from "./lunch_calculator";

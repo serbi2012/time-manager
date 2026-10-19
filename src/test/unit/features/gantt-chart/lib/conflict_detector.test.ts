@@ -1,10 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-    detectConflicts,
-    isSessionConflicting,
-    isTimeRangeOverlapping,
-    calculateOverlapRange,
-} from "@/features/gantt-chart/lib/conflict_detector";
+import { detectConflicts } from "@/features/gantt-chart/lib/conflict_detector";
 import type { GroupedWork } from "@/features/gantt-chart/lib/slot_calculator";
 import { timeToMinutes } from "@/shared/lib/time";
 import {
@@ -133,38 +128,5 @@ describe("detectConflicts", () => {
 
         const result = detectConflicts(groups, 720);
         expect(result.conflicting_sessions.size).toBe(0);
-    });
-});
-
-describe("isSessionConflicting", () => {
-    it("충돌 세션 ID가 포함되면 true 반환", () => {
-        const conflict_info = {
-            conflicting_sessions: new Set(["s1", "s2"]),
-            conflict_ranges: [],
-        };
-        expect(isSessionConflicting("s1", conflict_info)).toBe(true);
-        expect(isSessionConflicting("s3", conflict_info)).toBe(false);
-    });
-});
-
-describe("isTimeRangeOverlapping", () => {
-    it("겹치는 범위는 true", () => {
-        expect(isTimeRangeOverlapping(0, 100, 50, 150)).toBe(true);
-    });
-
-    it("겹치지 않는 범위는 false", () => {
-        expect(isTimeRangeOverlapping(0, 50, 50, 100)).toBe(false);
-    });
-});
-
-describe("calculateOverlapRange", () => {
-    it("겹치는 구간을 반환", () => {
-        const result = calculateOverlapRange(0, 100, 50, 150);
-        expect(result).toEqual({ start: 50, end: 100 });
-    });
-
-    it("겹치지 않으면 null 반환", () => {
-        const result = calculateOverlapRange(0, 50, 50, 100);
-        expect(result).toBeNull();
     });
 });

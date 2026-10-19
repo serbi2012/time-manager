@@ -1,4 +1,3 @@
-import type { Unsubscribe } from "firebase/firestore";
 import { getDbInstance } from "./config";
 import type {
     WorkRecord,
@@ -54,23 +53,6 @@ export interface UserData {
     updated_at: string;
 }
 
-export async function saveUserData(
-    user_id: string,
-    data: Partial<UserData>
-): Promise<void> {
-    const db = await getDbInstance();
-    const { doc, setDoc } = await fs();
-    const user_doc_ref = doc(db, "users", user_id);
-    await setDoc(
-        user_doc_ref,
-        {
-            ...data,
-            updated_at: new Date().toISOString(),
-        },
-        { merge: true }
-    );
-}
-
 export async function loadUserData(user_id: string): Promise<UserData | null> {
     const db = await getDbInstance();
     const { doc, getDoc } = await fs();
@@ -81,44 +63,6 @@ export async function loadUserData(user_id: string): Promise<UserData | null> {
         return doc_snap.data() as UserData;
     }
     return null;
-}
-
-export function subscribeToUserData(
-    user_id: string,
-    callback: (data: UserData | null) => void
-): Unsubscribe {
-    let unsubscribe_fn: Unsubscribe | null = null;
-    let cancelled = false;
-
-    (async () => {
-        const db = await getDbInstance();
-        const { doc, onSnapshot } = await fs();
-        if (cancelled) return;
-        const user_doc_ref = doc(db, "users", user_id);
-
-        unsubscribe_fn = onSnapshot(user_doc_ref, (doc_snap) => {
-            if (doc_snap.exists()) {
-                callback(doc_snap.data() as UserData);
-            } else {
-                callback(null);
-            }
-        });
-    })();
-
-    return () => {
-        cancelled = true;
-        unsubscribe_fn?.();
-    };
-}
-
-export function createInitialUserData(): UserData {
-    return {
-        records: [],
-        templates: [],
-        custom_task_options: [],
-        custom_category_options: [],
-        updated_at: new Date().toISOString(),
-    };
 }
 
 // ============================================

@@ -2,7 +2,7 @@
  * 세션 관련 유틸리티 함수 모음
  * 
  * @example
- * import { getSessionMinutes, createSession, sortSessionsByTime } from '@/shared/lib/session';
+ * import { getSessionMinutes, sortSessionsByTime } from '@/shared/lib/session';
  */
 
 export {
@@ -11,10 +11,6 @@ export {
     // 함수
     getSessionMinutes,
     calculateTotalMinutes,
-    createSession,
     sortSessionsByTime,
     filterSessionsByDate,
-    getSessionTimeRange,
-    isRunningSession,
-    findSessionById,
 } from "./session_utils";

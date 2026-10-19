@@ -25,28 +25,6 @@ describe("RecordFooter", () => {
         ).toBeInTheDocument();
     });
 
-    it("완료 목록 버튼이 표시된다", () => {
-        render(<RecordFooter {...default_props} />);
-
-        expect(
-            screen.getByText(`${RECORD_BUTTON.VIEW_COMPLETED} 목록`)
-        ).toBeInTheDocument();
-    });
-
-    it("휴지통 버튼이 표시된다", () => {
-        render(<RecordFooter {...default_props} />);
-
-        expect(screen.getByText(RECORD_BUTTON.VIEW_TRASH)).toBeInTheDocument();
-    });
-
-    it("내역 보기 버튼이 표시된다", () => {
-        render(<RecordFooter {...default_props} />);
-
-        expect(
-            screen.getByText(RECORD_BUTTON.COPY_RECORDS)
-        ).toBeInTheDocument();
-    });
-
     it("완료 목록 버튼 클릭 시 onOpenCompleted가 호출된다", () => {
         const on_open_completed = vi.fn();
         render(

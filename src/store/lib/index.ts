@@ -8,31 +8,21 @@
 // 레코드 병합 관련 함수
 export {
     findExistingRecord,
-    findDuplicateIncompleteRecords,
     mergeRecords,
-    removeSessionFromRecord,
 } from "./record_merger";
 
 // 세션 관련 함수 (shared/lib/session 재사용)
 export {
-    createSession,
     getSessionMinutes,
     calculateTotalMinutes,
     sortSessionsByTime,
     filterSessionsByDate,
-    getSessionTimeRange,
-    isRunningSession,
-    findSessionById,
 } from "@/shared/lib/session";
 
 // 점심시간 관련 함수 (shared/lib/lunch 재사용)
 export {
     type LunchTimeRange,
     calculateDurationExcludingLunch,
-    isInLunchTime,
-    overlapsWithLunchTime,
-    getLunchOverlapMinutes,
-    adjustForLunchTime,
     LUNCH_START_MINUTES,
     LUNCH_END_MINUTES,
     LUNCH_DURATION_MINUTES,

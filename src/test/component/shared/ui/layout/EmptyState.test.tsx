@@ -5,19 +5,19 @@
 import { describe, it, expect } from "vitest";
 import { screen } from "@testing-library/react";
 import { Button } from "antd";
-import { renderWithProviders } from "../../../../helpers/test_utils";
-import { EmptyState } from "../../../../../shared/ui/layout";
+import { renderWithAntd } from "@/test/helpers/test_utils";
+import { EmptyState } from "@/shared/ui/layout";
 
 describe("EmptyState", () => {
     describe("기본 렌더링", () => {
         it("description이 표시된다", () => {
-            renderWithProviders(<EmptyState description="데이터가 없습니다" />);
+            renderWithAntd(<EmptyState description="데이터가 없습니다" />);
 
             expect(screen.getByText("데이터가 없습니다")).toBeInTheDocument();
         });
 
         it("기본 이미지가 표시된다", () => {
-            renderWithProviders(<EmptyState description="데이터가 없습니다" />);
+            renderWithAntd(<EmptyState description="데이터가 없습니다" />);
 
             // Ant Design Empty의 이미지
             const empty_image = document.querySelector(".ant-empty-image");
@@ -27,7 +27,7 @@ describe("EmptyState", () => {
 
     describe("부가 설명", () => {
         it("subDescription이 표시된다", () => {
-            renderWithProviders(
+            renderWithAntd(
                 <EmptyState
                     description="프리셋이 없습니다"
                     subDescription="추가 버튼으로 추가하세요"
@@ -41,7 +41,7 @@ describe("EmptyState", () => {
         });
 
         it("subDescription이 secondary 타입으로 표시된다", () => {
-            renderWithProviders(
+            renderWithAntd(
                 <EmptyState
                     description="메인 설명"
                     subDescription="부가 설명"
@@ -56,28 +56,28 @@ describe("EmptyState", () => {
 
     describe("이미지 타입", () => {
         it("imageType='simple'일 때 심플 이미지가 사용된다", () => {
-            renderWithProviders(
+            renderWithAntd(
                 <EmptyState description="테스트" imageType="simple" />
             );
 
-            // PRESENTED_IMAGE_SIMPLE은 inline SVG
             const empty = document.querySelector(".ant-empty");
-            expect(empty).toBeInTheDocument();
+            expect(empty).toHaveClass("ant-empty-normal");
         });
 
         it("imageType='default'일 때 기본 이미지가 사용된다", () => {
-            renderWithProviders(
+            renderWithAntd(
                 <EmptyState description="테스트" imageType="default" />
             );
 
             const empty = document.querySelector(".ant-empty");
             expect(empty).toBeInTheDocument();
+            expect(empty).not.toHaveClass("ant-empty-normal");
         });
     });
 
     describe("커스텀 이미지", () => {
         it("image prop으로 커스텀 이미지가 사용된다", () => {
-            renderWithProviders(
+            renderWithAntd(
                 <EmptyState
                     description="테스트"
                     image={
@@ -96,7 +96,7 @@ describe("EmptyState", () => {
 
     describe("액션 버튼", () => {
         it("action이 렌더링된다", () => {
-            renderWithProviders(
+            renderWithAntd(
                 <EmptyState
                     description="데이터가 없습니다"
                     action={<Button type="primary">추가하기</Button>}
@@ -107,7 +107,7 @@ describe("EmptyState", () => {
         });
 
         it("여러 액션 요소가 렌더링된다", () => {
-            renderWithProviders(
+            renderWithAntd(
                 <EmptyState
                     description="데이터가 없습니다"
                     action={
@@ -126,7 +126,7 @@ describe("EmptyState", () => {
 
     describe("props 전달", () => {
         it("다양한 props가 전달되어도 렌더링된다", () => {
-            renderWithProviders(
+            renderWithAntd(
                 <EmptyState
                     description="테스트"
                     subDescription="부가 테스트"

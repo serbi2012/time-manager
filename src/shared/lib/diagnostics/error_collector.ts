@@ -46,10 +46,6 @@ export function getDiagnosticEvents(): DiagnosticEvent[] {
     return [...event_buffer];
 }
 
-export function getDiagnosticErrorCount(): number {
-    return event_buffer.filter((e) => e.level === "error").length;
-}
-
 export function clearDiagnosticEvents(): void {
     event_buffer = [];
     notifySubscribers();

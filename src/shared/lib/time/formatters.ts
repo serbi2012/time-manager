@@ -75,39 +75,3 @@ export function formatTimerWithSeconds(seconds: number): string {
     
     return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 }
-
-/**
- * 날짜를 표시용 문자열로 변환
- * @param date_str YYYY-MM-DD 형식
- * @returns 예: "1/23 (목)"
- */
-export function formatDateDisplay(date_str: string): string {
-    if (!date_str) return "";
-    
-    const date = new Date(date_str);
-    if (isNaN(date.getTime())) return date_str;
-    
-    const days = ["일", "월", "화", "수", "목", "금", "토"];
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    const day_of_week = days[date.getDay()];
-    
-    return `${month}/${day} (${day_of_week})`;
-}
-
-/**
- * 날짜를 간단한 형식으로 변환
- * @param date_str YYYY-MM-DD 형식
- * @returns 예: "1/23"
- */
-export function formatDateShort(date_str: string): string {
-    if (!date_str) return "";
-    
-    const date = new Date(date_str);
-    if (isNaN(date.getTime())) return date_str;
-    
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    
-    return `${month}/${day}`;
-}

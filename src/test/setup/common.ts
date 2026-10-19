@@ -1,9 +1,12 @@
-import { afterEach, vi } from "vitest";
+import { afterEach } from "vitest";
+import { resetMockSequence } from "@/test/helpers/mock_factory";
 
 let uuid_counter = 0;
 
-vi.stubGlobal("crypto", {
-    randomUUID: () => `test-uuid-${++uuid_counter}`,
+Object.defineProperty(globalThis.crypto, "randomUUID", {
+    value: () => `test-uuid-${++uuid_counter}`,
+    configurable: true,
+    writable: true,
 });
 
 function createLocalStorageMock(): Storage {
@@ -42,5 +45,6 @@ if (typeof window !== "undefined" && window !== globalThis) {
 
 afterEach(() => {
     uuid_counter = 0;
+    resetMockSequence();
     localStorage.clear();
 });

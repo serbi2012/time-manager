@@ -9,7 +9,6 @@ import type {
 } from "../../../shared/types";
 import {
     timeToMinutes,
-    minutesToTime,
     getEffectiveEndMinutes,
 } from "../../../shared/lib/time";
 
@@ -287,20 +286,6 @@ export function xToMinutes(
     const mins = time_range.start + percentage * total_minutes;
     // 1분 단위로 스냅
     return Math.round(mins);
-}
-
-/**
- * 리사이즈 시간 표시 문자열 생성
- */
-export function formatResizeTimeIndicator(
-    handle: "left" | "right",
-    original_start: number,
-    original_end: number,
-    current_value: number
-): string {
-    const start = handle === "left" ? current_value : original_start;
-    const end = handle === "right" ? current_value : original_end;
-    return `${minutesToTime(start)} ~ ${minutesToTime(end)}`;
 }
 
 /**

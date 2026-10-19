@@ -2,21 +2,16 @@
  * DiagnosticsCard 컴포넌트 테스트
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { ConfigProvider } from "antd";
-import koKR from "antd/locale/ko_KR";
-import { DiagnosticsCard } from "../../../../features/settings/ui/tabs/DiagnosticsCard";
-import { useWorkStore } from "../../../../store/useWorkStore";
-import { DIAGNOSTIC_LABELS } from "../../../../shared/constants";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { screen, fireEvent } from "@testing-library/react";
+import { renderWithAntd } from "@/test/helpers/test_utils";
+import { DiagnosticsCard } from "@/features/settings/ui/tabs/DiagnosticsCard";
+import { useWorkStore } from "@/store/useWorkStore";
+import { DIAGNOSTIC_LABELS } from "@/shared/constants";
 import {
     recordDiagnosticEvent,
     clearDiagnosticEvents,
-} from "../../../../shared/lib/diagnostics";
-
-const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-    <ConfigProvider locale={koKR}>{children}</ConfigProvider>
-);
+} from "@/shared/lib/diagnostics";
 
 const create_element = document.createElement.bind(document);
 
@@ -26,16 +21,9 @@ describe("DiagnosticsCard", () => {
         clearDiagnosticEvents();
     });
 
-    afterEach(() => {
-        vi.restoreAllMocks();
-    });
 
     it("진단 섹션 제목과 설명이 표시된다", () => {
-        render(
-            <TestWrapper>
-                <DiagnosticsCard />
-            </TestWrapper>
-        );
+        renderWithAntd(<DiagnosticsCard />);
 
         expect(
             screen.getByText(DIAGNOSTIC_LABELS.SECTION_TITLE)
@@ -46,11 +34,7 @@ describe("DiagnosticsCard", () => {
     });
 
     it("오류가 없으면 없다는 문구를 보여준다", () => {
-        render(
-            <TestWrapper>
-                <DiagnosticsCard />
-            </TestWrapper>
-        );
+        renderWithAntd(<DiagnosticsCard />);
 
         expect(
             screen.getByText(DIAGNOSTIC_LABELS.NO_EVENTS)
@@ -64,11 +48,7 @@ describe("DiagnosticsCard", () => {
             message: "테스트 오류",
         });
 
-        render(
-            <TestWrapper>
-                <DiagnosticsCard />
-            </TestWrapper>
-        );
+        renderWithAntd(<DiagnosticsCard />);
 
         expect(
             screen.getByText(DIAGNOSTIC_LABELS.EVENT_COUNT(1))
@@ -76,11 +56,7 @@ describe("DiagnosticsCard", () => {
     });
 
     it("오류가 없으면 기록 지우기 버튼이 비활성화된다", () => {
-        render(
-            <TestWrapper>
-                <DiagnosticsCard />
-            </TestWrapper>
-        );
+        renderWithAntd(<DiagnosticsCard />);
 
         const button = screen
             .getByText(DIAGNOSTIC_LABELS.CLEAR_BUTTON)
@@ -96,11 +72,7 @@ describe("DiagnosticsCard", () => {
             message: "테스트 오류",
         });
 
-        render(
-            <TestWrapper>
-                <DiagnosticsCard />
-            </TestWrapper>
-        );
+        renderWithAntd(<DiagnosticsCard />);
 
         fireEvent.click(screen.getByText(DIAGNOSTIC_LABELS.CLEAR_BUTTON));
 
@@ -120,11 +92,7 @@ describe("DiagnosticsCard", () => {
         vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:diagnostics");
         vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
 
-        render(
-            <TestWrapper>
-                <DiagnosticsCard />
-            </TestWrapper>
-        );
+        renderWithAntd(<DiagnosticsCard />);
 
         fireEvent.click(screen.getByText(DIAGNOSTIC_LABELS.DOWNLOAD_BUTTON));
 

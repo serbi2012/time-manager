@@ -8,9 +8,7 @@ import {
     formatDurationAsTime,
     formatTimer,
     formatTimerWithSeconds,
-    formatDateDisplay,
-    formatDateShort,
-} from "../../../../../shared/lib/time/formatters";
+} from "@/shared/lib/time/formatters";
 
 describe("formatDuration", () => {
     it("60분 미만은 분으로 표시", () => {
@@ -60,26 +58,9 @@ describe("formatTimer", () => {
 describe("formatTimerWithSeconds", () => {
     it("초를 HH:MM:SS 형식으로 변환", () => {
         expect(formatTimerWithSeconds(0)).toBe("00:00:00");
+        expect(formatTimerWithSeconds(59)).toBe("00:00:59");
         expect(formatTimerWithSeconds(61)).toBe("00:01:01");
         expect(formatTimerWithSeconds(3661)).toBe("01:01:01");
-    });
-});
-
-describe("formatDateDisplay", () => {
-    it("날짜를 표시용 형식으로 변환", () => {
-        // 요일은 로케일에 따라 다를 수 있음
-        const result = formatDateDisplay("2026-01-23");
-        expect(result).toContain("1/23");
-    });
-
-    it("빈 문자열에 대해 빈 문자열 반환", () => {
-        expect(formatDateDisplay("")).toBe("");
-    });
-});
-
-describe("formatDateShort", () => {
-    it("날짜를 간단한 형식으로 변환", () => {
-        expect(formatDateShort("2026-01-23")).toBe("1/23");
-        expect(formatDateShort("2026-12-01")).toBe("12/1");
+        expect(formatTimerWithSeconds(86399)).toBe("23:59:59");
     });
 });

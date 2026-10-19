@@ -6,22 +6,17 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
+import { screen, fireEvent, act, waitFor } from "@testing-library/react";
+import { renderWithAntd } from "@/test/helpers/test_utils";
 import { useState } from "react";
 import { Modal, Input, Button } from "antd";
-import { ConfigProvider } from "antd";
-import koKR from "antd/locale/ko_KR";
-import { useAppShortcuts, useModalKeyboard } from "../../../shared/hooks";
-import { resetShortcutManager } from "../../../shared/lib/shortcuts";
-import { ConfirmPopconfirm } from "../../../shared/ui/confirm";
+import { useAppShortcuts, useModalKeyboard } from "@/shared/hooks";
+import { resetShortcutManager } from "@/shared/lib/shortcuts";
+import { ConfirmPopconfirm } from "@/shared/ui/confirm";
 import {
     useShortcutStore,
     DEFAULT_SHORTCUTS,
-} from "../../../store/useShortcutStore";
-
-const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-    <ConfigProvider locale={koKR}>{children}</ConfigProvider>
-);
+} from "@/store/useShortcutStore";
 
 function pressKey(init: KeyboardEventInit): void {
     act(() => {
@@ -74,10 +69,8 @@ describe("모달 단축키 통합", () => {
     it("모달이 닫혀 있으면 전역 단축키가 동작한다", () => {
         const on_global = vi.fn();
 
-        render(
-            <TestWrapper>
-                <ModalHarness onSubmit={vi.fn()} onGlobalShortcut={on_global} />
-            </TestWrapper>
+        renderWithAntd(
+            <ModalHarness onSubmit={vi.fn()} onGlobalShortcut={on_global} />
         );
 
         pressKey({ key: "n", altKey: true });
@@ -88,10 +81,8 @@ describe("모달 단축키 통합", () => {
     it("모달이 열리면 전역 단축키가 막힌다", () => {
         const on_global = vi.fn();
 
-        render(
-            <TestWrapper>
-                <ModalHarness onSubmit={vi.fn()} onGlobalShortcut={on_global} />
-            </TestWrapper>
+        renderWithAntd(
+            <ModalHarness onSubmit={vi.fn()} onGlobalShortcut={on_global} />
         );
 
         fireEvent.click(screen.getByText("모달 열기"));
@@ -103,13 +94,11 @@ describe("모달 단축키 통합", () => {
     it("모달이 열려 있으면 F8로 제출된다", () => {
         const on_submit = vi.fn();
 
-        render(
-            <TestWrapper>
-                <ModalHarness
-                    onSubmit={on_submit}
-                    onGlobalShortcut={vi.fn()}
-                />
-            </TestWrapper>
+        renderWithAntd(
+            <ModalHarness
+                onSubmit={on_submit}
+                onGlobalShortcut={vi.fn()}
+            />
         );
 
         fireEvent.click(screen.getByText("모달 열기"));
@@ -121,13 +110,11 @@ describe("모달 단축키 통합", () => {
     it("입력란에 포커스가 있어도 F8이 동작한다", () => {
         const on_submit = vi.fn();
 
-        render(
-            <TestWrapper>
-                <ModalHarness
-                    onSubmit={on_submit}
-                    onGlobalShortcut={vi.fn()}
-                />
-            </TestWrapper>
+        renderWithAntd(
+            <ModalHarness
+                onSubmit={on_submit}
+                onGlobalShortcut={vi.fn()}
+            />
         );
 
         fireEvent.click(screen.getByText("모달 열기"));
@@ -147,10 +134,8 @@ describe("모달 단축키 통합", () => {
     it("모달을 닫으면 전역 단축키가 되살아난다", () => {
         const on_global = vi.fn();
 
-        render(
-            <TestWrapper>
-                <ModalHarness onSubmit={vi.fn()} onGlobalShortcut={on_global} />
-            </TestWrapper>
+        renderWithAntd(
+            <ModalHarness onSubmit={vi.fn()} onGlobalShortcut={on_global} />
         );
 
         fireEvent.click(screen.getByText("모달 열기"));
@@ -162,10 +147,8 @@ describe("모달 단축키 통합", () => {
     });
 
     it("모달을 열면 첫 입력란으로 포커스가 옮겨간다", async () => {
-        render(
-            <TestWrapper>
-                <ModalHarness onSubmit={vi.fn()} onGlobalShortcut={vi.fn()} />
-            </TestWrapper>
+        renderWithAntd(
+            <ModalHarness onSubmit={vi.fn()} onGlobalShortcut={vi.fn()} />
         );
 
         fireEvent.click(screen.getByText("모달 열기"));
@@ -178,10 +161,8 @@ describe("모달 단축키 통합", () => {
     });
 
     it("모달을 닫으면 열기 전 위치로 포커스가 되돌아간다", async () => {
-        render(
-            <TestWrapper>
-                <ModalHarness onSubmit={vi.fn()} onGlobalShortcut={vi.fn()} />
-            </TestWrapper>
+        renderWithAntd(
+            <ModalHarness onSubmit={vi.fn()} onGlobalShortcut={vi.fn()} />
         );
 
         const trigger = screen.getByText("모달 열기");
@@ -210,13 +191,11 @@ describe("모달 단축키 통합", () => {
             ),
         });
 
-        render(
-            <TestWrapper>
-                <ModalHarness
-                    onSubmit={on_submit}
-                    onGlobalShortcut={vi.fn()}
-                />
-            </TestWrapper>
+        renderWithAntd(
+            <ModalHarness
+                onSubmit={on_submit}
+                onGlobalShortcut={vi.fn()}
+            />
         );
 
         fireEvent.click(screen.getByText("모달 열기"));
@@ -239,11 +218,18 @@ describe("확인 팝오버 키보드", () => {
         resetShortcutManager();
     });
 
-    function ConfirmHarness({ onConfirm }: { onConfirm: () => void }) {
+    function ConfirmHarness({
+        onConfirm,
+        onCancel,
+    }: {
+        onConfirm: () => void;
+        onCancel?: () => void;
+    }) {
         return (
             <ConfirmPopconfirm
                 title="삭제할까요?"
                 onConfirm={onConfirm}
+                onCancel={onCancel}
                 okText="삭제"
                 cancelText="취소"
             >
@@ -255,11 +241,7 @@ describe("확인 팝오버 키보드", () => {
     it("팝오버가 열린 상태에서 Enter로 확인된다", async () => {
         const on_confirm = vi.fn();
 
-        render(
-            <TestWrapper>
-                <ConfirmHarness onConfirm={on_confirm} />
-            </TestWrapper>
-        );
+        renderWithAntd(<ConfirmHarness onConfirm={on_confirm} />);
 
         fireEvent.click(screen.getByText("삭제"));
         await screen.findByText("삭제할까요?");
@@ -272,42 +254,35 @@ describe("확인 팝오버 키보드", () => {
     it("팝오버가 닫혀 있으면 Enter가 확인을 부르지 않는다", () => {
         const on_confirm = vi.fn();
 
-        render(
-            <TestWrapper>
-                <ConfirmHarness onConfirm={on_confirm} />
-            </TestWrapper>
-        );
+        renderWithAntd(<ConfirmHarness onConfirm={on_confirm} />);
 
         pressKey({ key: "Enter" });
 
         expect(on_confirm).not.toHaveBeenCalled();
     });
 
-    it("ESC로 취소하면 확인 콜백이 불리지 않는다", async () => {
+    it("ESC로 취소하면 팝오버가 닫혀 이후 Enter도 확인을 부르지 않는다", async () => {
         const on_confirm = vi.fn();
+        const on_cancel = vi.fn();
 
-        render(
-            <TestWrapper>
-                <ConfirmHarness onConfirm={on_confirm} />
-            </TestWrapper>
+        renderWithAntd(
+            <ConfirmHarness onConfirm={on_confirm} onCancel={on_cancel} />
         );
 
         fireEvent.click(screen.getByText("삭제"));
         await screen.findByText("삭제할까요?");
 
         pressKey({ key: "Escape" });
+        pressKey({ key: "Enter" });
 
+        expect(on_cancel).toHaveBeenCalledTimes(1);
         expect(on_confirm).not.toHaveBeenCalled();
     });
 
     it("확인한 뒤에는 Enter가 다시 확인을 부르지 않는다", async () => {
         const on_confirm = vi.fn();
 
-        render(
-            <TestWrapper>
-                <ConfirmHarness onConfirm={on_confirm} />
-            </TestWrapper>
-        );
+        renderWithAntd(<ConfirmHarness onConfirm={on_confirm} />);
 
         fireEvent.click(screen.getByText("삭제"));
         await screen.findByText("삭제할까요?");

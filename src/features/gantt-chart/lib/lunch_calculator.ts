@@ -83,31 +83,3 @@ export function isOverlappingWithLunch(
 
     return true;
 }
-
-/**
- * 점심시간과의 겹침 구간 계산
- *
- * @param start_mins - 시작 시간 (분 단위)
- * @param end_mins - 종료 시간 (분 단위)
- * @param lunch_time - 점심시간 정보
- * @returns 겹치는 시간 범위 (null이면 겹치지 않음)
- */
-export function calculateLunchOverlap(
-    start_mins: number,
-    end_mins: number,
-    lunch_time: LunchTimeRange
-): { start: number; end: number } | null {
-    const { start: LUNCH_START, end: LUNCH_END } = lunch_time;
-
-    if (!isOverlappingWithLunch(start_mins, end_mins, lunch_time)) {
-        return null;
-    }
-
-    const overlap_start = Math.max(start_mins, LUNCH_START);
-    const overlap_end = Math.min(end_mins, LUNCH_END);
-
-    return {
-        start: overlap_start,
-        end: overlap_end,
-    };
-}

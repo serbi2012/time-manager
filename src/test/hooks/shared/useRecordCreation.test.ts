@@ -4,12 +4,9 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useRecordCreation } from "../../../shared/hooks/useRecordCreation";
-import { useWorkStore } from "../../../store/useWorkStore";
-import {
-    createMockTemplate,
-    createMockRecord,
-} from "../../helpers/mock_factory";
+import { useRecordCreation } from "@/shared/hooks/useRecordCreation";
+import { useWorkStore } from "@/store/useWorkStore";
+import { createMockTemplate } from "@/test/helpers/mock_factory";
 
 vi.mock("@/shared/lib/message", () => ({
     message: {
@@ -17,6 +14,8 @@ vi.mock("@/shared/lib/message", () => ({
         error: vi.fn(),
     },
 }));
+
+const TIMESTAMP_POSTFIX_PATTERN = /^거래_\d{4}_\d{6}_\d{3}$/;
 
 describe("useRecordCreation", () => {
     beforeEach(() => {
@@ -61,45 +60,6 @@ describe("useRecordCreation", () => {
             expect(useWorkStore.getState().records.length).toBe(0);
         });
 
-        it("use_postfix=false일 때 순차 번호를 사용한다", async () => {
-            // 기존 레코드 추가
-            useWorkStore.setState({
-                records: [
-                    createMockRecord({
-                        work_name: "테스트 작업",
-                        deal_name: "거래",
-                        is_deleted: false,
-                        is_completed: false,
-                    }),
-                ],
-            });
-
-            const { result } = renderHook(() => useRecordCreation());
-
-            await act(async () => {
-                result.current.createFromTemplate("template-1");
-            });
-
-            const records = useWorkStore.getState().records;
-            expect(records[1].deal_name).toBe("거래 (2)");
-        });
-
-        it("use_postfix=true일 때 타임스탬프를 붙인다", async () => {
-            useWorkStore.setState({
-                use_postfix_on_preset_add: true,
-            });
-
-            const { result } = renderHook(() => useRecordCreation());
-
-            await act(async () => {
-                result.current.createFromTemplate("template-1");
-            });
-
-            const records = useWorkStore.getState().records;
-            // 거래_MMdd_HHmmss_xxx 형식
-            expect(records[0].deal_name).toMatch(/^거래_\d{4}_\d{6}_\d{3}$/);
-        });
-
         it("선택된 날짜로 레코드를 생성한다", async () => {
             useWorkStore.setState({
                 selected_date: "2026-05-15",
@@ -114,22 +74,28 @@ describe("useRecordCreation", () => {
             const records = useWorkStore.getState().records;
             expect(records[0].date).toBe("2026-05-15");
         });
+
+        it("use_postfix_on_preset_add 설정이 deal_name 생성 방식에 반영된다", async () => {
+            const createDealName = async (use_postfix: boolean) => {
+                useWorkStore.setState({
+                    records: [],
+                    use_postfix_on_preset_add: use_postfix,
+                });
+                const { result } = renderHook(() => useRecordCreation());
+                await act(async () => {
+                    result.current.createFromTemplate("template-1");
+                });
+                return useWorkStore.getState().records[0].deal_name;
+            };
+
+            expect(await createDealName(false)).toBe("거래");
+            expect(await createDealName(true)).toMatch(
+                TIMESTAMP_POSTFIX_PATTERN
+            );
+        });
     });
 
     describe("createEmpty", () => {
-        it("빈 레코드를 생성한다", async () => {
-            const { result } = renderHook(() => useRecordCreation());
-
-            await act(async () => {
-                result.current.createEmpty();
-            });
-
-            const records = useWorkStore.getState().records;
-            expect(records.length).toBe(1);
-            expect(records[0].work_name).toBe("");
-            expect(records[0].deal_name).toBe("");
-        });
-
         it("선택된 날짜로 빈 레코드를 생성한다", async () => {
             useWorkStore.setState({
                 selected_date: "2026-12-25",

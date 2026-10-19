@@ -1,5 +1,5 @@
 /**
- * sync_helpers 순수 함수 테스트
+ * sync_merge 순수 함수 테스트
  *
  * findDuplicateGroups, mergeRecordGroup 테스트
  */
@@ -8,7 +8,7 @@ import { describe, it, expect } from "vitest";
 import {
     findDuplicateGroups,
     mergeRecordGroup,
-} from "../../../firebase/sync_helpers";
+} from "../../../firebase/sync_merge";
 import type { WorkRecord } from "../../../shared/types";
 
 function createTestRecord(overrides: Partial<WorkRecord> = {}): WorkRecord {

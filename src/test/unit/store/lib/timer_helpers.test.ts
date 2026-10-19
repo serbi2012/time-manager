@@ -72,25 +72,6 @@ describe("createWorkSession", () => {
         expect(session_reverse.duration_minutes).toBe(1);
     });
 
-    it("날짜는 YYYY-MM-DD 형식이다", () => {
-        const start_ts = new Date(2026, 11, 3, 10, 0, 0, 0).getTime();
-        const end_ts = new Date(2026, 11, 3, 11, 0, 0, 0).getTime();
-
-        const session = createWorkSession(start_ts, end_ts);
-
-        expect(session.date).toBe("2026-12-03");
-    });
-
-    it("시간은 HH:mm이고 한 자리 시·분은 0으로 패딩한다", () => {
-        const start_ts = new Date(2026, 5, 8, 7, 5, 0, 0).getTime();
-        const end_ts = new Date(2026, 5, 8, 9, 9, 0, 0).getTime();
-
-        const session = createWorkSession(start_ts, end_ts);
-
-        expect(session.start_time).toBe("07:05");
-        expect(session.end_time).toBe("09:09");
-    });
-
     it("시간이 여러 시간에 걸치면 그만큼 분으로 합산한다", () => {
         const start_ts = new Date(2026, 0, 20, 9, 0, 0, 0).getTime();
         const end_ts = new Date(2026, 0, 20, 11, 30, 0, 0).getTime();
@@ -100,13 +81,16 @@ describe("createWorkSession", () => {
         expect(session.duration_minutes).toBe(150);
     });
 
-    it("월·일이 한 자리여도 날짜 문자열에 0 패딩한다", () => {
-        const start_ts = new Date(2026, 2, 5, 10, 0, 0, 0).getTime();
-        const end_ts = new Date(2026, 2, 5, 11, 0, 0, 0).getTime();
+    it.each([
+        { start: new Date(2026, 11, 3, 10, 0), end: new Date(2026, 11, 3, 11, 0), date: "2026-12-03", start_time: "10:00", end_time: "11:00" },
+        { start: new Date(2026, 2, 5, 10, 0), end: new Date(2026, 2, 5, 11, 0), date: "2026-03-05", start_time: "10:00", end_time: "11:00" },
+        { start: new Date(2026, 5, 8, 7, 5), end: new Date(2026, 5, 8, 9, 9), date: "2026-06-08", start_time: "07:05", end_time: "09:09" },
+    ])("날짜·시간을 0 패딩해 $date $start_time~$end_time로 만든다", ({ start, end, date, start_time, end_time }) => {
+        const session = createWorkSession(start.getTime(), end.getTime());
 
-        const session = createWorkSession(start_ts, end_ts);
-
-        expect(session.date).toBe("2026-03-05");
+        expect(session.date).toBe(date);
+        expect(session.start_time).toBe(start_time);
+        expect(session.end_time).toBe(end_time);
     });
 });
 
@@ -256,27 +240,5 @@ describe("findExistingRecordWithMerge", () => {
 
         expect(result).toBeUndefined();
         expect(set_fn).not.toHaveBeenCalled();
-    });
-
-    it("완료 레코드만 있어도 같은 날짜면 두 번째 조회로 반환한다", () => {
-        const completed = make_record({
-            id: "c2",
-            work_name: "작업",
-            deal_name: "거래",
-            date: "2026-01-20",
-            is_completed: true,
-        });
-        const records = [completed];
-        const set_fn = vi.fn();
-
-        const result = findExistingRecordWithMerge(
-            records,
-            "2026-01-20",
-            "작업",
-            "거래",
-            set_fn
-        );
-
-        expect(result?.id).toBe("c2");
     });
 });

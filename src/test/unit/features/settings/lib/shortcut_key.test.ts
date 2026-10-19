@@ -188,52 +188,19 @@ describe("keyEventToKeyString", () => {
         });
     });
 
-    describe("단일 문자 대문자화", () => {
-        it.each([
-            ["a", "A"],
-            ["z", "Z"],
-        ] as const)("Ctrl+%s는 Ctrl+%s이다", (lower, upper) => {
-            const mock_event = mock_react_keyboard_event({
-                key: lower,
-                ctrlKey: true,
-            });
-
-            const result = keyEventToKeyString(mock_event);
-
-            expect(result).toBe(`Ctrl+${upper}`);
-        });
-    });
-
     describe("특수 키 문자열 유지", () => {
-        it.each([
-            ["F1", "Ctrl+F1"],
-            ["Enter", "Ctrl+Enter"],
-            ["Tab", "Ctrl+Tab"],
-        ] as const)("%s는 그대로 붙인다", (special_key, expected) => {
-            const mock_event = mock_react_keyboard_event({
-                key: special_key,
-                ctrlKey: true,
-            });
+        it.each(["F1", "Enter", "Tab", "Delete", "Backspace"] as const)(
+            "Ctrl+%s는 키 이름을 그대로 붙인다",
+            (special_key) => {
+                const mock_event = mock_react_keyboard_event({
+                    key: special_key,
+                    ctrlKey: true,
+                });
 
-            const result = keyEventToKeyString(mock_event);
+                const result = keyEventToKeyString(mock_event);
 
-            expect(result).toBe(expected);
-        });
-    });
-
-    describe("여러 글자 키 문자열 유지", () => {
-        it.each([
-            ["Delete", "Ctrl+Delete"],
-            ["Backspace", "Ctrl+Backspace"],
-        ] as const)("%s는 그대로 유지한다", (multi_char_key, expected) => {
-            const mock_event = mock_react_keyboard_event({
-                key: multi_char_key,
-                ctrlKey: true,
-            });
-
-            const result = keyEventToKeyString(mock_event);
-
-            expect(result).toBe(expected);
-        });
+                expect(result).toBe(`Ctrl+${special_key}`);
+            }
+        );
     });
 });

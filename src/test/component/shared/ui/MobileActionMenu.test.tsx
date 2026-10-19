@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import {
     MobileActionMenu,
     type MobileActionMenuItem,
@@ -71,7 +71,7 @@ describe("MobileActionMenu", () => {
         expect(screen.getByText("삭제")).toBeInTheDocument();
     });
 
-    it("메뉴 항목 클릭 시 onClose가 호출된다", () => {
+    it("메뉴 항목 클릭 시 메뉴를 닫고 해당 key로 onAction을 호출한다", async () => {
         render(
             <MobileActionMenu
                 open={true}
@@ -82,9 +82,13 @@ describe("MobileActionMenu", () => {
             />
         );
 
-        fireEvent.click(screen.getByText("수정"));
+        fireEvent.click(screen.getByText("삭제"));
 
-        expect(on_close).toHaveBeenCalled();
+        expect(on_close).toHaveBeenCalledTimes(1);
+        await waitFor(() => {
+            expect(on_action).toHaveBeenCalledWith("delete");
+        });
+        expect(on_action).toHaveBeenCalledTimes(1);
     });
 
     it("빈 items 배열일 때 메뉴 콘텐츠가 없다", () => {

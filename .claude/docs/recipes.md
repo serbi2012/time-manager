@@ -74,10 +74,9 @@ useShortcut({
 
 ## 새 모달 추가
 
-1. `FormModal`을 쓰면 제출 단축키·포커스·레이어가 이미 처리된다
-2. antd `Modal`을 직접 쓸 때는 `useModalKeyboard({ open, onSubmit })` 한 줄을 추가한다
-3. 버튼의 키 뱃지는 `formatShortcutForPlatform(submit_keys)`로 그린다
-4. 삭제 등 확인이 필요하면 `ConfirmPopconfirm`을 쓴다 (antd `Popconfirm` 직접 사용 금지)
+1. antd `Modal`을 쓸 때는 `useModalKeyboard({ open, onSubmit })` 한 줄을 추가한다
+2. 버튼의 키 뱃지는 `formatShortcutForPlatform(submit_keys)`로 그린다
+3. 삭제 등 확인이 필요하면 `ConfirmPopconfirm`을 쓴다 (antd `Popconfirm` 직접 사용 금지)
 
 ---
 
@@ -101,7 +100,7 @@ useShortcut({
 2. 점심시간 제외 — `src/shared/lib/lunch/`, 값은 스토어의 `getLunchTimeMinutes()`에서
 3. 새벽 근무(`is_overnight`) — `end_time < start_time`이 정상인 케이스
 4. 진행 중 세션(`end_time === ""`) — 레코드당 1개만
-5. 시간 충돌 — `features/work-record/lib/conflict_detector.ts`, `features/gantt-chart/lib/conflict_detector.ts` **두 곳 모두**
+5. 시간 충돌 — `store/lib/session_updater.ts`(저장 시 검사·조정), `features/gantt-chart/lib/conflict_detector.ts`(간트 표시) **두 곳 모두**
 6. `updateSession`의 반환값 `{ success, adjusted, message }`를 호출부에서 처리했는지
 7. 관련 유닛 테스트: `src/test/unit/shared/lib/`, `src/test/unit/features/*/lib/`
 

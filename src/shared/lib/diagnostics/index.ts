@@ -17,7 +17,6 @@ export {
     type RecordDiagnosticEventInput,
     recordDiagnosticEvent,
     getDiagnosticEvents,
-    getDiagnosticErrorCount,
     clearDiagnosticEvents,
     subscribeToDiagnosticEvents,
     installDiagnosticCollector,

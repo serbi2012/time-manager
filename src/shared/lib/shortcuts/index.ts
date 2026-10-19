@@ -9,7 +9,6 @@ export {
     normalizeKeyName,
     normalizeKeys,
     eventToKeyString,
-    matchesKeys,
     hasModifier,
     formatKeysForDisplay,
     formatShortcutForPlatform,

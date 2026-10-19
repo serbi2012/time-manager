@@ -10,6 +10,20 @@ function createMouseEvent(clientX: number, clientY: number): React.MouseEvent {
     return { clientX, clientY } as React.MouseEvent;
 }
 
+const MOCK_ELEMENT = {
+    getBoundingClientRect: () => ({
+        left: 100,
+        top: 200,
+        width: 300,
+        height: 40,
+        right: 400,
+        bottom: 240,
+        x: 100,
+        y: 200,
+        toJSON: vi.fn(),
+    }),
+} as unknown as HTMLDivElement;
+
 describe("useSpotlight", () => {
     it("초기 상태에서 glow가 보이지 않는다", () => {
         const { result } = renderHook(() => useSpotlight());
@@ -43,22 +57,8 @@ describe("useSpotlight", () => {
     it("mouseMove 시 glow 위치가 커서를 따라간다", () => {
         const { result } = renderHook(() => useSpotlight());
 
-        const mock_el = {
-            getBoundingClientRect: () => ({
-                left: 100,
-                top: 200,
-                width: 300,
-                height: 40,
-                right: 400,
-                bottom: 240,
-                x: 100,
-                y: 200,
-                toJSON: vi.fn(),
-            }),
-        } as unknown as HTMLDivElement;
-
         act(() => {
-            result.current.ref(mock_el);
+            result.current.ref(MOCK_ELEMENT);
         });
 
         act(() => {
@@ -82,13 +82,23 @@ describe("useSpotlight", () => {
         expect(result.current.glow_style.top).toBe(0);
     });
 
-    it("ref 콜백으로 DOM 요소를 설정할 수 있다", () => {
+    it("ref(null)로 요소를 해제하면 이후 mouseMove가 위치를 바꾸지 않는다", () => {
         const { result } = renderHook(() => useSpotlight());
 
-        expect(typeof result.current.ref).toBe("function");
-
+        act(() => {
+            result.current.ref(MOCK_ELEMENT);
+        });
+        act(() => {
+            result.current.handlers.onMouseMove(createMouseEvent(250, 220));
+        });
         act(() => {
             result.current.ref(null);
         });
+        act(() => {
+            result.current.handlers.onMouseMove(createMouseEvent(300, 230));
+        });
+
+        expect(result.current.glow_style.left).toBe(150);
+        expect(result.current.glow_style.top).toBe(20);
     });
 });

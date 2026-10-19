@@ -118,9 +118,19 @@ describe("useMagnetic", () => {
         expect(result.current.style).toEqual({});
     });
 
-    it("ref 콜백으로 DOM 요소를 설정할 수 있다", () => {
-        const { result } = renderHook(() => useMagnetic<HTMLDivElement>());
+    it("ref(null)로 요소를 해제하면 이후 mouseMove가 translate를 적용하지 않는다", () => {
+        const { result } = renderHook(() => useMagnetic<HTMLDivElement>(0.15));
 
-        expect(typeof result.current.ref).toBe("function");
+        act(() => {
+            result.current.ref(createMockElement(200, 200));
+        });
+        act(() => {
+            result.current.ref(null);
+        });
+        act(() => {
+            result.current.handlers.onMouseMove(createMouseEvent(220, 210));
+        });
+
+        expect(result.current.style).toEqual({});
     });
 });

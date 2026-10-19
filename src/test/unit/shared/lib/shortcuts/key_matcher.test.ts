@@ -4,7 +4,6 @@ import {
     normalizeKeyName,
     normalizeKeys,
     eventToKeyString,
-    matchesKeys,
     hasModifier,
     formatKeysForDisplay,
 } from "@/shared/lib/shortcuts";
@@ -86,26 +85,6 @@ describe("eventToKeyString", () => {
         const event = createEvent({ key: "ArrowRight", altKey: true });
 
         expect(eventToKeyString(event)).toBe("Alt+Right");
-    });
-});
-
-describe("matchesKeys", () => {
-    it("표기가 달라도 같은 조합이면 일치한다", () => {
-        const event = createEvent({ key: "n", altKey: true });
-
-        expect(matchesKeys(event, "alt+n")).toBe(true);
-        expect(matchesKeys(event, "Alt+N")).toBe(true);
-    });
-
-    it("수식어가 다르면 일치하지 않는다", () => {
-        const event = createEvent({ key: "n", altKey: true });
-
-        expect(matchesKeys(event, "Ctrl+N")).toBe(false);
-        expect(matchesKeys(event, "N")).toBe(false);
-    });
-
-    it("빈 키 문자열은 일치하지 않는다", () => {
-        expect(matchesKeys(createEvent({ key: "n" }), "")).toBe(false);
     });
 });
 

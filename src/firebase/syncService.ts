@@ -15,11 +15,8 @@ import { checkAndMigrate } from "./migration";
 import { useWorkStore } from "../store/useWorkStore";
 import type { WorkRecord } from "../types";
 import { useShortcutStore } from "../store/useShortcutStore";
-import {
-    applyLoadedDataToStore,
-    findDuplicateGroups,
-    mergeRecordGroup,
-} from "./sync_helpers";
+import { applyLoadedDataToStore } from "./sync_helpers";
+import { findDuplicateGroups, mergeRecordGroup } from "./sync_merge";
 
 // 현재 로그인한 사용자 정보 (Store에서 Firebase 저장 시 사용)
 let current_user: User | null = null;

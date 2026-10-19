@@ -2,20 +2,24 @@
  * deal_name_generator 테스트
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import {
     generateUniqueId,
     extractNumberFromDealName,
     generateSequentialDealName,
     generateDealName,
-} from "../../../../../shared/lib/record/deal_name_generator";
+} from "@/shared/lib/record/deal_name_generator";
 import {
     createMockTemplate,
     createMockRecord,
-} from "../../../../helpers/mock_factory";
+} from "@/test/helpers/mock_factory";
 
 describe("deal_name_generator", () => {
     describe("generateUniqueId", () => {
+        afterEach(() => {
+            vi.useRealTimers();
+        });
+
         it("MMdd_HHmmss_xxx 형식의 고유 ID를 생성한다", () => {
             const id = generateUniqueId();
 
@@ -23,13 +27,12 @@ describe("deal_name_generator", () => {
             expect(id).toMatch(/^\d{4}_\d{6}_\d{3}$/);
         });
 
-        it("호출할 때마다 다른 ID를 생성한다", () => {
-            const id1 = generateUniqueId();
-            const id2 = generateUniqueId();
+        it("현재 시각과 난수 접미사로 ID를 조합한다", () => {
+            vi.useFakeTimers();
+            vi.setSystemTime(new Date(2026, 1, 3, 14, 30, 52));
+            vi.spyOn(Math, "random").mockReturnValue(0.042);
 
-            // 랜덤 접미사로 인해 높은 확률로 다름
-            // (같은 초에 호출되어도 랜덤 부분이 다름)
-            expect(id1).not.toBe(id2);
+            expect(generateUniqueId()).toBe("0203_143052_042");
         });
     });
 

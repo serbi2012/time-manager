@@ -3,13 +3,13 @@
  */
 
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
-import { MobileRecordList } from "../../../../../features/work-record/ui/Mobile/MobileRecordList";
-import { createMockRecord } from "../../../../helpers/mock_factory";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { MobileRecordList } from "@/features/work-record/ui/Mobile/MobileRecordList";
+import { createMockRecord } from "@/test/helpers/mock_factory";
 import {
     MOBILE_RECORD_LABEL,
     RECORD_EMPTY,
-} from "../../../../../features/work-record/constants";
+} from "@/features/work-record/constants";
 
 describe("MobileRecordList", () => {
     const default_props = {
@@ -63,12 +63,22 @@ describe("MobileRecordList", () => {
         expect(screen.getByText("두번째 작업")).toBeInTheDocument();
     });
 
-    it("완료/휴지통/복사 버튼이 존재한다", () => {
-        const { container } = render(
-            <MobileRecordList {...default_props} records={[]} />
+    it.each([
+        ["check-circle", "onOpenCompleted"],
+        ["delete", "onOpenTrash"],
+        ["copy", "onCopyRecords"],
+    ] as const)("%s 버튼을 누르면 %s가 호출된다", (button_name, handler_name) => {
+        const handler = vi.fn();
+        render(
+            <MobileRecordList
+                {...default_props}
+                records={[]}
+                {...{ [handler_name]: handler }}
+            />
         );
 
-        const buttons = container.querySelectorAll("button");
-        expect(buttons.length).toBeGreaterThanOrEqual(3);
+        fireEvent.click(screen.getByRole("button", { name: button_name }));
+
+        expect(handler).toHaveBeenCalledTimes(1);
     });
 });

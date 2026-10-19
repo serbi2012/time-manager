@@ -82,15 +82,9 @@ describe("DesktopHeader", () => {
             </MemoryRouter>
         );
 
-        const buttons = document.querySelectorAll("button");
-        const settings_button = Array.from(buttons).find((btn) =>
-            btn.querySelector("[aria-label='setting']")
-        );
+        fireEvent.click(screen.getByRole("button", { name: "setting" }));
 
-        if (settings_button) {
-            fireEvent.click(settings_button);
-            expect(on_settings_open).toHaveBeenCalled();
-        }
+        expect(on_settings_open).toHaveBeenCalledTimes(1);
     });
 
     it("비로그인 시 로그인 버튼이 표시됨", () => {

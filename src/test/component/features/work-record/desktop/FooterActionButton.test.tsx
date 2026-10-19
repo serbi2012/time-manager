@@ -13,12 +13,6 @@ describe("FooterActionButton", () => {
         onClick: vi.fn(),
     };
 
-    it("라벨이 렌더링된다", () => {
-        render(<FooterActionButton {...default_props} />);
-
-        expect(screen.getByText("테스트 버튼")).toBeInTheDocument();
-    });
-
     it("아이콘이 렌더링된다", () => {
         render(<FooterActionButton {...default_props} />);
 
@@ -34,7 +28,7 @@ describe("FooterActionButton", () => {
         expect(on_click).toHaveBeenCalledTimes(1);
     });
 
-    it("button 요소로 렌더링된다", () => {
+    it("라벨을 이름으로 가진 button 요소로 렌더링된다", () => {
         render(<FooterActionButton {...default_props} />);
 
         expect(

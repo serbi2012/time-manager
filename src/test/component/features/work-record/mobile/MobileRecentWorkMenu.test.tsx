@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MobileRecentWorkMenu } from "../../../../../features/work-record/ui/Mobile/MobileRecentWorkMenu";
 import { MOBILE_FAB_RECENT_TITLE } from "../../../../../features/work-record/constants";
 
@@ -122,7 +122,7 @@ describe("MobileRecentWorkMenu", () => {
         expect(buttons).toHaveLength(5);
     });
 
-    it("항목 클릭 시 onClose가 호출된다", () => {
+    it("항목 클릭 시 메뉴를 닫고 해당 레코드로 onSelect를 호출한다", async () => {
         render(
             <MobileRecentWorkMenu
                 open={true}
@@ -135,6 +135,9 @@ describe("MobileRecentWorkMenu", () => {
 
         fireEvent.click(screen.getByText("UI 구현"));
 
-        expect(on_close).toHaveBeenCalled();
+        expect(on_close).toHaveBeenCalledTimes(1);
+        await waitFor(() => {
+            expect(on_select).toHaveBeenCalledWith("r1");
+        });
     });
 });

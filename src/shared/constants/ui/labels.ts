@@ -290,11 +290,6 @@ export const DIAGNOSTIC_LABELS = {
     SHARE_HINT: "내려받은 파일에는 작업 내용이 함께 담겨 있어요",
 } as const;
 
-/** 되돌리기 토스트 */
-export const UNDO_LABELS = {
-    undo: "되돌리기",
-} as const;
-
 /** 당겨서 새로고침 */
 export const PULL_TO_REFRESH_LABELS = {
     pull: "당겨서 새로고침",

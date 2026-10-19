@@ -7,7 +7,6 @@ import {
     getRecordDurationMinutes,
     getRecordDurationForDate,
     getTimeRangeForDate,
-    recalculateRecordDuration,
 } from "../../../../../features/work-record/lib/duration_calculator";
 import type { WorkRecord } from "../../../../../shared/types";
 import type { LunchTimeRange } from "../../../../../shared/lib/lunch/lunch_calculator";
@@ -54,49 +53,30 @@ describe("duration_calculator", () => {
             expect(duration).toBe(180);
         });
 
-        it("세션에서 시간 계산", () => {
-            // 세션의 duration_minutes가 설정되어 있으면 그 값을 사용
+        it.each([
+            { label: "0", duration_minutes: 0 },
+            { label: "NaN", duration_minutes: Number.NaN },
+        ])("duration_minutes가 $label이면 세션 합산을 사용", ({ duration_minutes }) => {
             const record = createTestRecord({
-                sessions: [s("s1", "2024-01-15", "11:00", "14:00")], // 180분
+                duration_minutes,
+                sessions: [
+                    s("s1", "2024-01-15", "09:00", "10:00"),
+                    s("s2", "2024-01-15", "14:00", "16:00"),
+                ],
             });
 
-            const duration = getRecordDurationMinutes(record);
-
-            expect(duration).toBe(180); // 세션의 duration_minutes 합계
+            expect(getRecordDurationMinutes(record)).toBe(180);
         });
 
-        it("점심 시간과 겹치지 않는 세션", () => {
-            const record = createTestRecord({
-                sessions: [s("s1", "2024-01-15", "14:00", "16:00")],
-            });
+        it.each([
+            { label: "세션이 없으면", sessions: [], start_time: "09:00", end_time: "18:00", expected: 540 },
+            { label: "세션 합이 0이면", sessions: [s("s1", "2024-01-15", "09:00", "09:00")], start_time: "08:00", end_time: "09:30", expected: 90 },
+            { label: "start·end 차이가 0이면", sessions: [s("s1", "2024-01-15", "12:00", "12:00")], start_time: "14:00", end_time: "14:00", expected: 0 },
+            { label: "시간 정보가 없으면", sessions: [], start_time: "", end_time: "", expected: 0 },
+        ])("$label start_time/end_time 차이로 계산 ($expected분)", ({ sessions, start_time, end_time, expected }) => {
+            const record = createTestRecord({ duration_minutes: 0, sessions, start_time, end_time });
 
-            const duration = getRecordDurationMinutes(record);
-
-            expect(duration).toBe(120);
-        });
-
-        it("세션이 없으면 start_time/end_time으로 계산", () => {
-            const record = createTestRecord({
-                start_time: "14:00",
-                end_time: "16:00",
-                sessions: [],
-            });
-
-            const duration = getRecordDurationMinutes(record);
-
-            expect(duration).toBe(120);
-        });
-
-        it("세션이 없으면 start_time/end_time으로 계산", () => {
-            const record = createTestRecord({ 
-                sessions: [],
-                start_time: "09:00",
-                end_time: "18:00", // 540분
-            });
-
-            const duration = getRecordDurationMinutes(record);
-
-            expect(duration).toBe(540);
+            expect(getRecordDurationMinutes(record)).toBe(expected);
         });
 
         it("진행 중인 세션(end_time 없음)은 0분으로 처리", () => {
@@ -139,16 +119,17 @@ describe("duration_calculator", () => {
             expect(duration).toBe(0);
         });
 
-        it("세션이 없고 레코드 날짜가 맞으면 전체 시간 반환", () => {
+        it.each([
+            { target_date: "2024-01-15", expected: 120 },
+            { target_date: "2024-01-16", expected: 0 },
+        ])("세션이 없으면 레코드 날짜가 $target_date일 때 $expected분 반환", ({ target_date, expected }) => {
             const record = createTestRecord({
                 date: "2024-01-15",
                 duration_minutes: 120,
                 sessions: [],
             });
 
-            const duration = getRecordDurationForDate(record, "2024-01-15");
-
-            expect(duration).toBe(120);
+            expect(getRecordDurationForDate(record, target_date)).toBe(expected);
         });
     });
 
@@ -178,38 +159,33 @@ describe("duration_calculator", () => {
             expect(range.start_time).toBe("");
             expect(range.end_time).toBe("");
         });
-    });
 
-    describe("recalculateRecordDuration", () => {
-        it("세션 기반으로 duration_minutes 재계산", () => {
+        it.each([
+            { target_date: "2024-01-15", expected: { start_time: "08:30", end_time: "17:45" } },
+            { target_date: "2024-01-14", expected: { start_time: "", end_time: "" } },
+        ])("세션이 없으면 레코드 날짜와 비교해 범위를 반환 ($target_date)", ({ target_date, expected }) => {
             const record = createTestRecord({
-                sessions: [s("s1", "2024-01-15", "14:00", "16:00")],
-                duration_minutes: 0,
+                date: "2024-01-15",
+                sessions: [],
+                start_time: "08:30",
+                end_time: "17:45",
             });
 
-            const updated = recalculateRecordDuration(record);
-
-            expect(updated.duration_minutes).toBe(120);
+            expect(getTimeRangeForDate(record, target_date)).toEqual(expected);
         });
 
-        it("원본 레코드를 변경하지 않아야 함", () => {
+        it("start_time이 비어 있으면 00:00으로 정렬해 가장 이른 시작을 고른다", () => {
             const record = createTestRecord({
-                sessions: [s("s1", "2024-01-15", "14:00", "16:00")],
-                duration_minutes: 0,
+                sessions: [
+                    s("s1", "2024-01-15", "11:00", "12:00"),
+                    { id: "s2", date: "2024-01-15", start_time: "", end_time: "10:00", duration_minutes: 0 },
+                ],
             });
 
-            const updated = recalculateRecordDuration(record);
+            const range = getTimeRangeForDate(record, "2024-01-15");
 
-            expect(record.duration_minutes).toBe(0);
-            expect(updated.duration_minutes).toBe(120);
-        });
-
-        it("세션이 없으면 원본 반환", () => {
-            const record = createTestRecord({ sessions: [] });
-
-            const updated = recalculateRecordDuration(record);
-
-            expect(updated).toBe(record);
+            expect(range.start_time).toBe("");
+            expect(range.end_time).toBe("12:00");
         });
     });
 
@@ -245,27 +221,6 @@ describe("duration_calculator", () => {
             const custom_result = getRecordDurationForDate(record, "2024-01-15", CUSTOM_LUNCH);
 
             expect(default_result).toBe(custom_result);
-        });
-
-        it("recalculateRecordDuration에 커스텀 점심시간 전달", () => {
-            const record = createTestRecord({
-                sessions: [
-                    {
-                        id: "s1",
-                        date: "2024-01-15",
-                        start_time: "11:30",
-                        end_time: "12:30",
-                        duration_minutes: undefined as unknown as number,
-                    },
-                ],
-                duration_minutes: 0,
-            });
-
-            const default_updated = recalculateRecordDuration(record);
-            const custom_updated = recalculateRecordDuration(record, CUSTOM_LUNCH);
-
-            expect(default_updated.duration_minutes).toBe(10);
-            expect(custom_updated.duration_minutes).toBe(30);
         });
     });
 });

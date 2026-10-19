@@ -94,45 +94,6 @@ export function calculateTotalMinutes(
 }
 
 /**
- * 새 세션 생성
- *
- * @param start_time 시작 시간 (Unix timestamp, milliseconds)
- * @param end_time 종료 시간 (Unix timestamp, milliseconds)
- * @param lunch_time 사용자 점심시간 설정 (미전달 시 기본값 사용)
- * @returns 새 세션 객체
- */
-export function createSession(
-    start_time: number,
-    end_time: number,
-    lunch_time?: LunchTimeRange
-): SessionLike {
-    const start_date = new Date(start_time);
-    const end_date = new Date(end_time);
-
-    const start_mins = start_date.getHours() * 60 + start_date.getMinutes();
-    const end_mins = end_date.getHours() * 60 + end_date.getMinutes();
-
-    const duration_minutes = Math.max(
-        1,
-        calculateDurationExcludingLunch(start_mins, end_mins, lunch_time)
-    );
-
-    const pad = (n: number) => n.toString().padStart(2, "0");
-
-    return {
-        id: crypto.randomUUID(),
-        date: `${start_date.getFullYear()}-${pad(
-            start_date.getMonth() + 1
-        )}-${pad(start_date.getDate())}`,
-        start_time: `${pad(start_date.getHours())}:${pad(
-            start_date.getMinutes()
-        )}`,
-        end_time: `${pad(end_date.getHours())}:${pad(end_date.getMinutes())}`,
-        duration_minutes,
-    };
-}
-
-/**
  * 세션 목록을 시간순으로 정렬
  *
  * @param sessions 세션 배열
@@ -173,52 +134,4 @@ export function filterSessionsByDate(
     return sessions.filter(
         (session) => (session.date || record_date) === target_date
     );
-}
-
-/**
- * 세션 목록에서 첫 번째와 마지막 시간 정보 추출
- *
- * @param sessions 세션 배열
- * @returns { first_start, last_end } 또는 빈 문자열
- */
-export function getSessionTimeRange(sessions: SessionLike[]): {
-    first_start: string;
-    last_end: string;
-} {
-    if (!sessions || sessions.length === 0) {
-        return { first_start: "", last_end: "" };
-    }
-
-    const sorted = sortSessionsByTime(sessions);
-    const first = sorted[0];
-    const last = sorted[sorted.length - 1];
-
-    return {
-        first_start: first?.start_time || "",
-        last_end: last?.end_time || "",
-    };
-}
-
-/**
- * 진행 중인 세션인지 확인 (end_time이 비어있음)
- *
- * @param session 세션 객체
- * @returns 진행 중 여부
- */
-export function isRunningSession(session: SessionLike): boolean {
-    return session.end_time === "";
-}
-
-/**
- * 세션 ID로 세션 찾기
- *
- * @param sessions 세션 배열
- * @param session_id 찾을 세션 ID
- * @returns 세션 객체 또는 undefined
- */
-export function findSessionById(
-    sessions: SessionLike[],
-    session_id: string
-): SessionLike | undefined {
-    return sessions.find((s) => s.id === session_id);
 }

@@ -6,11 +6,8 @@ import { describe, it, expect } from "vitest";
 import {
     timeToMinutes,
     minutesToTime,
-    calculateMinutesDifference,
-    timestampToMinutes,
     getEffectiveEndMinutes,
-    calculateOvernightDuration,
-} from "../../../../../shared/lib/time/calculators";
+} from "@/shared/lib/time/calculators";
 
 describe("timeToMinutes", () => {
     it("정상적인 시간 문자열을 분으로 변환", () => {
@@ -23,6 +20,7 @@ describe("timeToMinutes", () => {
 
     it("잘못된 입력에 대해 0 반환", () => {
         expect(timeToMinutes("")).toBe(0);
+        expect(timeToMinutes("invalid")).toBe(0);
         expect(timeToMinutes(null as unknown as string)).toBe(0);
         expect(timeToMinutes(undefined as unknown as string)).toBe(0);
     });
@@ -50,31 +48,18 @@ describe("minutesToTime", () => {
     it("음수 값을 절대값으로 처리", () => {
         expect(minutesToTime(-60)).toBe("01:00");
     });
-});
 
-describe("calculateMinutesDifference", () => {
-    it("두 시간의 차이를 분으로 계산", () => {
-        expect(calculateMinutesDifference("09:00", "10:00")).toBe(60);
-        expect(calculateMinutesDifference("09:30", "12:00")).toBe(150);
-        expect(calculateMinutesDifference("00:00", "23:59")).toBe(1439);
+    it("한 자리 수는 0으로 채운다", () => {
+        expect(minutesToTime(5)).toBe("00:05");
+        expect(minutesToTime(65)).toBe("01:05");
     });
 
-    it("음수 결과도 정상 반환", () => {
-        expect(calculateMinutesDifference("10:00", "09:00")).toBe(-60);
-    });
-});
-
-describe("timestampToMinutes", () => {
-    it("타임스탬프에서 하루 중 분 추출", () => {
-        // 2026-01-23 09:30:00
-        const timestamp = new Date(2026, 0, 23, 9, 30, 0).getTime();
-        expect(timestampToMinutes(timestamp)).toBe(570);
-    });
-
-    it("자정은 0분", () => {
-        const midnight = new Date(2026, 0, 23, 0, 0, 0).getTime();
-        expect(timestampToMinutes(midnight)).toBe(0);
-    });
+    it.each(["00:00", "09:00", "11:40", "12:40", "15:30", "23:59"])(
+        "%s는 timeToMinutes와 왕복 변환해도 같다",
+        (time) => {
+            expect(minutesToTime(timeToMinutes(time))).toBe(time);
+        }
+    );
 });
 
 describe("getEffectiveEndMinutes", () => {
@@ -92,23 +77,5 @@ describe("getEffectiveEndMinutes", () => {
 
     it("is_overnight가 true여도 늦은 시간(18:00)에 +1440 적용", () => {
         expect(getEffectiveEndMinutes("18:00", true)).toBe(1080 + 1440);
-    });
-});
-
-describe("calculateOvernightDuration", () => {
-    it("일반 세션의 소요 시간 계산", () => {
-        expect(calculateOvernightDuration("09:00", "18:00")).toBe(540);
-        expect(calculateOvernightDuration("09:00", "18:00", false)).toBe(540);
-    });
-
-    it("새벽 근무 세션의 소요 시간 계산 (자정 넘김)", () => {
-        expect(calculateOvernightDuration("22:00", "02:24", true)).toBe(264);
-        expect(calculateOvernightDuration("23:00", "01:00", true)).toBe(120);
-        expect(calculateOvernightDuration("20:00", "03:00", true)).toBe(420);
-    });
-
-    it("새벽 근무가 아니면 음수 결과 가능 (검증 책임은 호출자)", () => {
-        const result = calculateOvernightDuration("22:00", "02:24", false);
-        expect(result).toBe(-1176);
     });
 });

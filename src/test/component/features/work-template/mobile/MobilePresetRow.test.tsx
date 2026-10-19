@@ -82,12 +82,4 @@ describe("MobilePresetRow", () => {
         expect(onStart).toHaveBeenCalledTimes(1);
         expect(onSelect).not.toHaveBeenCalled();
     });
-
-    it("시작 버튼에 접근성 이름이 있다", () => {
-        renderRow();
-
-        expect(
-            screen.getByLabelText(MOBILE_PRESET_SHEET.START_LABEL)
-        ).toBeInTheDocument();
-    });
 });

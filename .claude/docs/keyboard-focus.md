@@ -88,8 +88,6 @@ const { submit_keys } = useModalKeyboard({
 
 버튼 라벨의 키 뱃지는 `formatShortcutForPlatform(submit_keys)`를 쓴다. `"F8"`을 하드코딩하지 않는다 — 사용자가 설정에서 바꿀 수 있다.
 
-`FormModal`을 쓰면 이미 안에서 처리하므로 아무것도 하지 않아도 된다.
-
 ### 확인창 (삭제 등)
 
 antd `Popconfirm`을 직접 쓰지 않고 `ConfirmPopconfirm`을 쓴다.

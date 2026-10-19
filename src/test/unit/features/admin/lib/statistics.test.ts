@@ -2,12 +2,10 @@
  * 통계 계산 함수 테스트
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   formatDuration,
   formatMinutesToHours,
-  calculateHourlyStats,
-  calculateWeekdayStats,
   calculateDealStats,
   calculateProductivityStats,
   calculateWeekComparison,
@@ -22,6 +20,17 @@ import {
 } from "../../../../../features/admin/lib/statistics";
 import type { WorkRecord } from "../../../../../shared/types";
 import dayjs from "dayjs";
+
+const FIXED_NOW = new Date("2026-03-18T12:00:00");
+
+beforeEach(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(FIXED_NOW);
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 // 테스트용 mock 데이터 생성
 function createMockRecord(overrides: Partial<WorkRecord> = {}): WorkRecord {
@@ -149,39 +158,6 @@ describe("calculateSessionStats", () => {
     expect(result.average_minutes).toBe(70);
     expect(result.longest_minutes).toBe(120);
     expect(result.shortest_minutes).toBe(30);
-  });
-});
-
-describe("calculateHourlyStats", () => {
-  it("24시간 통계를 반환한다", () => {
-    const result = calculateHourlyStats([]);
-    expect(result).toHaveLength(24);
-    expect(result[0].hour).toBe(0);
-    expect(result[23].hour).toBe(23);
-  });
-
-  it("세션 시작 시간을 기준으로 집계한다", () => {
-    const today = dayjs().format("YYYY-MM-DD");
-    const records = [
-      createMockRecord({
-        sessions: [
-          { id: "s1", date: today, start_time: "09:00", end_time: "10:00", duration_minutes: 60 },
-          { id: "s2", date: today, start_time: "09:30", end_time: "10:00", duration_minutes: 30 },
-        ],
-      }),
-    ];
-    const result = calculateHourlyStats(records);
-    expect(result[9].total_minutes).toBe(90);
-    expect(result[9].session_count).toBe(2);
-  });
-});
-
-describe("calculateWeekdayStats", () => {
-  it("7일 통계를 반환한다", () => {
-    const result = calculateWeekdayStats([]);
-    expect(result).toHaveLength(7);
-    expect(result[0].weekday_name).toBe("일");
-    expect(result[6].weekday_name).toBe("토");
   });
 });
 

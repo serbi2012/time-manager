@@ -28,31 +28,6 @@ export function minutesToTime(mins: number): string {
 }
 
 /**
- * 두 시간 사이의 분 차이 계산
- * @param start_time 시작 시간 (HH:mm)
- * @param end_time 종료 시간 (HH:mm)
- * @returns 분 단위 차이
- */
-export function calculateMinutesDifference(
-    start_time: string,
-    end_time: string
-): number {
-    const start_mins = timeToMinutes(start_time);
-    const end_mins = timeToMinutes(end_time);
-    return end_mins - start_mins;
-}
-
-/**
- * 타임스탬프에서 분 단위 시간 추출
- * @param timestamp Unix timestamp (milliseconds)
- * @returns 분 단위 (예: 09:30 -> 570)
- */
-export function timestampToMinutes(timestamp: number): number {
-    const date = new Date(timestamp);
-    return date.getHours() * 60 + date.getMinutes();
-}
-
-/**
  * 새벽 근무(자정 넘김) 고려한 실효 종료 시간(분) 계산
  * @param end_time 종료 시간 (HH:mm)
  * @param is_overnight 새벽 근무 여부
@@ -64,23 +39,6 @@ export function getEffectiveEndMinutes(
 ): number {
     const end_mins = timeToMinutes(end_time);
     return is_overnight ? end_mins + 1440 : end_mins;
-}
-
-/**
- * 새벽 근무 고려한 소요 시간(분) 계산
- * @param start_time 시작 시간 (HH:mm)
- * @param end_time 종료 시간 (HH:mm)
- * @param is_overnight 새벽 근무 여부
- * @returns 분 단위 차이
- */
-export function calculateOvernightDuration(
-    start_time: string,
-    end_time: string,
-    is_overnight?: boolean
-): number {
-    const start_mins = timeToMinutes(start_time);
-    const effective_end = getEffectiveEndMinutes(end_time, is_overnight);
-    return effective_end - start_mins;
 }
 
 /**

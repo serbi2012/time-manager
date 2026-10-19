@@ -4,8 +4,8 @@
 
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { MobileRecordRow } from "../../../../../features/work-record/ui/Mobile/MobileRecordRow";
-import { createMockRecord } from "../../../../helpers/mock_factory";
+import { MobileRecordRow } from "@/features/work-record/ui/Mobile/MobileRecordRow";
+import { createMockRecord } from "@/test/helpers/mock_factory";
 
 describe("MobileRecordRow", () => {
     const default_props = {

@@ -3,5 +3,3 @@
  */
 
 export { BaseModal, type BaseModalProps } from "./BaseModal";
-export { FormModal, type FormModalProps } from "./FormModal";
-export { RecordListModal, type RecordListModalProps } from "./RecordListModal";

@@ -4,13 +4,7 @@
  */
 import '@testing-library/jest-dom/vitest'
 import { afterEach, beforeEach, vi } from 'vitest'
-import { cleanup } from '@testing-library/react'
 import './setup/common'
-
-// 각 테스트 후 DOM 정리
-afterEach(() => {
-    cleanup()
-})
 
 // =====================================================
 // 브라우저 API 모킹

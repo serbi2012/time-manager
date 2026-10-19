@@ -4,7 +4,6 @@
  * @example
  * import {
  *   groupRecordsByDealName,
- *   collectOccupiedSlots,
  *   useGanttData,
  *   useGanttDrag,
  *   TimeAxis,

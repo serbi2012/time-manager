@@ -3,7 +3,6 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
     recordDiagnosticEvent,
     getDiagnosticEvents,
-    getDiagnosticErrorCount,
     clearDiagnosticEvents,
     subscribeToDiagnosticEvents,
     installDiagnosticCollector,
@@ -28,21 +27,6 @@ describe("error_collector", () => {
         expect(events[0].message).toBe("테스트 오류");
         expect(events[0].id).toBeTruthy();
         expect(events[0].at).toBeTruthy();
-    });
-
-    it("error 레벨만 세어 오류 개수를 반환한다", () => {
-        recordDiagnosticEvent({
-            level: "error",
-            source: "manual",
-            message: "오류",
-        });
-        recordDiagnosticEvent({
-            level: "warn",
-            source: "manual",
-            message: "경고",
-        });
-
-        expect(getDiagnosticErrorCount()).toBe(1);
     });
 
     it("버퍼 한도를 넘으면 오래된 이벤트를 버린다", () => {

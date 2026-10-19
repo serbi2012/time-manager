@@ -100,14 +100,6 @@ export function eventToKeyString(event: KeyboardEvent): string {
 }
 
 /**
- * 이벤트가 특정 키 조합과 일치하는지 판단
- */
-export function matchesKeys(event: KeyboardEvent, keys: string): boolean {
-    if (!keys) return false;
-    return eventToKeyString(event) === normalizeKeys(keys);
-}
-
-/**
  * 키 조합에 수식어(Ctrl/Alt/Shift/Meta)가 포함되어 있는지
  */
 export function hasModifier(keys: string): boolean {

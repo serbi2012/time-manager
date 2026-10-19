@@ -10,12 +10,22 @@ import { useAppShortcuts } from "../../../shared/hooks";
 import { resetShortcutManager } from "../../../shared/lib/shortcuts";
 import { useShortcutStore, DEFAULT_SHORTCUTS } from "../../../store/useShortcutStore";
 
-// 스토어 초기화
 const resetStore = () => {
     useShortcutStore.setState({
         shortcuts: [...DEFAULT_SHORTCUTS],
     });
 };
+
+function pressKey(init: KeyboardEventInit): void {
+    act(() => {
+        window.dispatchEvent(
+            new KeyboardEvent("keydown", { bubbles: true, ...init })
+        );
+    });
+}
+
+const ALT_N: KeyboardEventInit = { key: "n", altKey: true };
+const ALT_S: KeyboardEventInit = { key: "s", altKey: true };
 
 describe("키보드 단축키 통합 테스트", () => {
     beforeEach(() => {
@@ -23,9 +33,6 @@ describe("키보드 단축키 통합 테스트", () => {
         resetStore();
     });
 
-    // =====================================================
-    // F8 단축키 테스트 (모달 저장)
-    // =====================================================
     describe("F8 단축키 (모달 저장)", () => {
         it("모달이 없으면 F8은 전역에서 동작하지 않는다", () => {
             const handlers = {
@@ -34,310 +41,61 @@ describe("키보드 단축키 통합 테스트", () => {
 
             renderHook(() => useAppShortcuts(handlers));
 
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                        key: "F8",
-                        code: "F8",
-                        bubbles: true,
-                    })
-                );
-            });
-
-            expect(handlers.modalSubmit).not.toHaveBeenCalled();
-        });
-
-        it("F8 단축키 비활성화 시 핸들러가 호출되지 않음", () => {
-            // F8 단축키 비활성화
-            useShortcutStore.getState().toggleShortcut("modal-submit");
-
-            const handlers = {
-                modalSubmit: vi.fn(),
-            };
-
-            renderHook(() => useAppShortcuts(handlers));
-
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                        key: "F8",
-                        code: "F8",
-                        bubbles: true,
-                    })
-                );
-            });
+            pressKey({ key: "F8", code: "F8" });
 
             expect(handlers.modalSubmit).not.toHaveBeenCalled();
         });
     });
 
-    // =====================================================
-    // Alt 조합 단축키 테스트
-    // =====================================================
-    describe("Alt 조합 단축키", () => {
-        it("Alt+N 키를 누르면 새 작업 추가 핸들러가 호출됨", () => {
+    describe("기본 키 매핑", () => {
+        it.each<[string, string, KeyboardEventInit]>([
+            ["Alt+N", "openNewWorkModal", ALT_N],
+            ["Alt+S", "toggleTimer", ALT_S],
+            ["Alt+T", "goToday", { key: "t", altKey: true }],
+            ["Alt+P", "openNewPresetModal", { key: "p", altKey: true }],
+            ["Alt+,", "openSettings", { key: ",", altKey: true }],
+            ["Alt+1", "goDaily", { key: "1", altKey: true }],
+            ["Alt+2", "goWeekly", { key: "2", altKey: true }],
+            ["Alt+Left", "prevDay", { key: "ArrowLeft", altKey: true }],
+            ["Alt+Right", "nextDay", { key: "ArrowRight", altKey: true }],
+            ["Alt+Shift+S", "syncData", { key: "s", altKey: true, shiftKey: true }],
+            ["Alt+E", "exportData", { key: "e", altKey: true }],
+            ["Alt+R", "resetTimer", { key: "r", altKey: true }],
+        ])("%s 키를 누르면 %s 핸들러만 호출됨", (_label, action, init) => {
+            const target = vi.fn();
+            const other = vi.fn();
+            const other_action =
+                action === "openNewWorkModal" ? "toggleTimer" : "openNewWorkModal";
+
+            renderHook(() =>
+                useAppShortcuts({ [action]: target, [other_action]: other })
+            );
+
+            pressKey(init);
+
+            expect(target).toHaveBeenCalledTimes(1);
+            expect(other).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("단축키 활성화", () => {
+        it("비활성화한 단축키는 키를 눌러도 핸들러가 호출되지 않음", () => {
+            useShortcutStore.getState().toggleShortcut("new-work");
+
             const handlers = {
                 openNewWorkModal: vi.fn(),
             };
 
             renderHook(() => useAppShortcuts(handlers));
 
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                        key: "n",
-                        altKey: true,
-                        bubbles: true,
-                    })
-                );
-            });
+            pressKey(ALT_N);
 
-            expect(handlers.openNewWorkModal).toHaveBeenCalledTimes(1);
-        });
-
-        it("Alt+S 키를 누르면 타이머 토글 핸들러가 호출됨", () => {
-            const handlers = {
-                toggleTimer: vi.fn(),
-            };
-
-            renderHook(() => useAppShortcuts(handlers));
-
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                        key: "s",
-                        altKey: true,
-                        bubbles: true,
-                    })
-                );
-            });
-
-            expect(handlers.toggleTimer).toHaveBeenCalledTimes(1);
-        });
-
-        it("Alt+T 키를 누르면 오늘로 이동 핸들러가 호출됨", () => {
-            const handlers = {
-                goToday: vi.fn(),
-            };
-
-            renderHook(() => useAppShortcuts(handlers));
-
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                        key: "t",
-                        altKey: true,
-                        bubbles: true,
-                    })
-                );
-            });
-
-            expect(handlers.goToday).toHaveBeenCalledTimes(1);
-        });
-
-        it("Alt+P 키를 누르면 새 프리셋 모달 핸들러가 호출됨", () => {
-            const handlers = {
-                openNewPresetModal: vi.fn(),
-            };
-
-            renderHook(() => useAppShortcuts(handlers));
-
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                        key: "p",
-                        altKey: true,
-                        bubbles: true,
-                    })
-                );
-            });
-
-            expect(handlers.openNewPresetModal).toHaveBeenCalledTimes(1);
-        });
-
-        it("Alt+, 키를 누르면 설정 모달 핸들러가 호출됨", () => {
-            const handlers = {
-                openSettings: vi.fn(),
-            };
-
-            renderHook(() => useAppShortcuts(handlers));
-
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                        key: ",",
-                        altKey: true,
-                        bubbles: true,
-                    })
-                );
-            });
-
-            expect(handlers.openSettings).toHaveBeenCalledTimes(1);
+            expect(handlers.openNewWorkModal).not.toHaveBeenCalled();
         });
     });
 
-    // =====================================================
-    // 네비게이션 단축키 테스트
-    // =====================================================
-    describe("네비게이션 단축키", () => {
-        it("Alt+1 키를 누르면 일간 기록 페이지로 이동", () => {
-            const handlers = {
-                goDaily: vi.fn(),
-            };
-
-            renderHook(() => useAppShortcuts(handlers));
-
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                        key: "1",
-                        altKey: true,
-                        bubbles: true,
-                    })
-                );
-            });
-
-            expect(handlers.goDaily).toHaveBeenCalledTimes(1);
-        });
-
-        it("Alt+2 키를 누르면 주간 일정 페이지로 이동", () => {
-            const handlers = {
-                goWeekly: vi.fn(),
-            };
-
-            renderHook(() => useAppShortcuts(handlers));
-
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                        key: "2",
-                        altKey: true,
-                        bubbles: true,
-                    })
-                );
-            });
-
-            expect(handlers.goWeekly).toHaveBeenCalledTimes(1);
-        });
-
-        it("Alt+Left 키를 누르면 이전 날짜로 이동", () => {
-            const handlers = {
-                prevDay: vi.fn(),
-            };
-
-            renderHook(() => useAppShortcuts(handlers));
-
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                        key: "ArrowLeft",
-                        altKey: true,
-                        bubbles: true,
-                    })
-                );
-            });
-
-            expect(handlers.prevDay).toHaveBeenCalledTimes(1);
-        });
-
-        it("Alt+Right 키를 누르면 다음 날짜로 이동", () => {
-            const handlers = {
-                nextDay: vi.fn(),
-            };
-
-            renderHook(() => useAppShortcuts(handlers));
-
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                        key: "ArrowRight",
-                        altKey: true,
-                        bubbles: true,
-                    })
-                );
-            });
-
-            expect(handlers.nextDay).toHaveBeenCalledTimes(1);
-        });
-    });
-
-    // =====================================================
-    // Shift 조합 단축키 테스트
-    // =====================================================
-    describe("Shift 조합 단축키", () => {
-        it("Alt+Shift+S 키를 누르면 수동 동기화 핸들러가 호출됨", () => {
-            const handlers = {
-                syncData: vi.fn(),
-            };
-
-            renderHook(() => useAppShortcuts(handlers));
-
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                        key: "s",
-                        altKey: true,
-                        shiftKey: true,
-                        bubbles: true,
-                    })
-                );
-            });
-
-            expect(handlers.syncData).toHaveBeenCalledTimes(1);
-        });
-    });
-
-    // =====================================================
-    // 데이터 단축키 테스트
-    // =====================================================
-    describe("데이터 단축키", () => {
-        it("Alt+E 키를 누르면 데이터 내보내기 핸들러가 호출됨", () => {
-            const handlers = {
-                exportData: vi.fn(),
-            };
-
-            renderHook(() => useAppShortcuts(handlers));
-
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                        key: "e",
-                        altKey: true,
-                        bubbles: true,
-                    })
-                );
-            });
-
-            expect(handlers.exportData).toHaveBeenCalledTimes(1);
-        });
-
-        it("Alt+R 키를 누르면 타이머 초기화 핸들러가 호출됨", () => {
-            const handlers = {
-                resetTimer: vi.fn(),
-            };
-
-            renderHook(() => useAppShortcuts(handlers));
-
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                        key: "r",
-                        altKey: true,
-                        bubbles: true,
-                    })
-                );
-            });
-
-            expect(handlers.resetTimer).toHaveBeenCalledTimes(1);
-        });
-    });
-
-    // =====================================================
-    // 단축키 키 조합 변경 테스트
-    // =====================================================
     describe("단축키 키 조합 변경", () => {
         it("단축키 키 조합을 변경하면 새 키로 동작함", () => {
-            // Alt+N을 Alt+Q로 변경
             const result = useShortcutStore.getState().setShortcutKeys("new-work", "Alt+Q");
             expect(result.success).toBe(true);
 
@@ -347,83 +105,35 @@ describe("키보드 단축키 통합 테스트", () => {
 
             renderHook(() => useAppShortcuts(handlers));
 
-            // 기존 Alt+N은 동작하지 않아야 함
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                        key: "n",
-                        altKey: true,
-                        bubbles: true,
-                    })
-                );
-            });
+            pressKey(ALT_N);
             expect(handlers.openNewWorkModal).not.toHaveBeenCalled();
 
-            // 새 Alt+Q는 동작해야 함
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                        key: "q",
-                        altKey: true,
-                        bubbles: true,
-                    })
-                );
-            });
+            pressKey({ key: "q", altKey: true });
             expect(handlers.openNewWorkModal).toHaveBeenCalledTimes(1);
         });
 
-        it("중복된 키 조합으로 변경 시 실패함", () => {
-            // Alt+S는 이미 toggleTimer에서 사용 중
+        it("다른 단축키가 쓰는 키로 바꾸면 거부되고 기존 키 매핑이 유지됨", () => {
             const result = useShortcutStore.getState().setShortcutKeys("new-work", "Alt+S");
             expect(result.success).toBe(false);
             expect(result.message).toContain("이미");
-        });
-    });
+            expect(useShortcutStore.getState().getShortcut("new-work")?.keys).toBe("Alt+N");
 
-    // =====================================================
-    // 다중 핸들러 테스트
-    // =====================================================
-    describe("다중 핸들러 동시 등록", () => {
-        it("여러 핸들러가 등록되어도 각각 독립적으로 동작함", () => {
             const handlers = {
                 openNewWorkModal: vi.fn(),
                 toggleTimer: vi.fn(),
-                goToday: vi.fn(),
             };
 
             renderHook(() => useAppShortcuts(handlers));
 
-            // Alt+N
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", { key: "n", altKey: true, bubbles: true })
-                );
-            });
-            expect(handlers.openNewWorkModal).toHaveBeenCalledTimes(1);
-            expect(handlers.toggleTimer).not.toHaveBeenCalled();
-
-            // Alt+S
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", { key: "s", altKey: true, bubbles: true })
-                );
-            });
+            pressKey(ALT_S);
             expect(handlers.toggleTimer).toHaveBeenCalledTimes(1);
-            expect(handlers.goToday).not.toHaveBeenCalled();
+            expect(handlers.openNewWorkModal).not.toHaveBeenCalled();
 
-            // Alt+T
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", { key: "t", altKey: true, bubbles: true })
-                );
-            });
-            expect(handlers.goToday).toHaveBeenCalledTimes(1);
+            pressKey(ALT_N);
+            expect(handlers.openNewWorkModal).toHaveBeenCalledTimes(1);
         });
     });
 
-    // =====================================================
-    // 언마운트 테스트
-    // =====================================================
     describe("훅 언마운트", () => {
         it("언마운트 후에는 핸들러가 호출되지 않음", () => {
             const handlers = {
@@ -432,20 +142,12 @@ describe("키보드 단축키 통합 테스트", () => {
 
             const { unmount } = renderHook(() => useAppShortcuts(handlers));
 
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", { key: "n", altKey: true, bubbles: true })
-                );
-            });
+            pressKey(ALT_N);
             expect(handlers.openNewWorkModal).toHaveBeenCalledTimes(1);
 
             unmount();
 
-            act(() => {
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", { key: "n", altKey: true, bubbles: true })
-                );
-            });
+            pressKey(ALT_N);
             expect(handlers.openNewWorkModal).toHaveBeenCalledTimes(1);
         });
     });

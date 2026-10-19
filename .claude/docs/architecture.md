@@ -77,10 +77,10 @@ pages/
 | feature | lib (순수 함수) | hooks | 비고 |
 | --- | --- | --- | --- |
 | `timer` | — | — | 타입만 존재. 로직은 `store/slices/timer/` |
-| `work-record` | conflict_detector, record_merger, record_filters, record_stats, duration_calculator, category_utils, markdown_formatter | useRecordData, useRecordActions, useRecordEdit, useRecordModals, useRecordFilters, useRecordStats, useRecordTimer, useRecordColumns, useLongPress | 가장 큰 feature |
+| `work-record` | record_filters, record_stats, duration_calculator, category_utils, record_copy_rows, record_form, copy_cell_value, text_table | useRecordData, useRecordActions, useRecordEdit, useRecordModals, useRecordFilters, useRecordStats, useRecordTimer, useRecordColumns, useLongPress | 가장 큰 feature |
 | `work-template` | — | useTemplateActions, useTemplateDnd | @dnd-kit 정렬 |
-| `gantt-chart` | bar_calculator, slot_calculator, drag_handler, conflict_detector, session_validator, lunch_calculator, mobile_segment_calculator | useGanttData, useGanttDrag, useGanttResize, useGanttTime, useMobileGanttMenus | |
-| `weekly-schedule` | copy_formatter, weekly_copy_text, week_calculator, week_grouper | useWeeklyData, useCopyFormat | |
+| `gantt-chart` | bar_calculator, slot_calculator, drag_handler, conflict_detector, lunch_calculator, mobile_segment_calculator | useGanttData, useGanttDrag, useGanttResize, useGanttTime, useMobileGanttMenus | |
+| `weekly-schedule` | copy_formatter(타입만), weekly_copy_text, week_calculator, week_grouper | useWeeklyData, useCopyFormat | |
 | `settings` | shortcut_key | useSettingsTab | `ui/tabs/`에 탭별 컴포넌트 |
 | `admin` | problem_detector, conflict_finder, duplicate_finder, integrity, export, statistics/* | useAdminData, useAdminActions, useAdminFilters, useAdminTabs, useSessionAnalysis | 내부용 |
 | `sync` | — | useSyncStatus | `initial_load_done` 제공 |
@@ -106,19 +106,18 @@ shared/
 │   ├── haptic.ts   모바일 진동 피드백
 │   └── scrollbar.ts
 ├── ui/
-│   ├── (루트) TimeInput, DateInput, CategoryTag, DurationDisplay, TimerDisplay,
+│   ├── (루트) TimeInput, DateInput, CategoryTag,
 │   │          HighlightText, MobileActionMenu
-│   ├── form/        WorkFormFields, AutoCompleteWithHide, SelectWithAdd, TimeRangeInput, useWorkForm
-│   ├── table/       DataTable (TanStack Table 래퍼) + Header/Body/SortIcon/useDataTable
-│   ├── modal/       BaseModal, FormModal, RecordListModal
-│   ├── layout/      EmptyState, LoadingOverlay
+│   ├── form/        WorkRecordFormFields, AutoCompleteOptionLabel, SelectOptionLabel, SelectAddNewDropdown
+│   ├── modal/       BaseModal
+│   ├── layout/      EmptyState
 │   ├── animation/   framer-motion 프리셋 — config/, primitives/, interactions/, feedback/, hooks/
 │   ├── transitions/ 페이지 전환 시스템 (→ transitions.md)
 │   ├── confirm/     ConfirmPopconfirm (Enter/ESC 보장 확인창)
 │   ├── error/       AppErrorBoundary + 진단 다운로드 화면
 │   └── cursor-tracking/ Spotlight·Tilt·Magnetic 등 커서 추종 효과
 ├── types/       domain, timer, shortcut, suggestion
-├── hooks/       useResponsive, useAutoCompleteOptions, useRecordCreation, useDataImportExport,
+├── hooks/       useResponsive, useRecordCreation, useDataImportExport, useHoverIntent, useResizableWidth,
 │                useAuthHandlers, useLongPress, useDebouncedValue, useMousePosition,
 │                useSpotlight, useMagnetic, useDiagnostics,
 │                useShortcut, useShortcutLayer, useAppShortcuts,
@@ -302,16 +301,13 @@ minutesToTime(570)              // "09:30"
 formatDuration(90)              // "1시간 30분"
 formatTimer(3661)               // "01:01"
 isValidTimeFormat("09:30")      // true
-isStartBeforeEnd("09:00", "10:00")
 
 // shared/lib/lunch
 calculateDurationExcludingLunch(660, 780)   // 점심 제외 분
-isInLunchTime(720)
 
 // shared/lib/session
 getSessionMinutes(session)
 calculateTotalMinutes(sessions)
-createSession(start_ts, end_ts)
 sortSessionsByTime(sessions)
 
 // shared/lib/cn

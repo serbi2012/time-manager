@@ -3,24 +3,18 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
-import { ConfigProvider } from "antd";
-import koKR from "antd/locale/ko_KR";
+import type { ReactElement } from "react";
+import { screen } from "@testing-library/react";
+import { renderWithAntd } from "@/test/helpers/test_utils";
 import {
     RouteTransition,
     PageTransitionProvider,
-} from "../../../../../shared/ui/transitions";
+} from "@/shared/ui/transitions";
 
-function renderWithRouter(
-    ui: React.ReactNode,
-    { initial_route = "/" }: { initial_route?: string } = {}
-) {
-    return render(
-        <ConfigProvider locale={koKR}>
-            <MemoryRouter initialEntries={[initial_route]}>{ui}</MemoryRouter>
-        </ConfigProvider>
-    );
+const DEFAULT_ROUTE = "/";
+
+function renderWithRouter(ui: ReactElement, route = DEFAULT_ROUTE) {
+    return renderWithAntd(ui, { route });
 }
 
 describe("RouteTransition", () => {
@@ -60,8 +54,20 @@ describe("RouteTransition", () => {
         );
 
         const content = screen.getByTestId("content");
-        expect(content).toBeInTheDocument();
-        expect(content.parentElement).not.toBeNull();
+        expect(content.parentElement).toHaveAttribute("style");
+    });
+
+    it("is_ready=true면 투명 상태에서 슬라이드 인을 시작한다", () => {
+        renderWithRouter(
+            <PageTransitionProvider is_ready={true} transition_enabled={true}>
+                <RouteTransition>
+                    <div data-testid="content">콘텐츠</div>
+                </RouteTransition>
+            </PageTransitionProvider>
+        );
+
+        const wrapper = screen.getByTestId("content").parentElement;
+        expect(wrapper?.style.opacity).toBe("0");
     });
 
     it("is_ready=false일 때 초기 애니메이션이 적용되지 않는다", () => {
@@ -73,7 +79,8 @@ describe("RouteTransition", () => {
             </PageTransitionProvider>
         );
 
-        expect(screen.getByTestId("content")).toBeInTheDocument();
+        const wrapper = screen.getByTestId("content").parentElement;
+        expect(wrapper?.style.opacity).toBe("1");
     });
 
     it("기본 context 값으로도 정상 렌더링된다", () => {
@@ -95,7 +102,7 @@ describe("RouteTransition", () => {
                     <div>주간 페이지</div>
                 </RouteTransition>
             </PageTransitionProvider>,
-            { initial_route: "/weekly" }
+            "/weekly"
         );
 
         expect(screen.getByText("주간 페이지")).toBeInTheDocument();
@@ -108,7 +115,7 @@ describe("RouteTransition", () => {
                     <div>알 수 없는 라우트</div>
                 </RouteTransition>
             </PageTransitionProvider>,
-            { initial_route: "/unknown" }
+            "/unknown"
         );
 
         expect(screen.getByText("알 수 없는 라우트")).toBeInTheDocument();

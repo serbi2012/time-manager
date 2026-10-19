@@ -5,13 +5,9 @@
 import { describe, it, expect } from "vitest";
 import {
     groupRecordsByDealName,
-    collectOccupiedSlots,
     calculateAvailableRange,
     isTimeOccupied,
-    minutesToPixels,
-    pixelsToMinutes,
     type TimeSlot,
-    type GroupedWork,
 } from "../../../../../features/gantt-chart/lib/slot_calculator";
 import type { WorkRecord } from "../../../../../shared/types";
 
@@ -43,36 +39,6 @@ function s(id: string, date: string, start: string, end: string): { id: string; 
 }
 
 describe("slot_calculator", () => {
-    describe("minutesToPixels", () => {
-        it("분을 픽셀 위치로 변환해야 함", () => {
-            const start_hour = 8;
-            const pixels_per_hour = 60;
-
-            // 540분 (09:00) = 8시 기준 60분 후
-            const pos = minutesToPixels(540, start_hour, pixels_per_hour);
-
-            expect(pos).toBe(60); // 60분 * 1픽셀/분
-        });
-
-        it("시작 시간과 동일하면 0 반환", () => {
-            const pos = minutesToPixels(480, 8, 60); // 08:00 = 480분
-
-            expect(pos).toBe(0);
-        });
-    });
-
-    describe("pixelsToMinutes", () => {
-        it("픽셀 위치를 분으로 변환해야 함", () => {
-            const start_hour = 8;
-            const pixels_per_hour = 60;
-
-            // 60픽셀 = 60분 = 09:00 = 540분
-            const mins = pixelsToMinutes(60, start_hour, pixels_per_hour);
-
-            expect(mins).toBe(540);
-        });
-    });
-
     describe("isTimeOccupied", () => {
         it("점유된 시간 감지", () => {
             const slots: TimeSlot[] = [
@@ -169,32 +135,6 @@ describe("slot_calculator", () => {
             expect(groups).toHaveLength(1);
             expect(groups[0].sessions).toHaveLength(1);
             expect(groups[0].sessions[0].id).toBe("s1");
-        });
-    });
-
-    describe("collectOccupiedSlots", () => {
-        it("세션을 시간 슬롯으로 변환", () => {
-            const groups: GroupedWork[] = [
-                {
-                    key: "거래A",
-                    record: createTestRecord(),
-                    sessions: [s("s1", "2024-01-15", "09:00", "12:00")],
-                    first_start: 540,
-                },
-            ];
-
-            const slots = collectOccupiedSlots(groups);
-
-            expect(slots.length).toBeGreaterThanOrEqual(2);
-            expect(slots.some(slot => slot.start === 540 && slot.end === 720)).toBe(true);
-        });
-
-        it("점심시간 슬롯 포함", () => {
-            const slots = collectOccupiedSlots([]);
-
-            expect(slots).toHaveLength(1);
-            expect(slots[0].start).toBe(700);
-            expect(slots[0].end).toBe(760);
         });
     });
 });

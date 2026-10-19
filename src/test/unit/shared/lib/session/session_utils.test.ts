@@ -6,7 +6,8 @@ import { describe, it, expect } from "vitest";
 import {
     getSessionMinutes,
     calculateTotalMinutes,
-    createSession,
+    sortSessionsByTime,
+    filterSessionsByDate,
     type SessionLike,
 } from "../../../../../shared/lib/session/session_utils";
 import type { LunchTimeRange } from "../../../../../shared/lib/lunch/lunch_calculator";
@@ -116,30 +117,123 @@ describe("getSessionMinutes - 새벽 근무 (is_overnight)", () => {
     });
 });
 
-describe("createSession", () => {
-    it("커스텀 점심시간으로 세션 생성 시 duration_minutes가 달라짐", () => {
-        // 2026-01-20 11:00 ~ 13:00
-        const start = new Date(2026, 0, 20, 11, 0).getTime();
-        const end = new Date(2026, 0, 20, 13, 0).getTime();
+describe("sortSessionsByTime", () => {
+    it("서로 다른 date는 문자열 비교 순으로 정렬된다", () => {
+        const sessions: SessionLike[] = [
+            { id: "b", date: "2024-01-02", start_time: "09:00", end_time: "10:00" },
+            { id: "a", date: "2024-01-01", start_time: "14:00", end_time: "15:00" },
+        ];
 
-        const default_session = createSession(start, end);
-        const custom_session = createSession(start, end, CUSTOM_LUNCH);
+        const sorted = sortSessionsByTime(sessions);
 
-        // 기본 점심(11:40~12:40) 제외: 40 + 20 = 60분
-        expect(default_session.duration_minutes).toBe(60);
-        // 커스텀 점심(12:00~13:00) 제외: 60 + 0 = 60분
-        expect(custom_session.duration_minutes).toBe(60);
+        expect(sorted.map((s) => s.id)).toEqual(["a", "b"]);
+    });
 
-        // 11:30 ~ 12:30 케이스에서 차이 발생
-        const start2 = new Date(2026, 0, 20, 11, 30).getTime();
-        const end2 = new Date(2026, 0, 20, 12, 30).getTime();
+    it("같은 date면 start_time 순으로 정렬된다", () => {
+        const sessions: SessionLike[] = [
+            { id: "late", date: "2024-01-01", start_time: "11:00", end_time: "12:00" },
+            { id: "early", date: "2024-01-01", start_time: "09:00", end_time: "10:00" },
+        ];
 
-        const default_session2 = createSession(start2, end2);
-        const custom_session2 = createSession(start2, end2, CUSTOM_LUNCH);
+        const sorted = sortSessionsByTime(sessions);
 
-        // 기본: 11:30~11:40 = 10분
-        expect(default_session2.duration_minutes).toBe(10);
-        // 커스텀: 11:30~12:00 = 30분
-        expect(custom_session2.duration_minutes).toBe(30);
+        expect(sorted.map((s) => s.id)).toEqual(["early", "late"]);
+    });
+
+    it("date가 없는 세션은 record_date를 날짜 키로 사용한다", () => {
+        const sessions: SessionLike[] = [
+            { id: "no_date_late", start_time: "11:00", end_time: "12:00" },
+            { id: "dated", date: "2024-01-01", start_time: "09:00", end_time: "10:00" },
+        ];
+
+        const sorted_with_record = sortSessionsByTime(sessions, "2024-01-02");
+
+        expect(sorted_with_record[0]?.id).toBe("dated");
+        expect(sorted_with_record[1]?.id).toBe("no_date_late");
+
+        const both_no_date: SessionLike[] = [
+            { id: "second", start_time: "10:00", end_time: "11:00" },
+            { id: "first", start_time: "09:00", end_time: "10:00" },
+        ];
+
+        const sorted_same_record_day = sortSessionsByTime(both_no_date, "2024-01-01");
+
+        expect(sorted_same_record_day.map((s) => s.id)).toEqual(["first", "second"]);
+    });
+
+    it("빈 배열이면 빈 배열을 반환한다", () => {
+        const sessions: SessionLike[] = [];
+
+        const sorted = sortSessionsByTime(sessions);
+
+        expect(sorted).toEqual([]);
+    });
+
+    it("원본 배열을 변경하지 않는다", () => {
+        const sessions: SessionLike[] = [
+            { id: "b", start_time: "11:00", end_time: "12:00" },
+            { id: "a", start_time: "09:00", end_time: "10:00" },
+        ];
+        const snapshot = sessions.map((s) => ({ ...s }));
+
+        const sorted = sortSessionsByTime(sessions, "2024-01-01");
+
+        expect(sorted).not.toBe(sessions);
+        expect(sessions).toEqual(snapshot);
+    });
+});
+
+describe("filterSessionsByDate", () => {
+    it("session.date가 target_date와 일치하는 항목만 남긴다", () => {
+        const sessions: SessionLike[] = [
+            { id: "keep", date: "2024-01-01", start_time: "09:00", end_time: "10:00" },
+            { id: "drop", date: "2024-01-02", start_time: "09:00", end_time: "10:00" },
+        ];
+
+        const filtered = filterSessionsByDate(sessions, "2024-01-01");
+
+        expect(filtered.map((s) => s.id)).toEqual(["keep"]);
+    });
+
+    it("date가 없으면 record_date와 target_date를 비교한다", () => {
+        const sessions: SessionLike[] = [
+            { id: "match", start_time: "09:00", end_time: "10:00" },
+            { id: "also_match", start_time: "10:00", end_time: "11:00" },
+        ];
+
+        const filtered = filterSessionsByDate(sessions, "2024-01-01", "2024-01-01");
+
+        expect(filtered).toHaveLength(2);
+
+        const filtered_miss = filterSessionsByDate(sessions, "2024-01-02", "2024-01-01");
+
+        expect(filtered_miss).toHaveLength(0);
+    });
+
+    it("혼합된 date와 record_date fallback이 올바르게 동작한다", () => {
+        const sessions: SessionLike[] = [
+            { id: "explicit", date: "2024-01-02", start_time: "09:00", end_time: "10:00" },
+            { id: "implicit", start_time: "10:00", end_time: "11:00" },
+        ];
+
+        const filtered = filterSessionsByDate(sessions, "2024-01-02", "2024-01-02");
+
+        expect(filtered.map((s) => s.id).sort()).toEqual(["explicit", "implicit"]);
+    });
+});
+
+describe("getSessionMinutes (레거시 duration_seconds)", () => {
+    it.each([
+        { duration_seconds: 125, expected: 3 },
+        { duration_seconds: 120, expected: 2 },
+    ])("duration_seconds $duration_seconds초는 $expected분으로 올림한다", ({ duration_seconds, expected }) => {
+        const session: SessionLike & { duration_seconds: number } = {
+            id: "legacy",
+            start_time: "09:00",
+            end_time: "18:00",
+            duration_seconds,
+        };
+
+        expect(getSessionMinutes(session)).toBe(expected);
     });
 });

@@ -19,21 +19,34 @@ describe("MobileSpeedDialFab", () => {
         return buttons[buttons.length - 1];
     }
 
-    it("메인 FAB 버튼이 렌더링된다", () => {
+    function getMiniFabGroup(label: string) {
+        const group = screen.getByText(label).parentElement;
+        if (!group) throw new Error("미니 FAB 영역을 찾을 수 없음");
+        return group;
+    }
+
+    it("메인 버튼 클릭 시 미니 FAB가 펼쳐지고 다시 누르면 접힌다", () => {
         render(<MobileSpeedDialFab {...default_props} />);
 
-        expect(getMainButton()).toBeInTheDocument();
-    });
+        const new_record_group = getMiniFabGroup(
+            MOBILE_RECORD_LABEL.SPEED_DIAL_NEW_RECORD
+        );
+        const preset_group = getMiniFabGroup(
+            MOBILE_RECORD_LABEL.SPEED_DIAL_PRESET
+        );
+        expect(new_record_group).toHaveClass("pointer-events-none");
+        expect(preset_group).toHaveClass("pointer-events-none");
 
-    it("메인 버튼 클릭 시 미니 FAB 라벨이 존재한다", () => {
-        render(<MobileSpeedDialFab {...default_props} />);
+        fireEvent.click(getMainButton());
 
-        expect(
-            screen.getByText(MOBILE_RECORD_LABEL.SPEED_DIAL_NEW_RECORD)
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText(MOBILE_RECORD_LABEL.SPEED_DIAL_PRESET)
-        ).toBeInTheDocument();
+        expect(new_record_group).toHaveClass("opacity-100");
+        expect(preset_group).toHaveClass("opacity-100");
+        expect(getMainButton().style.transform).toBe("rotate(45deg)");
+
+        fireEvent.click(getMainButton());
+
+        expect(new_record_group).toHaveClass("pointer-events-none");
+        expect(getMainButton().style.transform).toBe("rotate(0deg)");
     });
 
     it("새 작업 미니 FAB 클릭 시 on_add_record가 호출된다", () => {
@@ -45,14 +58,15 @@ describe("MobileSpeedDialFab", () => {
             />
         );
 
-        const new_record_label = screen.getByText(
+        fireEvent.click(getMainButton());
+        const new_record_group = getMiniFabGroup(
             MOBILE_RECORD_LABEL.SPEED_DIAL_NEW_RECORD
         );
-        const new_record_btn =
-            new_record_label.parentElement!.querySelector("button")!;
+        const new_record_btn = new_record_group.querySelector("button")!;
         fireEvent.click(new_record_btn);
 
         expect(on_add_record).toHaveBeenCalledTimes(1);
+        expect(new_record_group).toHaveClass("pointer-events-none");
     });
 
     it("프리셋 미니 FAB 클릭 시 on_open_preset이 호출된다", () => {

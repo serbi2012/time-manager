@@ -4,7 +4,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useLongPress } from "../../../shared/hooks/useLongPress";
+import { useLongPress } from "@/shared/hooks/useLongPress";
 
 describe("useLongPress (shared)", () => {
     beforeEach(() => {
@@ -13,7 +13,6 @@ describe("useLongPress (shared)", () => {
 
     afterEach(() => {
         vi.useRealTimers();
-        vi.restoreAllMocks();
     });
 
     it("초기 상태에서 is_pressing은 false이고 press_progress는 0이다", () => {

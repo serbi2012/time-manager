@@ -3,7 +3,7 @@
  *
  * @example
  * import { TimeInput, DateInput, CategoryTag } from '@/shared/ui';
- * import { SelectWithAdd, BaseModal, LoadingOverlay } from '@/shared/ui';
+ * import { BaseModal, HighlightText } from '@/shared/ui';
  */
 
 // 입력 컴포넌트
@@ -12,8 +12,6 @@ export { DateInput, type DateInputProps } from "./DateInput";
 
 // 표시 컴포넌트
 export { CategoryTag, type CategoryTagProps } from "./CategoryTag";
-export { DurationDisplay, type DurationDisplayProps } from "./DurationDisplay";
-export { TimerDisplay, type TimerDisplayProps } from "./TimerDisplay";
 
 // 유틸리티 컴포넌트
 export { HighlightText } from "./HighlightText";
@@ -43,48 +41,8 @@ export {
     type TransitionSpeed,
 } from "./transitions";
 
-// 폼 컴포넌트
-export {
-    SelectWithAdd,
-    type SelectWithAddProps,
-    AutoCompleteWithHide,
-    type AutoCompleteWithHideProps,
-    type AutoCompleteOption,
-    TimeRangeInput,
-    type TimeRangeInputProps,
-    WorkFormFields,
-    useWorkForm,
-    workFormSchema,
-    DEFAULT_WORK_FORM_DATA,
-    type WorkFormData,
-    type WorkFormFieldName,
-    type WorkFormLayout,
-    type WorkFormFieldsProps,
-    type UseWorkFormOptions,
-} from "./form";
-
-// 테이블 컴포넌트
-export {
-    DataTable,
-    useDataTable,
-    createDataTableColumnHelper,
-    type DataTableProps,
-    type DataTableRef,
-    type UseDataTableOptions,
-    type ColumnDef,
-    type SortingState,
-    type RowSelectionState,
-} from "./table";
-
 // 모달 컴포넌트
-export {
-    BaseModal,
-    type BaseModalProps,
-    FormModal,
-    type FormModalProps,
-    RecordListModal,
-    type RecordListModalProps,
-} from "./modal";
+export { BaseModal, type BaseModalProps } from "./modal";
 
 // 모바일 액션 메뉴
 export {
@@ -95,8 +53,6 @@ export {
 
 // 레이아웃 컴포넌트
 export {
-    LoadingOverlay,
-    type LoadingOverlayProps,
     EmptyState,
     type EmptyStateProps,
     type EmptyImageType,
@@ -112,13 +68,9 @@ export {
     MobilePageHeader,
     MobilePullIndicator,
     MobileListSkeleton,
-    UndoToast,
-    useUndoToast,
     type MobileBottomSheetProps,
     type MobileIconButtonProps,
     type MobilePageHeaderProps,
-    type UndoToastProps,
-    type UndoToastRequest,
 } from "./mobile";
 
 // 키보드 입력 환경

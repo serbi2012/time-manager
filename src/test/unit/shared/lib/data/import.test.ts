@@ -7,11 +7,11 @@ import {
     validateImportData,
     extractImportData,
     parseImportContent,
-} from "../../../../../shared/lib/data/import";
+} from "@/shared/lib/data/import";
 import {
     createMockRecord,
     createMockTemplate,
-} from "../../../../helpers/mock_factory";
+} from "@/test/helpers/mock_factory";
 
 describe("import", () => {
     describe("validateImportData", () => {

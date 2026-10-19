@@ -5,6 +5,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MobileSidebar } from "../../../../../features/guide/ui/MobileSidebar/MobileSidebar";
+import { TABLE_OF_CONTENTS } from "@/docs";
 
 const DEFAULT_PROPS = {
     current_section: "overview",
@@ -21,10 +22,12 @@ describe("MobileSidebar", () => {
         expect(screen.getByPlaceholderText("문서 검색...")).toBeInTheDocument();
     });
 
-    it("메뉴 칩 버튼들이 표시된다", () => {
+    it("목차 항목마다 메뉴 칩이 표시된다", () => {
         render(<MobileSidebar {...DEFAULT_PROPS} />);
-        const buttons = screen.getAllByRole("button");
-        expect(buttons.length).toBeGreaterThan(1);
+
+        expect(screen.getAllByRole("button")).toHaveLength(
+            TABLE_OF_CONTENTS.length
+        );
     });
 
     it("메뉴 칩 클릭 시 on_menu_click이 호출된다", () => {
@@ -33,14 +36,12 @@ describe("MobileSidebar", () => {
             <MobileSidebar {...DEFAULT_PROPS} on_menu_click={on_menu_click} />
         );
 
-        const buttons = screen.getAllByRole("button");
-        const menu_chip = buttons.find(
-            (b) => b.textContent && b.textContent !== "✕"
+        const target_section = TABLE_OF_CONTENTS[1];
+        fireEvent.click(
+            screen.getByRole("button", { name: target_section.title })
         );
-        if (menu_chip) {
-            fireEvent.click(menu_chip);
-            expect(on_menu_click).toHaveBeenCalled();
-        }
+
+        expect(on_menu_click).toHaveBeenCalledWith(target_section.id);
     });
 
     it("검색어가 있을 때 결과 없으면 빈 상태가 표시된다", () => {

@@ -4,9 +4,9 @@
 
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { MobileRunningSection } from "../../../../../features/work-record/ui/Mobile/MobileRunningSection";
-import { createMockRecord } from "../../../../helpers/mock_factory";
-import { MOBILE_RECORD_LABEL } from "../../../../../features/work-record/constants";
+import { MobileRunningSection } from "@/features/work-record/ui/Mobile/MobileRunningSection";
+import { createMockRecord } from "@/test/helpers/mock_factory";
+import { MOBILE_RECORD_LABEL } from "@/features/work-record/constants";
 
 describe("MobileRunningSection", () => {
     it("레코드가 없으면 렌더링하지 않는다", () => {

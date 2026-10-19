@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 
 const { mockSignInWithPopup } = vi.hoisted(() => ({
     mockSignInWithPopup: vi.fn(),
 }));
 
-vi.mock("../../../firebase/config", () => ({
+vi.mock("@/firebase/config", () => ({
     getAuthInstance: vi.fn().mockResolvedValue({}),
     getGoogleProviderInstance: vi.fn().mockResolvedValue({}),
 }));
@@ -19,12 +19,9 @@ vi.mock("firebase/auth", () => ({
     signOut: vi.fn(),
 }));
 
-import { useAuth } from "../../../firebase/useAuth";
+import { useAuth } from "@/firebase/useAuth";
 
 describe("useAuth", () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-    });
 
     it("로그인이 실패하면 오류를 다시 던지고 로딩을 끝낸다", async () => {
         const popup_error = Object.assign(new Error("blocked"), {
