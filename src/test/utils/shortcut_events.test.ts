@@ -1,3 +1,4 @@
+// @vitest-environment happy-dom
 /**
  * shortcut_events 유틸리티 테스트
  *

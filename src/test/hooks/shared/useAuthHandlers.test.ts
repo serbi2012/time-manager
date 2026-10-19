@@ -28,16 +28,12 @@ vi.mock("../../../firebase/useAuth", () => ({
     }),
 }));
 
-vi.mock("antd", async () => {
-    const actual = await vi.importActual("antd");
-    return {
-        ...actual,
-        message: {
-            success: mockMessageSuccess,
-            error: mockMessageError,
-        },
-    };
-});
+vi.mock("@/shared/lib/message", () => ({
+    message: {
+        success: mockMessageSuccess,
+        error: mockMessageError,
+    },
+}));
 
 import { useAuthHandlers } from "../../../shared/hooks/useAuthHandlers";
 import { ERROR_MESSAGES } from "../../../shared/constants";

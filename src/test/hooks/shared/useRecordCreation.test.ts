@@ -11,17 +11,12 @@ import {
     createMockRecord,
 } from "../../helpers/mock_factory";
 
-// antd message 모킹
-vi.mock("antd", async () => {
-    const actual = await vi.importActual("antd");
-    return {
-        ...actual,
-        message: {
-            success: vi.fn(),
-            error: vi.fn(),
-        },
-    };
-});
+vi.mock("@/shared/lib/message", () => ({
+    message: {
+        success: vi.fn(),
+        error: vi.fn(),
+    },
+}));
 
 describe("useRecordCreation", () => {
     beforeEach(() => {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildTemplateDetailRows } from "@/features/work-template/lib/template_detail";
-import { createMockTemplate } from "@/test/helpers";
+import { createMockTemplate } from "@/test/helpers/mock_factory";
 
 describe("buildTemplateDetailRows", () => {
     it("모든 필드가 있으면 거래명·작업명·업무명·카테고리·프로젝트 코드·비고 순서로 반환한다", () => {

@@ -3,6 +3,13 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 
+const NODE_TEST_FILES = [
+    "src/test/unit/**/*.test.{ts,tsx}",
+    "src/test/store/**/*.test.{ts,tsx}",
+    "src/test/firebase/**/*.test.{ts,tsx}",
+    "src/test/utils/**/*.test.{ts,tsx}",
+];
+
 export default defineConfig({
     plugins: [react()],
     resolve: {
@@ -11,14 +18,27 @@ export default defineConfig({
         },
     },
     test: {
-        // 브라우저 환경 시뮬레이션 (happy-dom: 가볍고 빠름)
-        environment: "happy-dom",
-
-        // 전역 설정 파일
-        setupFiles: ["./src/test/setup.ts"],
-
-        // 테스트 파일 패턴
-        include: ["src/**/*.test.{ts,tsx}"],
+        projects: [
+            {
+                extends: true,
+                test: {
+                    name: "node",
+                    environment: "node",
+                    include: NODE_TEST_FILES,
+                    setupFiles: ["./src/test/setup/common.ts"],
+                },
+            },
+            {
+                extends: true,
+                test: {
+                    name: "dom",
+                    environment: "happy-dom",
+                    include: ["src/**/*.test.{ts,tsx}"],
+                    exclude: NODE_TEST_FILES,
+                    setupFiles: ["./src/test/setup.ts"],
+                },
+            },
+        ],
 
         // 전역 API 사용 (describe, it, expect 등)
         globals: true,
@@ -47,5 +67,20 @@ export default defineConfig({
 
         // 모의 객체 초기화
         mockReset: true,
+
+        deps: {
+            optimizer: {
+                client: {
+                    enabled: true,
+                    include: [
+                        "antd",
+                        "framer-motion",
+                        "@tanstack/react-table",
+                        "lodash-es",
+                        "@faker-js/faker/locale/ko",
+                    ],
+                },
+            },
+        },
     },
 });
