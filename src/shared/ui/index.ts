@@ -56,6 +56,7 @@ export {
     EmptyState,
     type EmptyStateProps,
     type EmptyImageType,
+    SidebarToggleButton,
 } from "./layout";
 
 // 에러 경계

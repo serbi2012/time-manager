@@ -13,6 +13,7 @@ import { SPRING, STAGGER } from "@/shared/ui/animation";
 import { useShallow } from "zustand/react/shallow";
 import { useWorkStore } from "@/store/useWorkStore";
 import { useShortcutStore } from "@/store/useShortcutStore";
+import { useSidebarStore } from "@/store/useSidebarStore";
 import { formatShortcutForPlatform } from "@/shared/lib/shortcuts";
 import {
     TemplateModal,
@@ -77,6 +78,7 @@ export function DesktopWorkTemplateList({
     } = useTemplateActions();
 
     const { sensors, handleDragEnd } = useTemplateDnd();
+    const toggleSidebar = useSidebarStore((state) => state.toggleCollapsed);
 
     const [search_query, setSearchQuery] = useState("");
     const show_search =
@@ -93,7 +95,6 @@ export function DesktopWorkTemplateList({
         <>
             <div className="flex flex-col h-full">
                 <DesktopPresetListHeader
-                    template_count={templates.length}
                     add_shortcut_label={formatShortcutForPlatform(
                         new_preset_keys
                     )}
@@ -101,6 +102,7 @@ export function DesktopWorkTemplateList({
                     search_query={search_query}
                     onAdd={handleOpenAddModal}
                     onSearchChange={setSearchQuery}
+                    onCollapse={toggleSidebar}
                 />
 
                 {/* Content */}

@@ -110,6 +110,8 @@ export const NAV_LABELS = {
 
 export const SIDEBAR_LABELS = {
     resizeHandle: "드래그해서 너비 조절 · 더블클릭하면 기본 너비",
+    collapse: "사이드바 접기",
+    expand: "사이드바 펼치기",
 } as const;
 
 // ============================================

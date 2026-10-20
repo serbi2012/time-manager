@@ -8,6 +8,7 @@
 // 스토어
 export { useWorkStore } from "./useWorkStore";
 export { useShortcutStore } from "./useShortcutStore";
+export { useSidebarStore } from "./useSidebarStore";
 
 // 상수
 export {

@@ -11,6 +11,7 @@ import { screen, waitFor, fireEvent, within } from "@testing-library/react";
 import { renderWithAntd, resetWorkStore } from "@/test/helpers";
 import { DesktopWorkTemplateList } from "@/features/work-template/ui/Desktop/DesktopWorkTemplateList";
 import { useWorkStore } from "@/store/useWorkStore";
+import { useSidebarStore } from "@/store/useSidebarStore";
 import type { WorkTemplate } from "@/types";
 import {
     MODAL_TITLE_EDIT,
@@ -213,11 +214,16 @@ describe("DesktopWorkTemplateList", () => {
         const renderList = () =>
             renderWithAntd(<DesktopWorkTemplateList />);
 
-        it("프리셋 개수를 표시한다", () => {
+        it("개수 대신 사이드바 접기 버튼을 표시한다", () => {
+            useSidebarStore.setState({ is_collapsed: false });
             useWorkStore.setState({ templates: createSearchTemplates(3) });
             renderList();
 
-            expect(screen.getByText("3개")).toBeInTheDocument();
+            expect(screen.queryByText("3개")).not.toBeInTheDocument();
+            fireEvent.click(
+                screen.getByRole("button", { name: "사이드바 접기" })
+            );
+            expect(useSidebarStore.getState().is_collapsed).toBe(true);
         });
 
         it("프리셋이 5개 미만이면 검색창을 숨긴다", () => {
