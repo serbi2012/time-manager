@@ -7,8 +7,13 @@ import {
     PlusOutlined,
     HolderOutlined,
     EllipsisOutlined,
+    DoubleLeftOutlined,
 } from "@ant-design/icons";
-import { PRESET_LABELS, BUTTON_TEXT } from "@/shared/constants";
+import {
+    PRESET_LABELS,
+    BUTTON_TEXT,
+    SIDEBAR_LABELS,
+} from "@/shared/constants";
 import { DEMO_TEMPLATE_LABELS } from "@/features/guide/constants";
 import { DEMO_TEMPLATES } from "./demo_data";
 
@@ -22,10 +27,14 @@ export function DemoWorkTemplateList() {
                     <Text strong className="text-md">
                         {PRESET_LABELS.title}
                     </Text>
-                    <Text type="secondary" className="text-sm">
-                        {DEMO_TEMPLATES.length}
-                        {DEMO_TEMPLATE_LABELS.countSuffix}
-                    </Text>
+                    <Tooltip title={SIDEBAR_LABELS.collapse}>
+                        <Button
+                            type="text"
+                            size="small"
+                            aria-label={SIDEBAR_LABELS.collapse}
+                            icon={<DoubleLeftOutlined />}
+                        />
+                    </Tooltip>
                 </div>
 
                 <Button

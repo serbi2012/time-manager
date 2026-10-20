@@ -67,7 +67,6 @@ export const DEMO_GANTT_LABELS = {
 export const DEMO_TEMPLATE_LABELS = {
     addNewPreset: "새 프리셋 추가",
     addWork: "작업 추가",
-    countSuffix: "개",
 } as const;
 
 // ============================================

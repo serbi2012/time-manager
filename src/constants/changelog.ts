@@ -3,7 +3,7 @@
  */
 
 // 현재 버전 (package.json과 동기화 필요)
-export const CURRENT_VERSION = "2.15.0";
+export const CURRENT_VERSION = "2.15.1";
 
 // 변경 타입 정의
 export type ChangeType =
@@ -49,6 +49,18 @@ export const CHANGE_TYPE_CONFIG: Record<
 
 // 변경 내역 (최신 버전이 맨 위)
 export const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: "2.15.1",
+        date: "2026-10-20",
+        title: "프리셋 사이드바 접기",
+        changes: [
+            {
+                type: "feature",
+                description:
+                    "프리셋 제목 오른쪽의 « 버튼으로 사이드바를 접어 기록 화면을 넓게 쓸 수 있어요. » 버튼을 누르면 다시 펼쳐지고, 접힘 상태는 다음에 열어도 유지돼요",
+            },
+        ],
+    },
     {
         version: "2.15.0",
         date: "2026-10-19",
